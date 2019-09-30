@@ -29,9 +29,13 @@ lint:
 	@golint ./...
 	@echo "ok"
 
-build: tidy check
-	@echo "build generator"
-	@mkdir -p ./bin
+generate:
+	@echo "generate code"
+	@go generate ./...
+	@echo "ok"
+
+build: generate tidy check
+	@echo "build storage"
 	@go build ./...
 	@echo "ok"
 
