@@ -1,17 +1,17 @@
 package define
 
+// Capability is a uint64 which represents a capability storage service have.
+type Capability uint64
+
 // All capability that storage used.
 const (
-	CapabilityRead  Capability = 1
-	CapabilityWrite Capability = 2
+	CapabilityRead  Capability = 1 << 0
+	CapabilityWrite Capability = 1 << 1
 
-	CapabilityFile Capability = 4 << iota
+	CapabilityFile Capability = 1 << (2 + iota)
 	CapabilityStream
 	CapabilitySegment
 )
-
-// Capability is a uint64 which represents a capability storage service have.
-type Capability uint64
 
 // Readable returns whether this service readable or not.
 func (c Capability) Readable() bool {
