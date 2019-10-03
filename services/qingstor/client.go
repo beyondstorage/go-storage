@@ -109,22 +109,51 @@ func (c *Client) ListDir(path string, option ...define.Option) (dir chan *define
 
 // ReadFile implements Storager.ReadFile
 func (c *Client) ReadFile(path string, option ...define.Option) (r io.ReadCloser, err error) {
-	panic("implement me")
+	errorMessage := "qingstor ReadFile failed: %w"
+
+	_ = parseOptionReadFile(option...)
+	input := &service.GetObjectInput{}
+
+	output, err := c.bucket.GetObject(path, input)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+	return output.Body, nil
 }
 
 // WriteFile implements Storager.WriteFile
 func (c *Client) WriteFile(path string, size int64, r io.ReadCloser, option ...define.Option) (err error) {
-	panic("implement me")
+	errorMessage := "qingstor WriteFile failed: %w"
+
+	defer r.Close()
+
+	opts := parseOptionWriteFile(option...)
+	input := &service.PutObjectInput{
+		ContentLength: &size,
+		Body:          r,
+	}
+	if opts.HasMd5 {
+		input.ContentMD5 = &opts.Md5
+	}
+	if opts.HasStorageClass {
+		input.XQSStorageClass = &opts.StorageClass
+	}
+
+	_, err = c.bucket.PutObject(path, input)
+	if err != nil {
+		return fmt.Errorf(errorMessage, err)
+	}
+	return nil
 }
 
 // ReadStream implements Storager.ReadStream
 func (c *Client) ReadStream(path string, option ...define.Option) (r io.ReadCloser, err error) {
-	panic("implement me")
+	panic("not supported")
 }
 
 // WriteStream implements Storager.WriteStream
 func (c *Client) WriteStream(path string, r io.ReadCloser, option ...define.Option) (err error) {
-	panic("implement me")
+	panic("not supported")
 }
 
 // InitSegment implements Storager.InitSegment
