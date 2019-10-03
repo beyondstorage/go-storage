@@ -73,7 +73,7 @@ func main() {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
 	meta.ParsedCapability = parseCapability(meta.Capability)
-	meta.TypeMap = define.OptionTypeMap
+	meta.TypeMap = define.AvailableOptions
 
 	filePath := "meta.go"
 	f, err := os.Create(filePath)
