@@ -125,13 +125,28 @@ import (
 
 {{ $Data := . }}
 
+var allowdOptions = map[string]map[string]struct{}{
 {{- range $k, $v := .Options }}
-var allowdOption{{ $k | camelcase}} = map[string]struct{}{
+	define.Action{{ $k | camelcase}}: {
 {{- range $_, $key := $v }}
-	"{{$key}}": struct{}{},
+		"{{$key}}": struct{}{},
+{{- end }}
+	},
 {{- end }}
 }
 
+// IsOptionAvailable implements Storager.IsOptionAvailable().
+func (c *Client) IsOptionAvailable(action, option string) bool {
+	if _, ok := allowdOptions[action]; !ok {
+		return false
+	}
+	if _, ok := allowdOptions[action][option]; !ok {
+		return false
+	}
+	return true
+}
+
+{{- range $k, $v := .Options }}
 type option{{ $k | camelcase}} struct {
 {{- range $_, $key := $v }}
 	Has{{ $key | camelcase}} bool
@@ -144,13 +159,17 @@ func parseOption{{ $k | camelcase}}(opts ...define.Option) *option{{ $k | camelc
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOption{{ $k | camelcase}}[v.Key]; ok {
-			values[v.Key] = v
+		if _, ok := allowdOptions[define.Action{{ $k | camelcase}}]; !ok {
+			continue
 		}
+		if _, ok := allowdOptions[define.Action{{ $k | camelcase}}][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v
 	}
 
 {{- range $_, $key := $v }}
-	if v, ok := values["{{ $key }}"]; ok {
+	if v, ok := values["{{ $key }}"]; !ok {
 		result.Has{{ $key | camelcase}} = true
 		result.{{ $key | camelcase}} = v.({{ index $Data.TypeMap $key }})
 	}

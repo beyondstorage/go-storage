@@ -4,6 +4,24 @@ import (
 	"io"
 )
 
+// All actions that storager used.
+const (
+	ActionStat            = "stat"
+	ActionDelete          = "delete"
+	ActionCopy            = "copy"
+	ActionMove            = "move"
+	ActionListDir         = "list_dir"
+	ActionReadFile        = "read_file"
+	ActionWriteFile       = "write_file"
+	ActionReadStream      = "read_stream"
+	ActionWriteStream     = "write_stream"
+	ActionInitSegment     = "init_segment"
+	ActionReadSegment     = "read_segment"
+	ActionWriteSegment    = "write_segment"
+	ActionCompleteSegment = "complete_segment"
+	ActionAbortSegment    = "abort_segment"
+)
+
 // Storager is the interface for storage service.
 //
 // The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY",
