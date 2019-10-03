@@ -35,7 +35,7 @@ type Storager interface {
 	IsOptionAvailable(action, option string) bool
 
 	// Service MUST return a *File, *Stream or *Dir.
-	Stat(path string, option ...Option) (i *Informer, err error)
+	Stat(path string, option ...Option) (i Informer, err error)
 	// Service MAY accept a recursive options to support delete recursively.
 	Delete(path string, option ...Option) (err error)
 	// Service MAY accept a recursive options to support copy recursively.
