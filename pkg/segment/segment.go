@@ -1,9 +1,29 @@
 package segment
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 )
+
+// All errors that segment could return.
+var (
+	ErrorPartSizeInvalid     = errors.New("part size invalid")
+	ErrorPartIntersected     = errors.New("part is intersected")
+	ErrorSegmentPartsEmpty   = errors.New("segment parts are empty")
+	ErrorSegmentNotFulfilled = errors.New("segment is not fulfilled")
+	ErrorSegmentSizeNotMatch = errors.New("segment size is not match")
+)
+
+// Part is a part of segment.
+type Part struct {
+	Offset int64
+	Size   int64
+}
+
+func (p *Part) String() string {
+	return fmt.Sprintf("Part {Offset: %d, Size: %d}", p.Offset, p.Size)
+}
 
 // Segment will hold the whole segment operations.
 type Segment struct {
@@ -12,16 +32,16 @@ type Segment struct {
 	Parts     []*Part
 }
 
-// Part is a part of segment.
-type Part struct {
-	Offset int64
-	Size   int64
+func (s *Segment) String() string {
+	return fmt.Sprintf("Segment [%s]", s.ID)
 }
 
 // GetPartIndex will get a part's insert index in a segment.
 func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
+	errorMessage := "%s get part index with %s failed: %w"
+
 	if p.Size == 0 {
-		panic("zero size path is invalid")
+		panic(ErrorPartSizeInvalid)
 	}
 
 	length := len(s.Parts)
@@ -39,7 +59,7 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 	if cur == 0 {
 		nextPart := s.Parts[cur]
 		if p.Offset+p.Size > nextPart.Offset {
-			return 0, fmt.Errorf("part is intersected")
+			return 0, fmt.Errorf(errorMessage, s, p, ErrorPartIntersected)
 		}
 		return
 	}
@@ -48,7 +68,7 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 	if cur == length {
 		lastPart := s.Parts[cur-1]
 		if lastPart.Offset+lastPart.Size > p.Offset {
-			return 0, fmt.Errorf("part is intersected")
+			return 0, fmt.Errorf(errorMessage, s, p, ErrorPartIntersected)
 		}
 		return
 	}
@@ -59,11 +79,11 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 	lastPart := s.Parts[cur-1]
 	nextPart := s.Parts[cur]
 	if lastPart.Offset+lastPart.Size > p.Offset {
-		return 0, fmt.Errorf("part is intersected")
+		return 0, fmt.Errorf(errorMessage, s, p, ErrorPartIntersected)
 	}
 
 	if p.Offset+p.Size > nextPart.Offset {
-		return 0, fmt.Errorf("part is intersected")
+		return 0, fmt.Errorf(errorMessage, s, p, ErrorPartIntersected)
 	}
 	return
 }
@@ -72,7 +92,6 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 func (s *Segment) InsertPart(p *Part) (err error) {
 	cur, err := s.GetPartIndex(p)
 	if err != nil {
-		// TODO: format with error
 		return err
 	}
 	s.Parts = append(s.Parts, &Part{})
@@ -83,22 +102,28 @@ func (s *Segment) InsertPart(p *Part) (err error) {
 
 // ValidateParts will validate a segment's parts.
 func (s *Segment) ValidateParts() (err error) {
+	errorMessage := "%s validate parts failed: %w"
+
 	totalSize := int64(0)
+
+	// Zero parts are not allowed, cause they can't be completed.
 	if len(s.Parts) == 0 {
-		return fmt.Errorf("segment %s parts are empty", s.ID)
+		return fmt.Errorf(errorMessage, s.ID, ErrorSegmentPartsEmpty)
 	}
 
+	// Check parts continuity
 	prePart := s.Parts[0]
 	totalSize += prePart.Size
-	for k, v := range s.Parts[1:] {
+	for _, v := range s.Parts[1:] {
 		if prePart.Offset+prePart.Size != v.Offset {
-			return fmt.Errorf("segment is not fullfilled between part %d and %d", k-1, k)
+			return fmt.Errorf(errorMessage, s, ErrorSegmentNotFulfilled)
 		}
 		totalSize += v.Size
 	}
 
+	// Check whether total size is match
 	if totalSize != s.TotalSize {
-		return fmt.Errorf("segment size is not match with calculated parts total size")
+		return fmt.Errorf(errorMessage, s, ErrorSegmentSizeNotMatch)
 	}
 	return nil
 }
