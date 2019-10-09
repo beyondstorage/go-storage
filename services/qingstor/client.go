@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/yunify/qingstor-sdk-go/v3/config"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/iterator"
@@ -21,15 +20,15 @@ const DirectoryContentType = "application/x-directory"
 //
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 type Client struct {
-	config  *config.Config
+	config  *Config
 	service *service.Service
 	bucket  *service.Bucket
 
 	segments map[string]*segment.Segment
 }
 
-// SetupBucket will setup bucket for client.
-func (c *Client) SetupBucket(bucketName, zoneName string) (err error) {
+// setupBucket will setup bucket for client.
+func (c *Client) setupBucket(bucketName, zoneName string) (err error) {
 	errorMessage := "setup qingstor bucket failed: %w"
 
 	if zoneName != "" {
@@ -65,31 +64,6 @@ func (c *Client) SetupBucket(bucketName, zoneName string) (err error) {
 	}
 	c.bucket = bucket
 	return
-}
-
-// NewFromConfig will create a new client from config.
-func NewFromConfig(cfg *config.Config) (*Client, error) {
-	errorMessage := "create new qingstor client from config failed: %w"
-
-	srv, err := service.Init(cfg)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
-	}
-	return &Client{
-		service:  srv,
-		segments: make(map[string]*segment.Segment),
-	}, nil
-}
-
-// NewFromHomeConfigFile will create a new client from default home config file.
-func NewFromHomeConfigFile() (*Client, error) {
-	errorMessage := "create new qingstor client from home config file failed: %w"
-
-	cfg, err := config.NewDefault()
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
-	}
-	return NewFromConfig(cfg)
 }
 
 // Stat implements Storager.Stat

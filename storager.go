@@ -25,6 +25,11 @@ const (
 	ActionAbortSegment    = "abort_segment"
 )
 
+// Configurer will create a new storager.
+type Configurer interface {
+	New() (Storager, error)
+}
+
 // Storager is the interface for storage service.
 //
 // The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY",
