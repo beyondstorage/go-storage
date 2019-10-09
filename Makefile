@@ -47,6 +47,6 @@ test:
 
 tidy:
 	@echo "Tidy and check the go mod files"
-	@go mod tidy
-	@go mod verify
+	@go mod tidy && go mod verify
+	@pushd internal/cmd && go mod tidy && go mod verify && popd
 	@echo "Done"
