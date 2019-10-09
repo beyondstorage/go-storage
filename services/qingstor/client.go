@@ -17,7 +17,7 @@ import (
 // DirectoryContentType is the content type for qingstor object directory.
 const DirectoryContentType = "application/x-directory"
 
-// Client is the qingstor object sotrage client.
+// Client is the qingstor object storage client.
 //
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 type Client struct {
