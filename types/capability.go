@@ -1,4 +1,4 @@
-package define
+package types
 
 // Capability is a uint64 which represents a capability storage service have.
 type Capability uint64

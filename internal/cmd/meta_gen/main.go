@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
-	"github.com/Xuanwo/storage/define"
+	"github.com/Xuanwo/storage/types"
 )
 
 type capability struct {
@@ -20,21 +20,21 @@ type capability struct {
 }
 
 func parseCapability(c capability) uint64 {
-	v := define.Capability(0)
+	v := types.Capability(0)
 	if c.Read {
-		v |= define.CapabilityRead
+		v |= types.CapabilityRead
 	}
 	if c.Write {
-		v |= define.CapabilityWrite
+		v |= types.CapabilityWrite
 	}
 	if c.File {
-		v |= define.CapabilityFile
+		v |= types.CapabilityFile
 	}
 	if c.Stream {
-		v |= define.CapabilityStream
+		v |= types.CapabilityStream
 	}
 	if c.Segment {
-		v |= define.CapabilitySegment
+		v |= types.CapabilitySegment
 	}
 
 	return uint64(v)
@@ -73,7 +73,7 @@ func main() {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
 	meta.ParsedCapability = parseCapability(meta.Capability)
-	meta.TypeMap = define.AvailableOptions
+	meta.TypeMap = types.AvailableOptions
 
 	filePath := "meta.go"
 	f, err := os.Create(filePath)
@@ -100,7 +100,7 @@ var metaTmpl = template.Must(template.New("").Funcs(sprig.HermeticTxtFuncMap()).
 package {{ .Name }}
 
 import (
-	"github.com/Xuanwo/storage/define"
+	"github.com/Xuanwo/storage/types"
 )
 
 // CapabilityRead    = {{ .Capability.Read }}
@@ -108,10 +108,10 @@ import (
 // CapabilityFile    = {{ .Capability.File }}
 // CapabilityStream  = {{ .Capability.Stream }}
 // CapabilitySegment = {{ .Capability.Segment }}
-const capability = define.Capability({{ .ParsedCapability }})
+const capability = types.Capability({{ .ParsedCapability }})
 
 // Capability implements Storager.Capability().
-func (c *Client) Capability() define.Capability {
+func (c *Client) Capability() types.Capability {
 	return capability
 }
 `))
@@ -120,14 +120,15 @@ var optionTmpl = template.Must(template.New("option").Funcs(sprig.HermeticTxtFun
 package {{ .Name }}
 
 import (
-	"github.com/Xuanwo/storage/define"
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/types"
 )
 
 {{ $Data := . }}
 
 var allowdOptions = map[string]map[string]struct{}{
 {{- range $k, $v := .Options }}
-	define.Action{{ $k | camelcase}}: {
+	storage.Action{{ $k | camelcase}}: {
 {{- range $_, $key := $v }}
 		"{{$key}}": struct{}{},
 {{- end }}
@@ -154,15 +155,15 @@ type option{{ $k | camelcase}} struct {
 {{- end }}
 }
 
-func parseOption{{ $k | camelcase}}(opts ...define.Option) *option{{ $k | camelcase}} {
+func parseOption{{ $k | camelcase}}(opts ...types.Option) *option{{ $k | camelcase}} {
 	result := &option{{ $k | camelcase}}{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.Action{{ $k | camelcase}}]; !ok {
+		if _, ok := allowdOptions[storage.Action{{ $k | camelcase}}]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.Action{{ $k | camelcase}}][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.Action{{ $k | camelcase}}][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v

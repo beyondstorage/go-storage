@@ -108,7 +108,7 @@ func (s *Segment) ValidateParts() (err error) {
 
 	// Zero parts are not allowed, cause they can't be completed.
 	if len(s.Parts) == 0 {
-		return fmt.Errorf(errorMessage, s.ID, ErrorSegmentPartsEmpty)
+		return fmt.Errorf(errorMessage, s, ErrorSegmentPartsEmpty)
 	}
 
 	// Check parts continuity

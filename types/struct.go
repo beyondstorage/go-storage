@@ -1,26 +1,7 @@
-package define
-
-// Option will store option for storage service.
-//
-//go:generate go run ../internal/cmd/options_gen/main.go
-type Option struct {
-	Key   string
-	Value interface{}
-}
-
-// AvailableOptions are all available options for storage.
-// This will be used to generate options.go
-var AvailableOptions = map[string]string{
-	"md5":           "string",
-	"storage_class": "string",
-}
+package types
 
 // Informer will be returned by stat, and should be a *File, *Dir or a *Stream.
-type Informer interface {
-	Name() string
-	Type() string
-	Size() int64
-}
+type Informer interface{}
 
 // File represents a seekable file or object.
 type File struct {
