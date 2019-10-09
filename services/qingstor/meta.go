@@ -2,7 +2,7 @@
 package qingstor
 
 import (
-	"github.com/Xuanwo/storage/define"
+	"github.com/Xuanwo/storage/types"
 )
 
 // CapabilityRead    = true
@@ -10,9 +10,9 @@ import (
 // CapabilityFile    = true
 // CapabilityStream  = false
 // CapabilitySegment = true
-const capability = define.Capability(83)
+const capability = types.Capability(83)
 
 // Capability implements Storager.Capability().
-func (c *Client) Capability() define.Capability {
+func (c *Client) Capability() types.Capability {
 	return capability
 }

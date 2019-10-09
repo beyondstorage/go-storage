@@ -2,27 +2,28 @@
 package qingstor
 
 import (
-	"github.com/Xuanwo/storage/define"
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/types"
 )
 
 var allowdOptions = map[string]map[string]struct{}{
-	define.ActionAbortSegment:    {},
-	define.ActionCompleteSegment: {},
-	define.ActionCopy:            {},
-	define.ActionDelete:          {},
-	define.ActionInitSegment:     {},
-	define.ActionListDir:         {},
-	define.ActionMove:            {},
-	define.ActionReadFile:        {},
-	define.ActionReadSegment:     {},
-	define.ActionReadStream:      {},
-	define.ActionStat:            {},
-	define.ActionWriteFile: {
+	storage.ActionAbortSegment:    {},
+	storage.ActionCompleteSegment: {},
+	storage.ActionCopy:            {},
+	storage.ActionDelete:          {},
+	storage.ActionInitSegment:     {},
+	storage.ActionListDir:         {},
+	storage.ActionMove:            {},
+	storage.ActionReadFile:        {},
+	storage.ActionReadSegment:     {},
+	storage.ActionReadStream:      {},
+	storage.ActionStat:            {},
+	storage.ActionWriteFile: {
 		"md5":           struct{}{},
 		"storage_class": struct{}{},
 	},
-	define.ActionWriteSegment: {},
-	define.ActionWriteStream:  {},
+	storage.ActionWriteSegment: {},
+	storage.ActionWriteStream:  {},
 }
 
 // IsOptionAvailable implements Storager.IsOptionAvailable().
@@ -39,15 +40,15 @@ func (c *Client) IsOptionAvailable(action, option string) bool {
 type optionAbortSegment struct {
 }
 
-func parseOptionAbortSegment(opts ...define.Option) *optionAbortSegment {
+func parseOptionAbortSegment(opts ...types.Option) *optionAbortSegment {
 	result := &optionAbortSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionAbortSegment]; !ok {
+		if _, ok := allowdOptions[storage.ActionAbortSegment]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionAbortSegment][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionAbortSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -58,15 +59,15 @@ func parseOptionAbortSegment(opts ...define.Option) *optionAbortSegment {
 type optionCompleteSegment struct {
 }
 
-func parseOptionCompleteSegment(opts ...define.Option) *optionCompleteSegment {
+func parseOptionCompleteSegment(opts ...types.Option) *optionCompleteSegment {
 	result := &optionCompleteSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionCompleteSegment]; !ok {
+		if _, ok := allowdOptions[storage.ActionCompleteSegment]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionCompleteSegment][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionCompleteSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -77,15 +78,15 @@ func parseOptionCompleteSegment(opts ...define.Option) *optionCompleteSegment {
 type optionCopy struct {
 }
 
-func parseOptionCopy(opts ...define.Option) *optionCopy {
+func parseOptionCopy(opts ...types.Option) *optionCopy {
 	result := &optionCopy{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionCopy]; !ok {
+		if _, ok := allowdOptions[storage.ActionCopy]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionCopy][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionCopy][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -96,15 +97,15 @@ func parseOptionCopy(opts ...define.Option) *optionCopy {
 type optionDelete struct {
 }
 
-func parseOptionDelete(opts ...define.Option) *optionDelete {
+func parseOptionDelete(opts ...types.Option) *optionDelete {
 	result := &optionDelete{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionDelete]; !ok {
+		if _, ok := allowdOptions[storage.ActionDelete]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionDelete][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionDelete][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -115,15 +116,15 @@ func parseOptionDelete(opts ...define.Option) *optionDelete {
 type optionInitSegment struct {
 }
 
-func parseOptionInitSegment(opts ...define.Option) *optionInitSegment {
+func parseOptionInitSegment(opts ...types.Option) *optionInitSegment {
 	result := &optionInitSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionInitSegment]; !ok {
+		if _, ok := allowdOptions[storage.ActionInitSegment]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionInitSegment][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionInitSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -134,15 +135,15 @@ func parseOptionInitSegment(opts ...define.Option) *optionInitSegment {
 type optionListDir struct {
 }
 
-func parseOptionListDir(opts ...define.Option) *optionListDir {
+func parseOptionListDir(opts ...types.Option) *optionListDir {
 	result := &optionListDir{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionListDir]; !ok {
+		if _, ok := allowdOptions[storage.ActionListDir]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionListDir][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionListDir][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -153,15 +154,15 @@ func parseOptionListDir(opts ...define.Option) *optionListDir {
 type optionMove struct {
 }
 
-func parseOptionMove(opts ...define.Option) *optionMove {
+func parseOptionMove(opts ...types.Option) *optionMove {
 	result := &optionMove{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionMove]; !ok {
+		if _, ok := allowdOptions[storage.ActionMove]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionMove][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionMove][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -172,15 +173,15 @@ func parseOptionMove(opts ...define.Option) *optionMove {
 type optionReadFile struct {
 }
 
-func parseOptionReadFile(opts ...define.Option) *optionReadFile {
+func parseOptionReadFile(opts ...types.Option) *optionReadFile {
 	result := &optionReadFile{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionReadFile]; !ok {
+		if _, ok := allowdOptions[storage.ActionReadFile]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionReadFile][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionReadFile][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -191,15 +192,15 @@ func parseOptionReadFile(opts ...define.Option) *optionReadFile {
 type optionReadSegment struct {
 }
 
-func parseOptionReadSegment(opts ...define.Option) *optionReadSegment {
+func parseOptionReadSegment(opts ...types.Option) *optionReadSegment {
 	result := &optionReadSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionReadSegment]; !ok {
+		if _, ok := allowdOptions[storage.ActionReadSegment]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionReadSegment][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionReadSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -210,15 +211,15 @@ func parseOptionReadSegment(opts ...define.Option) *optionReadSegment {
 type optionReadStream struct {
 }
 
-func parseOptionReadStream(opts ...define.Option) *optionReadStream {
+func parseOptionReadStream(opts ...types.Option) *optionReadStream {
 	result := &optionReadStream{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionReadStream]; !ok {
+		if _, ok := allowdOptions[storage.ActionReadStream]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionReadStream][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionReadStream][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -229,15 +230,15 @@ func parseOptionReadStream(opts ...define.Option) *optionReadStream {
 type optionStat struct {
 }
 
-func parseOptionStat(opts ...define.Option) *optionStat {
+func parseOptionStat(opts ...types.Option) *optionStat {
 	result := &optionStat{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionStat]; !ok {
+		if _, ok := allowdOptions[storage.ActionStat]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionStat][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionStat][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -252,15 +253,15 @@ type optionWriteFile struct {
 	StorageClass    string
 }
 
-func parseOptionWriteFile(opts ...define.Option) *optionWriteFile {
+func parseOptionWriteFile(opts ...types.Option) *optionWriteFile {
 	result := &optionWriteFile{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionWriteFile]; !ok {
+		if _, ok := allowdOptions[storage.ActionWriteFile]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionWriteFile][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionWriteFile][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -279,15 +280,15 @@ func parseOptionWriteFile(opts ...define.Option) *optionWriteFile {
 type optionWriteSegment struct {
 }
 
-func parseOptionWriteSegment(opts ...define.Option) *optionWriteSegment {
+func parseOptionWriteSegment(opts ...types.Option) *optionWriteSegment {
 	result := &optionWriteSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionWriteSegment]; !ok {
+		if _, ok := allowdOptions[storage.ActionWriteSegment]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionWriteSegment][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionWriteSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -298,15 +299,15 @@ func parseOptionWriteSegment(opts ...define.Option) *optionWriteSegment {
 type optionWriteStream struct {
 }
 
-func parseOptionWriteStream(opts ...define.Option) *optionWriteStream {
+func parseOptionWriteStream(opts ...types.Option) *optionWriteStream {
 	result := &optionWriteStream{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdOptions[define.ActionWriteStream]; !ok {
+		if _, ok := allowdOptions[storage.ActionWriteStream]; !ok {
 			continue
 		}
-		if _, ok := allowdOptions[define.ActionWriteStream][v.Key]; !ok {
+		if _, ok := allowdOptions[storage.ActionWriteStream][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
