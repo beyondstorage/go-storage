@@ -11,22 +11,22 @@ import (
 )
 
 func TestNewPrefixBasedIterator(t *testing.T) {
-	fn := NextFunc(func(informer *[]types.Informer) error {
+	fn := NextFunc(func(informer *[]types.Object) error {
 		return nil
 	})
 
 	got := NewPrefixBasedIterator(fn)
 
 	assert.Equal(t, 0, got.index)
-	assert.Equal(t, []types.Informer(nil), got.buf)
+	assert.Equal(t, []types.Object(nil), got.buf)
 	assert.Equal(t, fmt.Sprintf("%v", fn), fmt.Sprintf("%v", got.next))
 }
 
 func TestPrefixBasedIterator_Next(t *testing.T) {
 	testErr := errors.New("test error")
 
-	fn := NextFunc(func(informer *[]types.Informer) error {
-		x := make([]types.Informer, 1)
+	fn := NextFunc(func(informer *[]types.Object) error {
+		x := make([]types.Object, 1)
 		x[0] = &types.Dir{Name: "test"}
 		*informer = x
 		return nil
@@ -41,7 +41,7 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 	assert.Equal(t, 1, len(it.buf))
 	assert.Equal(t, 1, it.index)
 
-	fn = func(informer *[]types.Informer) error {
+	fn = func(informer *[]types.Object) error {
 		return testErr
 	}
 	it = NewPrefixBasedIterator(fn)
@@ -50,8 +50,8 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 	assert.Nil(t, i)
 	assert.True(t, errors.Is(err, testErr))
 
-	fn = func(informer *[]types.Informer) error {
-		x := make([]types.Informer, 2)
+	fn = func(informer *[]types.Object) error {
+		x := make([]types.Object, 2)
 		x[0] = &types.Dir{Name: "test1"}
 		x[1] = &types.Dir{Name: "test2"}
 		*informer = x

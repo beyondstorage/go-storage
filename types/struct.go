@@ -1,7 +1,7 @@
 package types
 
-// Informer will be returned by stat, and should be a *File, *Dir or a *Stream.
-type Informer interface{}
+// Object will be returned by stat, and should be a *File, *Dir or a *Stream.
+type Object interface{}
 
 // File represents a seekable file or object.
 type File struct {

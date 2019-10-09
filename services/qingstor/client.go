@@ -67,7 +67,7 @@ func (c *Client) setupBucket(bucketName, zoneName string) (err error) {
 }
 
 // Stat implements Storager.Stat
-func (c *Client) Stat(path string, option ...types.Option) (i types.Informer, err error) {
+func (c *Client) Stat(path string, option ...types.Option) (i types.Object, err error) {
 	errorMessage := "qingstor Stat failed: %w"
 
 	input := &service.HeadObjectInput{}
@@ -134,9 +134,9 @@ func (c *Client) ListDir(path string, option ...types.Option) (it iterator.Itera
 	var output *service.ListObjectsOutput
 	var err error
 
-	fn := iterator.NextFunc(func(informer *[]types.Informer) error {
+	fn := iterator.NextFunc(func(informer *[]types.Object) error {
 		idx := 0
-		buf := make([]types.Informer, limit)
+		buf := make([]types.Object, limit)
 
 		output, err = c.bucket.ListObjects(&service.ListObjectsInput{
 			Limit:  &limit,

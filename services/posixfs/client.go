@@ -14,7 +14,7 @@ type Client struct {
 }
 
 // Stat implements Storager.Stat
-func (c *Client) Stat(path string, option ...types.Option) (i types.Informer, err error) {
+func (c *Client) Stat(path string, option ...types.Option) (i types.Object, err error) {
 	panic("implement me")
 }
 
