@@ -46,9 +46,7 @@ type Storager interface {
 	// Service MAY accept a recursive options to support move recursively.
 	Move(src, dst string, option ...types.Option) (err error)
 
-	// Service MUST close all channel while no more items listed or error happened.
-	// Service MAY start goroutines to transfer items.
-	// Caller MUST make sure all data has been consumed.
+	// Service MUST return a valid iterator.Iterator.
 	ListDir(path string, option ...types.Option) iterator.Iterator
 
 	// Caller MUST close reader while error happened or all data read.
