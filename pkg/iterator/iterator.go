@@ -23,6 +23,7 @@ type PrefixBasedIterator struct {
 	buf   []types.Informer
 	index int
 	next  NextFunc
+	done  bool
 }
 
 // NewPrefixBasedIterator will return a new prefix based iterator.
@@ -42,14 +43,27 @@ func (it *PrefixBasedIterator) Next() (i types.Informer, err error) {
 		it.index++
 		return it.buf[it.index-1], nil
 	}
+	if it.done {
+		return nil, ErrDone
+	}
 
+	// Reset buf before call next.
+	it.buf = nil
 	err = it.next(&it.buf)
 	if err == nil {
 		it.index = 1
 		return it.buf[0], nil
 	}
-	if errors.Is(err, ErrDone) {
+	if !errors.Is(err, ErrDone) {
+		return nil, fmt.Errorf("iterator next failed: %w", err)
+	}
+
+	// Mark this iterator has been done, no more elem will be fetched.
+	it.done = true
+	if len(it.buf) == 0 {
 		return nil, ErrDone
 	}
-	return nil, fmt.Errorf("iterator next failed: %w", err)
+
+	it.index = 1
+	return it.buf[0], nil
 }
