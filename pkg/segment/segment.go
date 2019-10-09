@@ -8,11 +8,13 @@ import (
 
 // All errors that segment could return.
 var (
-	ErrorPartSizeInvalid     = errors.New("part size invalid")
-	ErrorPartIntersected     = errors.New("part is intersected")
-	ErrorSegmentPartsEmpty   = errors.New("segment parts are empty")
-	ErrorSegmentNotFulfilled = errors.New("segment is not fulfilled")
-	ErrorSegmentSizeNotMatch = errors.New("segment size is not match")
+	ErrPartSizeInvalid         = errors.New("part size invalid")
+	ErrPartIntersected         = errors.New("part intersected")
+	ErrSegmentAlreadyInitiated = errors.New("segment already initiated")
+	ErrSegmentNotInitiated     = errors.New("segment not initiated")
+	ErrSegmentPartsEmpty       = errors.New("segment parts are empty")
+	ErrSegmentNotFulfilled     = errors.New("segment not fulfilled")
+	ErrSegmentSizeNotMatch     = errors.New("segment size not match")
 )
 
 // Part is a part of segment.
@@ -41,7 +43,7 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 	errorMessage := "%s get part index with %s failed: %w"
 
 	if p.Size == 0 {
-		panic(ErrorPartSizeInvalid)
+		panic(ErrPartSizeInvalid)
 	}
 
 	length := len(s.Parts)
@@ -59,7 +61,7 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 	if cur == 0 {
 		nextPart := s.Parts[cur]
 		if p.Offset+p.Size > nextPart.Offset {
-			return 0, fmt.Errorf(errorMessage, s, p, ErrorPartIntersected)
+			return 0, fmt.Errorf(errorMessage, s, p, ErrPartIntersected)
 		}
 		return
 	}
@@ -68,7 +70,7 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 	if cur == length {
 		lastPart := s.Parts[cur-1]
 		if lastPart.Offset+lastPart.Size > p.Offset {
-			return 0, fmt.Errorf(errorMessage, s, p, ErrorPartIntersected)
+			return 0, fmt.Errorf(errorMessage, s, p, ErrPartIntersected)
 		}
 		return
 	}
@@ -79,11 +81,11 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 	lastPart := s.Parts[cur-1]
 	nextPart := s.Parts[cur]
 	if lastPart.Offset+lastPart.Size > p.Offset {
-		return 0, fmt.Errorf(errorMessage, s, p, ErrorPartIntersected)
+		return 0, fmt.Errorf(errorMessage, s, p, ErrPartIntersected)
 	}
 
 	if p.Offset+p.Size > nextPart.Offset {
-		return 0, fmt.Errorf(errorMessage, s, p, ErrorPartIntersected)
+		return 0, fmt.Errorf(errorMessage, s, p, ErrPartIntersected)
 	}
 	return
 }
@@ -108,7 +110,7 @@ func (s *Segment) ValidateParts() (err error) {
 
 	// Zero parts are not allowed, cause they can't be completed.
 	if len(s.Parts) == 0 {
-		return fmt.Errorf(errorMessage, s, ErrorSegmentPartsEmpty)
+		return fmt.Errorf(errorMessage, s, ErrSegmentPartsEmpty)
 	}
 
 	// Check parts continuity
@@ -116,14 +118,14 @@ func (s *Segment) ValidateParts() (err error) {
 	totalSize += prePart.Size
 	for _, v := range s.Parts[1:] {
 		if prePart.Offset+prePart.Size != v.Offset {
-			return fmt.Errorf(errorMessage, s, ErrorSegmentNotFulfilled)
+			return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
 		}
 		totalSize += v.Size
 	}
 
 	// Check whether total size is match
 	if totalSize != s.TotalSize {
-		return fmt.Errorf(errorMessage, s, ErrorSegmentSizeNotMatch)
+		return fmt.Errorf(errorMessage, s, ErrSegmentSizeNotMatch)
 	}
 	return nil
 }

@@ -36,7 +36,7 @@ func TestSegment_GetPartIndex(t *testing.T) {
 		{"intersected part", fields{10, "", []*Part{
 			{0, 5},
 			{5, 5},
-		}}, args{&Part{0, 2}}, 0, true, ErrorPartIntersected},
+		}}, args{&Part{0, 2}}, 0, true, ErrPartIntersected},
 	}
 	for _, tt := range tests {
 		s := &Segment{
@@ -83,7 +83,7 @@ func TestSegment_InsertPart(t *testing.T) {
 		{"intersected part", fields{10, "", []*Part{
 			{0, 5},
 			{5, 5},
-		}}, args{&Part{0, 2}}, true, ErrorPartIntersected},
+		}}, args{&Part{0, 2}}, true, ErrPartIntersected},
 	}
 	for _, tt := range tests {
 		s := &Segment{
@@ -120,11 +120,11 @@ func TestSegment_ValidateParts(t *testing.T) {
 		{"missing part at middle", fields{3, "", []*Part{
 			{0, 1},
 			{2, 1},
-		}}, true, ErrorSegmentNotFulfilled},
+		}}, true, ErrSegmentNotFulfilled},
 		{"size not correct", fields{3, "", []*Part{
 			{0, 1},
 			{1, 1},
-		}}, true, ErrorSegmentSizeNotMatch},
+		}}, true, ErrSegmentSizeNotMatch},
 		{"two part", fields{10, "", []*Part{
 			{0, 5},
 			{5, 5},

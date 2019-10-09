@@ -34,7 +34,7 @@ func (c *Client) setupBucket(bucketName, zoneName string) (err error) {
 	if zoneName != "" {
 		bucket, err := c.service.Bucket(bucketName, zoneName)
 		if err != nil {
-			return fmt.Errorf(errorMessage, err)
+			return handleError(fmt.Errorf(errorMessage, err))
 		}
 		c.bucket = bucket
 		return nil
@@ -49,18 +49,18 @@ func (c *Client) setupBucket(bucketName, zoneName string) (err error) {
 
 	r, err := client.Head(url)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, err))
 	}
 	if r.StatusCode != http.StatusTemporaryRedirect {
 		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, err))
 	}
 
 	// Example URL: https://bucket.zone.qingstor.com
 	zoneName = strings.Split(r.Header.Get("Location"), ".")[1]
 	bucket, err := c.service.Bucket(bucketName, zoneName)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, err))
 	}
 	c.bucket = bucket
 	return
@@ -74,7 +74,7 @@ func (c *Client) Stat(path string, option ...types.Option) (i types.Object, err 
 
 	output, err := c.bucket.HeadObject(path, input)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, handleError(fmt.Errorf(errorMessage, err))
 	}
 
 	if *output.ContentType == DirectoryContentType {
@@ -93,7 +93,7 @@ func (c *Client) Delete(path string, option ...types.Option) (err error) {
 
 	_, err = c.bucket.DeleteObject(path)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, err))
 	}
 	return nil
 }
@@ -106,7 +106,7 @@ func (c *Client) Copy(src, dst string, option ...types.Option) (err error) {
 		XQSCopySource: &src,
 	})
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, err))
 	}
 	return nil
 }
@@ -119,7 +119,7 @@ func (c *Client) Move(src, dst string, option ...types.Option) (err error) {
 		XQSMoveSource: &src,
 	})
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, err))
 	}
 	return nil
 }
@@ -144,7 +144,7 @@ func (c *Client) ListDir(path string, option ...types.Option) (it iterator.Itera
 			Prefix: &path,
 		})
 		if err != nil {
-			return fmt.Errorf(errorMessage, err)
+			return handleError(fmt.Errorf(errorMessage, err))
 		}
 
 		for _, v := range output.Keys {
@@ -187,14 +187,14 @@ func (c *Client) ReadFile(path string, option ...types.Option) (r io.ReadCloser,
 
 	output, err := c.bucket.GetObject(path, input)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, handleError(fmt.Errorf(errorMessage, err))
 	}
 	return output.Body, nil
 }
 
 // WriteFile implements Storager.WriteFile
 func (c *Client) WriteFile(path string, size int64, r io.ReadCloser, option ...types.Option) (err error) {
-	errorMessage := "qingstor WriteFile failed: %w"
+	errorMessage := "qingstor WriteFile for path %s failed: %w"
 
 	defer r.Close()
 
@@ -212,7 +212,7 @@ func (c *Client) WriteFile(path string, size int64, r io.ReadCloser, option ...t
 
 	_, err = c.bucket.PutObject(path, input)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, path, err))
 	}
 	return nil
 }
@@ -229,10 +229,10 @@ func (c *Client) WriteStream(path string, r io.ReadCloser, option ...types.Optio
 
 // InitSegment implements Storager.InitSegment
 func (c *Client) InitSegment(path string, size int64, option ...types.Option) (err error) {
-	errorMessage := "qingstor InitSegment failed: %w"
+	errorMessage := "qingstor InitSegment for path %s failed: %w"
 
 	if _, ok := c.segments[path]; ok {
-		return fmt.Errorf("Segment %s has been initiated", path)
+		return handleError(fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated))
 	}
 
 	_ = parseOptionInitSegment(option...)
@@ -240,7 +240,7 @@ func (c *Client) InitSegment(path string, size int64, option ...types.Option) (e
 
 	output, err := c.bucket.InitiateMultipartUpload(path, input)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, path, err))
 	}
 
 	c.segments[path] = &segment.Segment{
@@ -258,11 +258,11 @@ func (c *Client) ReadSegment(path string, offset, size int64, option ...types.Op
 
 // WriteSegment implements Storager.WriteSegment
 func (c *Client) WriteSegment(path string, offset, size int64, r io.ReadCloser, option ...types.Option) (err error) {
-	errorMessage := "qingstor WriteSegment failed: %w"
+	errorMessage := "qingstor WriteSegment for path %s failed: %w"
 
 	s, ok := c.segments[path]
 	if !ok {
-		return fmt.Errorf(errorMessage, fmt.Errorf("segment %s is not initiated", path))
+		return handleError(fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated))
 	}
 
 	p := &segment.Part{
@@ -272,7 +272,7 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.ReadCloser, 
 
 	partNumber, err := s.GetPartIndex(p)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, path, err))
 	}
 
 	_, err = c.bucket.UploadMultipart(path, &service.UploadMultipartInput{
@@ -282,23 +282,23 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.ReadCloser, 
 		Body:          r,
 	})
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, path, err))
 	}
 
 	err = s.InsertPart(p)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, path, err))
 	}
 	return
 }
 
 // CompleteSegment implements Storager.CompleteSegment
 func (c *Client) CompleteSegment(path string, option ...types.Option) (err error) {
-	errorMessage := "qingstor CompleteSegment failed: %w"
+	errorMessage := "qingstor CompleteSegment for path %s failed: %w"
 
 	s, ok := c.segments[path]
 	if !ok {
-		return fmt.Errorf(errorMessage, fmt.Errorf("segment %s is not initiated", path))
+		return handleError(fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated))
 	}
 
 	err = s.ValidateParts()
@@ -320,7 +320,7 @@ func (c *Client) CompleteSegment(path string, option ...types.Option) (err error
 		ObjectParts: objectParts,
 	})
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, path, err))
 	}
 
 	delete(c.segments, path)
@@ -329,18 +329,18 @@ func (c *Client) CompleteSegment(path string, option ...types.Option) (err error
 
 // AbortSegment implements Storager.AbortSegment
 func (c *Client) AbortSegment(path string, option ...types.Option) (err error) {
-	errorMessage := "qingstor AbortSegment failed: %w"
+	errorMessage := "qingstor AbortSegment for path %s failed: %w"
 
 	s, ok := c.segments[path]
 	if !ok {
-		return fmt.Errorf(errorMessage, fmt.Errorf("segment %s is not initiated", path))
+		return handleError(fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated))
 	}
 
 	_, err = c.bucket.AbortMultipartUpload(path, &service.AbortMultipartUploadInput{
 		UploadID: &s.ID,
 	})
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return handleError(fmt.Errorf(errorMessage, path, err))
 	}
 
 	delete(c.segments, path)
