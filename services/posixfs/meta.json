@@ -1,0 +1,26 @@
+{
+  "name": "posixfs",
+  "capability": {
+    "read": true,
+    "write": true,
+    "file": true,
+    "stream": true,
+    "segment": true
+  },
+  "options": {
+    "stat": [],
+    "delete": [],
+    "copy": [],
+    "move": [],
+    "list_dir": [],
+    "read_file": [],
+    "write_file": [],
+    "read_stream": [],
+    "write_stream": [],
+    "init_segment": [],
+    "read_segment": [],
+    "write_segment": [],
+    "complete_segment": [],
+    "abort_segment": []
+  }
+}
