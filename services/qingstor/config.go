@@ -15,10 +15,9 @@ type Config struct {
 	AccessKeyID     string
 	SecretAccessKey string
 
-	Host              string
-	Port              int
-	Protocol          string
-	ConnectionRetries int
+	Host     string
+	Port     int
+	Protocol string
 
 	Zone       string
 	BucketName string
@@ -35,7 +34,6 @@ func (c *Config) New() (storage.Storager, error) {
 	cfg.Host = c.Host
 	cfg.Port = c.Port
 	cfg.Protocol = c.Protocol
-	cfg.ConnectionRetries = c.ConnectionRetries
 
 	client := &Client{
 		config:   c,
