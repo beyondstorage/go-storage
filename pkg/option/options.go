@@ -5,10 +5,18 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+// All available options.
+const (
+	Checksum     = "checksum"
+	Location     = "location"
+	StorageClass = "storage_class"
+	Type         = "type"
+)
+
 // WithChecksum will apply checksum value to Options
 func WithChecksum(v string) *types.Option {
 	return &types.Option{
-		Key:   "checksum",
+		Key:   Checksum,
 		Value: v,
 	}
 }
@@ -16,7 +24,7 @@ func WithChecksum(v string) *types.Option {
 // WithLocation will apply location value to Options
 func WithLocation(v string) *types.Option {
 	return &types.Option{
-		Key:   "location",
+		Key:   Location,
 		Value: v,
 	}
 }
@@ -24,7 +32,15 @@ func WithLocation(v string) *types.Option {
 // WithStorageClass will apply storage_class value to Options
 func WithStorageClass(v string) *types.Option {
 	return &types.Option{
-		Key:   "storage_class",
+		Key:   StorageClass,
+		Value: v,
+	}
+}
+
+// WithType will apply type value to Options
+func WithType(v string) *types.Option {
+	return &types.Option{
+		Key:   Type,
 		Value: v,
 	}
 }

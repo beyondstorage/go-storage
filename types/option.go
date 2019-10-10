@@ -11,7 +11,8 @@ type Option struct {
 // AvailableOptions are all available options for storage.
 // This will be used to generate options.go
 var AvailableOptions = map[string]string{
-	"location":      "string",
 	"checksum":      "string",
+	"location":      "string",
 	"storage_class": "string",
+	"type":          "string",
 }

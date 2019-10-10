@@ -10,6 +10,7 @@ import (
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/iterator"
+	"github.com/Xuanwo/storage/pkg/option"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 )
@@ -69,7 +70,7 @@ func (c *Client) setupBucket(bucketName, zoneName string) (err error) {
 }
 
 // Stat implements Storager.Stat
-func (c *Client) Stat(path string, option ...*types.Option) (o types.Object, err error) {
+func (c *Client) Stat(path string, opt ...*types.Option) (o types.Object, err error) {
 	errorMessage := "qingstor Stat failed: %w"
 
 	input := &service.HeadObjectInput{}
@@ -85,12 +86,14 @@ func (c *Client) Stat(path string, option ...*types.Option) (o types.Object, err
 	return &types.File{
 		Name: path,
 		Size: *output.ContentLength,
-		Type: *output.ContentType,
+		Metadata: map[string]interface{}{
+			option.Type: *output.ContentType,
+		},
 	}, nil
 }
 
 // Delete implements Storager.Delete
-func (c *Client) Delete(path string, option ...*types.Option) (err error) {
+func (c *Client) Delete(path string, opt ...*types.Option) (err error) {
 	errorMessage := "qingstor Delete failed: %w"
 
 	// TODO: support delete dir.
@@ -151,7 +154,7 @@ func (c *Client) CreateDir(path string, option ...*types.Option) (err error) {
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, option ...*types.Option) (it iterator.Iterator) {
+func (c *Client) ListDir(path string, opt ...*types.Option) (it iterator.Iterator) {
 	errorMessage := "qingstor ListDir failed: %w"
 
 	marker := ""
@@ -182,7 +185,11 @@ func (c *Client) ListDir(path string, option ...*types.Option) (it iterator.Iter
 			buf[idx] = &types.File{
 				Name: *v.Key,
 				Size: *v.Size,
-				Type: *v.MimeType,
+				Metadata: map[string]interface{}{
+					option.Type:         *v.MimeType,
+					option.StorageClass: *v.StorageClass,
+					option.Checksum:     *v.Etag,
+				},
 			}
 			idx++
 		}

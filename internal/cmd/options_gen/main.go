@@ -35,11 +35,18 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+// All available options.
+const (
+{{- range $k, $v := .Data }}
+	{{ $k | camelcase }} = "{{ $k }}"
+{{- end }}
+)
+
 {{- range $k, $v := .Data }}
 // With{{ $k | camelcase }} will apply {{ $k }} value to Options
 func With{{ $k | camelcase }}(v {{ $v }}) *types.Option {
 	return &types.Option{
-		Key: "{{ $k }}",
+		Key: {{ $k | camelcase }},
 		Value: v,
 	}
 }
