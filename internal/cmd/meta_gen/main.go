@@ -158,7 +158,7 @@ func parsePair{{ $k | camelcase}}(opts ...*types.Pair) *pair{{ $k | camelcase}} 
 	}
 
 {{- range $_, $key := $v }}
-	if v, ok := values["{{ $key }}"]; !ok {
+	if v, ok := values["{{ $key }}"]; ok {
 		result.Has{{ $key | camelcase}} = true
 		result.{{ $key | camelcase}} = v.({{ index $Data.TypeMap $key }})
 	}

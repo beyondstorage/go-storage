@@ -127,7 +127,7 @@ func parsePairCreateDir(opts ...*types.Pair) *pairCreateDir {
 		}
 		values[v.Key] = v
 	}
-	if v, ok := values["location"]; !ok {
+	if v, ok := values["location"]; ok {
 		result.HasLocation = true
 		result.Location = v.(string)
 	}
@@ -306,11 +306,11 @@ func parsePairWriteFile(opts ...*types.Pair) *pairWriteFile {
 		}
 		values[v.Key] = v
 	}
-	if v, ok := values["checksum"]; !ok {
+	if v, ok := values["checksum"]; ok {
 		result.HasChecksum = true
 		result.Checksum = v.(string)
 	}
-	if v, ok := values["storage_class"]; !ok {
+	if v, ok := values["storage_class"]; ok {
 		result.HasStorageClass = true
 		result.StorageClass = v.(string)
 	}
