@@ -12,15 +12,15 @@ var ErrDone = errors.New("iterator is done")
 
 // Iterator is the iterator interface used to do iterate
 type Iterator interface {
-	Next() (types.Object, error)
+	Next() (*types.Object, error)
 }
 
 // NextFunc is the func used in iterator.
-type NextFunc func(*[]types.Object) error
+type NextFunc func(*[]*types.Object) error
 
 // PrefixBasedIterator is the prefix based iterator.
 type PrefixBasedIterator struct {
-	buf   []types.Object
+	buf   []*types.Object
 	index int
 	next  NextFunc
 	done  bool
@@ -38,7 +38,7 @@ func NewPrefixBasedIterator(fn NextFunc) *PrefixBasedIterator {
 // Next implements Iterator interface.
 //
 // Next call is not thread safe, do not call it in multi goroutine.
-func (it *PrefixBasedIterator) Next() (i types.Object, err error) {
+func (it *PrefixBasedIterator) Next() (i *types.Object, err error) {
 	if it.index < len(it.buf) {
 		it.index++
 		return it.buf[it.index-1], nil

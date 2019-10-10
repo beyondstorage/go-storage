@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewPrefixBasedIterator(t *testing.T) {
-	fn := NextFunc(func(informer *[]types.Object) error {
+	fn := NextFunc(func(informer *[]*types.Object) error {
 		return nil
 	})
 
@@ -25,9 +25,9 @@ func TestNewPrefixBasedIterator(t *testing.T) {
 func TestPrefixBasedIterator_Next(t *testing.T) {
 	testErr := errors.New("test error")
 
-	fn := NextFunc(func(informer *[]types.Object) error {
-		x := make([]types.Object, 1)
-		x[0] = &types.Dir{Name: "test"}
+	fn := NextFunc(func(informer *[]*types.Object) error {
+		x := make([]*types.Object, 1)
+		x[0] = &types.Object{Name: "test"}
 		*informer = x
 		return nil
 	})
@@ -36,12 +36,11 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 	i, err := it.Next()
 	assert.NoError(t, err)
 	assert.NotNil(t, i)
-	assert.NotNil(t, i.(*types.Dir))
-	assert.Equal(t, "test", i.(*types.Dir).Name)
+	assert.Equal(t, "test", i.Name)
 	assert.Equal(t, 1, len(it.buf))
 	assert.Equal(t, 1, it.index)
 
-	fn = func(informer *[]types.Object) error {
+	fn = func(informer *[]*types.Object) error {
 		return testErr
 	}
 	it = NewPrefixBasedIterator(fn)
@@ -50,10 +49,10 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 	assert.Nil(t, i)
 	assert.True(t, errors.Is(err, testErr))
 
-	fn = func(informer *[]types.Object) error {
-		x := make([]types.Object, 2)
-		x[0] = &types.Dir{Name: "test1"}
-		x[1] = &types.Dir{Name: "test2"}
+	fn = func(informer *[]*types.Object) error {
+		x := make([]*types.Object, 2)
+		x[0] = &types.Object{Name: "test1"}
+		x[1] = &types.Object{Name: "test2"}
 		*informer = x
 		return ErrDone
 	}
@@ -62,15 +61,13 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 	i, err = it.Next()
 	assert.NoError(t, err)
 	assert.NotNil(t, i)
-	assert.NotNil(t, i.(*types.Dir))
-	assert.Equal(t, "test1", i.(*types.Dir).Name)
+	assert.Equal(t, "test1", i.Name)
 	assert.Equal(t, 2, len(it.buf))
 	assert.Equal(t, 1, it.index)
 	// Second call will get remain value.
 	i, err = it.Next()
 	assert.NoError(t, err)
-	assert.NotNil(t, i.(*types.Dir))
-	assert.Equal(t, "test2", i.(*types.Dir).Name)
+	assert.Equal(t, "test2", i.Name)
 	assert.Equal(t, 2, len(it.buf))
 	assert.Equal(t, 2, it.index)
 	// Third call will get Done.
