@@ -49,18 +49,13 @@ func (c *Client) ListDir(path string, option ...*types.Pair) iterator.Iterator {
 	panic("implement me")
 }
 
-// ReadFile implements Storager.ReadFile
-func (c *Client) ReadFile(path string, option ...*types.Pair) (r io.ReadCloser, err error) {
+// Read implements Storager.Read
+func (c *Client) Read(path string, option ...*types.Pair) (r io.ReadCloser, err error) {
 	panic("implement me")
 }
 
 // WriteFile implements Storager.WriteFile
 func (c *Client) WriteFile(path string, size int64, r io.Reader, option ...*types.Pair) (err error) {
-	panic("implement me")
-}
-
-// ReadStream implements Storager.ReadStream
-func (c *Client) ReadStream(path string, option ...*types.Pair) (r io.ReadCloser, err error) {
 	panic("implement me")
 }
 

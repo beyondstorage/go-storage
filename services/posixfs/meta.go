@@ -26,9 +26,8 @@ var allowdPairs = map[string]map[string]struct{}{
 	storage.ActionInitSegment:     {},
 	storage.ActionListDir:         {},
 	storage.ActionMove:            {},
-	storage.ActionReadFile:        {},
+	storage.ActionRead:            {},
 	storage.ActionReadSegment:     {},
-	storage.ActionReadStream:      {},
 	storage.ActionStat:            {},
 	storage.ActionWriteFile:       {},
 	storage.ActionWriteSegment:    {},
@@ -179,18 +178,18 @@ func parsePairMove(opts ...*types.Pair) *pairMove {
 	return result
 }
 
-type pairReadFile struct {
+type pairRead struct {
 }
 
-func parsePairReadFile(opts ...*types.Pair) *pairReadFile {
-	result := &pairReadFile{}
+func parsePairRead(opts ...*types.Pair) *pairRead {
+	result := &pairRead{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowdPairs[storage.ActionReadFile]; !ok {
+		if _, ok := allowdPairs[storage.ActionRead]; !ok {
 			continue
 		}
-		if _, ok := allowdPairs[storage.ActionReadFile][v.Key]; !ok {
+		if _, ok := allowdPairs[storage.ActionRead][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v
@@ -210,25 +209,6 @@ func parsePairReadSegment(opts ...*types.Pair) *pairReadSegment {
 			continue
 		}
 		if _, ok := allowdPairs[storage.ActionReadSegment][v.Key]; !ok {
-			continue
-		}
-		values[v.Key] = v
-	}
-	return result
-}
-
-type pairReadStream struct {
-}
-
-func parsePairReadStream(opts ...*types.Pair) *pairReadStream {
-	result := &pairReadStream{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := allowdPairs[storage.ActionReadStream]; !ok {
-			continue
-		}
-		if _, ok := allowdPairs[storage.ActionReadStream][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v

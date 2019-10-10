@@ -18,12 +18,11 @@
       "location"
     ],
     "list_dir": [],
-    "read_file": [],
+    "read": [],
     "write_file": [
       "checksum",
       "storage_class"
     ],
-    "read_stream": [],
     "write_stream": [],
     "init_segment": [],
     "read_segment": [],

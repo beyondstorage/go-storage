@@ -19,10 +19,8 @@ const (
 	ActionCreateDir = "create_dir"
 	ActionListDir   = "list_dir"
 
-	ActionReadFile  = "read_file"
-	ActionWriteFile = "write_file"
-
-	ActionReadStream  = "read_stream"
+	ActionRead        = "read"
+	ActionWriteFile   = "write_file"
 	ActionWriteStream = "write_stream"
 
 	ActionInitSegment     = "init_segment"
@@ -120,13 +118,16 @@ type Storager interface {
 	// ListDir will return an Iterator which can list all object under the Dir.
 	ListDir(path string, pairs ...*types.Pair) iterator.Iterator
 
-	// File Operations.
+	// File && Stream Operations.
 
-	// ReadFile will read the file's data.
+	// Read will read the file's data.
 	//
 	// Caller:
 	//   - MUST close reader while error happened or all data read.
-	ReadFile(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
+	Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
+
+	// File Only Operations.
+
 	// WriteFile will write data into file.
 	//
 	// Caller:
@@ -135,11 +136,6 @@ type Storager interface {
 
 	// Stream Operations.
 
-	// ReadStream will read the stream's data.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data read.
-	ReadStream(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
 	// WriteStream will write data into file.
 	//
 	// Caller:

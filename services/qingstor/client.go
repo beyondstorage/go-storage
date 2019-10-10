@@ -225,11 +225,11 @@ func (c *Client) ListDir(path string, opt ...*types.Pair) (it iterator.Iterator)
 	return
 }
 
-// ReadFile implements Storager.ReadFile
-func (c *Client) ReadFile(path string, option ...*types.Pair) (r io.ReadCloser, err error) {
+// Read implements Storager.Read
+func (c *Client) Read(path string, option ...*types.Pair) (r io.ReadCloser, err error) {
 	errorMessage := "qingstor ReadFile failed: %w"
 
-	_ = parsePairReadFile(option...)
+	_ = parsePairRead(option...)
 	input := &service.GetObjectInput{}
 
 	output, err := c.bucket.GetObject(path, input)
@@ -260,11 +260,6 @@ func (c *Client) WriteFile(path string, size int64, r io.Reader, option ...*type
 		return handleError(fmt.Errorf(errorMessage, path, err))
 	}
 	return nil
-}
-
-// ReadStream implements Storager.ReadStream
-func (c *Client) ReadStream(path string, option ...*types.Pair) (r io.ReadCloser, err error) {
-	panic("not supported")
 }
 
 // WriteStream implements Storager.WriteStream
