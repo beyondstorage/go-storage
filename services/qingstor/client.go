@@ -128,6 +128,27 @@ func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 	return nil
 }
 
+// Reach implements Storager.Reach
+func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error) {
+	errorMessage := "qingstor Reach failed: %w"
+
+	// FIXME: sdk should export GetObjectRequest as interface too?
+	bucket := c.bucket.(*service.Bucket)
+
+	r, _, err := bucket.GetObjectRequest(path, nil)
+	if err != nil {
+		return "", handleError(fmt.Errorf(errorMessage, err))
+	}
+	if err = r.Build(); err != nil {
+		return "", handleError(fmt.Errorf(errorMessage, err))
+	}
+	// TODO: support set expire via pair.
+	if err = r.SignQuery(3600); err != nil {
+		return "", handleError(fmt.Errorf(errorMessage, err))
+	}
+	return r.HTTPRequest.URL.String(), nil
+}
+
 // CreateDir implements Storager.CreateDir
 func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 	errorMessage := "qingstor CreateDir failed: %w"
@@ -219,10 +240,8 @@ func (c *Client) ReadFile(path string, option ...*types.Pair) (r io.ReadCloser, 
 }
 
 // WriteFile implements Storager.WriteFile
-func (c *Client) WriteFile(path string, size int64, r io.ReadCloser, option ...*types.Pair) (err error) {
+func (c *Client) WriteFile(path string, size int64, r io.Reader, option ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteFile for path %s failed: %w"
-
-	defer r.Close()
 
 	opts := parsePairWriteFile(option...)
 	input := &service.PutObjectInput{
@@ -249,7 +268,7 @@ func (c *Client) ReadStream(path string, option ...*types.Pair) (r io.ReadCloser
 }
 
 // WriteStream implements Storager.WriteStream
-func (c *Client) WriteStream(path string, r io.ReadCloser, option ...*types.Pair) (err error) {
+func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (err error) {
 	panic("not supported")
 }
 
@@ -282,7 +301,7 @@ func (c *Client) ReadSegment(path string, offset, size int64, option ...*types.P
 }
 
 // WriteSegment implements Storager.WriteSegment
-func (c *Client) WriteSegment(path string, offset, size int64, r io.ReadCloser, option ...*types.Pair) (err error) {
+func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, option ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteSegment for path %s failed: %w"
 
 	s, ok := c.segments[path]

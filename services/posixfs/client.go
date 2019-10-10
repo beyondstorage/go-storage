@@ -34,6 +34,11 @@ func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 	panic("implement me")
 }
 
+// Reach implements Storager.Reach
+func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error) {
+	panic("implement me")
+}
+
 // CreateDir implements Storager.CreateDir
 func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 	panic("implement me")
@@ -50,7 +55,7 @@ func (c *Client) ReadFile(path string, option ...*types.Pair) (r io.ReadCloser, 
 }
 
 // WriteFile implements Storager.WriteFile
-func (c *Client) WriteFile(path string, size int64, r io.ReadCloser, option ...*types.Pair) (err error) {
+func (c *Client) WriteFile(path string, size int64, r io.Reader, option ...*types.Pair) (err error) {
 	panic("implement me")
 }
 
@@ -60,7 +65,7 @@ func (c *Client) ReadStream(path string, option ...*types.Pair) (r io.ReadCloser
 }
 
 // WriteStream implements Storager.WriteStream
-func (c *Client) WriteStream(path string, r io.ReadCloser, option ...*types.Pair) (err error) {
+func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (err error) {
 	panic("implement me")
 }
 
@@ -75,7 +80,7 @@ func (c *Client) ReadSegment(path string, offset, size int64, option ...*types.P
 }
 
 // WriteSegment implements Storager.WriteSegment
-func (c *Client) WriteSegment(path string, offset, size int64, r io.ReadCloser, option ...*types.Pair) (err error) {
+func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, option ...*types.Pair) (err error) {
 	panic("implement me")
 }
 

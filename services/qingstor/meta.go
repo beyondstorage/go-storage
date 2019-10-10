@@ -11,7 +11,7 @@ import (
 // CapabilityFile    = true
 // CapabilityStream  = false
 // CapabilitySegment = true
-const capability = types.Capability(83)
+const capability = types.Capability(23)
 
 // Capability implements Storager.Capability().
 func (c *Client) Capability() types.Capability {
@@ -29,6 +29,7 @@ var allowdPairs = map[string]map[string]struct{}{
 	storage.ActionInitSegment: {},
 	storage.ActionListDir:     {},
 	storage.ActionMove:        {},
+	storage.ActionReach:       {},
 	storage.ActionReadFile:    {},
 	storage.ActionReadSegment: {},
 	storage.ActionReadStream:  {},
@@ -203,6 +204,25 @@ func parsePairMove(opts ...*types.Pair) *pairMove {
 			continue
 		}
 		if _, ok := allowdPairs[storage.ActionMove][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v
+	}
+	return result
+}
+
+type pairReach struct {
+}
+
+func parsePairReach(opts ...*types.Pair) *pairReach {
+	result := &pairReach{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowdPairs[storage.ActionReach]; !ok {
+			continue
+		}
+		if _, ok := allowdPairs[storage.ActionReach][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v

@@ -5,13 +5,15 @@
     "write": true,
     "file": true,
     "stream": false,
-    "segment": true
+    "segment": true,
+    "reach": true
   },
   "pairs": {
     "stat": [],
     "delete": [],
     "copy": [],
     "move": [],
+    "reach": [],
     "create_dir": [
       "location"
     ],

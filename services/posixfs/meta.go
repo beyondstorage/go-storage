@@ -11,7 +11,7 @@ import (
 // CapabilityFile    = true
 // CapabilityStream  = true
 // CapabilitySegment = true
-const capability = types.Capability(115)
+const capability = types.Capability(31)
 
 // Capability implements Storager.Capability().
 func (c *Client) Capability() types.Capability {

@@ -5,12 +5,14 @@ type Capability uint64
 
 // All capability that storage used.
 const (
-	CapabilityRead  Capability = 1 << 0
-	CapabilityWrite Capability = 1 << 1
+	CapabilityRead Capability = 1 << iota
+	CapabilityWrite
 
-	CapabilityFile Capability = 1 << (2 + iota)
+	CapabilityFile
 	CapabilityStream
 	CapabilitySegment
+
+	CapabilityReach
 )
 
 // Readable returns whether this service readable or not.
@@ -36,4 +38,9 @@ func (c Capability) SteamCapable() bool {
 // SegmentCapable returns whether this service support segment operations or not.
 func (c Capability) SegmentCapable() bool {
 	return c&CapabilitySegment == Capability(1)
+}
+
+// ReachAble returns whether this service support reach operations or not.
+func (c Capability) ReachAble() bool {
+	return c&CapabilityReach == Capability(1)
 }
