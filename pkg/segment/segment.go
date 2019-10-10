@@ -14,7 +14,6 @@ var (
 	ErrSegmentNotInitiated     = errors.New("segment not initiated")
 	ErrSegmentPartsEmpty       = errors.New("segment parts are empty")
 	ErrSegmentNotFulfilled     = errors.New("segment not fulfilled")
-	ErrSegmentSizeNotMatch     = errors.New("segment size not match")
 )
 
 // Part is a part of segment.
@@ -29,9 +28,8 @@ func (p *Part) String() string {
 
 // Segment will hold the whole segment operations.
 type Segment struct {
-	TotalSize int64
-	ID        string
-	Parts     []*Part
+	ID    string
+	Parts []*Part
 }
 
 func (s *Segment) String() string {
@@ -106,8 +104,6 @@ func (s *Segment) InsertPart(p *Part) (err error) {
 func (s *Segment) ValidateParts() (err error) {
 	errorMessage := "%s validate parts failed: %w"
 
-	totalSize := int64(0)
-
 	// Zero parts are not allowed, cause they can't be completed.
 	if len(s.Parts) == 0 {
 		return fmt.Errorf(errorMessage, s, ErrSegmentPartsEmpty)
@@ -115,17 +111,10 @@ func (s *Segment) ValidateParts() (err error) {
 
 	// Check parts continuity
 	prePart := s.Parts[0]
-	totalSize += prePart.Size
 	for _, v := range s.Parts[1:] {
 		if prePart.Offset+prePart.Size != v.Offset {
 			return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
 		}
-		totalSize += v.Size
-	}
-
-	// Check whether total size is match
-	if totalSize != s.TotalSize {
-		return fmt.Errorf(errorMessage, s, ErrSegmentSizeNotMatch)
 	}
 	return nil
 }

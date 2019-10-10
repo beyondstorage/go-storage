@@ -40,9 +40,8 @@ func TestSegment_GetPartIndex(t *testing.T) {
 	}
 	for _, tt := range tests {
 		s := &Segment{
-			TotalSize: tt.fields.TotalSize,
-			ID:        tt.fields.ID,
-			Parts:     tt.fields.Parts,
+			ID:    tt.fields.ID,
+			Parts: tt.fields.Parts,
 		}
 		gotCur, err := s.GetPartIndex(tt.args.p)
 		if tt.hasErr {
@@ -87,9 +86,8 @@ func TestSegment_InsertPart(t *testing.T) {
 	}
 	for _, tt := range tests {
 		s := &Segment{
-			TotalSize: tt.fields.TotalSize,
-			ID:        tt.fields.ID,
-			Parts:     tt.fields.Parts,
+			ID:    tt.fields.ID,
+			Parts: tt.fields.Parts,
 		}
 
 		err := s.InsertPart(tt.args.p)
@@ -121,10 +119,6 @@ func TestSegment_ValidateParts(t *testing.T) {
 			{0, 1},
 			{2, 1},
 		}}, true, ErrSegmentNotFulfilled},
-		{"size not correct", fields{3, "", []*Part{
-			{0, 1},
-			{1, 1},
-		}}, true, ErrSegmentSizeNotMatch},
 		{"two part", fields{10, "", []*Part{
 			{0, 5},
 			{5, 5},
@@ -132,9 +126,8 @@ func TestSegment_ValidateParts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		s := &Segment{
-			TotalSize: tt.fields.TotalSize,
-			ID:        tt.fields.ID,
-			Parts:     tt.fields.Parts,
+			ID:    tt.fields.ID,
+			Parts: tt.fields.Parts,
 		}
 		err := s.ValidateParts()
 		if tt.hasErr {

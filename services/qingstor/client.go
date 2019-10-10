@@ -254,7 +254,7 @@ func (c *Client) WriteStream(path string, r io.ReadCloser, option ...*types.Pair
 }
 
 // InitSegment implements Storager.InitSegment
-func (c *Client) InitSegment(path string, size int64, option ...*types.Pair) (err error) {
+func (c *Client) InitSegment(path string, option ...*types.Pair) (err error) {
 	errorMessage := "qingstor InitSegment for path %s failed: %w"
 
 	if _, ok := c.segments[path]; ok {
@@ -270,9 +270,8 @@ func (c *Client) InitSegment(path string, size int64, option ...*types.Pair) (er
 	}
 
 	c.segments[path] = &segment.Segment{
-		TotalSize: size,
-		ID:        *output.UploadID,
-		Parts:     make([]*segment.Part, 0),
+		ID:    *output.UploadID,
+		Parts: make([]*segment.Part, 0),
 	}
 	return
 }

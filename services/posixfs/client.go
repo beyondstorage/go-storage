@@ -65,7 +65,7 @@ func (c *Client) WriteStream(path string, r io.ReadCloser, option ...*types.Pair
 }
 
 // InitSegment implements Storager.InitSegment
-func (c *Client) InitSegment(path string, size int64, option ...*types.Pair) (err error) {
+func (c *Client) InitSegment(path string, option ...*types.Pair) (err error) {
 	panic("implement me")
 }
 

@@ -69,8 +69,9 @@ type Storager interface {
 	WriteStream(path string, r io.ReadCloser, option ...*types.Pair) (err error)
 
 	// Service MUST maintain whole segment operation runtime data, including upload_id and any other similar things,
-	// caller will have no idea about those underlying implements.
-	InitSegment(path string, size int64, option ...*types.Pair) (err error)
+	// caller will have no idea about those underlying implements, caller could use size -1
+	// to mark this segment's size is unknown.
+	InitSegment(path string, option ...*types.Pair) (err error)
 	// Caller SHOULD NOT call InitSegment before ReadSegment.
 	ReadSegment(path string, offset, size int64, option ...*types.Pair) (r io.ReadCloser, err error)
 	// Service SHOULD return error while caller call WriteSegment without init.
