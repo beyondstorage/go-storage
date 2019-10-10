@@ -1,29 +1,41 @@
 package types
 
-// Object will be returned by stat, and should be a *File, *Dir or a *Stream.
-type Object interface{}
+// All available type for object.
+const (
+	ObjectTypeFile   = "file"
+	ObjectTypeStream = "stream"
+	ObjectTypeDir    = "dir"
+)
 
-// File represents a seekable file or object.
-type File struct {
-	// Name must a complete path instead of basename in POSIX.
+// Object may be a *File, *Dir or a *Stream.
+type Object struct {
+	// name must a complete path instead of basename in POSIX.
 	Name string
-	Size int64
+	// type should be one of "file", "stream" or "dir".
+	Type string
 
-	Metadata map[string]interface{}
+	// metadata is the metadata of the object.
+	Metadata
 }
 
-// Stream represents a not seekable stream.
-type Stream struct {
-	// Name must a complete path instead of basename in POSIX.
-	Name string
+// Metadata is the metadata used in object.
+type Metadata map[string]interface{}
 
-	Metadata map[string]interface{}
+// Pair will store option for storage service.
+//
+//go:generate go run ../internal/cmd/pairs_gen/main.go
+//go:generate go run ../internal/cmd/metadata_gen/main.go
+type Pair struct {
+	Key   string
+	Value interface{}
 }
 
-// Dir represents a virtual directory which contains files or streams.
-type Dir struct {
-	// Name must a complete path instead of basename in POSIX.
-	Name string
-
-	Metadata map[string]interface{}
+// AvailablePairs are all available options for storage.
+// This will be used to generate options.go
+var AvailablePairs = map[string]string{
+	"checksum":      "string",
+	"location":      "string",
+	"storage_class": "string",
+	"type":          "string",
+	"size":          "int64",
 }

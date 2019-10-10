@@ -41,45 +41,45 @@ type Storager interface {
 	Capability() types.Capability
 	// Caller SHOULD check option availability before use any option.
 	// This function will be generated via meta.json
-	IsOptionAvailable(action, option string) bool
+	IsPairAvailable(action, key string) bool
 
 	// Service MUST return a *File, *Stream or *Dir.
-	Stat(path string, option ...*types.Option) (o types.Object, err error)
+	Stat(path string, option ...*types.Pair) (o *types.Object, err error)
 	// Service MAY accept a recursive options to support delete recursively.
-	Delete(path string, option ...*types.Option) (err error)
+	Delete(path string, option ...*types.Pair) (err error)
 	// Service MAY accept a recursive options to support copy recursively.
-	Copy(src, dst string, option ...*types.Option) (err error)
+	Copy(src, dst string, option ...*types.Pair) (err error)
 	// Service MAY accept a recursive options to support move recursively.
-	Move(src, dst string, option ...*types.Option) (err error)
+	Move(src, dst string, option ...*types.Pair) (err error)
 
 	// Directory based service should handle create dir, but prefix based should handle
 	// create dir as create a new bucket or something.
-	CreateDir(path string, option ...*types.Option) (err error)
+	CreateDir(path string, option ...*types.Pair) (err error)
 	// Service MUST return a valid iterator.Iterator.
-	ListDir(path string, option ...*types.Option) iterator.Iterator
+	ListDir(path string, option ...*types.Pair) iterator.Iterator
 
 	// Caller MUST close reader while error happened or all data read.
-	ReadFile(path string, option ...*types.Option) (r io.ReadCloser, err error)
+	ReadFile(path string, option ...*types.Pair) (r io.ReadCloser, err error)
 	// Service MUST close reader while error happened or all data written.
-	WriteFile(path string, size int64, r io.ReadCloser, option ...*types.Option) (err error)
+	WriteFile(path string, size int64, r io.ReadCloser, option ...*types.Pair) (err error)
 
 	// Caller MUST close reader while error happened or all data read.
-	ReadStream(path string, option ...*types.Option) (r io.ReadCloser, err error)
+	ReadStream(path string, option ...*types.Pair) (r io.ReadCloser, err error)
 	// Service MUST close reader while error happened or all data written.
-	WriteStream(path string, r io.ReadCloser, option ...*types.Option) (err error)
+	WriteStream(path string, r io.ReadCloser, option ...*types.Pair) (err error)
 
 	// Service MUST maintain whole segment operation runtime data, including upload_id and any other similar things,
 	// caller will have no idea about those underlying implements.
-	InitSegment(path string, size int64, option ...*types.Option) (err error)
+	InitSegment(path string, size int64, option ...*types.Pair) (err error)
 	// Caller SHOULD NOT call InitSegment before ReadSegment.
-	ReadSegment(path string, offset, size int64, option ...*types.Option) (r io.ReadCloser, err error)
+	ReadSegment(path string, offset, size int64, option ...*types.Pair) (r io.ReadCloser, err error)
 	// Service SHOULD return error while caller call WriteSegment without init.
 	// Caller SHOULD call InitSegment before WriteSegment.
-	WriteSegment(path string, offset, size int64, r io.ReadCloser, option ...*types.Option) (err error)
+	WriteSegment(path string, offset, size int64, r io.ReadCloser, option ...*types.Pair) (err error)
 	// Service SHOULD return error while caller call CompleteSegment without init.
 	// Caller SHOULD call InitSegment before CompleteSegment.
-	CompleteSegment(path string, option ...*types.Option) (err error)
+	CompleteSegment(path string, option ...*types.Pair) (err error)
 	// Service SHOULD return error while caller call AbortSegment without init.
 	// Caller SHOULD call InitSegment before AbortSegment.
-	AbortSegment(path string, option ...*types.Option) (err error)
+	AbortSegment(path string, option ...*types.Pair) (err error)
 }
