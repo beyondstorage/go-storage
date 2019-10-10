@@ -155,7 +155,7 @@ type option{{ $k | camelcase}} struct {
 {{- end }}
 }
 
-func parseOption{{ $k | camelcase}}(opts ...types.Option) *option{{ $k | camelcase}} {
+func parseOption{{ $k | camelcase}}(opts ...*types.Option) *option{{ $k | camelcase}} {
 	result := &option{{ $k | camelcase}}{}
 
 	values := make(map[string]interface{})
