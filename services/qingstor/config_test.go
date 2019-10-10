@@ -23,5 +23,5 @@ func TestConfig_New(t *testing.T) {
 	assert.NotNil(t, s.(*Client))
 	c := s.(*Client)
 	assert.Equal(t, "test_access_key", c.config.AccessKeyID)
-	assert.Equal(t, "test", *c.bucket.Properties.Zone)
+	assert.Equal(t, "test", c.config.Zone)
 }

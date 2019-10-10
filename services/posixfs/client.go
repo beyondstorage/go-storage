@@ -11,6 +11,7 @@ import (
 //
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 type Client struct {
+	config *Config
 }
 
 // Stat implements Storager.Stat
@@ -30,6 +31,11 @@ func (c *Client) Copy(src, dst string, option ...types.Option) (err error) {
 
 // Move implements Storager.Move
 func (c *Client) Move(src, dst string, option ...types.Option) (err error) {
+	panic("implement me")
+}
+
+// CreateDir implements Storager.CreateDir
+func (c *Client) CreateDir(path string, option ...types.Option) (err error) {
 	panic("implement me")
 }
 

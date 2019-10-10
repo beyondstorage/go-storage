@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/iterator"
@@ -21,8 +22,8 @@ const DirectoryContentType = "application/x-directory"
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 type Client struct {
 	config  *Config
-	service *service.Service
-	bucket  *service.Bucket
+	service iface.Service
+	bucket  iface.Bucket
 
 	segments map[string]*segment.Segment
 }
@@ -91,6 +92,8 @@ func (c *Client) Stat(path string, option ...types.Option) (i types.Object, err 
 func (c *Client) Delete(path string, option ...types.Option) (err error) {
 	errorMessage := "qingstor Delete failed: %w"
 
+	// TODO: support delete dir.
+
 	_, err = c.bucket.DeleteObject(path)
 	if err != nil {
 		return handleError(fmt.Errorf(errorMessage, err))
@@ -122,6 +125,28 @@ func (c *Client) Move(src, dst string, option ...types.Option) (err error) {
 		return handleError(fmt.Errorf(errorMessage, err))
 	}
 	return nil
+}
+
+// CreateDir implements Storager.CreateDir
+func (c *Client) CreateDir(path string, option ...types.Option) (err error) {
+	errorMessage := "qingstor CreateDir failed: %w"
+
+	opt := parseOptionCreateDir(option...)
+	if !opt.HasLocation {
+		// TODO: return location missing error.
+		panic("missing value")
+	}
+
+	bucket, err := c.service.Bucket(path, opt.Location)
+	if err != nil {
+		return handleError(fmt.Errorf(errorMessage, err))
+	}
+
+	_, err = bucket.Put()
+	if err != nil {
+		return handleError(fmt.Errorf(errorMessage, err))
+	}
+	return
 }
 
 // ListDir implements Storager.ListDir
@@ -203,8 +228,8 @@ func (c *Client) WriteFile(path string, size int64, r io.ReadCloser, option ...t
 		ContentLength: &size,
 		Body:          r,
 	}
-	if opts.HasMd5 {
-		input.ContentMD5 = &opts.Md5
+	if opts.HasChecksum {
+		input.ContentMD5 = &opts.Checksum
 	}
 	if opts.HasStorageClass {
 		input.XQSStorageClass = &opts.StorageClass

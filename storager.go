@@ -13,6 +13,7 @@ const (
 	ActionDelete          = "delete"
 	ActionCopy            = "copy"
 	ActionMove            = "move"
+	ActionCreateDir       = "create_dir"
 	ActionListDir         = "list_dir"
 	ActionReadFile        = "read_file"
 	ActionWriteFile       = "write_file"
@@ -43,7 +44,7 @@ type Storager interface {
 	IsOptionAvailable(action, option string) bool
 
 	// Service MUST return a *File, *Stream or *Dir.
-	Stat(path string, option ...types.Option) (i types.Object, err error)
+	Stat(path string, option ...types.Option) (o types.Object, err error)
 	// Service MAY accept a recursive options to support delete recursively.
 	Delete(path string, option ...types.Option) (err error)
 	// Service MAY accept a recursive options to support copy recursively.
@@ -51,6 +52,9 @@ type Storager interface {
 	// Service MAY accept a recursive options to support move recursively.
 	Move(src, dst string, option ...types.Option) (err error)
 
+	// Directory based service should handle create dir, but prefix based should handle
+	// create dir as create a new bucket or something.
+	CreateDir(path string, option ...types.Option) (err error)
 	// Service MUST return a valid iterator.Iterator.
 	ListDir(path string, option ...types.Option) iterator.Iterator
 

@@ -5,10 +5,18 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-// WithMd5 will apply md5 value to Options
-func WithMd5(v string) *types.Option {
+// WithChecksum will apply checksum value to Options
+func WithChecksum(v string) *types.Option {
 	return &types.Option{
-		Key:   "md5",
+		Key:   "checksum",
+		Value: v,
+	}
+}
+
+// WithLocation will apply location value to Options
+func WithLocation(v string) *types.Option {
+	return &types.Option{
+		Key:   "location",
 		Value: v,
 	}
 }

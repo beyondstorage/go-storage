@@ -12,10 +12,13 @@
     "delete": [],
     "copy": [],
     "move": [],
+    "create_dir": [
+      "location"
+    ],
     "list_dir": [],
     "read_file": [],
     "write_file": [
-      "md5",
+      "checksum",
       "storage_class"
     ],
     "read_stream": [],

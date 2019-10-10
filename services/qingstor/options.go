@@ -10,16 +10,19 @@ var allowdOptions = map[string]map[string]struct{}{
 	storage.ActionAbortSegment:    {},
 	storage.ActionCompleteSegment: {},
 	storage.ActionCopy:            {},
-	storage.ActionDelete:          {},
-	storage.ActionInitSegment:     {},
-	storage.ActionListDir:         {},
-	storage.ActionMove:            {},
-	storage.ActionReadFile:        {},
-	storage.ActionReadSegment:     {},
-	storage.ActionReadStream:      {},
-	storage.ActionStat:            {},
+	storage.ActionCreateDir: {
+		"location": struct{}{},
+	},
+	storage.ActionDelete:      {},
+	storage.ActionInitSegment: {},
+	storage.ActionListDir:     {},
+	storage.ActionMove:        {},
+	storage.ActionReadFile:    {},
+	storage.ActionReadSegment: {},
+	storage.ActionReadStream:  {},
+	storage.ActionStat:        {},
 	storage.ActionWriteFile: {
-		"md5":           struct{}{},
+		"checksum":      struct{}{},
 		"storage_class": struct{}{},
 	},
 	storage.ActionWriteSegment: {},
@@ -90,6 +93,31 @@ func parseOptionCopy(opts ...types.Option) *optionCopy {
 			continue
 		}
 		values[v.Key] = v
+	}
+	return result
+}
+
+type optionCreateDir struct {
+	HasLocation bool
+	Location    string
+}
+
+func parseOptionCreateDir(opts ...types.Option) *optionCreateDir {
+	result := &optionCreateDir{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowdOptions[storage.ActionCreateDir]; !ok {
+			continue
+		}
+		if _, ok := allowdOptions[storage.ActionCreateDir][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v
+	}
+	if v, ok := values["location"]; !ok {
+		result.HasLocation = true
+		result.Location = v.(string)
 	}
 	return result
 }
@@ -247,8 +275,8 @@ func parseOptionStat(opts ...types.Option) *optionStat {
 }
 
 type optionWriteFile struct {
-	HasMd5          bool
-	Md5             string
+	HasChecksum     bool
+	Checksum        string
 	HasStorageClass bool
 	StorageClass    string
 }
@@ -266,9 +294,9 @@ func parseOptionWriteFile(opts ...types.Option) *optionWriteFile {
 		}
 		values[v.Key] = v
 	}
-	if v, ok := values["md5"]; !ok {
-		result.HasMd5 = true
-		result.Md5 = v.(string)
+	if v, ok := values["checksum"]; !ok {
+		result.HasChecksum = true
+		result.Checksum = v.(string)
 	}
 	if v, ok := values["storage_class"]; !ok {
 		result.HasStorageClass = true
