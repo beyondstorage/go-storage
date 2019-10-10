@@ -12,6 +12,11 @@ help:
 	@echo "  test       to run test"
 	@echo "  coverage   to test with coverage"
 
+tools := mockgen golint
+
+$(tools):
+	@command -v $@ >/dev/null 2>&1 || echo "$@ is not found, plese install it."
+
 check: format vet lint
 
 format:
@@ -24,12 +29,12 @@ vet:
 	@go vet ./...
 	@echo "ok"
 
-lint:
+lint: golint
 	@echo "golint"
 	@golint ./...
 	@echo "ok"
 
-generate:
+generate: mockgen
 	@echo "generate code"
 	@go generate ./...
 	@echo "ok"
