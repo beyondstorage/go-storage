@@ -18,7 +18,7 @@ func TestNewPrefixBasedIterator(t *testing.T) {
 	got := NewPrefixBasedIterator(fn)
 
 	assert.Equal(t, 0, got.index)
-	assert.Equal(t, []types.Object(nil), got.buf)
+	assert.Equal(t, []*types.Object(nil), got.buf)
 	assert.Equal(t, fmt.Sprintf("%v", fn), fmt.Sprintf("%v", got.next))
 }
 
