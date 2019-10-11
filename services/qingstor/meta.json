@@ -24,10 +24,6 @@
     }
   },
   "storage": {
-    "stat": {},
-    "delete": {},
-    "copy": {},
-    "move": {},
     "reach": {
       "expire": true
     },
@@ -37,16 +33,9 @@
     "list_dir": {
       "delimiter": false
     },
-    "read": {},
     "write_file": {
       "checksum": false,
       "storage_class": false
-    },
-    "write_stream": {},
-    "init_segment": {},
-    "read_segment": {},
-    "write_segment": {},
-    "complete_segment": {},
-    "abort_segment": {}
+    }
   }
 }
