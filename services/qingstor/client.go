@@ -139,6 +139,8 @@ func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error) {
 	errorMessage := "qingstor Reach failed: %w"
 
+	opt := parsePairReach(pairs...)
+
 	// FIXME: sdk should export GetObjectRequest as interface too?
 	bucket := c.bucket.(*service.Bucket)
 
@@ -151,8 +153,12 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 		err = handleQingStorError(err)
 		return "", fmt.Errorf(errorMessage, err)
 	}
-	// TODO: support set expire via pair.
-	if err = r.SignQuery(3600); err != nil {
+
+	expire := 3600
+	if opt.HasExpire {
+		expire = opt.Expire
+	}
+	if err = r.SignQuery(expire); err != nil {
 		err = handleQingStorError(err)
 		return "", fmt.Errorf(errorMessage, err)
 	}
