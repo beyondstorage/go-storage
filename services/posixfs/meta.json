@@ -8,18 +8,18 @@
     "segment": true
   },
   "pairs": {
-    "stat": [],
-    "delete": [],
-    "copy": [],
-    "move": [],
-    "list_dir": [],
-    "read": [],
-    "write_file": [],
-    "write_stream": [],
-    "init_segment": [],
-    "read_segment": [],
-    "write_segment": [],
-    "complete_segment": [],
-    "abort_segment": []
+    "stat": {},
+    "delete": {},
+    "copy": {},
+    "move": {},
+    "list_dir": {},
+    "read": {},
+    "write_file": {},
+    "write_stream": {},
+    "init_segment": {},
+    "read_segment": {},
+    "write_segment": {},
+    "complete_segment": {},
+    "abort_segment": {}
   }
 }

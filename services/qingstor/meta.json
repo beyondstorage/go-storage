@@ -9,29 +9,29 @@
     "reach": true
   },
   "pairs": {
-    "stat": [],
-    "delete": [],
-    "copy": [],
-    "move": [],
-    "reach": [
-      "expire"
-    ],
-    "create_dir": [
-      "location"
-    ],
-    "list_dir": [
-      "delimiter"
-    ],
-    "read": [],
-    "write_file": [
-      "checksum",
-      "storage_class"
-    ],
-    "write_stream": [],
-    "init_segment": [],
-    "read_segment": [],
-    "write_segment": [],
-    "complete_segment": [],
-    "abort_segment": []
+    "stat": {},
+    "delete": {},
+    "copy": {},
+    "move": {},
+    "reach": {
+      "expire": true
+    },
+    "create_dir": {
+      "location": true
+    },
+    "list_dir": {
+      "delimiter": false
+    },
+    "read": {},
+    "write_file": {
+      "checksum": false,
+      "storage_class": false
+    },
+    "write_stream": {},
+    "init_segment": {},
+    "read_segment": {},
+    "write_segment": {},
+    "complete_segment": {},
+    "abort_segment": {}
   }
 }
