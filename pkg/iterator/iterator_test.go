@@ -50,6 +50,15 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 	assert.True(t, errors.Is(err, testErr))
 
 	fn = func(informer *[]*types.Object) error {
+		return ErrDone
+	}
+	it = NewPrefixBasedIterator(fn)
+	i, err = it.Next()
+	assert.Error(t, err)
+	assert.Nil(t, i)
+	assert.True(t, errors.Is(err, ErrDone))
+
+	fn = func(informer *[]*types.Object) error {
 		x := make([]*types.Object, 2)
 		x[0] = &types.Object{Name: "test1"}
 		x[1] = &types.Object{Name: "test2"}
