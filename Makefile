@@ -1,16 +1,13 @@
 SHELL := /bin/bash
 
-.PHONY: all check format vet lint build clean test coverage generate
-
-VERSION := shell(git describe --tags `git rev-list --tags --max-count=1`)
+.PHONY: all check format vet lint build test generate tidy
 
 help:
 	@echo "Please use \`make <target>\` where <target> is one of"
 	@echo "  check      to format, vet and lint "
 	@echo "  build      to create bin directory and build"
-	@echo "  clean      to clean build and test files"
+	@echo "  generate   to generate code"
 	@echo "  test       to run test"
-	@echo "  coverage   to test with coverage"
 
 tools := mockgen golint
 
