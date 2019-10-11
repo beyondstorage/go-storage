@@ -9,7 +9,7 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-func handleError(err error) error {
+func handleQingStorError(err error) error {
 	if err == nil {
 		panic("error must not be nil")
 	}

@@ -33,7 +33,8 @@ func (c *Client) setupBucket(bucketName, zoneName string) (err error) {
 	if zoneName != "" {
 		bucket, err := c.service.Bucket(bucketName, zoneName)
 		if err != nil {
-			return handleError(fmt.Errorf(errorMessage, err))
+			err = handleQingStorError(err)
+			return fmt.Errorf(errorMessage, err)
 		}
 		c.bucket = bucket
 		return nil
@@ -48,18 +49,20 @@ func (c *Client) setupBucket(bucketName, zoneName string) (err error) {
 
 	r, err := client.Head(url)
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, err)
 	}
 	if r.StatusCode != http.StatusTemporaryRedirect {
 		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
-		return handleError(fmt.Errorf(errorMessage, err))
+		return fmt.Errorf(errorMessage, handleQingStorError(err))
 	}
 
 	// Example URL: https://bucket.zone.qingstor.com
 	zoneName = strings.Split(r.Header.Get("Location"), ".")[1]
 	bucket, err := c.service.Bucket(bucketName, zoneName)
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, err)
 	}
 	c.bucket = bucket
 	return
@@ -73,7 +76,8 @@ func (c *Client) Stat(path string, opt ...*types.Pair) (o *types.Object, err err
 
 	output, err := c.bucket.HeadObject(path, input)
 	if err != nil {
-		return nil, handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, err)
 	}
 
 	o = &types.Object{
@@ -97,7 +101,8 @@ func (c *Client) Delete(path string, opt ...*types.Pair) (err error) {
 
 	_, err = c.bucket.DeleteObject(path)
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, err)
 	}
 	return nil
 }
@@ -110,7 +115,8 @@ func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 		XQSCopySource: &src,
 	})
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, err)
 	}
 	return nil
 }
@@ -123,7 +129,8 @@ func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 		XQSMoveSource: &src,
 	})
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, err)
 	}
 	return nil
 }
@@ -137,14 +144,17 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 
 	r, _, err := bucket.GetObjectRequest(path, nil)
 	if err != nil {
-		return "", handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 	if err = r.Build(); err != nil {
-		return "", handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 	// TODO: support set expire via pair.
 	if err = r.SignQuery(3600); err != nil {
-		return "", handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 	return r.HTTPRequest.URL.String(), nil
 }
@@ -155,18 +165,19 @@ func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 
 	opt := parsePairCreateDir(option...)
 	if !opt.HasLocation {
-		// TODO: return location missing error.
-		panic("missing value")
+		return fmt.Errorf(errorMessage, types.NewErrPairRequired(types.Location))
 	}
 
 	bucket, err := c.service.Bucket(path, opt.Location)
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, err)
 	}
 
 	_, err = bucket.Put()
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, err)
 	}
 	return
 }
@@ -191,7 +202,8 @@ func (c *Client) ListDir(path string, opt ...*types.Pair) (it iterator.Iterator)
 			Prefix: &path,
 		})
 		if err != nil {
-			return handleError(fmt.Errorf(errorMessage, err))
+			err = handleQingStorError(err)
+			return fmt.Errorf(errorMessage, err)
 		}
 
 		for _, v := range output.Keys {
@@ -234,7 +246,8 @@ func (c *Client) Read(path string, option ...*types.Pair) (r io.ReadCloser, err 
 
 	output, err := c.bucket.GetObject(path, input)
 	if err != nil {
-		return nil, handleError(fmt.Errorf(errorMessage, err))
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, err)
 	}
 	return output.Body, nil
 }
@@ -257,7 +270,8 @@ func (c *Client) WriteFile(path string, size int64, r io.Reader, option ...*type
 
 	_, err = c.bucket.PutObject(path, input)
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, path, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, path, err)
 	}
 	return nil
 }
@@ -272,7 +286,7 @@ func (c *Client) InitSegment(path string, option ...*types.Pair) (err error) {
 	errorMessage := "qingstor InitSegment for path %s failed: %w"
 
 	if _, ok := c.segments[path]; ok {
-		return handleError(fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated))
+		return fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated)
 	}
 
 	_ = parsePairInitSegment(option...)
@@ -280,7 +294,8 @@ func (c *Client) InitSegment(path string, option ...*types.Pair) (err error) {
 
 	output, err := c.bucket.InitiateMultipartUpload(path, input)
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, path, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, path, err)
 	}
 
 	c.segments[path] = &segment.Segment{
@@ -301,7 +316,7 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, opti
 
 	s, ok := c.segments[path]
 	if !ok {
-		return handleError(fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated))
+		return fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated)
 	}
 
 	p := &segment.Part{
@@ -311,7 +326,7 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, opti
 
 	partNumber, err := s.GetPartIndex(p)
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, path, err))
+		return fmt.Errorf(errorMessage, path, err)
 	}
 
 	_, err = c.bucket.UploadMultipart(path, &service.UploadMultipartInput{
@@ -321,12 +336,13 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, opti
 		Body:          r,
 	})
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, path, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, path, err)
 	}
 
 	err = s.InsertPart(p)
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, path, err))
+		return fmt.Errorf(errorMessage, path, err)
 	}
 	return
 }
@@ -337,12 +353,12 @@ func (c *Client) CompleteSegment(path string, option ...*types.Pair) (err error)
 
 	s, ok := c.segments[path]
 	if !ok {
-		return handleError(fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated))
+		return fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated)
 	}
 
 	err = s.ValidateParts()
 	if err != nil {
-		return
+		return fmt.Errorf(errorMessage, path, err)
 	}
 
 	objectParts := make([]*service.ObjectPartType, len(s.Parts))
@@ -359,7 +375,8 @@ func (c *Client) CompleteSegment(path string, option ...*types.Pair) (err error)
 		ObjectParts: objectParts,
 	})
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, path, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, path, err)
 	}
 
 	delete(c.segments, path)
@@ -372,14 +389,15 @@ func (c *Client) AbortSegment(path string, option ...*types.Pair) (err error) {
 
 	s, ok := c.segments[path]
 	if !ok {
-		return handleError(fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated))
+		return fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated)
 	}
 
 	_, err = c.bucket.AbortMultipartUpload(path, &service.AbortMultipartUploadInput{
 		UploadID: &s.ID,
 	})
 	if err != nil {
-		return handleError(fmt.Errorf(errorMessage, path, err))
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, path, err)
 	}
 
 	delete(c.segments, path)
