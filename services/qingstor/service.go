@@ -20,6 +20,11 @@ type Service struct {
 	service iface.Service
 }
 
+// New will create a new qingstor service.
+func New() *Service {
+	return &Service{}
+}
+
 // Init implements Servicer.Init
 func (s *Service) Init(pairs ...*types.Pair) (err error) {
 	errorMessage := "init qingstor service failed: %w"
