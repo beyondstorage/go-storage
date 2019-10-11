@@ -66,7 +66,7 @@ func parsePairAbortSegment(opts ...*types.Pair) *pairAbortSegment {
 		if _, ok := allowdPairs[storage.ActionAbortSegment][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -85,7 +85,7 @@ func parsePairCompleteSegment(opts ...*types.Pair) *pairCompleteSegment {
 		if _, ok := allowdPairs[storage.ActionCompleteSegment][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -104,7 +104,7 @@ func parsePairCopy(opts ...*types.Pair) *pairCopy {
 		if _, ok := allowdPairs[storage.ActionCopy][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -125,9 +125,9 @@ func parsePairCreateDir(opts ...*types.Pair) *pairCreateDir {
 		if _, ok := allowdPairs[storage.ActionCreateDir][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
-	if v, ok := values["location"]; ok {
+	if v, ok := values[types.Location]; ok {
 		result.HasLocation = true
 		result.Location = v.(string)
 	}
@@ -148,7 +148,7 @@ func parsePairDelete(opts ...*types.Pair) *pairDelete {
 		if _, ok := allowdPairs[storage.ActionDelete][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -167,7 +167,7 @@ func parsePairInitSegment(opts ...*types.Pair) *pairInitSegment {
 		if _, ok := allowdPairs[storage.ActionInitSegment][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -186,7 +186,7 @@ func parsePairListDir(opts ...*types.Pair) *pairListDir {
 		if _, ok := allowdPairs[storage.ActionListDir][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -205,7 +205,7 @@ func parsePairMove(opts ...*types.Pair) *pairMove {
 		if _, ok := allowdPairs[storage.ActionMove][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -224,7 +224,7 @@ func parsePairReach(opts ...*types.Pair) *pairReach {
 		if _, ok := allowdPairs[storage.ActionReach][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -243,7 +243,7 @@ func parsePairRead(opts ...*types.Pair) *pairRead {
 		if _, ok := allowdPairs[storage.ActionRead][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -262,7 +262,7 @@ func parsePairReadSegment(opts ...*types.Pair) *pairReadSegment {
 		if _, ok := allowdPairs[storage.ActionReadSegment][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -281,7 +281,7 @@ func parsePairStat(opts ...*types.Pair) *pairStat {
 		if _, ok := allowdPairs[storage.ActionStat][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -304,13 +304,13 @@ func parsePairWriteFile(opts ...*types.Pair) *pairWriteFile {
 		if _, ok := allowdPairs[storage.ActionWriteFile][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
-	if v, ok := values["checksum"]; ok {
+	if v, ok := values[types.Checksum]; ok {
 		result.HasChecksum = true
 		result.Checksum = v.(string)
 	}
-	if v, ok := values["storage_class"]; ok {
+	if v, ok := values[types.StorageClass]; ok {
 		result.HasStorageClass = true
 		result.StorageClass = v.(string)
 	}
@@ -331,7 +331,7 @@ func parsePairWriteSegment(opts ...*types.Pair) *pairWriteSegment {
 		if _, ok := allowdPairs[storage.ActionWriteSegment][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
@@ -350,7 +350,7 @@ func parsePairWriteStream(opts ...*types.Pair) *pairWriteStream {
 		if _, ok := allowdPairs[storage.ActionWriteStream][v.Key]; !ok {
 			continue
 		}
-		values[v.Key] = v
+		values[v.Key] = v.Value
 	}
 	return result
 }
