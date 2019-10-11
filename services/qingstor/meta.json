@@ -19,7 +19,9 @@
     "create_dir": [
       "location"
     ],
-    "list_dir": [],
+    "list_dir": [
+      "delimiter"
+    ],
     "read": [],
     "write_file": [
       "checksum",

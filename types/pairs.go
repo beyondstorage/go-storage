@@ -4,6 +4,7 @@ package types
 // All available pairs.
 const (
 	Checksum     = "checksum"
+	Delimiter    = "delimiter"
 	Expire       = "expire"
 	Location     = "location"
 	Size         = "size"
@@ -15,6 +16,14 @@ const (
 func WithChecksum(v string) *Pair {
 	return &Pair{
 		Key:   Checksum,
+		Value: v,
+	}
+}
+
+// WithDelimiter will apply delimiter value to Options
+func WithDelimiter(v string) *Pair {
+	return &Pair{
+		Key:   Delimiter,
 		Value: v,
 	}
 }

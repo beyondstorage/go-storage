@@ -15,6 +15,20 @@ func (m Metadata) SetChecksum(v string) {
 	m[Checksum] = v
 }
 
+// GetDelimiter will get delimiter value from metadata.
+func (m Metadata) GetDelimiter() (string, bool) {
+	v, ok := m[Delimiter]
+	if !ok {
+		return "", false
+	}
+	return v.(string), true
+}
+
+// SetDelimiter will set delimiter value into metadata.
+func (m Metadata) SetDelimiter(v string) {
+	m[Delimiter] = v
+}
+
 // GetExpire will get expire value from metadata.
 func (m Metadata) GetExpire() (int, bool) {
 	v, ok := m[Expire]

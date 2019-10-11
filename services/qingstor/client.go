@@ -189,11 +189,17 @@ func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, opt ...*types.Pair) (it iterator.Iterator) {
+func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterator) {
 	errorMessage := "qingstor ListDir failed: %w"
+
+	opt := parsePairListDir(pairs...)
 
 	marker := ""
 	limit := 200
+	delimiter := ""
+	if opt.HasDelimiter {
+		delimiter = opt.Delimiter
+	}
 
 	var output *service.ListObjectsOutput
 	var err error
@@ -203,13 +209,24 @@ func (c *Client) ListDir(path string, opt ...*types.Pair) (it iterator.Iterator)
 		buf := make([]*types.Object, limit)
 
 		output, err = c.bucket.ListObjects(&service.ListObjectsInput{
-			Limit:  &limit,
-			Marker: &marker,
-			Prefix: &path,
+			Limit:     &limit,
+			Marker:    &marker,
+			Prefix:    &path,
+			Delimiter: &delimiter,
 		})
 		if err != nil {
 			err = handleQingStorError(err)
 			return fmt.Errorf(errorMessage, err)
+		}
+
+		for _, v := range output.CommonPrefixes {
+			o := &types.Object{
+				Name: *v,
+				Type: types.ObjectTypeDir,
+			}
+
+			buf[idx] = o
+			idx++
 		}
 
 		for _, v := range output.Keys {

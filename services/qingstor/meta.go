@@ -27,8 +27,10 @@ var allowdPairs = map[string]map[string]struct{}{
 	},
 	storage.ActionDelete:      {},
 	storage.ActionInitSegment: {},
-	storage.ActionListDir:     {},
-	storage.ActionMove:        {},
+	storage.ActionListDir: {
+		"delimiter": struct{}{},
+	},
+	storage.ActionMove: {},
 	storage.ActionReach: {
 		"expire": struct{}{},
 	},
@@ -175,6 +177,8 @@ func parsePairInitSegment(opts ...*types.Pair) *pairInitSegment {
 }
 
 type pairListDir struct {
+	HasDelimiter bool
+	Delimiter    string
 }
 
 func parsePairListDir(opts ...*types.Pair) *pairListDir {
@@ -189,6 +193,10 @@ func parsePairListDir(opts ...*types.Pair) *pairListDir {
 			continue
 		}
 		values[v.Key] = v.Value
+	}
+	if v, ok := values[types.Delimiter]; ok {
+		result.HasDelimiter = true
+		result.Delimiter = v.(string)
 	}
 	return result
 }

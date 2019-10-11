@@ -314,47 +314,65 @@ func TestClient_ListDir(t *testing.T) {
 	mockBucket := NewMockBucket(ctrl)
 
 	tests := []struct {
-		name     string
-		path     string
-		mockFn   func(*service.ListObjectsInput) (*service.ListObjectsOutput, error)
-		hasError bool
-		hasDone  bool
-		wantErr  error
+		name   string
+		pairs  []*types.Pair
+		output *service.ListObjectsOutput
+		err    error
 	}{
 		{
-			"valid copy",
-			"/test_src",
-			func(input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
-				assert.Equal(t, "/test_src", *input.Prefix)
-				assert.Equal(t, 200, *input.Limit)
-				assert.Equal(t, "", *input.Marker)
-				assert.Nil(t, input.Delimiter)
-				return &service.ListObjectsOutput{
-					HasMore: service.Bool(false),
-					Keys: []*service.KeyType{
-						{Key: convert.String("test_key")},
-					},
-				}, nil
+			"list without delimiter",
+			nil,
+			&service.ListObjectsOutput{
+				HasMore: service.Bool(false),
+				Keys: []*service.KeyType{
+					{Key: service.String(uuid.New().String())},
+				},
 			},
-			false, true, nil,
+			nil,
+		},
+		{
+			"list with delimiter",
+			[]*types.Pair{
+				types.WithDelimiter("/"),
+			},
+			&service.ListObjectsOutput{
+				HasMore: service.Bool(false),
+				CommonPrefixes: []*string{
+					service.String(uuid.New().String()),
+				},
+			},
+			nil,
 		},
 	}
 
 	for _, v := range tests {
-		mockBucket.EXPECT().ListObjects(gomock.Any()).DoAndReturn(v.mockFn)
+		path := uuid.New().String()
+
+		mockBucket.EXPECT().ListObjects(gomock.Any()).DoAndReturn(func(input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
+			assert.Equal(t, path, *input.Prefix)
+			assert.Equal(t, 200, *input.Limit)
+			assert.Equal(t, "", *input.Marker)
+			return v.output, v.err
+		})
 
 		client := Client{
 			bucket: mockBucket,
 		}
 
-		x := client.ListDir(v.path)
+		x := client.ListDir(path, v.pairs...)
 		item, err := x.Next()
-		if v.hasError {
+		if v.err != nil {
 			assert.Error(t, err)
-			assert.True(t, errors.Is(err, v.wantErr))
-		} else if v.hasDone {
+			assert.True(t, errors.Is(err, v.err))
+		}
+		if v.err == nil && *v.output.HasMore {
 			assert.NotNil(t, item)
 			assert.NoError(t, err)
+		}
+		if item.Type == types.ObjectTypeFile {
+			assert.Equal(t, item.Name, *v.output.Keys[0].Key)
+		} else if item.Type == types.ObjectTypeDir {
+			assert.Equal(t, item.Name, *v.output.CommonPrefixes[0])
 		}
 	}
 }
