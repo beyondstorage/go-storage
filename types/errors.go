@@ -2,16 +2,19 @@ package types
 
 import (
 	"errors"
+	"fmt"
 )
 
 // All possible error could be return by services.
 var (
-	// handleable error
+	// user handleable error
 	ErrConfigIncorrect  = errors.New("config incorrect")
 	ErrPermissionDenied = errors.New("permission denied")
 
+	// caller handleable error
+	ErrPairRequired = errors.New("pair required")
+
 	// unhandleable but information available
-	// Object here could be Dir, File or Stream.
 	ErrObjectNotExist  = errors.New("object not exist")
 	ErrDirAlreadyExist = errors.New("dir already exist")
 	ErrDirNotEmpty     = errors.New("dir not empty")
@@ -19,3 +22,8 @@ var (
 	// unhandleable error
 	ErrUnhandledError = errors.New("unhandled error")
 )
+
+// NewErrPairRequired will create a new pair required error.
+func NewErrPairRequired(pair string) error {
+	return fmt.Errorf("%s is required but missing: %w", pair, ErrPairRequired)
+}

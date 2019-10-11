@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/pengsrc/go-shared/convert"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
@@ -90,7 +91,6 @@ func (c *Client) Stat(path string, opt ...*types.Pair) (o *types.Object, err err
 	o.SetChecksum(service.StringValue(output.ETag))
 	o.SetStorageClass(service.StringValue(output.XQSStorageClass))
 	return o, nil
-
 }
 
 // Delete implements Storager.Delete
@@ -192,7 +192,7 @@ func (c *Client) ListDir(path string, opt ...*types.Pair) (it iterator.Iterator)
 	var output *service.ListObjectsOutput
 	var err error
 
-	fn := iterator.NextFunc(func(informer *[]*types.Object) error {
+	fn := iterator.NextFunc(func(objects *[]*types.Object) error {
 		idx := 0
 		buf := make([]*types.Object, limit)
 
@@ -220,7 +220,10 @@ func (c *Client) ListDir(path string, opt ...*types.Pair) (it iterator.Iterator)
 			idx++
 		}
 
-		marker = *output.NextMarker
+		// Set input objects
+		*objects = buf
+
+		marker = convert.StringValue(output.NextMarker)
 		if marker == "" {
 			return iterator.ErrDone
 		}
@@ -316,7 +319,7 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, opti
 
 	s, ok := c.segments[path]
 	if !ok {
-		return fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated)
+		return fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated)
 	}
 
 	p := &segment.Part{
