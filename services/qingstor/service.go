@@ -18,11 +18,19 @@ import (
 type Service struct {
 	config  *config.Config
 	service iface.Service
+
+	noRedirectClient *http.Client
 }
 
 // New will create a new qingstor service.
 func New() *Service {
-	return &Service{}
+	return &Service{
+		noRedirectClient: &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		},
+	}
 }
 
 // Init implements Servicer.Init
@@ -76,21 +84,16 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 		}, nil
 	}
 
-	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
 	url := fmt.Sprintf("%s://%s.%s:%d", s.config.Protocol, name, s.config.Host, s.config.Port)
 
-	r, err := client.Head(url)
+	r, err := s.noRedirectClient.Head(url)
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, name, err)
 	}
 	if r.StatusCode != http.StatusTemporaryRedirect {
 		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
-		return nil, fmt.Errorf(errorMessage, handleQingStorError(err))
+		return nil, fmt.Errorf(errorMessage, name, handleQingStorError(err))
 	}
 
 	// Example URL: https://bucket.zone.qingstor.com
@@ -98,7 +101,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 	bucket, err := s.service.Bucket(name, location)
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, name, err)
 	}
 	return &Client{
 		bucket:   bucket,
