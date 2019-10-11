@@ -33,7 +33,7 @@ lint: golint
 
 generate: mockgen
 	@echo "generate code"
-	@rm types/metadata.go types/pairs.go services/*/meta.go
+	@rm types/metadata.go types/pairs.go services/*/meta.go || true
 	@go generate ./...
 	@echo "ok"
 

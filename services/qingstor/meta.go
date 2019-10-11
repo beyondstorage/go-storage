@@ -29,7 +29,9 @@ var allowdPairs = map[string]map[string]struct{}{
 	storage.ActionInitSegment: {},
 	storage.ActionListDir:     {},
 	storage.ActionMove:        {},
-	storage.ActionReach:       {},
+	storage.ActionReach: {
+		"expire": struct{}{},
+	},
 	storage.ActionRead:        {},
 	storage.ActionReadSegment: {},
 	storage.ActionStat:        {},
@@ -211,6 +213,8 @@ func parsePairMove(opts ...*types.Pair) *pairMove {
 }
 
 type pairReach struct {
+	HasExpire bool
+	Expire    int
 }
 
 func parsePairReach(opts ...*types.Pair) *pairReach {
@@ -225,6 +229,10 @@ func parsePairReach(opts ...*types.Pair) *pairReach {
 			continue
 		}
 		values[v.Key] = v.Value
+	}
+	if v, ok := values[types.Expire]; ok {
+		result.HasExpire = true
+		result.Expire = v.(int)
 	}
 	return result
 }

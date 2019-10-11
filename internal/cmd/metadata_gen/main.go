@@ -36,7 +36,7 @@ package types
 func (m Metadata) Get{{ $k | camelcase }}() ({{ $v }}, bool)  {
 	v, ok := m[{{ $k | camelcase }}]
 	if !ok {
-		return {{ if eq $v "int64" }}0{{ else if eq $v "string" }}""{{end}}, false 
+		return {{ if eq $v "int64" }}0{{ else if eq $v "int" }}0{{ else if eq $v "string" }}""{{end}}, false
 	}
 	return v.({{ $v }}), true
 }

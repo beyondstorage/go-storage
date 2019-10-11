@@ -13,7 +13,9 @@
     "delete": [],
     "copy": [],
     "move": [],
-    "reach": [],
+    "reach": [
+      "expire"
+    ],
     "create_dir": [
       "location"
     ],

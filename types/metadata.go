@@ -15,6 +15,20 @@ func (m Metadata) SetChecksum(v string) {
 	m[Checksum] = v
 }
 
+// GetExpire will get expire value from metadata.
+func (m Metadata) GetExpire() (int, bool) {
+	v, ok := m[Expire]
+	if !ok {
+		return 0, false
+	}
+	return v.(int), true
+}
+
+// SetExpire will set expire value into metadata.
+func (m Metadata) SetExpire(v int) {
+	m[Expire] = v
+}
+
 // GetLocation will get location value from metadata.
 func (m Metadata) GetLocation() (string, bool) {
 	v, ok := m[Location]

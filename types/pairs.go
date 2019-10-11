@@ -4,6 +4,7 @@ package types
 // All available pairs.
 const (
 	Checksum     = "checksum"
+	Expire       = "expire"
 	Location     = "location"
 	Size         = "size"
 	StorageClass = "storage_class"
@@ -14,6 +15,14 @@ const (
 func WithChecksum(v string) *Pair {
 	return &Pair{
 		Key:   Checksum,
+		Value: v,
+	}
+}
+
+// WithExpire will apply expire value to Options
+func WithExpire(v int) *Pair {
+	return &Pair{
+		Key:   Expire,
 		Value: v,
 	}
 }

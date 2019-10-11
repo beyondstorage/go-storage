@@ -38,4 +38,5 @@ var AvailablePairs = map[string]string{
 	"storage_class": "string",
 	"type":          "string",
 	"size":          "int64",
+	"expire":        "int",
 }
