@@ -30,9 +30,21 @@ const (
 	ActionAbortSegment    = "abort_segment"
 )
 
-// Configurer will create a new storager.
-type Configurer interface {
-	New() (Storager, error)
+/*
+Servicer is the top level of a storager service.
+*/
+type Servicer interface {
+	// Init will init service itself.
+	Init(pairs ...*types.Pair) (err error)
+
+	// List will list all storager under this service.
+	List(pairs ...*types.Pair) ([]Storager, error)
+	// Get will get a valid storager instance for service.
+	Get(name string, pairs ...*types.Pair) (Storager, error)
+	// Create will create a new storager instance.
+	Create(name string, pairs ...*types.Pair) (Storager, error)
+	// Delete will delete a storager instance.
+	Delete(name string, pairs ...*types.Pair) (err error)
 }
 
 /*

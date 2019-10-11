@@ -33,10 +33,15 @@ type Pair struct {
 // AvailablePairs are all available options for storage.
 // This will be used to generate options.go
 var AvailablePairs = map[string]string{
+	"access_key":    "string",
 	"checksum":      "string",
 	"delimiter":     "string",
 	"expire":        "int",
+	"host":          "string",
 	"location":      "string",
+	"port":          "int",
+	"protocol":      "string",
+	"secret_key":    "string",
 	"size":          "int64",
 	"storage_class": "string",
 	"type":          "string",

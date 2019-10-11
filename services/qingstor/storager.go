@@ -3,8 +3,6 @@ package qingstor
 import (
 	"fmt"
 	"io"
-	"net/http"
-	"strings"
 
 	"github.com/pengsrc/go-shared/convert"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
@@ -20,60 +18,16 @@ import (
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 //go:generate mockgen -package qingstor -destination mock_test.go github.com/yunify/qingstor-sdk-go/v3/interface Service,Bucket
 type Client struct {
-	config  *Config
-	service iface.Service
-	bucket  iface.Bucket
+	bucket iface.Bucket
 
 	segments map[string]*segment.Segment
-}
-
-// setupBucket will setup bucket for client.
-func (c *Client) setupBucket(bucketName, zoneName string) (err error) {
-	errorMessage := "setup qingstor bucket failed: %w"
-
-	if zoneName != "" {
-		bucket, err := c.service.Bucket(bucketName, zoneName)
-		if err != nil {
-			err = handleQingStorError(err)
-			return fmt.Errorf(errorMessage, err)
-		}
-		c.bucket = bucket
-		return nil
-	}
-
-	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
-	url := fmt.Sprintf("%s://%s.%s:%d", c.config.Protocol, bucketName, c.config.Host, c.config.Port)
-
-	r, err := client.Head(url)
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, err)
-	}
-	if r.StatusCode != http.StatusTemporaryRedirect {
-		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
-		return fmt.Errorf(errorMessage, handleQingStorError(err))
-	}
-
-	// Example URL: https://bucket.zone.qingstor.com
-	zoneName = strings.Split(r.Header.Get("Location"), ".")[1]
-	bucket, err := c.service.Bucket(bucketName, zoneName)
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, err)
-	}
-	c.bucket = bucket
-	return
 }
 
 // Stat implements Storager.Stat
 func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	errorMessage := "qingstor Stat failed: %w"
 
-	_, _ = parsePairStat(pairs...)
+	_, _ = parseStoragePairStat(pairs...)
 	input := &service.HeadObjectInput{}
 
 	output, err := c.bucket.HeadObject(path, input)
@@ -98,7 +52,7 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Delete failed: %w"
 
-	_, _ = parsePairDelete(pairs...)
+	_, _ = parseStoragePairDelete(pairs...)
 	// TODO: support delete dir.
 
 	_, err = c.bucket.DeleteObject(path)
@@ -113,7 +67,7 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 func (c *Client) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Copy failed: %w"
 
-	_, _ = parsePairCopy(pairs...)
+	_, _ = parseStoragePairCopy(pairs...)
 
 	_, err = c.bucket.PutObject(dst, &service.PutObjectInput{
 		XQSCopySource: &src,
@@ -129,7 +83,7 @@ func (c *Client) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 func (c *Client) Move(src, dst string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Move failed: %w"
 
-	_, _ = parsePairMove(pairs...)
+	_, _ = parseStoragePairMove(pairs...)
 
 	_, err = c.bucket.PutObject(dst, &service.PutObjectInput{
 		XQSMoveSource: &src,
@@ -145,7 +99,7 @@ func (c *Client) Move(src, dst string, pairs ...*types.Pair) (err error) {
 func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error) {
 	errorMessage := "qingstor Reach failed: %w"
 
-	opt, err := parsePairReach(pairs...)
+	opt, err := parseStoragePairReach(pairs...)
 	if err != nil {
 		return "", fmt.Errorf(errorMessage, err)
 	}
@@ -176,32 +130,14 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 
 // CreateDir implements Storager.CreateDir
 func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
-	errorMessage := "qingstor CreateDir failed: %w"
-
-	opt, err := parsePairCreateDir(option...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, err)
-	}
-
-	bucket, err := c.service.Bucket(path, opt.Location)
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, err)
-	}
-
-	_, err = bucket.Put()
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, err)
-	}
-	return
+	panic("not supported")
 }
 
 // ListDir implements Storager.ListDir
 func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterator) {
 	errorMessage := "qingstor ListDir failed: %w"
 
-	opt, _ := parsePairListDir(pairs...)
+	opt, _ := parseStoragePairListDir(pairs...)
 
 	marker := ""
 	limit := 200
@@ -276,7 +212,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	errorMessage := "qingstor ReadFile failed: %w"
 
-	_, _ = parsePairRead(pairs...)
+	_, _ = parseStoragePairRead(pairs...)
 	input := &service.GetObjectInput{}
 
 	output, err := c.bucket.GetObject(path, input)
@@ -291,7 +227,7 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 func (c *Client) WriteFile(path string, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteFile for path %s failed: %w"
 
-	opts, err := parsePairWriteFile(pairs...)
+	opts, err := parseStoragePairWriteFile(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, err)
 	}
@@ -324,7 +260,7 @@ func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (e
 func (c *Client) InitSegment(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor InitSegment for path %s failed: %w"
 
-	_, _ = parsePairInitSegment(pairs...)
+	_, _ = parseStoragePairInitSegment(pairs...)
 
 	if _, ok := c.segments[path]; ok {
 		return fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated)
@@ -354,7 +290,7 @@ func (c *Client) ReadSegment(path string, offset, size int64, option ...*types.P
 func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteSegment for path %s failed: %w"
 
-	_, _ = parsePairWriteSegment(pairs...)
+	_, _ = parseStoragePairWriteSegment(pairs...)
 
 	s, ok := c.segments[path]
 	if !ok {
@@ -393,7 +329,7 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, pair
 func (c *Client) CompleteSegment(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor CompleteSegment for path %s failed: %w"
 
-	_, _ = parsePairCompleteSegment(pairs...)
+	_, _ = parseStoragePairCompleteSegment(pairs...)
 
 	s, ok := c.segments[path]
 	if !ok {
@@ -431,7 +367,7 @@ func (c *Client) CompleteSegment(path string, pairs ...*types.Pair) (err error) 
 func (c *Client) AbortSegment(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor AbortSegment for path %s failed: %w"
 
-	_, _ = parsePairAbortSegment(pairs...)
+	_, _ = parseStoragePairAbortSegment(pairs...)
 
 	s, ok := c.segments[path]
 	if !ok {

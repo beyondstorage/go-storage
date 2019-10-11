@@ -8,7 +8,22 @@
     "segment": true,
     "reach": true
   },
-  "pairs": {
+  "service": {
+    "init": {
+      "access_key": true,
+      "secret_key": true,
+      "host": false,
+      "port": false,
+      "protocol": false
+    },
+    "get": {
+      "location": false
+    },
+    "create": {
+      "location": true
+    }
+  },
+  "storage": {
     "stat": {},
     "delete": {},
     "copy": {},

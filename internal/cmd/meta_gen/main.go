@@ -43,7 +43,8 @@ func parseCapability(c capability) uint64 {
 type metadata struct {
 	Name       string                     `json:"name"`
 	Capability capability                 `json:"capability"`
-	Pairs      map[string]map[string]bool `json:"pairs"`
+	Service    map[string]map[string]bool `json:"service"`
+	Storage    map[string]map[string]bool `json:"storage"`
 
 	ParsedCapability uint64 `json:"-"`
 
@@ -114,9 +115,19 @@ func (c *Client) Capability() types.Capability {
 var pairTmpl = template.Must(template.New("pair").Funcs(sprig.HermeticTxtFuncMap()).Parse(`
 {{ $Data := . }}
 
-var allowedPairs = map[string]map[string]struct{}{
-{{- range $k, $v := .Pairs }}
+var allowedStoragePairs = map[string]map[string]struct{}{
+{{- range $k, $v := .Storage }}
 	storage.Action{{ $k | camelcase}}: {
+{{- range $key, $_ := $v }}
+		"{{$key}}": struct{}{},
+{{- end }}
+	},
+{{- end }}
+}
+
+var allowedServicePairs = map[string]map[string]struct{}{
+{{- range $k, $v := .Service }}
+	"{{ $k }}": {
 {{- range $key, $_ := $v }}
 		"{{$key}}": struct{}{},
 {{- end }}
@@ -126,32 +137,75 @@ var allowedPairs = map[string]map[string]struct{}{
 
 // IsPairAvailable implements Storager.IsPairAvailable().
 func (c *Client) IsPairAvailable(action, pair string) bool {
-	if _, ok := allowedPairs[action]; !ok {
+	if _, ok := allowedStoragePairs[action]; !ok {
 		return false
 	}
-	if _, ok := allowedPairs[action][pair]; !ok {
+	if _, ok := allowedStoragePairs[action][pair]; !ok {
 		return false
 	}
 	return true
 }
 
-{{- range $k, $v := .Pairs }}
-type pair{{ $k | camelcase}} struct {
+{{- range $k, $v := .Storage }}
+type pairStorage{{ $k | camelcase}} struct {
 {{- range $key, $_ := $v }}
 	Has{{ $key | camelcase}} bool
 	{{ $key | camelcase}}    {{ index $Data.TypeMap $key }}
 {{- end }}
 }
 
-func parsePair{{ $k | camelcase}}(opts ...*types.Pair) (*pair{{ $k | camelcase}}, error) {
-	result := &pair{{ $k | camelcase}}{}
+func parseStoragePair{{ $k | camelcase}}(opts ...*types.Pair) (*pairStorage{{ $k | camelcase}}, error) {
+	result := &pairStorage{{ $k | camelcase}}{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.Action{{ $k | camelcase}}]; !ok {
+		if _, ok := allowedStoragePairs[storage.Action{{ $k | camelcase}}]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.Action{{ $k | camelcase}}][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.Action{{ $k | camelcase}}][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+
+{{- if $v }}
+	var v interface{}
+	var ok bool
+{{- end }}
+
+{{- range $key, $required := $v }}
+	v, ok = values[types.{{ $key | camelcase}}]
+{{- if $required }}
+	if !ok {
+		return nil, types.NewErrPairRequired(types.{{ $key | camelcase}})
+	}
+{{- end }}
+	if ok {
+		result.Has{{ $key | camelcase}} = true
+		result.{{ $key | camelcase}} = v.({{ index $Data.TypeMap $key }})
+	}
+{{- end }}
+	return result, nil
+}
+{{- end }}
+
+{{- range $k, $v := .Service }}
+type pairService{{ $k | camelcase}} struct {
+{{- range $key, $_ := $v }}
+	Has{{ $key | camelcase}} bool
+	{{ $key | camelcase}}    {{ index $Data.TypeMap $key }}
+{{- end }}
+}
+
+func parseServicePair{{ $k | camelcase}}(opts ...*types.Pair) (*pairService{{ $k | camelcase}}, error) {
+	result := &pairService{{ $k | camelcase}}{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedServicePairs["{{ $k }}"]; !ok {
+			continue
+		}
+		if _, ok := allowedServicePairs["{{ $k }}"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value

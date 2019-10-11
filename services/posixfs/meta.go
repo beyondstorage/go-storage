@@ -18,7 +18,7 @@ func (c *Client) Capability() types.Capability {
 	return capability
 }
 
-var allowedPairs = map[string]map[string]struct{}{
+var allowedStoragePairs = map[string]map[string]struct{}{
 	storage.ActionAbortSegment:    {},
 	storage.ActionCompleteSegment: {},
 	storage.ActionCopy:            {},
@@ -34,29 +34,31 @@ var allowedPairs = map[string]map[string]struct{}{
 	storage.ActionWriteStream:     {},
 }
 
+var allowedServicePairs = map[string]map[string]struct{}{}
+
 // IsPairAvailable implements Storager.IsPairAvailable().
 func (c *Client) IsPairAvailable(action, pair string) bool {
-	if _, ok := allowedPairs[action]; !ok {
+	if _, ok := allowedStoragePairs[action]; !ok {
 		return false
 	}
-	if _, ok := allowedPairs[action][pair]; !ok {
+	if _, ok := allowedStoragePairs[action][pair]; !ok {
 		return false
 	}
 	return true
 }
 
-type pairAbortSegment struct {
+type pairStorageAbortSegment struct {
 }
 
-func parsePairAbortSegment(opts ...*types.Pair) (*pairAbortSegment, error) {
-	result := &pairAbortSegment{}
+func parseStoragePairAbortSegment(opts ...*types.Pair) (*pairStorageAbortSegment, error) {
+	result := &pairStorageAbortSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionAbortSegment]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionAbortSegment]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionAbortSegment][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionAbortSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -64,18 +66,18 @@ func parsePairAbortSegment(opts ...*types.Pair) (*pairAbortSegment, error) {
 	return result, nil
 }
 
-type pairCompleteSegment struct {
+type pairStorageCompleteSegment struct {
 }
 
-func parsePairCompleteSegment(opts ...*types.Pair) (*pairCompleteSegment, error) {
-	result := &pairCompleteSegment{}
+func parseStoragePairCompleteSegment(opts ...*types.Pair) (*pairStorageCompleteSegment, error) {
+	result := &pairStorageCompleteSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionCompleteSegment]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionCompleteSegment]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionCompleteSegment][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionCompleteSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -83,18 +85,18 @@ func parsePairCompleteSegment(opts ...*types.Pair) (*pairCompleteSegment, error)
 	return result, nil
 }
 
-type pairCopy struct {
+type pairStorageCopy struct {
 }
 
-func parsePairCopy(opts ...*types.Pair) (*pairCopy, error) {
-	result := &pairCopy{}
+func parseStoragePairCopy(opts ...*types.Pair) (*pairStorageCopy, error) {
+	result := &pairStorageCopy{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionCopy]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionCopy]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionCopy][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionCopy][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -102,18 +104,18 @@ func parsePairCopy(opts ...*types.Pair) (*pairCopy, error) {
 	return result, nil
 }
 
-type pairDelete struct {
+type pairStorageDelete struct {
 }
 
-func parsePairDelete(opts ...*types.Pair) (*pairDelete, error) {
-	result := &pairDelete{}
+func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
+	result := &pairStorageDelete{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionDelete]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionDelete]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionDelete][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionDelete][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -121,18 +123,18 @@ func parsePairDelete(opts ...*types.Pair) (*pairDelete, error) {
 	return result, nil
 }
 
-type pairInitSegment struct {
+type pairStorageInitSegment struct {
 }
 
-func parsePairInitSegment(opts ...*types.Pair) (*pairInitSegment, error) {
-	result := &pairInitSegment{}
+func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, error) {
+	result := &pairStorageInitSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionInitSegment]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionInitSegment]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionInitSegment][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionInitSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -140,18 +142,18 @@ func parsePairInitSegment(opts ...*types.Pair) (*pairInitSegment, error) {
 	return result, nil
 }
 
-type pairListDir struct {
+type pairStorageListDir struct {
 }
 
-func parsePairListDir(opts ...*types.Pair) (*pairListDir, error) {
-	result := &pairListDir{}
+func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
+	result := &pairStorageListDir{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionListDir]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionListDir]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionListDir][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionListDir][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -159,18 +161,18 @@ func parsePairListDir(opts ...*types.Pair) (*pairListDir, error) {
 	return result, nil
 }
 
-type pairMove struct {
+type pairStorageMove struct {
 }
 
-func parsePairMove(opts ...*types.Pair) (*pairMove, error) {
-	result := &pairMove{}
+func parseStoragePairMove(opts ...*types.Pair) (*pairStorageMove, error) {
+	result := &pairStorageMove{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionMove]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionMove]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionMove][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionMove][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -178,18 +180,18 @@ func parsePairMove(opts ...*types.Pair) (*pairMove, error) {
 	return result, nil
 }
 
-type pairRead struct {
+type pairStorageRead struct {
 }
 
-func parsePairRead(opts ...*types.Pair) (*pairRead, error) {
-	result := &pairRead{}
+func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
+	result := &pairStorageRead{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionRead]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionRead]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionRead][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionRead][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -197,18 +199,18 @@ func parsePairRead(opts ...*types.Pair) (*pairRead, error) {
 	return result, nil
 }
 
-type pairReadSegment struct {
+type pairStorageReadSegment struct {
 }
 
-func parsePairReadSegment(opts ...*types.Pair) (*pairReadSegment, error) {
-	result := &pairReadSegment{}
+func parseStoragePairReadSegment(opts ...*types.Pair) (*pairStorageReadSegment, error) {
+	result := &pairStorageReadSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionReadSegment]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionReadSegment]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionReadSegment][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionReadSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -216,18 +218,18 @@ func parsePairReadSegment(opts ...*types.Pair) (*pairReadSegment, error) {
 	return result, nil
 }
 
-type pairStat struct {
+type pairStorageStat struct {
 }
 
-func parsePairStat(opts ...*types.Pair) (*pairStat, error) {
-	result := &pairStat{}
+func parseStoragePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
+	result := &pairStorageStat{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionStat]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionStat]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionStat][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionStat][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -235,18 +237,18 @@ func parsePairStat(opts ...*types.Pair) (*pairStat, error) {
 	return result, nil
 }
 
-type pairWriteFile struct {
+type pairStorageWriteFile struct {
 }
 
-func parsePairWriteFile(opts ...*types.Pair) (*pairWriteFile, error) {
-	result := &pairWriteFile{}
+func parseStoragePairWriteFile(opts ...*types.Pair) (*pairStorageWriteFile, error) {
+	result := &pairStorageWriteFile{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionWriteFile]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionWriteFile]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionWriteFile][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionWriteFile][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -254,18 +256,18 @@ func parsePairWriteFile(opts ...*types.Pair) (*pairWriteFile, error) {
 	return result, nil
 }
 
-type pairWriteSegment struct {
+type pairStorageWriteSegment struct {
 }
 
-func parsePairWriteSegment(opts ...*types.Pair) (*pairWriteSegment, error) {
-	result := &pairWriteSegment{}
+func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment, error) {
+	result := &pairStorageWriteSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionWriteSegment]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionWriteSegment]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionWriteSegment][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionWriteSegment][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -273,18 +275,18 @@ func parsePairWriteSegment(opts ...*types.Pair) (*pairWriteSegment, error) {
 	return result, nil
 }
 
-type pairWriteStream struct {
+type pairStorageWriteStream struct {
 }
 
-func parsePairWriteStream(opts ...*types.Pair) (*pairWriteStream, error) {
-	result := &pairWriteStream{}
+func parseStoragePairWriteStream(opts ...*types.Pair) (*pairStorageWriteStream, error) {
+	result := &pairStorageWriteStream{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedPairs[storage.ActionWriteStream]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionWriteStream]; !ok {
 			continue
 		}
-		if _, ok := allowedPairs[storage.ActionWriteStream][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionWriteStream][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value

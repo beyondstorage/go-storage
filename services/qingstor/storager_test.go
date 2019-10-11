@@ -5,10 +5,8 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"testing"
 
-	"bou.ke/monkey"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/pengsrc/go-shared/convert"
@@ -48,43 +46,6 @@ func TestClient_AbortSegment(t *testing.T) {
 	err = client.AbortSegment(path)
 	assert.Error(t, err)
 	assert.True(t, errors.Is(err, segment.ErrSegmentNotInitiated))
-}
-
-func TestClient_CreateDir(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockService := NewMockService(ctrl)
-
-	client := Client{
-		service: mockService,
-	}
-
-	// Test case1: without location
-	path := uuid.New().String()
-	err := client.CreateDir(path)
-	assert.Error(t, err)
-	assert.True(t, errors.Is(err, types.ErrPairRequired))
-
-	// Test case2: with valid location.
-	path = uuid.New().String()
-	location := uuid.New().String()
-
-	// Monkey the bucket's Put method
-	bucket := &service.Bucket{}
-	fn := func(*service.Bucket) (*service.PutBucketOutput, error) {
-		t.Log("Bucket put has been called")
-		return &service.PutBucketOutput{}, nil
-	}
-	monkey.PatchInstanceMethod(reflect.TypeOf(bucket), "Put", fn)
-
-	mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).Do(func(inputPath, inputLocation string) {
-		assert.Equal(t, path, inputPath)
-		assert.Equal(t, location, inputLocation)
-	}).Return(bucket, nil)
-
-	err = client.CreateDir(path, types.WithLocation(location))
-	assert.NoError(t, err)
 }
 
 func TestClient_CompleteSegment(t *testing.T) {

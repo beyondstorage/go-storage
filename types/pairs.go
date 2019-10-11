@@ -3,14 +3,27 @@ package types
 
 // All available pairs.
 const (
+	AccessKey    = "access_key"
 	Checksum     = "checksum"
 	Delimiter    = "delimiter"
 	Expire       = "expire"
+	Host         = "host"
 	Location     = "location"
+	Port         = "port"
+	Protocol     = "protocol"
+	SecretKey    = "secret_key"
 	Size         = "size"
 	StorageClass = "storage_class"
 	Type         = "type"
 )
+
+// WithAccessKey will apply access_key value to Options
+func WithAccessKey(v string) *Pair {
+	return &Pair{
+		Key:   AccessKey,
+		Value: v,
+	}
+}
 
 // WithChecksum will apply checksum value to Options
 func WithChecksum(v string) *Pair {
@@ -36,10 +49,42 @@ func WithExpire(v int) *Pair {
 	}
 }
 
+// WithHost will apply host value to Options
+func WithHost(v string) *Pair {
+	return &Pair{
+		Key:   Host,
+		Value: v,
+	}
+}
+
 // WithLocation will apply location value to Options
 func WithLocation(v string) *Pair {
 	return &Pair{
 		Key:   Location,
+		Value: v,
+	}
+}
+
+// WithPort will apply port value to Options
+func WithPort(v int) *Pair {
+	return &Pair{
+		Key:   Port,
+		Value: v,
+	}
+}
+
+// WithProtocol will apply protocol value to Options
+func WithProtocol(v string) *Pair {
+	return &Pair{
+		Key:   Protocol,
+		Value: v,
+	}
+}
+
+// WithSecretKey will apply secret_key value to Options
+func WithSecretKey(v string) *Pair {
+	return &Pair{
+		Key:   SecretKey,
 		Value: v,
 	}
 }
