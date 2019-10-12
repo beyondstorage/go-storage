@@ -10,7 +10,6 @@ import (
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 )
 
@@ -75,10 +74,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, name, err)
 	}
-	return &Client{
-		bucket:   bucket,
-		segments: make(map[string]*segment.Segment),
-	}, nil
+	return newClient(bucket), nil
 }
 
 // Create implements Servicer.Create
@@ -103,15 +99,38 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, name, err)
 	}
-	return &Client{
-		bucket:   bucket,
-		segments: make(map[string]*segment.Segment),
-	}, nil
+	return newClient(bucket), nil
 }
 
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) ([]storage.Storager, error) {
-	panic("not supported")
+	errorMessage := "list qingstor storager: %w"
+
+	opt, err := parseServicePairList(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	input := &service.ListBucketsInput{}
+	if opt.HasLocation {
+		input.Location = &opt.Location
+	}
+
+	output, err := s.service.ListBuckets(input)
+	if err != nil {
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	storagers := make([]storage.Storager, len(output.Buckets))
+	for k, v := range output.Buckets {
+		store, err := s.get(*v.Name, *v.Location)
+		if err != nil {
+			return nil, fmt.Errorf(errorMessage, err)
+		}
+		storagers[k] = newClient(store)
+	}
+	return storagers, nil
 }
 
 // Delete implements Servicer.Delete

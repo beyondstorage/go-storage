@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/yunify/qingstor-sdk-go/v3/config"
+	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/types"
@@ -189,5 +190,67 @@ func TestService_Delete(t *testing.T) {
 
 		err := srv.Delete(name, types.WithLocation(location))
 		assert.NoError(t, err)
+	}
+}
+
+func TestService_List(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := NewMockService(ctrl)
+
+	srv := &Service{
+		service: mockService,
+	}
+
+	mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).AnyTimes()
+
+	{
+		// Test request with location.
+		name := uuid.New().String()
+		location := uuid.New().String()
+
+		mockService.EXPECT().ListBuckets(gomock.Any()).DoAndReturn(func(input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
+			assert.Equal(t, location, *input.Location)
+			return &service.ListBucketsOutput{
+				Buckets: []*service.BucketType{
+					{Name: &name, Location: &location},
+				},
+			}, nil
+		})
+
+		s, err := srv.List(types.WithLocation(location))
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(s))
+	}
+
+	{
+		// Test request without location.
+		name := uuid.New().String()
+		location := uuid.New().String()
+
+		mockService.EXPECT().ListBuckets(gomock.Any()).DoAndReturn(func(input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
+			assert.Nil(t, input.Location)
+			return &service.ListBucketsOutput{
+				Buckets: []*service.BucketType{
+					{Name: &name, Location: &location},
+				},
+			}, nil
+		})
+
+		s, err := srv.List()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(s))
+	}
+
+	{
+		// Test request facing error.
+		mockService.EXPECT().ListBuckets(gomock.Any()).DoAndReturn(func(input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
+			return nil, &qerror.QingStorError{}
+		})
+
+		_, err := srv.List()
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	}
 }

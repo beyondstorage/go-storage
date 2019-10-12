@@ -23,6 +23,14 @@ type Client struct {
 	segments map[string]*segment.Segment
 }
 
+// newClient will create a new client.
+func newClient(bucket iface.Bucket) *Client {
+	return &Client{
+		bucket:   bucket,
+		segments: make(map[string]*segment.Segment),
+	}
+}
+
 // Metadata implements Storager.Metadata
 func (c *Client) Metadata() (m types.Metadata, err error) {
 	errorMessage := "qingstor Metadata: %w"

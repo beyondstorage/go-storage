@@ -51,6 +51,9 @@ var allowedServicePairs = map[string]map[string]struct{}{
 		"protocol":   struct{}{},
 		"secret_key": struct{}{},
 	},
+	"list": {
+		"location": struct{}{},
+	},
 }
 
 // IsPairAvailable implements Storager.IsPairAvailable().
@@ -334,6 +337,34 @@ func parseServicePairInit(opts ...*types.Pair) (*pairServiceInit, error) {
 	if ok {
 		result.HasSecretKey = true
 		result.SecretKey = v.(string)
+	}
+	return result, nil
+}
+
+type pairServiceList struct {
+	HasLocation bool
+	Location    string
+}
+
+func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
+	result := &pairServiceList{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedServicePairs["list"]; !ok {
+			continue
+		}
+		if _, ok := allowedServicePairs["list"][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.Location]
+	if ok {
+		result.HasLocation = true
+		result.Location = v.(string)
 	}
 	return result, nil
 }

@@ -24,6 +24,9 @@
     },
     "delete": {
       "location": false
+    },
+    "list": {
+      "location": false
     }
   },
   "storage": {
