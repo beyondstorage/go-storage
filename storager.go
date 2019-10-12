@@ -52,9 +52,6 @@ type Servicer interface {
 /*
 Storager is the interface for storage service.
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY",
-and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
-
 Currently we support two different type storage services: prefix based and directory based. Prefix based storage
 service is usually a object storage service, such as AWS; And directory based service is often a POSIX file system.
 We used to treat them as different abstract level services, but in this project, we will unify both of them to make a

@@ -1,3 +1,8 @@
+/*
+Package iterator provided iterator support for storage.
+
+This package handles iteration details, and Storager implementer just need to write a NextFunc.
+*/
 package iterator
 
 import (
@@ -16,6 +21,10 @@ type Iterator interface {
 }
 
 // NextFunc is the func used in iterator.
+//
+// Notes:
+// - ErrDone should be return while there are no items any more.
+// - Input objects slice should be set every time.
 type NextFunc func(*[]*types.Object) error
 
 // PrefixBasedIterator is the prefix based iterator.
