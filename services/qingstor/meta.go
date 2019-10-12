@@ -38,6 +38,9 @@ var allowedServicePairs = map[string]map[string]struct{}{
 	"create": {
 		"location": struct{}{},
 	},
+	"delete": {
+		"location": struct{}{},
+	},
 	"get": {
 		"location": struct{}{},
 	},
@@ -210,6 +213,34 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	if !ok {
 		return nil, types.NewErrPairRequired(types.Location)
 	}
+	if ok {
+		result.HasLocation = true
+		result.Location = v.(string)
+	}
+	return result, nil
+}
+
+type pairServiceDelete struct {
+	HasLocation bool
+	Location    string
+}
+
+func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
+	result := &pairServiceDelete{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedServicePairs["delete"]; !ok {
+			continue
+		}
+		if _, ok := allowedServicePairs["delete"][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.Location]
 	if ok {
 		result.HasLocation = true
 		result.Location = v.(string)

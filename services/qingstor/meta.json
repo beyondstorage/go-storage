@@ -21,6 +21,9 @@
     },
     "create": {
       "location": true
+    },
+    "delete": {
+      "location": false
     }
   },
   "storage": {

@@ -70,35 +70,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 		return nil, fmt.Errorf(errorMessage, name, err)
 	}
 
-	// TODO: add bucket name check here.
-
-	if opt.HasLocation {
-		bucket, err := s.service.Bucket(name, opt.Location)
-		if err != nil {
-			err = handleQingStorError(err)
-			return nil, fmt.Errorf(errorMessage, name, err)
-		}
-		return &Client{
-			bucket:   bucket,
-			segments: make(map[string]*segment.Segment),
-		}, nil
-	}
-
-	url := fmt.Sprintf("%s://%s.%s:%d", s.config.Protocol, name, s.config.Host, s.config.Port)
-
-	r, err := s.noRedirectClient.Head(url)
-	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, name, err)
-	}
-	if r.StatusCode != http.StatusTemporaryRedirect {
-		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
-		return nil, fmt.Errorf(errorMessage, name, handleQingStorError(err))
-	}
-
-	// Example URL: https://bucket.zone.qingstor.com
-	location := strings.Split(r.Header.Get("Location"), ".")[1]
-	bucket, err := s.service.Bucket(name, location)
+	bucket, err := s.get(name, opt.Location)
 	if err != nil {
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, name, err)
@@ -123,13 +95,13 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 	bucket, err := s.service.Bucket(name, opt.Location)
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, name, err)
 	}
 
 	_, err = bucket.Put()
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, name, err)
 	}
 	return &Client{
 		bucket:   bucket,
@@ -144,5 +116,56 @@ func (s *Service) List(pairs ...*types.Pair) ([]storage.Storager, error) {
 
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	panic("implement me")
+	errorMessage := "delete qingstor storager [%s] failed: %w"
+
+	opt, err := parseServicePairDelete(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, name, err)
+	}
+	bucket, err := s.get(name, opt.Location)
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, name, err)
+	}
+	_, err = bucket.Delete()
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, name, err)
+	}
+	return nil
+}
+
+func (s *Service) get(name, location string) (*service.Bucket, error) {
+	errorMessage := "get qingstor storager [%s] failed: %w"
+
+	// TODO: add bucket name check here.
+	if location != "" {
+		bucket, err := s.service.Bucket(name, location)
+		if err != nil {
+			err = handleQingStorError(err)
+			return nil, fmt.Errorf(errorMessage, name, err)
+		}
+		return bucket, nil
+	}
+
+	url := fmt.Sprintf("%s://%s.%s:%d", s.config.Protocol, name, s.config.Host, s.config.Port)
+
+	r, err := s.noRedirectClient.Head(url)
+	if err != nil {
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, name, err)
+	}
+	if r.StatusCode != http.StatusTemporaryRedirect {
+		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
+		return nil, fmt.Errorf(errorMessage, name, handleQingStorError(err))
+	}
+
+	// Example URL: https://bucket.zone.qingstor.com
+	location = strings.Split(r.Header.Get("Location"), ".")[1]
+	bucket, err := s.service.Bucket(name, location)
+	if err != nil {
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, name, err)
+	}
+	return bucket, nil
 }

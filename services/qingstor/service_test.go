@@ -158,3 +158,36 @@ func TestService_Create(t *testing.T) {
 	_, err = srv.Create(path, types.WithLocation(location))
 	assert.NoError(t, err)
 }
+
+func TestService_Delete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := NewMockService(ctrl)
+
+	srv := Service{
+		service: mockService,
+	}
+
+	{
+		name := uuid.New().String()
+		location := uuid.New().String()
+
+		// Patch bucket.Delete
+		bucket := &service.Bucket{}
+		fn := func(*service.Bucket) (*service.DeleteBucketOutput, error) {
+			t.Log("Bucket delete has been called")
+			return nil, nil
+		}
+		monkey.PatchInstanceMethod(reflect.TypeOf(bucket), "Delete", fn)
+
+		mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).DoAndReturn(func(bucketName, inputLocation string) (*service.Bucket, error) {
+			assert.Equal(t, name, bucketName)
+			assert.Equal(t, location, inputLocation)
+			return bucket, nil
+		})
+
+		err := srv.Delete(name, types.WithLocation(location))
+		assert.NoError(t, err)
+	}
+}
