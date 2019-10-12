@@ -5,21 +5,12 @@
     "write": true,
     "file": true,
     "stream": true,
-    "segment": true
+    "segment": true,
+    "reach": false
   },
   "storage": {
-    "stat": {},
-    "delete": {},
-    "copy": {},
-    "move": {},
-    "list_dir": {},
-    "read": {},
-    "write_file": {},
-    "write_stream": {},
-    "init_segment": {},
-    "read_segment": {},
-    "write_segment": {},
-    "complete_segment": {},
-    "abort_segment": {}
+    "list_dir": {
+      "recursive": false
+    }
   }
 }

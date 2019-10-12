@@ -113,6 +113,20 @@ func (m Metadata) SetProtocol(v string) {
 	m[Protocol] = v
 }
 
+// GetRecursive will get recursive value from metadata.
+func (m Metadata) GetRecursive() (bool, bool) {
+	v, ok := m[Recursive]
+	if !ok {
+		return false, false
+	}
+	return v.(bool), true
+}
+
+// SetRecursive will set recursive value into metadata.
+func (m Metadata) SetRecursive(v bool) {
+	m[Recursive] = v
+}
+
 // GetSecretKey will get secret_key value from metadata.
 func (m Metadata) GetSecretKey() (string, bool) {
 	v, ok := m[SecretKey]

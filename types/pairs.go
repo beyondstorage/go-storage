@@ -11,6 +11,7 @@ const (
 	Location     = "location"
 	Port         = "port"
 	Protocol     = "protocol"
+	Recursive    = "recursive"
 	SecretKey    = "secret_key"
 	Size         = "size"
 	StorageClass = "storage_class"
@@ -77,6 +78,14 @@ func WithPort(v int) *Pair {
 func WithProtocol(v string) *Pair {
 	return &Pair{
 		Key:   Protocol,
+		Value: v,
+	}
+}
+
+// WithRecursive will apply recursive value to Options
+func WithRecursive(v bool) *Pair {
+	return &Pair{
+		Key:   Recursive,
 		Value: v,
 	}
 }

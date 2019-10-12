@@ -1,7 +1,9 @@
 package posixfs
 
 import (
+	"fmt"
 	"io"
+	"os"
 
 	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/types"
@@ -10,13 +12,18 @@ import (
 // Client is the posixfs client.
 //
 //go:generate go run ../../internal/cmd/meta_gen/main.go
-type Client struct {
-	config *Config
-}
+type Client struct{}
 
 // Stat implements Storager.Stat
 func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
-	panic("implement me")
+	errorMessage := "posixfs Stat path [%s] failed: %w"
+
+	_, err = os.Stat(path)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, path, err)
+	}
+
+	return nil, err
 }
 
 // Delete implements Storager.Delete

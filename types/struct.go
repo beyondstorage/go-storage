@@ -41,6 +41,7 @@ var AvailablePairs = map[string]string{
 	"location":      "string",
 	"port":          "int",
 	"protocol":      "string",
+	"recursive":     "bool",
 	"secret_key":    "string",
 	"size":          "int64",
 	"storage_class": "string",
