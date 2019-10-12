@@ -4,7 +4,9 @@ Package storage intend to provide a unified storage layer for Golang.
 Goals
 
 - Production ready: high test coverage, enterprise storage software adaptation, semantic versioning, well documented.
+
 - High performance: more code generation, less runtime reflect.
+
 - Vendor lock free: more generic abstraction, less internal details.
 
 Details
