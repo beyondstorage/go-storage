@@ -20,11 +20,15 @@ type Iterator interface {
 	Next() (*types.Object, error)
 }
 
-// NextFunc is the func used in iterator.
-//
-// Notes:
-// - ErrDone should be return while there are no items any more.
-// - Input objects slice should be set every time.
+/*
+NextFunc is the func used in iterator.
+
+Notes
+
+- ErrDone should be return while there are no items any more.
+
+- Input objects slice should be set every time.
+ */
 type NextFunc func(*[]*types.Object) error
 
 // PrefixBasedIterator is the prefix based iterator.
