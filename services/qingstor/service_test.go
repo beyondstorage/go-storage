@@ -3,6 +3,7 @@ package qingstor
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"reflect"
 	"testing"
@@ -253,4 +254,32 @@ func TestService_List(t *testing.T) {
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	}
+}
+
+func ExampleService_Init() {
+	srv := New()
+	err := srv.Init(
+		types.WithAccessKey("test_access_key"),
+		types.WithSecretKey("test_secret_key"),
+	)
+	if err != nil {
+		log.Printf("service init failed: %v", err)
+	}
+}
+
+func ExampleService_Get() {
+	srv := New()
+	err := srv.Init(
+		types.WithAccessKey("test_access_key"),
+		types.WithSecretKey("test_secret_key"),
+	)
+	if err != nil {
+		log.Printf("service init failed: %v", err)
+	}
+
+	store, err := srv.Get("bucket_name", types.WithLocation("location"))
+	if err != nil {
+		log.Printf("service get bucket failed: %v", err)
+	}
+	log.Printf("%v", store)
 }
