@@ -31,13 +31,15 @@ const (
 )
 
 /*
-Servicer is the top level of a storager service.
+Servicer can maintain multipart storage services.
+
+Implementer can choose to implement this interface or not.
 */
 type Servicer interface {
 	// Init will init service itself.
 	Init(pairs ...*types.Pair) (err error)
 
-	// List will list all storager under this service.
+	// List will list all storager instances under this service.
 	List(pairs ...*types.Pair) ([]Storager, error)
 	// Get will get a valid storager instance for service.
 	Get(name string, pairs ...*types.Pair) (Storager, error)
@@ -63,8 +65,8 @@ Every service will implement the same interface but with different capability an
 Everything in a service is an Object with three types: File, Stream, Dir.
 Both File and Stream are smallest unit in service, they will have content and metadata. The difference is File has
 determined size but Stream's size is uncertain. Dir is a container for File, Stream and Dir. In prefix based storage
-service, Dir is usually the namespace to split different users, for example, Bucket for object storage. And for
-directory based service, Dir will be corresponded to the directory.
+service, Dir is usually an empty key end with "/" or with special content type. And for directory based service, Dir
+will be corresponded to the real directory on file system.
 
 In the comments of every method, we will use following rules to standardize the Storager's behavior:
 
@@ -130,7 +132,6 @@ type Storager interface {
 	// Dir Operations.
 
 	// CreateDir will create a Dir in the services.
-	// In different type of service, CreateDir will have different meanings.
 	CreateDir(path string, pairs ...*types.Pair) (err error)
 	// ListDir will return an Iterator which can list all object under the Dir.
 	ListDir(path string, pairs ...*types.Pair) iterator.Iterator
