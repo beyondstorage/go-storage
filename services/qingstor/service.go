@@ -35,7 +35,7 @@ func New() *Service {
 
 // Init implements Servicer.Init
 func (s *Service) Init(pairs ...*types.Pair) (err error) {
-	errorMessage := "init qingstor service failed: %w"
+	errorMessage := "init qingstor service: %w"
 
 	opt, err := parseServicePairInit(pairs...)
 	if err != nil {
@@ -63,7 +63,7 @@ func (s *Service) Init(pairs ...*types.Pair) (err error) {
 
 // Get implements Servicer.Get
 func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	errorMessage := "get qingstor storager [%s] failed: %w"
+	errorMessage := "get qingstor storager [%s]: %w"
 
 	opt, err := parseServicePairGet(pairs...)
 	if err != nil {
@@ -83,7 +83,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 
 // Create implements Servicer.Create
 func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	errorMessage := "create qingstor storager [%s] failed: %w"
+	errorMessage := "create qingstor storager [%s]: %w"
 
 	opt, err := parseServicePairCreate(pairs...)
 	if err != nil {
@@ -116,7 +116,7 @@ func (s *Service) List(pairs ...*types.Pair) ([]storage.Storager, error) {
 
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	errorMessage := "delete qingstor storager [%s] failed: %w"
+	errorMessage := "delete qingstor storager [%s]: %w"
 
 	opt, err := parseServicePairDelete(pairs...)
 	if err != nil {
@@ -136,7 +136,7 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 }
 
 func (s *Service) get(name, location string) (*service.Bucket, error) {
-	errorMessage := "get qingstor storager [%s] failed: %w"
+	errorMessage := "get qingstor storager [%s]: %w"
 
 	// TODO: add bucket name check here.
 	if location != "" {

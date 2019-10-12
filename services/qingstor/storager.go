@@ -25,7 +25,7 @@ type Client struct {
 
 // Metadata implements Storager.Metadata
 func (c *Client) Metadata() (m types.Metadata, err error) {
-	errorMessage := "qingstor Metadata failed: %w"
+	errorMessage := "qingstor Metadata: %w"
 
 	output, err := c.bucket.GetStatistics()
 	if err != nil {
@@ -51,7 +51,7 @@ func (c *Client) Metadata() (m types.Metadata, err error) {
 
 // Stat implements Storager.Stat
 func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	errorMessage := "qingstor Stat failed: %w"
+	errorMessage := "qingstor Stat: %w"
 
 	input := &service.HeadObjectInput{}
 
@@ -75,7 +75,7 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 
 // Delete implements Storager.Delete
 func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor Delete failed: %w"
+	errorMessage := "qingstor Delete: %w"
 
 	// TODO: support delete dir.
 
@@ -89,7 +89,7 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 
 // Copy implements Storager.Copy
 func (c *Client) Copy(src, dst string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor Copy failed: %w"
+	errorMessage := "qingstor Copy: %w"
 
 	_, err = c.bucket.PutObject(dst, &service.PutObjectInput{
 		XQSCopySource: &src,
@@ -103,7 +103,7 @@ func (c *Client) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 
 // Move implements Storager.Move
 func (c *Client) Move(src, dst string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor Move failed: %w"
+	errorMessage := "qingstor Move: %w"
 
 	_, err = c.bucket.PutObject(dst, &service.PutObjectInput{
 		XQSMoveSource: &src,
@@ -117,7 +117,7 @@ func (c *Client) Move(src, dst string, pairs ...*types.Pair) (err error) {
 
 // Reach implements Storager.Reach
 func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error) {
-	errorMessage := "qingstor Reach failed: %w"
+	errorMessage := "qingstor Reach: %w"
 
 	opt, err := parseStoragePairReach(pairs...)
 	if err != nil {
@@ -155,7 +155,7 @@ func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 
 // ListDir implements Storager.ListDir
 func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterator) {
-	errorMessage := "qingstor ListDir failed: %w"
+	errorMessage := "qingstor ListDir: %w"
 
 	opt, _ := parseStoragePairListDir(pairs...)
 
@@ -230,7 +230,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 
 // Read implements Storager.Read
 func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	errorMessage := "qingstor ReadFile failed: %w"
+	errorMessage := "qingstor ReadFile: %w"
 
 	input := &service.GetObjectInput{}
 
@@ -244,7 +244,7 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 
 // WriteFile implements Storager.WriteFile
 func (c *Client) WriteFile(path string, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor WriteFile for path %s failed: %w"
+	errorMessage := "qingstor WriteFile for path %s: %w"
 
 	opts, err := parseStoragePairWriteFile(pairs...)
 	if err != nil {
@@ -277,7 +277,7 @@ func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (e
 
 // InitSegment implements Storager.InitSegment
 func (c *Client) InitSegment(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor InitSegment for path %s failed: %w"
+	errorMessage := "qingstor InitSegment for path %s: %w"
 
 	if _, ok := c.segments[path]; ok {
 		return fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated)
@@ -305,7 +305,7 @@ func (c *Client) ReadSegment(path string, offset, size int64, option ...*types.P
 
 // WriteSegment implements Storager.WriteSegment
 func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor WriteSegment for path %s failed: %w"
+	errorMessage := "qingstor WriteSegment for path %s: %w"
 
 	s, ok := c.segments[path]
 	if !ok {
@@ -342,7 +342,7 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, pair
 
 // CompleteSegment implements Storager.CompleteSegment
 func (c *Client) CompleteSegment(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor CompleteSegment for path %s failed: %w"
+	errorMessage := "qingstor CompleteSegment for path %s: %w"
 
 	s, ok := c.segments[path]
 	if !ok {
@@ -378,7 +378,7 @@ func (c *Client) CompleteSegment(path string, pairs ...*types.Pair) (err error) 
 
 // AbortSegment implements Storager.AbortSegment
 func (c *Client) AbortSegment(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor AbortSegment for path %s failed: %w"
+	errorMessage := "qingstor AbortSegment for path %s: %w"
 
 	s, ok := c.segments[path]
 	if !ok {
