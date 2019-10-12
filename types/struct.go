@@ -35,10 +35,12 @@ type Pair struct {
 var AvailablePairs = map[string]string{
 	"access_key":    "string",
 	"checksum":      "string",
+	"count":         "int64",
 	"delimiter":     "string",
 	"expire":        "int",
 	"host":          "string",
 	"location":      "string",
+	"name":          "string",
 	"port":          "int",
 	"protocol":      "string",
 	"recursive":     "bool",

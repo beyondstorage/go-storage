@@ -90,7 +90,12 @@ type Storager interface {
 
 	// Base Operations.
 
-	// Check(path string, pairs ...*types.Pair) (err error)
+	// Metadata will return current storager's metadata.
+	//
+	// Implementer:
+	//   - MUST return following data: Name
+	//   - MAY return following data: Location, Size, Count
+	Metadata() (types.Metadata, error)
 	// Stat will stat a path to get info of an object.
 	//
 	// Implementer:

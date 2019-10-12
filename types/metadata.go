@@ -29,6 +29,20 @@ func (m Metadata) SetChecksum(v string) {
 	m[Checksum] = v
 }
 
+// GetCount will get count value from metadata.
+func (m Metadata) GetCount() (int64, bool) {
+	v, ok := m[Count]
+	if !ok {
+		return 0, false
+	}
+	return v.(int64), true
+}
+
+// SetCount will set count value into metadata.
+func (m Metadata) SetCount(v int64) {
+	m[Count] = v
+}
+
 // GetDelimiter will get delimiter value from metadata.
 func (m Metadata) GetDelimiter() (string, bool) {
 	v, ok := m[Delimiter]
@@ -83,6 +97,20 @@ func (m Metadata) GetLocation() (string, bool) {
 // SetLocation will set location value into metadata.
 func (m Metadata) SetLocation(v string) {
 	m[Location] = v
+}
+
+// GetName will get name value from metadata.
+func (m Metadata) GetName() (string, bool) {
+	v, ok := m[Name]
+	if !ok {
+		return "", false
+	}
+	return v.(string), true
+}
+
+// SetName will set name value into metadata.
+func (m Metadata) SetName(v string) {
+	m[Name] = v
 }
 
 // GetPort will get port value from metadata.

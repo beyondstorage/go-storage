@@ -11,11 +11,58 @@ import (
 	"github.com/google/uuid"
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/stretchr/testify/assert"
+	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 )
+
+func TestClient_Metadata(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBucket := NewMockBucket(ctrl)
+
+	{
+		client := Client{
+			bucket: mockBucket,
+		}
+
+		name := uuid.New().String()
+		location := uuid.New().String()
+		size := int64(1234)
+		count := int64(4321)
+
+		mockBucket.EXPECT().GetStatistics().DoAndReturn(func() (*service.GetBucketStatisticsOutput, error) {
+			return &service.GetBucketStatisticsOutput{
+				Name:     &name,
+				Location: &location,
+				Size:     &size,
+				Count:    &count,
+			}, nil
+		})
+		m, err := client.Metadata()
+		assert.NoError(t, err)
+		assert.NotNil(t, m)
+		gotName, ok := m.GetName()
+		assert.True(t, ok)
+		assert.Equal(t, name, gotName)
+	}
+
+	{
+		client := Client{
+			bucket: mockBucket,
+		}
+
+		mockBucket.EXPECT().GetStatistics().DoAndReturn(func() (*service.GetBucketStatisticsOutput, error) {
+			return nil, &qerror.QingStorError{}
+		})
+		_, err := client.Metadata()
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, types.ErrUnhandledError))
+	}
+}
 
 func TestClient_AbortSegment(t *testing.T) {
 	ctrl := gomock.NewController(t)

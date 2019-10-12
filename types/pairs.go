@@ -5,10 +5,12 @@ package types
 const (
 	AccessKey    = "access_key"
 	Checksum     = "checksum"
+	Count        = "count"
 	Delimiter    = "delimiter"
 	Expire       = "expire"
 	Host         = "host"
 	Location     = "location"
+	Name         = "name"
 	Port         = "port"
 	Protocol     = "protocol"
 	Recursive    = "recursive"
@@ -30,6 +32,14 @@ func WithAccessKey(v string) *Pair {
 func WithChecksum(v string) *Pair {
 	return &Pair{
 		Key:   Checksum,
+		Value: v,
+	}
+}
+
+// WithCount will apply count value to Options
+func WithCount(v int64) *Pair {
+	return &Pair{
+		Key:   Count,
 		Value: v,
 	}
 }
@@ -62,6 +72,14 @@ func WithHost(v string) *Pair {
 func WithLocation(v string) *Pair {
 	return &Pair{
 		Key:   Location,
+		Value: v,
+	}
+}
+
+// WithName will apply name value to Options
+func WithName(v string) *Pair {
+	return &Pair{
+		Key:   Name,
 		Value: v,
 	}
 }

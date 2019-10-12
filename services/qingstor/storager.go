@@ -23,6 +23,32 @@ type Client struct {
 	segments map[string]*segment.Segment
 }
 
+// Metadata implements Storager.Metadata
+func (c *Client) Metadata() (m types.Metadata, err error) {
+	errorMessage := "qingstor Metadata failed: %w"
+
+	output, err := c.bucket.GetStatistics()
+	if err != nil {
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	m = make(types.Metadata)
+	if output.Name != nil {
+		m.SetName(*output.Name)
+	}
+	if output.Location != nil {
+		m.SetLocation(*output.Location)
+	}
+	if output.Size != nil {
+		m.SetSize(*output.Size)
+	}
+	if output.Count != nil {
+		m.SetCount(*output.Count)
+	}
+	return m, nil
+}
+
 // Stat implements Storager.Stat
 func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	errorMessage := "qingstor Stat failed: %w"
