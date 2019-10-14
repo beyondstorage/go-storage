@@ -22,6 +22,7 @@ type Client struct {
 	osOpen       func(name string) (*os.File, error)
 	osRemove     func(name string) error
 	osRemoveAll  func(name string) error
+	osRename     func(oldpath, newpath string) error
 	osStat       func(name string) (os.FileInfo, error)
 }
 
@@ -32,6 +33,7 @@ func NewClient() *Client {
 		osOpen:       os.Open,
 		osRemove:     os.Remove,
 		osRemoveAll:  os.RemoveAll,
+		osRename:     os.Rename,
 		osStat:       os.Stat,
 	}
 }
@@ -121,12 +123,18 @@ func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 
 // Move implements Storager.Move
 func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
-	panic("implement me")
+	errorMessage := "posixfs Move from [%s] to [%s]: %w"
+
+	err = c.osRename(src, dst)
+	if err != nil {
+		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
+	}
+	return
 }
 
 // Reach implements Storager.Reach
 func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error) {
-	panic("implement me")
+	panic("not supported")
 }
 
 // CreateDir implements Storager.CreateDir

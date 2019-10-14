@@ -310,3 +310,42 @@ func TestClient_Copy(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestClient_Move(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
+		srcName := uuid.New().String()
+		dstName := uuid.New().String()
+
+		client := Client{
+			osRename: func(oldpath, newpath string) error {
+				assert.Equal(t, srcName, oldpath)
+				assert.Equal(t, dstName, newpath)
+				return &os.LinkError{
+					Op:  "rename",
+					Old: oldpath,
+					New: newpath,
+					Err: syscall.EISDIR,
+				}
+			},
+		}
+
+		err := client.Move(srcName, dstName)
+		assert.Error(t, err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		srcName := uuid.New().String()
+		dstName := uuid.New().String()
+
+		client := Client{
+			osRename: func(oldpath, newpath string) error {
+				assert.Equal(t, srcName, oldpath)
+				assert.Equal(t, dstName, newpath)
+				return nil
+			},
+		}
+
+		err := client.Move(srcName, dstName)
+		assert.NoError(t, err)
+	})
+}
