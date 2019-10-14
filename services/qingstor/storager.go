@@ -217,7 +217,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 		}
 
 		// Set input objects
-		*objects = buf
+		*objects = buf[:idx]
 
 		marker = convert.StringValue(output.NextMarker)
 		if marker == "" {
