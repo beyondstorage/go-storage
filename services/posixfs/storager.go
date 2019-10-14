@@ -9,13 +9,32 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+// StreamModeType is the stream mode type.
+const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.ModeCharDevice
+
 // Client is the posixfs client.
 //
 //go:generate go run ../../internal/cmd/meta_gen/main.go
-type Client struct{}
+type Client struct {
+	// All stdlib call will be added here for better unit test.
+	ioCopyBuffer func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
+	osCreate     func(name string) (*os.File, error)
+	osOpen       func(name string) (*os.File, error)
+	osRemove     func(name string) error
+	osRemoveAll  func(name string) error
+	osStat       func(name string) (os.FileInfo, error)
+}
 
-// StreamModeType is the stream mode type.
-const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.ModeCharDevice
+func NewClient() *Client {
+	return &Client{
+		ioCopyBuffer: io.CopyBuffer,
+		osCreate:     os.Create,
+		osOpen:       os.Open,
+		osRemove:     os.Remove,
+		osRemoveAll:  os.RemoveAll,
+		osStat:       os.Stat,
+	}
+}
 
 // Metadata implements Storager.Metadata
 //
@@ -29,7 +48,7 @@ func (c *Client) Metadata() (m types.Metadata, err error) {
 func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
 	errorMessage := "posixfs Stat path [%s]: %w"
 
-	fi, err := os.Stat(path)
+	fi, err := c.osStat(path)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
@@ -61,17 +80,16 @@ func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err 
 func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs Delete path [%s]: %w"
 
-	opt, err := parseStoragePairDelete()
+	opt, err := parseStoragePairDelete(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, err)
 	}
 
 	if opt.HasRecursive && opt.Recursive {
-		err = os.RemoveAll(path)
+		err = c.osRemoveAll(path)
 	} else {
-		err = os.Remove(path)
+		err = c.osRemove(path)
 	}
-	err = os.Remove(path)
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
@@ -80,7 +98,25 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 
 // Copy implements Storager.Copy
 func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
-	panic("implement me")
+	errorMessage := "posixfs Copy from [%s] to [%s]: %w"
+
+	srcFile, err := c.osOpen(src)
+	if err != nil {
+		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
+	}
+	defer srcFile.Close()
+
+	dstFile, err := c.osCreate(dst)
+	if err != nil {
+		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
+	}
+	defer dstFile.Close()
+
+	_, err = c.ioCopyBuffer(dstFile, srcFile, make([]byte, 1024*1024))
+	if err != nil {
+		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
+	}
+	return
 }
 
 // Move implements Storager.Move

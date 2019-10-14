@@ -1,15 +1,25 @@
 package posixfs
 
 import (
+	"errors"
+	"io"
 	"os"
+	"reflect"
+	"syscall"
 	"testing"
 	"time"
 
 	"bou.ke/monkey"
 	"github.com/Xuanwo/storage/types"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestNewClient(t *testing.T) {
+	c := NewClient()
+	assert.NotNil(t, c)
+}
 
 func TestClient_Metadata(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -141,13 +151,12 @@ func TestClient_Stat(t *testing.T) {
 
 	for _, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			fn := func(name string) (os.FileInfo, error) {
-				assert.Equal(t, v.name, name)
-				return v.file, v.err
+			client := Client{
+				osStat: func(name string) (os.FileInfo, error) {
+					assert.Equal(t, v.name, name)
+					return v.file, v.err
+				},
 			}
-			monkey.Patch(os.Stat, fn)
-
-			client := Client{}
 			o, err := client.Stat(v.name)
 			assert.Equal(t, v.err == nil, err == nil)
 			if v.object != nil {
@@ -158,4 +167,146 @@ func TestClient_Stat(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestClient_WriteStream(t *testing.T) {
+	err := os.Remove("/tmp/test")
+	var e *os.PathError
+	if errors.As(err, &e) {
+		t.Logf("%#v", e)
+	}
+}
+
+func TestClient_Delete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name      string
+		err       error
+		recursive bool
+	}{
+		{"delete file", nil, false},
+		{"delete dir", nil, true},
+		{"delete nonempty dir", &os.PathError{
+			Op:   "remove",
+			Path: "delete nonempty dir",
+			Err:  syscall.ENOTEMPTY,
+		}, false},
+	}
+
+	for _, v := range tests {
+		v := v
+
+		t.Run(v.name, func(t *testing.T) {
+
+			client := Client{
+				osRemove: func(name string) error {
+					assert.Equal(t, v.name, name)
+					assert.False(t, v.recursive)
+					return v.err
+				},
+				osRemoveAll: func(name string) error {
+					assert.Equal(t, v.name, name)
+					assert.True(t, v.recursive)
+					return v.err
+				},
+			}
+			pairs := make([]*types.Pair, 0)
+			if v.recursive {
+				pairs = append(pairs, types.WithRecursive(true))
+			}
+			err := client.Delete(v.name, pairs...)
+			assert.Equal(t, v.err == nil, err == nil)
+		})
+	}
+}
+
+func TestClient_Copy(t *testing.T) {
+	t.Run("Failed at open source file", func(t *testing.T) {
+		srcName := uuid.New().String()
+		dstName := uuid.New().String()
+		client := Client{
+			osOpen: func(name string) (file *os.File, e error) {
+				assert.Equal(t, srcName, name)
+				return nil, &os.PathError{
+					Op:  "open",
+					Err: syscall.ENONET,
+				}
+			},
+		}
+
+		err := client.Copy(srcName, dstName)
+		assert.Error(t, err)
+	})
+
+	t.Run("Failed at open dst file", func(t *testing.T) {
+		srcName := uuid.New().String()
+		dstName := uuid.New().String()
+		client := Client{
+			osOpen: func(name string) (file *os.File, e error) {
+				assert.Equal(t, srcName, name)
+				return nil, nil
+			},
+			osCreate: func(name string) (file *os.File, e error) {
+				assert.Equal(t, dstName, name)
+				return nil, &os.PathError{
+					Op:  "open",
+					Err: syscall.EEXIST,
+				}
+			},
+		}
+
+		err := client.Copy(srcName, dstName)
+		assert.Error(t, err)
+	})
+
+	t.Run("Failed at io.CopyBuffer", func(t *testing.T) {
+		srcName := uuid.New().String()
+		dstName := uuid.New().String()
+		client := Client{
+			osOpen: func(name string) (file *os.File, e error) {
+				assert.Equal(t, srcName, name)
+				return nil, nil
+			},
+			osCreate: func(name string) (file *os.File, e error) {
+				assert.Equal(t, dstName, name)
+				return nil, nil
+			},
+			ioCopyBuffer: func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error) {
+				return 0, io.ErrShortWrite
+			},
+		}
+
+		err := client.Copy(srcName, dstName)
+		assert.Error(t, err)
+	})
+
+	t.Run("All successful", func(t *testing.T) {
+		fakeFile := &os.File{}
+		// Monkey patch the file's Close.
+		monkey.PatchInstanceMethod(reflect.TypeOf(fakeFile), "Close",
+			func(f *os.File) error {
+				return nil
+			})
+
+		srcName := uuid.New().String()
+		dstName := uuid.New().String()
+		client := Client{
+			osOpen: func(name string) (file *os.File, e error) {
+				assert.Equal(t, srcName, name)
+				return fakeFile, nil
+			},
+			osCreate: func(name string) (file *os.File, e error) {
+				assert.Equal(t, dstName, name)
+				return fakeFile, nil
+			},
+			ioCopyBuffer: func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error) {
+				return 0, nil
+			},
+		}
+
+		err := client.Copy(srcName, dstName)
+		assert.NoError(t, err)
+	})
 }
