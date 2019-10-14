@@ -71,6 +71,8 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 		return nil, fmt.Errorf(errorMessage, err)
 	}
 
+	// TODO: Add dir support.
+
 	o = &types.Object{
 		Name:     path,
 		Type:     types.ObjectTypeFile,

@@ -11,6 +11,9 @@
   "storage": {
     "list_dir": {
       "recursive": false
+    },
+    "delete": {
+      "recursive": false
     }
   }
 }

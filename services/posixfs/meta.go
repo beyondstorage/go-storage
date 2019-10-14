@@ -19,6 +19,9 @@ func (c *Client) Capability() types.Capability {
 }
 
 var allowedStoragePairs = map[string]map[string]struct{}{
+	storage.ActionDelete: {
+		"recursive": struct{}{},
+	},
 	storage.ActionListDir: {
 		"recursive": struct{}{},
 	},
@@ -35,6 +38,34 @@ func (c *Client) IsPairAvailable(action, pair string) bool {
 		return false
 	}
 	return true
+}
+
+type pairStorageDelete struct {
+	HasRecursive bool
+	Recursive    bool
+}
+
+func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
+	result := &pairStorageDelete{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedStoragePairs[storage.ActionDelete]; !ok {
+			continue
+		}
+		if _, ok := allowedStoragePairs[storage.ActionDelete][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.Recursive]
+	if ok {
+		result.HasRecursive = true
+		result.Recursive = v.(bool)
+	}
+	return result, nil
 }
 
 type pairStorageListDir struct {

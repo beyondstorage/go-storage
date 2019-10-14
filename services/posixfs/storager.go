@@ -14,21 +14,68 @@ import (
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 type Client struct{}
 
+// StreamModeType is the stream mode type.
+const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.ModeCharDevice
+
+// Metadata implements Storager.Metadata
+//
+// Currently, there is no useful metadata for posixfs, just keep it empty.
+func (c *Client) Metadata() (m types.Metadata, err error) {
+	m = make(types.Metadata)
+	return m, nil
+}
+
 // Stat implements Storager.Stat
 func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
-	errorMessage := "posixfs Stat path [%s] failed: %w"
+	errorMessage := "posixfs Stat path [%s]: %w"
 
-	_, err = os.Stat(path)
+	fi, err := os.Stat(path)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, path, err)
+		return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
 
-	return nil, err
+	o = &types.Object{
+		Name:     path,
+		Metadata: make(types.Metadata),
+	}
+
+	if fi.IsDir() {
+		o.Type = types.ObjectTypeDir
+		return
+	}
+	if fi.Mode().IsRegular() {
+		o.Type = types.ObjectTypeFile
+		o.SetSize(fi.Size())
+		return
+	}
+	if fi.Mode()&StreamModeType != 0 {
+		o.Type = types.ObjectTypeStream
+		return
+	}
+
+	o.Type = types.ObjectTypeInvalid
+	return o, nil
 }
 
 // Delete implements Storager.Delete
-func (c *Client) Delete(path string, option ...*types.Pair) (err error) {
-	panic("implement me")
+func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
+	errorMessage := "posixfs Delete path [%s]: %w"
+
+	opt, err := parseStoragePairDelete()
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, err)
+	}
+
+	if opt.HasRecursive && opt.Recursive {
+		err = os.RemoveAll(path)
+	} else {
+		err = os.Remove(path)
+	}
+	err = os.Remove(path)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, handleOsError(err))
+	}
+	return nil
 }
 
 // Copy implements Storager.Copy

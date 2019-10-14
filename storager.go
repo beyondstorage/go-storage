@@ -92,8 +92,7 @@ type Storager interface {
 	// Metadata will return current storager's metadata.
 	//
 	// Implementer:
-	//   - MUST return following data: Name
-	//   - MAY return following data: Location, Size, Count
+	//   - MAY return following data: Name,Location, Size, Count
 	Metadata() (types.Metadata, error)
 	// Stat will stat a path to get info of an object.
 	//
