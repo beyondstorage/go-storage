@@ -14,6 +14,7 @@ import (
 	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
+	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 )
@@ -382,6 +383,11 @@ func TestClient_ListDir(t *testing.T) {
 		} else if item.Type == types.ObjectTypeDir {
 			assert.Equal(t, item.Name, *v.output.CommonPrefixes[0])
 		}
+
+		item, err = x.Next()
+		assert.Error(t, err)
+		assert.Nil(t, item)
+		assert.True(t, errors.Is(err, iterator.ErrDone))
 	}
 }
 
