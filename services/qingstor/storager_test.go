@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/pengsrc/go-shared/convert"
@@ -14,7 +16,6 @@ import (
 	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
-	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 )
@@ -322,10 +323,16 @@ func TestClient_ListDir(t *testing.T) {
 
 	mockBucket := NewMockBucket(ctrl)
 
+	keys := make([]string, 7)
+	for idx := range keys {
+		keys[idx] = uuid.New().String()
+	}
+
 	tests := []struct {
 		name   string
 		pairs  []*types.Pair
 		output *service.ListObjectsOutput
+		items  []*types.Object
 		err    error
 	}{
 		{
@@ -334,7 +341,16 @@ func TestClient_ListDir(t *testing.T) {
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
 				Keys: []*service.KeyType{
-					{Key: service.String(uuid.New().String())},
+					{
+						Key: service.String(keys[0]),
+					},
+				},
+			},
+			[]*types.Object{
+				{
+					Name:     keys[0],
+					Type:     types.ObjectTypeFile,
+					Metadata: make(types.Metadata),
 				},
 			},
 			nil,
@@ -347,7 +363,110 @@ func TestClient_ListDir(t *testing.T) {
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
 				CommonPrefixes: []*string{
-					service.String(uuid.New().String()),
+					service.String(keys[1]),
+				},
+			},
+			[]*types.Object{
+				{
+					Name:     keys[1],
+					Type:     types.ObjectTypeDir,
+					Metadata: make(types.Metadata),
+				},
+			},
+			nil,
+		},
+		{
+			"list with return next marker",
+			[]*types.Pair{
+				types.WithDelimiter("/"),
+			},
+			&service.ListObjectsOutput{
+				NextMarker: service.String("test_marker"),
+				HasMore:    service.Bool(false),
+				CommonPrefixes: []*string{
+					service.String(keys[2]),
+				},
+			},
+			[]*types.Object{
+				{
+					Name:     keys[2],
+					Type:     types.ObjectTypeDir,
+					Metadata: make(types.Metadata),
+				},
+			},
+			nil,
+		},
+		{
+			"list with return empty keys",
+			[]*types.Pair{
+				types.WithDelimiter("/"),
+			},
+			&service.ListObjectsOutput{
+				NextMarker: service.String("test_marker"),
+				HasMore:    service.Bool(true),
+			},
+			nil,
+			nil,
+		},
+		{
+			"list with error return",
+			nil,
+			nil,
+			nil,
+			&qerror.QingStorError{
+				StatusCode: 401,
+			},
+		},
+		{
+			"list with all data returned",
+			nil,
+			&service.ListObjectsOutput{
+				HasMore: service.Bool(false),
+				Keys: []*service.KeyType{
+					{
+						Key:          service.String(keys[5]),
+						MimeType:     service.String("application/json"),
+						StorageClass: service.String("cool"),
+						Etag:         service.String("xxxxx"),
+						Size:         service.Int64(1233),
+						Modified:     service.Int(1233),
+					},
+				},
+			},
+			[]*types.Object{
+				{
+					Name: keys[5],
+					Type: types.ObjectTypeFile,
+					Metadata: types.Metadata{
+						types.Type:         "application/json",
+						types.StorageClass: "cool",
+						types.Checksum:     "xxxxx",
+						types.Size:         int64(1233),
+						types.UpdatedAt:    time.Unix(1233, 0),
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"list with return a dir MIME type",
+			nil,
+			&service.ListObjectsOutput{
+				HasMore: service.Bool(false),
+				Keys: []*service.KeyType{
+					{
+						Key:      service.String(keys[6]),
+						MimeType: convert.String(DirectoryMIMEType),
+					},
+				},
+			},
+			[]*types.Object{
+				{
+					Name: keys[6],
+					Type: types.ObjectTypeDir,
+					Metadata: types.Metadata{
+						types.Type: DirectoryMIMEType,
+					},
 				},
 			},
 			nil,
@@ -355,39 +474,39 @@ func TestClient_ListDir(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		path := uuid.New().String()
+		t.Run(v.name, func(t *testing.T) {
+			path := uuid.New().String()
 
-		mockBucket.EXPECT().ListObjects(gomock.Any()).DoAndReturn(func(input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
-			assert.Equal(t, path, *input.Prefix)
-			assert.Equal(t, 200, *input.Limit)
-			assert.Equal(t, "", *input.Marker)
-			return v.output, v.err
+			mockBucket.EXPECT().ListObjects(gomock.Any()).DoAndReturn(func(input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
+				assert.Equal(t, path, *input.Prefix)
+				assert.Equal(t, 200, *input.Limit)
+				return v.output, v.err
+			})
+
+			client := Client{
+				bucket: mockBucket,
+			}
+
+			x := client.ListDir(path, v.pairs...)
+			for _, expectItem := range v.items {
+				item, err := x.Next()
+				if v.err != nil {
+					assert.Error(t, err)
+					assert.True(t, errors.Is(err, v.err))
+				}
+				assert.NotNil(t, item)
+				assert.EqualValues(t, expectItem, item)
+			}
+			if len(v.items) == 0 {
+				item, err := x.Next()
+				if v.err != nil {
+					assert.True(t, errors.Is(err, types.ErrUnhandledError))
+				} else {
+					assert.True(t, errors.Is(err, iterator.ErrDone))
+				}
+				assert.Nil(t, item)
+			}
 		})
-
-		client := Client{
-			bucket: mockBucket,
-		}
-
-		x := client.ListDir(path, v.pairs...)
-		item, err := x.Next()
-		if v.err != nil {
-			assert.Error(t, err)
-			assert.True(t, errors.Is(err, v.err))
-		}
-		if v.err == nil && *v.output.HasMore {
-			assert.NotNil(t, item)
-			assert.NoError(t, err)
-		}
-		if item.Type == types.ObjectTypeFile {
-			assert.Equal(t, item.Name, *v.output.Keys[0].Key)
-		} else if item.Type == types.ObjectTypeDir {
-			assert.Equal(t, item.Name, *v.output.CommonPrefixes[0])
-		}
-
-		item, err = x.Next()
-		assert.Error(t, err)
-		assert.Nil(t, item)
-		assert.True(t, errors.Is(err, iterator.ErrDone))
 	}
 }
 
