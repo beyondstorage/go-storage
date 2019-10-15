@@ -217,7 +217,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 			o.SetType(service.StringValue(v.MimeType))
 			o.SetStorageClass(service.StringValue(v.StorageClass))
 			o.SetChecksum(service.StringValue(v.Etag))
-			o.SetSize(*v.Size)
+			o.SetSize(service.Int64Value(v.Size))
 
 			buf[idx] = o
 			idx++
