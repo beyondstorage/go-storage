@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"testing"
 
@@ -321,6 +322,7 @@ func TestClient_ListDir(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockBucket := NewMockBucket(ctrl)
+	size := rand.Int63()
 
 	tests := []struct {
 		name   string
@@ -334,7 +336,7 @@ func TestClient_ListDir(t *testing.T) {
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
 				Keys: []*service.KeyType{
-					{Key: service.String(uuid.New().String())},
+					{Key: service.String(uuid.New().String()), Size:&size},
 				},
 			},
 			nil,

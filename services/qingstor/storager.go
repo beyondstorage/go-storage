@@ -203,14 +203,21 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 		}
 
 		for _, v := range output.Keys {
+			keyType := types.ObjectTypeFile
+			// set key type to dir depends on MimeType
+			if service.StringValue(v.MimeType) == types.MiMimeTypeDir {
+				keyType = types.ObjectTypeDir
+			}
 			o := &types.Object{
 				Name:     *v.Key,
-				Type:     types.ObjectTypeFile,
+				Type:     keyType,
+				Modified: service.IntValue(v.Modified),
 				Metadata: make(types.Metadata),
 			}
 			o.SetType(service.StringValue(v.MimeType))
 			o.SetStorageClass(service.StringValue(v.StorageClass))
 			o.SetChecksum(service.StringValue(v.Etag))
+			o.SetSize(*v.Size)
 
 			buf[idx] = o
 			idx++

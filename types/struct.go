@@ -5,6 +5,8 @@ const (
 	ObjectTypeFile   = "file"
 	ObjectTypeStream = "stream"
 	ObjectTypeDir    = "dir"
+
+	MiMimeTypeDir = "application/x-directory"
 )
 
 // Object may be a *File, *Dir or a *Stream.
@@ -13,6 +15,8 @@ type Object struct {
 	Name string
 	// type should be one of "file", "stream" or "dir".
 	Type string
+	// modified is the time of being modified, unix second format
+	Modified int
 
 	// metadata is the metadata of the object.
 	Metadata
