@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/pengsrc/go-shared/convert"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
@@ -221,6 +222,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 				o.SetStorageClass(service.StringValue(v.StorageClass))
 				o.SetChecksum(service.StringValue(v.Etag))
 				o.SetSize(service.Int64Value(v.Size))
+				o.SetUpdatedAt(time.Unix(int64(service.IntValue(v.Modified)), 0))
 			}
 
 			buf[idx] = o
