@@ -1,7 +1,6 @@
 package qingstor
 
 import (
-	"errors"
 	"fmt"
 
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
@@ -14,8 +13,9 @@ func handleQingStorError(err error) error {
 		panic("error must not be nil")
 	}
 
-	var e qserror.QingStorError
-	if !errors.As(err, &e) {
+	var e *qserror.QingStorError
+	e, ok := err.(*qserror.QingStorError)
+	if !ok {
 		return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
 	}
 

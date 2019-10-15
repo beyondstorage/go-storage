@@ -3,6 +3,8 @@ package qingstor
 import (
 	"fmt"
 	"io"
+	"strings"
+	"time"
 
 	"github.com/pengsrc/go-shared/convert"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
@@ -194,8 +196,9 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
-				Name: *v,
-				Type: types.ObjectTypeDir,
+				Name:     *v,
+				Type:     types.ObjectTypeDir,
+				Metadata: make(types.Metadata),
 			}
 
 			buf[idx] = o
@@ -205,12 +208,33 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 		for _, v := range output.Keys {
 			o := &types.Object{
 				Name:     *v.Key,
-				Type:     types.ObjectTypeFile,
 				Metadata: make(types.Metadata),
 			}
-			o.SetType(service.StringValue(v.MimeType))
-			o.SetStorageClass(service.StringValue(v.StorageClass))
-			o.SetChecksum(service.StringValue(v.Etag))
+
+			// If Key end with delimiter or key's MimeType == DirectoryMIMEType,
+			// we should treat this key as a Dir Object.
+			if (delimiter != "" && strings.HasSuffix(*v.Key, delimiter)) ||
+				service.StringValue(v.MimeType) == DirectoryMIMEType {
+				o.Type = types.ObjectTypeDir
+			} else {
+				o.Type = types.ObjectTypeFile
+			}
+
+			if v.MimeType != nil {
+				o.SetType(service.StringValue(v.MimeType))
+			}
+			if v.StorageClass != nil {
+				o.SetStorageClass(service.StringValue(v.StorageClass))
+			}
+			if v.Etag != nil {
+				o.SetChecksum(service.StringValue(v.Etag))
+			}
+			if v.Size != nil {
+				o.SetSize(service.Int64Value(v.Size))
+			}
+			if v.Modified != nil {
+				o.SetUpdatedAt(time.Unix(int64(service.IntValue(v.Modified)), 0))
+			}
 
 			buf[idx] = o
 			idx++
