@@ -3,6 +3,7 @@ package qingstor
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/pengsrc/go-shared/convert"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
@@ -205,12 +206,22 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 		for _, v := range output.Keys {
 			o := &types.Object{
 				Name:     *v.Key,
-				Type:     types.ObjectTypeFile,
 				Metadata: make(types.Metadata),
 			}
-			o.SetType(service.StringValue(v.MimeType))
-			o.SetStorageClass(service.StringValue(v.StorageClass))
-			o.SetChecksum(service.StringValue(v.Etag))
+
+			// If Key end with delimiter or key's MimeType == DirectoryMIMEType,
+			// we should treat this key as a Dir Object.
+			if (delimiter != "" && strings.HasSuffix(*v.Key, delimiter)) ||
+				service.StringValue(v.MimeType) == DirectoryMIMEType {
+				o.Type = types.ObjectTypeDir
+				o.SetType(service.StringValue(v.MimeType))
+			} else {
+				o.Type = types.ObjectTypeFile
+				o.SetType(service.StringValue(v.MimeType))
+				o.SetStorageClass(service.StringValue(v.StorageClass))
+				o.SetChecksum(service.StringValue(v.Etag))
+				o.SetSize(service.Int64Value(v.Size))
+			}
 
 			buf[idx] = o
 			idx++
