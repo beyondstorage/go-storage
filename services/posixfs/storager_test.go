@@ -349,3 +349,11 @@ func TestClient_Move(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestClient_Reach(t *testing.T) {
+	client := Client{}
+
+	assert.Panics(t, func() {
+		_, _ = client.Reach(uuid.New().String())
+	})
+}
