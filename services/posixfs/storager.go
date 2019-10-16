@@ -19,6 +19,7 @@ type Client struct {
 	// All stdlib call will be added here for better unit test.
 	ioCopyBuffer func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
 	osCreate     func(name string) (*os.File, error)
+	osMkdirAll   func(path string, perm os.FileMode) error
 	osOpen       func(name string) (*os.File, error)
 	osRemove     func(name string) error
 	osRemoveAll  func(name string) error
@@ -30,6 +31,7 @@ func NewClient() *Client {
 	return &Client{
 		ioCopyBuffer: io.CopyBuffer,
 		osCreate:     os.Create,
+		osMkdirAll:   os.MkdirAll,
 		osOpen:       os.Open,
 		osRemove:     os.Remove,
 		osRemoveAll:  os.RemoveAll,
@@ -139,7 +141,13 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 
 // CreateDir implements Storager.CreateDir
 func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
-	panic("implement me")
+	errorMessage := "posixfs CreateDir [%s]: %w"
+
+	err = c.osMkdirAll(path, 0755)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, handleOsError(err))
+	}
+	return
 }
 
 // ListDir implements Storager.ListDir

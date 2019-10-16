@@ -357,3 +357,38 @@ func TestClient_Reach(t *testing.T) {
 		_, _ = client.Reach(uuid.New().String())
 	})
 }
+
+func TestClient_CreateDir(t *testing.T) {
+	paths := make([]string, 10)
+	for k := range paths {
+		paths[k] = uuid.New().String()
+	}
+	tests := []struct {
+		name string
+		err  error
+	}{
+		{
+			"error",
+			&os.PathError{"mkdir", paths[0], syscall.ENOTDIR},
+		},
+		{
+			"success",
+			nil,
+		},
+	}
+
+	for k, v := range tests {
+		t.Run(v.name, func(t *testing.T) {
+			client := Client{
+				osMkdirAll: func(path string, perm os.FileMode) error {
+					assert.Equal(t, paths[k], path)
+					assert.Equal(t, os.FileMode(0755), perm)
+					return v.err
+				},
+			}
+
+			err := client.CreateDir(paths[k])
+			assert.Equal(t, v.err == nil, err == nil)
+		})
+	}
+}
