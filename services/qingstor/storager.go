@@ -76,10 +76,22 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 		Type:     types.ObjectTypeFile,
 		Metadata: make(types.Metadata),
 	}
-	o.SetType(service.StringValue(output.ContentType))
-	o.SetSize(*output.ContentLength)
-	o.SetChecksum(service.StringValue(output.ETag))
-	o.SetStorageClass(service.StringValue(output.XQSStorageClass))
+
+	if output.ContentType != nil {
+		o.SetType(service.StringValue(output.ContentType))
+	}
+	if output.ContentLength != nil {
+		o.SetSize(*output.ContentLength)
+	}
+	if output.ETag != nil {
+		o.SetChecksum(service.StringValue(output.ETag))
+	}
+	if output.XQSStorageClass != nil {
+		o.SetStorageClass(service.StringValue(output.XQSStorageClass))
+	}
+	if output.LastModified != nil {
+		o.SetUpdatedAt(service.TimeValue(output.LastModified))
+	}
 	return o, nil
 }
 
