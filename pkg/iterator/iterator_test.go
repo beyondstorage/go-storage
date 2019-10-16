@@ -10,19 +10,19 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-func TestNewPrefixBasedIterator(t *testing.T) {
+func TestNewGenericIterator(t *testing.T) {
 	fn := NextFunc(func(informer *[]*types.Object) error {
 		return nil
 	})
 
-	got := NewPrefixBasedIterator(fn)
+	got := NewGenericIterator(fn)
 
 	assert.Equal(t, 0, got.index)
 	assert.Equal(t, []*types.Object(nil), got.buf)
 	assert.Equal(t, fmt.Sprintf("%v", fn), fmt.Sprintf("%v", got.next))
 }
 
-func TestPrefixBasedIterator_Next(t *testing.T) {
+func TestGenericIterator_Next(t *testing.T) {
 	testErr := errors.New("test error")
 
 	fn := NextFunc(func(informer *[]*types.Object) error {
@@ -31,7 +31,7 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 		*informer = x
 		return nil
 	})
-	it := NewPrefixBasedIterator(fn)
+	it := NewGenericIterator(fn)
 	// Every call will get an element.
 	i, err := it.Next()
 	assert.NoError(t, err)
@@ -43,7 +43,7 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 	fn = func(informer *[]*types.Object) error {
 		return testErr
 	}
-	it = NewPrefixBasedIterator(fn)
+	it = NewGenericIterator(fn)
 	i, err = it.Next()
 	assert.Error(t, err)
 	assert.Nil(t, i)
@@ -52,7 +52,7 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 	fn = func(informer *[]*types.Object) error {
 		return ErrDone
 	}
-	it = NewPrefixBasedIterator(fn)
+	it = NewGenericIterator(fn)
 	i, err = it.Next()
 	assert.Error(t, err)
 	assert.Nil(t, i)
@@ -65,7 +65,7 @@ func TestPrefixBasedIterator_Next(t *testing.T) {
 		*informer = x
 		return ErrDone
 	}
-	it = NewPrefixBasedIterator(fn)
+	it = NewGenericIterator(fn)
 	// First call will get a valid item
 	i, err = it.Next()
 	assert.NoError(t, err)

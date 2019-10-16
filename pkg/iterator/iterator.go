@@ -31,17 +31,17 @@ Notes
 */
 type NextFunc func(*[]*types.Object) error
 
-// PrefixBasedIterator is the prefix based iterator.
-type PrefixBasedIterator struct {
+// GenericIterator is the prefix based iterator.
+type GenericIterator struct {
 	buf   []*types.Object
 	index int
 	next  NextFunc
 	done  bool
 }
 
-// NewPrefixBasedIterator will return a new prefix based iterator.
-func NewPrefixBasedIterator(fn NextFunc) *PrefixBasedIterator {
-	return &PrefixBasedIterator{
+// NewGenericIterator will return a new prefix based iterator.
+func NewGenericIterator(fn NextFunc) *GenericIterator {
+	return &GenericIterator{
 		buf:   nil,
 		index: 0,
 		next:  fn,
@@ -51,7 +51,7 @@ func NewPrefixBasedIterator(fn NextFunc) *PrefixBasedIterator {
 // Next implements Iterator interface.
 //
 // Next call is not thread safe, do not call it in multi goroutine.
-func (it *PrefixBasedIterator) Next() (i *types.Object, err error) {
+func (it *GenericIterator) Next() (i *types.Object, err error) {
 	if it.index < len(it.buf) {
 		it.index++
 		return it.buf[it.index-1], nil
