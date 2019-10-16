@@ -258,7 +258,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 		return nil
 	})
 
-	it = iterator.NewPrefixBasedIterator(fn)
+	it = iterator.NewGenericIterator(fn)
 	return
 }
 
