@@ -19,6 +19,7 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 type Client struct {
 	// All stdlib call will be added here for better unit test.
 	ioCopyBuffer  func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
+	ioCopyN       func(dst io.Writer, src io.Reader, n int64) (written int64, err error)
 	ioutilReadDir func(dirname string) ([]os.FileInfo, error)
 	osCreate      func(name string) (*os.File, error)
 	osMkdirAll    func(path string, perm os.FileMode) error
@@ -32,6 +33,7 @@ type Client struct {
 func NewClient() *Client {
 	return &Client{
 		ioCopyBuffer:  io.CopyBuffer,
+		ioCopyN:       io.CopyN,
 		ioutilReadDir: ioutil.ReadDir,
 		osCreate:      os.Create,
 		osMkdirAll:    os.MkdirAll,
@@ -212,7 +214,18 @@ func (c *Client) Read(path string, option ...*types.Pair) (r io.ReadCloser, err 
 
 // WriteFile implements Storager.WriteFile
 func (c *Client) WriteFile(path string, size int64, r io.Reader, option ...*types.Pair) (err error) {
-	panic("implement me")
+	errorMessage := "posixfs WriteFile [%s]: %w"
+
+	f, err := c.osCreate(path)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, handleOsError(err))
+	}
+
+	_, err = c.ioCopyN(f, r, size)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, handleOsError(err))
+	}
+	return
 }
 
 // WriteStream implements Storager.WriteStream

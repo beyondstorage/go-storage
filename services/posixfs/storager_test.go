@@ -534,3 +534,65 @@ func TestClient_Read(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_WriteFile(t *testing.T) {
+	paths := make([]string, 10)
+	for k := range paths {
+		paths[k] = uuid.New().String()
+	}
+
+	tests := []struct {
+		name     string
+		osCreate func(name string) (*os.File, error)
+		ioCopyN  func(dst io.Writer, src io.Reader, n int64) (written int64, err error)
+		hasErr   bool
+	}{
+		{
+			"failed os create",
+			func(name string) (file *os.File, e error) {
+				assert.Equal(t, paths[0], name)
+				return nil, &os.PathError{
+					Op:   "open",
+					Path: "",
+					Err:  os.ErrNotExist,
+				}
+			},
+			nil,
+			true,
+		},
+		{
+			"failed io copyn",
+			func(name string) (file *os.File, e error) {
+				assert.Equal(t, paths[1], name)
+				return &os.File{}, nil
+			},
+			func(dst io.Writer, src io.Reader, n int64) (written int64, err error) {
+				return 0, io.EOF
+			},
+			true,
+		},
+		{
+			"success",
+			func(name string) (file *os.File, e error) {
+				assert.Equal(t, paths[2], name)
+				return &os.File{}, nil
+			},
+			func(dst io.Writer, src io.Reader, n int64) (written int64, err error) {
+				return 0, nil
+			},
+			false,
+		},
+	}
+
+	for k, v := range tests {
+		t.Run(v.name, func(t *testing.T) {
+			client := Client{
+				osCreate: v.osCreate,
+				ioCopyN:  v.ioCopyN,
+			}
+
+			err := client.WriteFile(paths[k], 1234, nil)
+			assert.Equal(t, v.hasErr, err != nil)
+		})
+	}
+}
