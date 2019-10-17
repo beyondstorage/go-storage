@@ -354,6 +354,9 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 
 			buf[idx] = s
 			idx++
+
+			// Update client's segments.
+			c.segments[s.ID] = s
 		}
 
 		// Set input objects
@@ -415,7 +418,7 @@ func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs 
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	_, err = c.bucket.UploadMultipart(id, &service.UploadMultipartInput{
+	_, err = c.bucket.UploadMultipart(s.Path, &service.UploadMultipartInput{
 		PartNumber:    &partNumber,
 		UploadID:      &s.ID,
 		ContentLength: &size,
@@ -456,7 +459,7 @@ func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		}
 	}
 
-	_, err = c.bucket.CompleteMultipartUpload(id, &service.CompleteMultipartUploadInput{
+	_, err = c.bucket.CompleteMultipartUpload(s.Path, &service.CompleteMultipartUploadInput{
 		UploadID:    &s.ID,
 		ObjectParts: objectParts,
 	})
@@ -478,7 +481,7 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
 
-	_, err = c.bucket.AbortMultipartUpload(id, &service.AbortMultipartUploadInput{
+	_, err = c.bucket.AbortMultipartUpload(s.Path, &service.AbortMultipartUploadInput{
 		UploadID: &s.ID,
 	})
 	if err != nil {
