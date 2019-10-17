@@ -29,11 +29,12 @@ func (p *Part) String() string {
 // Segment will hold the whole segment operations.
 type Segment struct {
 	ID    string
+	Path  string
 	Parts []*Part
 }
 
 func (s *Segment) String() string {
-	return fmt.Sprintf("Segment [%s]", s.ID)
+	return fmt.Sprintf("Segment {ID: %s, Path: %s}", s.ID, s.Path)
 }
 
 // GetPartIndex will get a part's insert index in a segment.

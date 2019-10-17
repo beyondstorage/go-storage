@@ -78,21 +78,21 @@ func TestClient_AbortSegment(t *testing.T) {
 	}
 
 	// Test valid segment.
-	path := uuid.New().String()
-	client.segments[path] = &segment.Segment{
+	id := uuid.New().String()
+	client.segments[id] = &segment.Segment{
 		ID: uuid.New().String(),
 	}
 	mockBucket.EXPECT().AbortMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.AbortMultipartUploadInput) {
-		assert.Equal(t, path, inputPath)
-		assert.Equal(t, client.segments[path].ID, *input.UploadID)
+		assert.Equal(t, id, inputPath)
+		assert.Equal(t, client.segments[id].ID, *input.UploadID)
 	})
-	err := client.AbortSegment(path)
+	err := client.AbortSegment(id)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(client.segments))
 
 	// Test not exist segment.
-	path = uuid.New().String()
-	err = client.AbortSegment(path)
+	id = uuid.New().String()
+	err = client.AbortSegment(id)
 	assert.Error(t, err)
 	assert.True(t, errors.Is(err, segment.ErrSegmentNotInitiated))
 }
@@ -105,7 +105,7 @@ func TestClient_CompleteSegment(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		path     string
+		id       string
 		segments map[string]*segment.Segment
 		hasCall  bool
 		mockFn   func(string, *service.CompleteMultipartUploadInput)
@@ -123,7 +123,7 @@ func TestClient_CompleteSegment(t *testing.T) {
 			"test",
 			map[string]*segment.Segment{
 				"test": {
-					ID:    "test_segment_id",
+					ID:    "test",
 					Parts: nil,
 				},
 			},
@@ -136,7 +136,7 @@ func TestClient_CompleteSegment(t *testing.T) {
 			"test",
 			map[string]*segment.Segment{
 				"test": {
-					ID: "test_segment_id",
+					ID: "test",
 					Parts: []*segment.Part{
 						{Offset: 0, Size: 1},
 					},
@@ -145,7 +145,7 @@ func TestClient_CompleteSegment(t *testing.T) {
 			true,
 			func(inputPath string, input *service.CompleteMultipartUploadInput) {
 				assert.Equal(t, "test", inputPath)
-				assert.Equal(t, "test_segment_id", *input.UploadID)
+				assert.Equal(t, "test", *input.UploadID)
 			},
 			false, nil,
 		},
@@ -161,7 +161,7 @@ func TestClient_CompleteSegment(t *testing.T) {
 			segments: v.segments,
 		}
 
-		err := client.CompleteSegment(v.path)
+		err := client.CompleteSegment(v.id)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -292,8 +292,16 @@ func TestClient_InitSegment(t *testing.T) {
 					Parts: nil,
 				},
 			},
+			true,
+			func(inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
+				assert.Equal(t, "test", inputPath)
+
+				uploadID := "test"
+				return &service.InitiateMultipartUploadOutput{
+					UploadID: &uploadID,
+				}, nil
+			},
 			false, nil,
-			true, segment.ErrSegmentAlreadyInitiated,
 		},
 	}
 
@@ -307,7 +315,7 @@ func TestClient_InitSegment(t *testing.T) {
 			segments: v.segments,
 		}
 
-		err := client.InitSegment(v.path)
+		_, err := client.InitSegment(v.path)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -599,10 +607,6 @@ func TestClient_Read(t *testing.T) {
 	}
 }
 
-func TestClient_ReadSegment(t *testing.T) {
-
-}
-
 func TestClient_Stat(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -715,7 +719,7 @@ func TestClient_WriteSegment(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		path     string
+		id       string
 		segments map[string]*segment.Segment
 		offset   int64
 		size     int64
@@ -735,14 +739,14 @@ func TestClient_WriteSegment(t *testing.T) {
 			"test",
 			map[string]*segment.Segment{
 				"test": {
-					ID:    "test_segment_id",
+					ID:    "test",
 					Parts: []*segment.Part{},
 				},
 			}, 0, 1,
 			true,
 			func(objectKey string, input *service.UploadMultipartInput) (*service.UploadMultipartOutput, error) {
 				assert.Equal(t, "test", objectKey)
-				assert.Equal(t, "test_segment_id", *input.UploadID)
+				assert.Equal(t, "test", *input.UploadID)
 
 				return nil, nil
 			},
@@ -760,7 +764,7 @@ func TestClient_WriteSegment(t *testing.T) {
 			segments: v.segments,
 		}
 
-		err := client.WriteSegment(v.path, v.offset, v.size, nil)
+		err := client.WriteSegment(v.id, v.offset, v.size, nil)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
