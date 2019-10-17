@@ -319,8 +319,59 @@ func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (e
 	panic("not supported")
 }
 
-func (c *Client) ListSegments(path string, pairs ...*types.Pair) iterator.SegmentIterator {
-	return nil
+// ListSegments implements Storager.ListSegments
+func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.SegmentIterator) {
+	errorMessage := "qingstor ListSegments: %w"
+
+	keyMarker := ""
+	uploadIDMarker := ""
+	limit := 200
+
+	var output *service.ListMultipartUploadsOutput
+	var err error
+
+	fn := iterator.NextSegmentFunc(func(segments *[]*segment.Segment) error {
+		idx := 0
+		buf := make([]*segment.Segment, limit)
+
+		output, err = c.bucket.ListMultipartUploads(&service.ListMultipartUploadsInput{
+			KeyMarker:      &keyMarker,
+			Limit:          &limit,
+			Prefix:         &path,
+			UploadIDMarker: &uploadIDMarker,
+		})
+		if err != nil {
+			err = handleQingStorError(err)
+			return fmt.Errorf(errorMessage, err)
+		}
+
+		for _, v := range output.Uploads {
+			s := &segment.Segment{
+				ID:    *v.UploadID,
+				Path:  *v.Key,
+				Parts: nil,
+			}
+
+			buf[idx] = s
+			idx++
+		}
+
+		// Set input objects
+		*segments = buf[:idx]
+
+		keyMarker = convert.StringValue(output.NextKeyMarker)
+		uploadIDMarker = convert.StringValue(output.NextUploadIDMarker)
+		if keyMarker == "" && uploadIDMarker == "" {
+			return iterator.ErrDone
+		}
+		if output.HasMore != nil && !*output.HasMore {
+			return iterator.ErrDone
+		}
+		return nil
+	})
+
+	it = iterator.NewSegmentIterator(fn)
+	return
 }
 
 // InitSegment implements Storager.InitSegment
