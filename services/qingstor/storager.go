@@ -78,10 +78,22 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 		Type:     types.ObjectTypeFile,
 		Metadata: make(types.Metadata),
 	}
-	o.SetType(service.StringValue(output.ContentType))
-	o.SetSize(*output.ContentLength)
-	o.SetChecksum(service.StringValue(output.ETag))
-	o.SetStorageClass(service.StringValue(output.XQSStorageClass))
+
+	if output.ContentType != nil {
+		o.SetType(service.StringValue(output.ContentType))
+	}
+	if output.ContentLength != nil {
+		o.SetSize(*output.ContentLength)
+	}
+	if output.ETag != nil {
+		o.SetChecksum(service.StringValue(output.ETag))
+	}
+	if output.XQSStorageClass != nil {
+		o.SetStorageClass(service.StringValue(output.XQSStorageClass))
+	}
+	if output.LastModified != nil {
+		o.SetUpdatedAt(service.TimeValue(output.LastModified))
+	}
 	return o, nil
 }
 
@@ -166,7 +178,7 @@ func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterator) {
+func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectIterator) {
 	errorMessage := "qingstor ListDir: %w"
 
 	opt, _ := parseStoragePairListDir(pairs...)
@@ -181,7 +193,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 	var output *service.ListObjectsOutput
 	var err error
 
-	fn := iterator.NextFunc(func(objects *[]*types.Object) error {
+	fn := iterator.NextObjectFunc(func(objects *[]*types.Object) error {
 		idx := 0
 		buf := make([]*types.Object, limit)
 
@@ -258,7 +270,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 		return nil
 	})
 
-	it = iterator.NewGenericIterator(fn)
+	it = iterator.NewObjectIterator(fn)
 	return
 }
 
@@ -278,7 +290,7 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 
 // WriteFile implements Storager.WriteFile
 func (c *Client) WriteFile(path string, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor WriteFile for path %s: %w"
+	errorMessage := "qingstor WriteFile for id %s: %w"
 
 	opts, err := parseStoragePairWriteFile(pairs...)
 	if err != nil {
@@ -309,41 +321,93 @@ func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (e
 	panic("not supported")
 }
 
-// InitSegment implements Storager.InitSegment
-func (c *Client) InitSegment(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor InitSegment for path %s: %w"
+// ListSegments implements Storager.ListSegments
+func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.SegmentIterator) {
+	errorMessage := "qingstor ListSegments: %w"
 
-	if _, ok := c.segments[path]; ok {
-		return fmt.Errorf(errorMessage, path, segment.ErrSegmentAlreadyInitiated)
-	}
+	keyMarker := ""
+	uploadIDMarker := ""
+	limit := 200
+
+	var output *service.ListMultipartUploadsOutput
+	var err error
+
+	fn := iterator.NextSegmentFunc(func(segments *[]*segment.Segment) error {
+		idx := 0
+		buf := make([]*segment.Segment, limit)
+
+		output, err = c.bucket.ListMultipartUploads(&service.ListMultipartUploadsInput{
+			KeyMarker:      &keyMarker,
+			Limit:          &limit,
+			Prefix:         &path,
+			UploadIDMarker: &uploadIDMarker,
+		})
+		if err != nil {
+			err = handleQingStorError(err)
+			return fmt.Errorf(errorMessage, err)
+		}
+
+		for _, v := range output.Uploads {
+			s := &segment.Segment{
+				ID:    *v.UploadID,
+				Path:  *v.Key,
+				Parts: nil,
+			}
+
+			buf[idx] = s
+			idx++
+
+			// Update client's segments.
+			c.segments[s.ID] = s
+		}
+
+		// Set input objects
+		*segments = buf[:idx]
+
+		keyMarker = convert.StringValue(output.NextKeyMarker)
+		uploadIDMarker = convert.StringValue(output.NextUploadIDMarker)
+		if keyMarker == "" && uploadIDMarker == "" {
+			return iterator.ErrDone
+		}
+		if output.HasMore != nil && !*output.HasMore {
+			return iterator.ErrDone
+		}
+		return nil
+	})
+
+	it = iterator.NewSegmentIterator(fn)
+	return
+}
+
+// InitSegment implements Storager.InitSegment
+func (c *Client) InitSegment(path string, pairs ...*types.Pair) (id string, err error) {
+	errorMessage := "qingstor InitSegment for id %s: %w"
 
 	input := &service.InitiateMultipartUploadInput{}
 
 	output, err := c.bucket.InitiateMultipartUpload(path, input)
 	if err != nil {
 		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, path, err)
+		return "", fmt.Errorf(errorMessage, path, err)
 	}
 
-	c.segments[path] = &segment.Segment{
-		ID:    *output.UploadID,
+	id = *output.UploadID
+
+	c.segments[id] = &segment.Segment{
+		Path:  path,
+		ID:    id,
 		Parts: make([]*segment.Part, 0),
 	}
 	return
 }
 
-// ReadSegment implements Storager.ReadSegment
-func (c *Client) ReadSegment(path string, offset, size int64, option ...*types.Pair) (r io.ReadCloser, err error) {
-	panic("implement me")
-}
-
 // WriteSegment implements Storager.WriteSegment
-func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor WriteSegment for path %s: %w"
+func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
+	errorMessage := "qingstor WriteSegment for id %s: %w"
 
-	s, ok := c.segments[path]
+	s, ok := c.segments[id]
 	if !ok {
-		return fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated)
+		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
 
 	p := &segment.Part{
@@ -353,10 +417,10 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, pair
 
 	partNumber, err := s.GetPartIndex(p)
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, err)
+		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	_, err = c.bucket.UploadMultipart(path, &service.UploadMultipartInput{
+	_, err = c.bucket.UploadMultipart(s.Path, &service.UploadMultipartInput{
 		PartNumber:    &partNumber,
 		UploadID:      &s.ID,
 		ContentLength: &size,
@@ -364,28 +428,28 @@ func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, pair
 	})
 	if err != nil {
 		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, path, err)
+		return fmt.Errorf(errorMessage, id, err)
 	}
 
 	err = s.InsertPart(p)
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, err)
+		return fmt.Errorf(errorMessage, id, err)
 	}
 	return
 }
 
 // CompleteSegment implements Storager.CompleteSegment
-func (c *Client) CompleteSegment(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor CompleteSegment for path %s: %w"
+func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
+	errorMessage := "qingstor CompleteSegment for id %s: %w"
 
-	s, ok := c.segments[path]
+	s, ok := c.segments[id]
 	if !ok {
-		return fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated)
+		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
 
 	err = s.ValidateParts()
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, err)
+		return fmt.Errorf(errorMessage, id, err)
 	}
 
 	objectParts := make([]*service.ObjectPartType, len(s.Parts))
@@ -397,36 +461,36 @@ func (c *Client) CompleteSegment(path string, pairs ...*types.Pair) (err error) 
 		}
 	}
 
-	_, err = c.bucket.CompleteMultipartUpload(path, &service.CompleteMultipartUploadInput{
+	_, err = c.bucket.CompleteMultipartUpload(s.Path, &service.CompleteMultipartUploadInput{
 		UploadID:    &s.ID,
 		ObjectParts: objectParts,
 	})
 	if err != nil {
 		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, path, err)
+		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	delete(c.segments, path)
+	delete(c.segments, id)
 	return
 }
 
 // AbortSegment implements Storager.AbortSegment
-func (c *Client) AbortSegment(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "qingstor AbortSegment for path %s: %w"
+func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
+	errorMessage := "qingstor AbortSegment for id %s: %w"
 
-	s, ok := c.segments[path]
+	s, ok := c.segments[id]
 	if !ok {
-		return fmt.Errorf(errorMessage, path, segment.ErrSegmentNotInitiated)
+		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
 
-	_, err = c.bucket.AbortMultipartUpload(path, &service.AbortMultipartUploadInput{
+	_, err = c.bucket.AbortMultipartUpload(s.Path, &service.AbortMultipartUploadInput{
 		UploadID: &s.ID,
 	})
 	if err != nil {
 		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, path, err)
+		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	delete(c.segments, path)
+	delete(c.segments, id)
 	return
 }

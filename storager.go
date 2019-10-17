@@ -129,8 +129,8 @@ type Storager interface {
 
 	// CreateDir will create a Dir in the services.
 	CreateDir(path string, pairs ...*types.Pair) (err error)
-	// ListDir will return an Iterator which can list all object under the Dir.
-	ListDir(path string, pairs ...*types.Pair) iterator.Iterator
+	// ListDir will return an ObjectIterator which can list all object under the Dir.
+	ListDir(path string, pairs ...*types.Pair) iterator.ObjectIterator
 
 	// File && Stream Operations.
 
@@ -158,39 +158,38 @@ type Storager interface {
 
 	// Segment Operations.
 
+	// ListSegments will list segments.
+	//
+	// Implementer:
+	//   - If path == "/", services should return all segments.
+	ListSegments(path string, pairs ...*types.Pair) iterator.SegmentIterator
 	// InitSegment will init a segment which could be a File after complete.
 	//
 	// Implementer:
-	//   - MUST maintain whole segment operation runtime data, including upload_id and any other similar things.
+	//   - MUST maintain whole segment operation runtime data, including part number and any
+	//     other similar things.
 	// Caller:
 	//   - SHOULD call InitSegment before Write, Complete or Abort.
-	InitSegment(path string, pairs ...*types.Pair) (err error)
-	// ReadSegment will read a segment from an Object.
-	//
-	// Implementer:
-	//   - MAY support ReadSegment for Stream is it's seekable.
-	// Caller:
-	//   - SHOULD NOT call InitSegment before ReadSegment.
-	ReadSegment(path string, offset, size int64, pairs ...*types.Pair) (r io.ReadCloser, err error)
+	InitSegment(path string, pairs ...*types.Pair) (id string, err error)
 	// WriteSegment will read data into segment.
 	//
 	// Implementer:
 	//   - SHOULD return error while caller call WriteSegment without init.
 	// Caller:
 	//   - SHOULD call InitSegment before WriteSegment.
-	WriteSegment(path string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error)
+	WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error)
 	// CompleteSegment will complete a segment and merge them into a File.
 	//
 	// Implementer:
 	//   - SHOULD return error while caller call CompleteSegment without init.
 	// Caller:
 	//   - SHOULD call InitSegment before CompleteSegment.
-	CompleteSegment(path string, pairs ...*types.Pair) (err error)
+	CompleteSegment(id string, pairs ...*types.Pair) (err error)
 	// AbortSegment will abort a segment.
 	//
 	// Implementer:
 	//   - SHOULD return error while caller call AbortSegment without init.
 	// Caller:
 	//   - SHOULD call InitSegment before AbortSegment.
-	AbortSegment(path string, pairs ...*types.Pair) (err error)
+	AbortSegment(id string, pairs ...*types.Pair) (err error)
 }

@@ -79,20 +79,22 @@ func TestClient_AbortSegment(t *testing.T) {
 
 	// Test valid segment.
 	path := uuid.New().String()
-	client.segments[path] = &segment.Segment{
-		ID: uuid.New().String(),
+	id := uuid.New().String()
+	client.segments[id] = &segment.Segment{
+		Path: path,
+		ID:   id,
 	}
 	mockBucket.EXPECT().AbortMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.AbortMultipartUploadInput) {
 		assert.Equal(t, path, inputPath)
-		assert.Equal(t, client.segments[path].ID, *input.UploadID)
+		assert.Equal(t, id, *input.UploadID)
 	})
-	err := client.AbortSegment(path)
+	err := client.AbortSegment(id)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(client.segments))
 
 	// Test not exist segment.
-	path = uuid.New().String()
-	err = client.AbortSegment(path)
+	id = uuid.New().String()
+	err = client.AbortSegment(id)
 	assert.Error(t, err)
 	assert.True(t, errors.Is(err, segment.ErrSegmentNotInitiated))
 }
@@ -105,7 +107,7 @@ func TestClient_CompleteSegment(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		path     string
+		id       string
 		segments map[string]*segment.Segment
 		hasCall  bool
 		mockFn   func(string, *service.CompleteMultipartUploadInput)
@@ -120,23 +122,24 @@ func TestClient_CompleteSegment(t *testing.T) {
 		},
 		{
 			"segment part empty",
-			"test",
+			"test_id",
 			map[string]*segment.Segment{
-				"test": {
-					ID:    "test_segment_id",
+				"test_id": {
+					ID:    "test_id",
+					Path:  "test_path",
 					Parts: nil,
 				},
 			},
-
 			false, nil,
 			true, segment.ErrSegmentPartsEmpty,
 		},
 		{
 			"valid segment",
-			"test",
+			"test_id",
 			map[string]*segment.Segment{
-				"test": {
-					ID: "test_segment_id",
+				"test_id": {
+					ID:   "test_id",
+					Path: "test_path",
 					Parts: []*segment.Part{
 						{Offset: 0, Size: 1},
 					},
@@ -144,31 +147,33 @@ func TestClient_CompleteSegment(t *testing.T) {
 			},
 			true,
 			func(inputPath string, input *service.CompleteMultipartUploadInput) {
-				assert.Equal(t, "test", inputPath)
-				assert.Equal(t, "test_segment_id", *input.UploadID)
+				assert.Equal(t, "test_path", inputPath)
+				assert.Equal(t, "test_id", *input.UploadID)
 			},
 			false, nil,
 		},
 	}
 
 	for _, v := range tests {
-		if v.hasCall {
-			mockBucket.EXPECT().CompleteMultipartUpload(gomock.Any(), gomock.Any()).Do(v.mockFn)
-		}
+		t.Run(v.name, func(t *testing.T) {
+			if v.hasCall {
+				mockBucket.EXPECT().CompleteMultipartUpload(gomock.Any(), gomock.Any()).Do(v.mockFn)
+			}
 
-		client := Client{
-			bucket:   mockBucket,
-			segments: v.segments,
-		}
+			client := Client{
+				bucket:   mockBucket,
+				segments: v.segments,
+			}
 
-		err := client.CompleteSegment(v.path)
-		if v.hasError {
-			assert.Error(t, err)
-			assert.True(t, errors.Is(err, v.wantErr))
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, 0, len(client.segments))
-		}
+			err := client.CompleteSegment(v.id)
+			if v.hasError {
+				assert.Error(t, err)
+				assert.True(t, errors.Is(err, v.wantErr))
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, 0, len(client.segments))
+			}
+		})
 	}
 }
 
@@ -292,8 +297,16 @@ func TestClient_InitSegment(t *testing.T) {
 					Parts: nil,
 				},
 			},
+			true,
+			func(inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
+				assert.Equal(t, "test", inputPath)
+
+				uploadID := "test"
+				return &service.InitiateMultipartUploadOutput{
+					UploadID: &uploadID,
+				}, nil
+			},
 			false, nil,
-			true, segment.ErrSegmentAlreadyInitiated,
 		},
 	}
 
@@ -307,7 +320,7 @@ func TestClient_InitSegment(t *testing.T) {
 			segments: v.segments,
 		}
 
-		err := client.InitSegment(v.path)
+		_, err := client.InitSegment(v.path)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -599,10 +612,6 @@ func TestClient_Read(t *testing.T) {
 	}
 }
 
-func TestClient_ReadSegment(t *testing.T) {
-
-}
-
 func TestClient_Stat(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -715,7 +724,7 @@ func TestClient_WriteSegment(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		path     string
+		id       string
 		segments map[string]*segment.Segment
 		offset   int64
 		size     int64
@@ -732,17 +741,18 @@ func TestClient_WriteSegment(t *testing.T) {
 		},
 		{
 			"valid segment",
-			"test",
+			"test_id",
 			map[string]*segment.Segment{
-				"test": {
-					ID:    "test_segment_id",
+				"test_id": {
+					ID:    "test_id",
+					Path:  "test_path",
 					Parts: []*segment.Part{},
 				},
 			}, 0, 1,
 			true,
 			func(objectKey string, input *service.UploadMultipartInput) (*service.UploadMultipartOutput, error) {
-				assert.Equal(t, "test", objectKey)
-				assert.Equal(t, "test_segment_id", *input.UploadID)
+				assert.Equal(t, "test_path", objectKey)
+				assert.Equal(t, "test_id", *input.UploadID)
 
 				return nil, nil
 			},
@@ -760,7 +770,7 @@ func TestClient_WriteSegment(t *testing.T) {
 			segments: v.segments,
 		}
 
-		err := client.WriteSegment(v.path, v.offset, v.size, nil)
+		err := client.WriteSegment(v.id, v.offset, v.size, nil)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -776,4 +786,114 @@ func TestClient_WriteStream(t *testing.T) {
 	assert.Panics(t, func() {
 		client.WriteStream("", os.Stdin)
 	})
+}
+
+func TestClient_ListSegments(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBucket := NewMockBucket(ctrl)
+
+	keys := make([]string, 100)
+	for idx := range keys {
+		keys[idx] = uuid.New().String()
+	}
+
+	tests := []struct {
+		name   string
+		pairs  []*types.Pair
+		output *service.ListMultipartUploadsOutput
+		items  []*segment.Segment
+		err    error
+	}{
+		{
+			"list without delimiter",
+			nil,
+			&service.ListMultipartUploadsOutput{
+				HasMore: service.Bool(false),
+				Uploads: []*service.UploadsType{
+					{
+						Key:      service.String(keys[0]),
+						UploadID: service.String(keys[1]),
+					},
+				},
+			},
+			[]*segment.Segment{
+				{
+					Path: keys[0],
+					ID:   keys[1],
+				},
+			},
+			nil,
+		},
+		{
+			"list with return next marker",
+			[]*types.Pair{
+				types.WithDelimiter("/"),
+			},
+			&service.ListMultipartUploadsOutput{
+				NextKeyMarker: service.String("test_marker"),
+				HasMore:       service.Bool(false),
+				Uploads: []*service.UploadsType{
+					{
+						Key:      service.String(keys[1]),
+						UploadID: service.String(keys[2]),
+					},
+				},
+			},
+			[]*segment.Segment{
+				{
+					Path: keys[1],
+					ID:   keys[2],
+				},
+			},
+			nil,
+		},
+		{
+			"list with error return",
+			nil,
+			nil,
+			nil,
+			&qerror.QingStorError{
+				StatusCode: 401,
+			},
+		},
+	}
+
+	for _, v := range tests {
+		t.Run(v.name, func(t *testing.T) {
+			path := uuid.New().String()
+
+			mockBucket.EXPECT().ListMultipartUploads(gomock.Any()).DoAndReturn(func(input *service.ListMultipartUploadsInput) (*service.ListMultipartUploadsOutput, error) {
+				assert.Equal(t, path, *input.Prefix)
+				assert.Equal(t, 200, *input.Limit)
+				return v.output, v.err
+			})
+
+			client := Client{
+				bucket:   mockBucket,
+				segments: make(map[string]*segment.Segment),
+			}
+
+			x := client.ListSegments(path, v.pairs...)
+			for _, expectItem := range v.items {
+				item, err := x.Next()
+				if v.err != nil {
+					assert.Error(t, err)
+					assert.True(t, errors.Is(err, v.err))
+				}
+				assert.NotNil(t, item)
+				assert.EqualValues(t, expectItem, item)
+			}
+			if len(v.items) == 0 {
+				item, err := x.Next()
+				if v.err != nil {
+					assert.True(t, errors.Is(err, types.ErrUnhandledError))
+				} else {
+					assert.True(t, errors.Is(err, iterator.ErrDone))
+				}
+				assert.Nil(t, item)
+			}
+		})
+	}
 }
