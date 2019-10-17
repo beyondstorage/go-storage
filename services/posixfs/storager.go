@@ -151,8 +151,50 @@ func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, option ...*types.Pair) iterator.Iterator {
-	panic("implement me")
+func (c *Client) ListDir(path string, option ...*types.Pair) (it iterator.Iterator) {
+	errorMessage := "posixfs ListDir [%s]: %w"
+
+	fn := iterator.NextFunc(func(objects *[]*types.Object) error {
+		f, err := c.osOpen(path)
+		if err != nil {
+			return fmt.Errorf(errorMessage, path, handleOsError(err))
+		}
+		defer f.Close()
+
+		fi, err := f.Readdir(0)
+		if err != nil {
+			return fmt.Errorf(errorMessage, path, handleOsError(err))
+		}
+
+		idx := 0
+		buf := make([]*types.Object, len(fi))
+
+		for _, v := range fi {
+			o := &types.Object{
+				Name:     v.Name(),
+				Metadata: make(types.Metadata),
+			}
+
+			if v.IsDir() {
+				o.Type = types.ObjectTypeDir
+			} else {
+				o.Type = types.ObjectTypeFile
+			}
+
+			o.SetSize(v.Size())
+			o.SetUpdatedAt(v.ModTime())
+
+			buf[idx] = o
+			idx++
+		}
+
+		// Set input objects
+		*objects = buf[:idx]
+		return nil
+	})
+
+	it = iterator.NewGenericIterator(fn)
+	return
 }
 
 // Read implements Storager.Read

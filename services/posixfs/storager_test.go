@@ -369,7 +369,7 @@ func TestClient_CreateDir(t *testing.T) {
 	}{
 		{
 			"error",
-			&os.PathError{"mkdir", paths[0], syscall.ENOTDIR},
+			&os.PathError{Op: "mkdir", Path: paths[0], Err: syscall.ENOTDIR},
 		},
 		{
 			"success",
@@ -391,4 +391,7 @@ func TestClient_CreateDir(t *testing.T) {
 			assert.Equal(t, v.err == nil, err == nil)
 		})
 	}
+}
+
+func TestClient_ListDir(t *testing.T) {
 }
