@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"bou.ke/monkey"
+	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/types"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -394,4 +395,94 @@ func TestClient_CreateDir(t *testing.T) {
 }
 
 func TestClient_ListDir(t *testing.T) {
+	tests := []struct {
+		name  string
+		fi    []os.FileInfo
+		items []*types.Object
+		err   error
+	}{
+		{
+			"success file",
+			[]os.FileInfo{
+				fileInfo{
+					name:    "test_file",
+					size:    1234,
+					mode:    0644,
+					modTime: time.Unix(1, 0),
+				},
+			},
+			[]*types.Object{
+				{
+					Name: "test_file",
+					Type: types.ObjectTypeFile,
+					Metadata: types.Metadata{
+						types.Size:      int64(1234),
+						types.UpdatedAt: time.Unix(1, 0),
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"success dir",
+			[]os.FileInfo{
+				fileInfo{
+					name:    "test_dir",
+					size:    0,
+					mode:    os.ModeDir | 0755,
+					modTime: time.Unix(1, 0),
+				},
+			},
+			[]*types.Object{
+				{
+					Name: "test_dir",
+					Type: types.ObjectTypeDir,
+					Metadata: types.Metadata{
+						types.Size:      int64(0),
+						types.UpdatedAt: time.Unix(1, 0),
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"error",
+			nil,
+			nil,
+			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
+		},
+	}
+
+	for _, v := range tests {
+		t.Run(v.name, func(t *testing.T) {
+			path := uuid.New().String()
+
+			client := Client{
+				ioutilReadDir: func(dirname string) (infos []os.FileInfo, e error) {
+					assert.Equal(t, path, dirname)
+					return v.fi, v.err
+				},
+			}
+
+			x := client.ListDir(path)
+			for _, expectItem := range v.items {
+				item, err := x.Next()
+				if v.err != nil {
+					assert.Error(t, err)
+					assert.True(t, errors.Is(err, v.err))
+				}
+				assert.NotNil(t, item)
+				assert.EqualValues(t, expectItem, item)
+			}
+			if len(v.items) == 0 {
+				item, err := x.Next()
+				if v.err != nil {
+					assert.Error(t, err)
+				} else {
+					assert.True(t, errors.Is(err, iterator.ErrDone))
+				}
+				assert.Nil(t, item)
+			}
+		})
+	}
 }

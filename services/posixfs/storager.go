@@ -3,6 +3,7 @@ package posixfs
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/Xuanwo/storage/pkg/iterator"
@@ -17,26 +18,28 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 type Client struct {
 	// All stdlib call will be added here for better unit test.
-	ioCopyBuffer func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
-	osCreate     func(name string) (*os.File, error)
-	osMkdirAll   func(path string, perm os.FileMode) error
-	osOpen       func(name string) (*os.File, error)
-	osRemove     func(name string) error
-	osRemoveAll  func(name string) error
-	osRename     func(oldpath, newpath string) error
-	osStat       func(name string) (os.FileInfo, error)
+	ioCopyBuffer  func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
+	ioutilReadDir func(dirname string) ([]os.FileInfo, error)
+	osCreate      func(name string) (*os.File, error)
+	osMkdirAll    func(path string, perm os.FileMode) error
+	osOpen        func(name string) (*os.File, error)
+	osRemove      func(name string) error
+	osRemoveAll   func(name string) error
+	osRename      func(oldpath, newpath string) error
+	osStat        func(name string) (os.FileInfo, error)
 }
 
 func NewClient() *Client {
 	return &Client{
-		ioCopyBuffer: io.CopyBuffer,
-		osCreate:     os.Create,
-		osMkdirAll:   os.MkdirAll,
-		osOpen:       os.Open,
-		osRemove:     os.Remove,
-		osRemoveAll:  os.RemoveAll,
-		osRename:     os.Rename,
-		osStat:       os.Stat,
+		ioCopyBuffer:  io.CopyBuffer,
+		ioutilReadDir: ioutil.ReadDir,
+		osCreate:      os.Create,
+		osMkdirAll:    os.MkdirAll,
+		osOpen:        os.Open,
+		osRemove:      os.Remove,
+		osRemoveAll:   os.RemoveAll,
+		osRename:      os.Rename,
+		osStat:        os.Stat,
 	}
 }
 
@@ -155,13 +158,7 @@ func (c *Client) ListDir(path string, option ...*types.Pair) (it iterator.Object
 	errorMessage := "posixfs ListDir [%s]: %w"
 
 	fn := iterator.NextObjectFunc(func(objects *[]*types.Object) error {
-		f, err := c.osOpen(path)
-		if err != nil {
-			return fmt.Errorf(errorMessage, path, handleOsError(err))
-		}
-		defer f.Close()
-
-		fi, err := f.Readdir(0)
+		fi, err := c.ioutilReadDir(path)
 		if err != nil {
 			return fmt.Errorf(errorMessage, path, handleOsError(err))
 		}
