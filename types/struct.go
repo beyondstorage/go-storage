@@ -6,9 +6,9 @@ type ObjectType string
 // All available type for object.
 const (
 	ObjectTypeFile    ObjectType = "file"
-	ObjectTypeStream             = "stream"
-	ObjectTypeDir                = "dir"
-	ObjectTypeInvalid            = "invalid"
+	ObjectTypeStream  ObjectType = "stream"
+	ObjectTypeDir     ObjectType = "dir"
+	ObjectTypeInvalid ObjectType = "invalid"
 )
 
 // Object may be a *File, *Dir or a *Stream.
