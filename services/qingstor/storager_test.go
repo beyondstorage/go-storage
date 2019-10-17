@@ -781,3 +781,112 @@ func TestClient_WriteStream(t *testing.T) {
 		client.WriteStream("", os.Stdin)
 	})
 }
+
+func TestClient_ListSegments(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBucket := NewMockBucket(ctrl)
+
+	keys := make([]string, 100)
+	for idx := range keys {
+		keys[idx] = uuid.New().String()
+	}
+
+	tests := []struct {
+		name   string
+		pairs  []*types.Pair
+		output *service.ListMultipartUploadsOutput
+		items  []*segment.Segment
+		err    error
+	}{
+		{
+			"list without delimiter",
+			nil,
+			&service.ListMultipartUploadsOutput{
+				HasMore: service.Bool(false),
+				Uploads: []*service.UploadsType{
+					{
+						Key:      service.String(keys[0]),
+						UploadID: service.String(keys[1]),
+					},
+				},
+			},
+			[]*segment.Segment{
+				{
+					Path: keys[0],
+					ID:   keys[1],
+				},
+			},
+			nil,
+		},
+		{
+			"list with return next marker",
+			[]*types.Pair{
+				types.WithDelimiter("/"),
+			},
+			&service.ListMultipartUploadsOutput{
+				NextKeyMarker: service.String("test_marker"),
+				HasMore:       service.Bool(false),
+				Uploads: []*service.UploadsType{
+					{
+						Key:      service.String(keys[1]),
+						UploadID: service.String(keys[2]),
+					},
+				},
+			},
+			[]*segment.Segment{
+				{
+					Path: keys[1],
+					ID:   keys[2],
+				},
+			},
+			nil,
+		},
+		{
+			"list with error return",
+			nil,
+			nil,
+			nil,
+			&qerror.QingStorError{
+				StatusCode: 401,
+			},
+		},
+	}
+
+	for _, v := range tests {
+		t.Run(v.name, func(t *testing.T) {
+			path := uuid.New().String()
+
+			mockBucket.EXPECT().ListMultipartUploads(gomock.Any()).DoAndReturn(func(input *service.ListMultipartUploadsInput) (*service.ListMultipartUploadsOutput, error) {
+				assert.Equal(t, path, *input.Prefix)
+				assert.Equal(t, 200, *input.Limit)
+				return v.output, v.err
+			})
+
+			client := Client{
+				bucket: mockBucket,
+			}
+
+			x := client.ListSegments(path, v.pairs...)
+			for _, expectItem := range v.items {
+				item, err := x.Next()
+				if v.err != nil {
+					assert.Error(t, err)
+					assert.True(t, errors.Is(err, v.err))
+				}
+				assert.NotNil(t, item)
+				assert.EqualValues(t, expectItem, item)
+			}
+			if len(v.items) == 0 {
+				item, err := x.Next()
+				if v.err != nil {
+					assert.True(t, errors.Is(err, types.ErrUnhandledError))
+				} else {
+					assert.True(t, errors.Is(err, iterator.ErrDone))
+				}
+				assert.Nil(t, item)
+			}
+		})
+	}
+}
