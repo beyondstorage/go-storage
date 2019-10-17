@@ -52,7 +52,7 @@ func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, option ...*types.Pair) iterator.Iterator {
+func (c *Client) ListDir(path string, option ...*types.Pair) iterator.ObjectIterator {
 	panic("implement me")
 }
 

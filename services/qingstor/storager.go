@@ -176,7 +176,7 @@ func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterator) {
+func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectIterator) {
 	errorMessage := "qingstor ListDir: %w"
 
 	opt, _ := parseStoragePairListDir(pairs...)
@@ -191,7 +191,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 	var output *service.ListObjectsOutput
 	var err error
 
-	fn := iterator.NextFunc(func(objects *[]*types.Object) error {
+	fn := iterator.NextObjectFunc(func(objects *[]*types.Object) error {
 		idx := 0
 		buf := make([]*types.Object, limit)
 
@@ -268,7 +268,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.Iterato
 		return nil
 	})
 
-	it = iterator.NewGenericIterator(fn)
+	it = iterator.NewObjectIterator(fn)
 	return
 }
 
