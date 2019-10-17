@@ -196,7 +196,18 @@ func (c *Client) ListDir(path string, option ...*types.Pair) (it iterator.Object
 
 // Read implements Storager.Read
 func (c *Client) Read(path string, option ...*types.Pair) (r io.ReadCloser, err error) {
-	panic("implement me")
+	errorMessage := "posixfs Read [%s]: %w"
+
+	// If path is "-", return stdin directly.
+	if path == "-" {
+		return os.Stdin, nil
+	}
+
+	f, err := c.osOpen(path)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
+	}
+	return f, nil
 }
 
 // WriteFile implements Storager.WriteFile
@@ -209,13 +220,12 @@ func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (e
 	panic("implement me")
 }
 
-// InitSegment implements Storager.InitSegment
-func (c *Client) InitSegment(path string, option ...*types.Pair) (err error) {
+func (c *Client) ListSegments(path string, option ...*types.Pair) iterator.SegmentIterator {
 	panic("implement me")
 }
 
-// ReadSegment implements Storager.ReadSegment
-func (c *Client) ReadSegment(path string, offset, size int64, option ...*types.Pair) (r io.ReadCloser, err error) {
+// InitSegment implements Storager.InitSegment
+func (c *Client) InitSegment(path string, option ...*types.Pair) (id string, err error) {
 	panic("implement me")
 }
 

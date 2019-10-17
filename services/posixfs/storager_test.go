@@ -486,3 +486,51 @@ func TestClient_ListDir(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_Read(t *testing.T) {
+	tests := []struct {
+		name  string
+		path  string
+		isNil bool
+		err   error
+	}{
+		{
+			"success",
+			"test_success",
+			false,
+			nil,
+		},
+		{
+			"error",
+			"test_error",
+			true,
+			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
+		},
+		{
+			"stdin",
+			"-",
+			false,
+			nil,
+		},
+	}
+
+	for _, v := range tests {
+		t.Run(v.name, func(t *testing.T) {
+			fakeFile := &os.File{}
+
+			client := Client{
+				osOpen: func(name string) (file *os.File, e error) {
+					assert.Equal(t, v.path, name)
+					if v.isNil {
+						return nil, v.err
+					}
+					return fakeFile, v.err
+				},
+			}
+
+			o, err := client.Read(v.path)
+			assert.Equal(t, v.err == nil, err == nil)
+			assert.Equal(t, v.isNil, o == nil)
+		})
+	}
+}
