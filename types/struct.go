@@ -45,6 +45,7 @@ var AvailablePairs = map[string]string{
 	"host":          "string",
 	"location":      "string",
 	"name":          "string",
+	"offset":        "int64",
 	"port":          "int",
 	"protocol":      "string",
 	"recursive":     "bool",

@@ -117,6 +117,20 @@ func (m Metadata) SetName(v string) {
 	m[Name] = v
 }
 
+// GetOffset will get offset value from metadata.
+func (m Metadata) GetOffset() (int64, bool) {
+	v, ok := m[Offset]
+	if !ok {
+		return 0, false
+	}
+	return v.(int64), true
+}
+
+// SetOffset will set offset value into metadata.
+func (m Metadata) SetOffset(v int64) {
+	m[Offset] = v
+}
+
 // GetPort will get port value from metadata.
 func (m Metadata) GetPort() (int, bool) {
 	v, ok := m[Port]

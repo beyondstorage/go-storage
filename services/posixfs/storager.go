@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/types"
 )
@@ -198,17 +199,38 @@ func (c *Client) ListDir(path string, option ...*types.Pair) (it iterator.Object
 }
 
 // Read implements Storager.Read
-func (c *Client) Read(path string, option ...*types.Pair) (r io.ReadCloser, err error) {
+func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	errorMessage := "posixfs Read [%s]: %w"
+
+	opt, err := parseStoragePairRead(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, path, err)
+	}
 
 	// If path is "-", return stdin directly.
 	if path == "-" {
-		return os.Stdin, nil
+		f := os.Stdin
+		if opt.HasSize {
+			return iowrap.LimitReadCloser(f, opt.Size), nil
+		}
+		return f, nil
 	}
 
 	f, err := c.osOpen(path)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
+	}
+	if opt.HasSize && opt.HasOffset {
+		return iowrap.SectionReadCloser(f, opt.Offset, opt.Size), nil
+	}
+	if opt.HasSize {
+		return iowrap.LimitReadCloser(f, opt.Size), nil
+	}
+	if opt.HasOffset {
+		_, err = f.Seek(opt.Offset, 0)
+		if err != nil {
+			return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
+		}
 	}
 	return f, nil
 }

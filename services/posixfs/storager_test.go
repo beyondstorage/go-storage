@@ -489,27 +489,86 @@ func TestClient_ListDir(t *testing.T) {
 
 func TestClient_Read(t *testing.T) {
 	tests := []struct {
-		name  string
-		path  string
-		isNil bool
-		err   error
+		name    string
+		path    string
+		pairs   []*types.Pair
+		isNil   bool
+		openErr error
+		seekErr error
 	}{
 		{
 			"success",
 			"test_success",
+			nil,
 			false,
+			nil,
 			nil,
 		},
 		{
 			"error",
 			"test_error",
+			nil,
 			true,
 			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
+			nil,
 		},
 		{
 			"stdin",
 			"-",
+			nil,
 			false,
+			nil,
+			nil,
+		},
+		{
+			"stdin with size",
+			"-",
+			[]*types.Pair{
+				types.WithSize(100),
+			},
+			false,
+			nil,
+			nil,
+		},
+		{
+			"success with size",
+			"test_success",
+			[]*types.Pair{
+				types.WithSize(100),
+			},
+			false,
+			nil,
+			nil,
+		},
+		{
+			"success with offset",
+			"test_success",
+			[]*types.Pair{
+				types.WithOffset(10),
+			},
+			false,
+			nil,
+			nil,
+		},
+		{
+			"error with offset",
+			"test_success",
+			[]*types.Pair{
+				types.WithOffset(10),
+			},
+			true,
+			nil,
+			io.ErrUnexpectedEOF,
+		},
+		{
+			"success with and size offset",
+			"test_success",
+			[]*types.Pair{
+				types.WithSize(100),
+				types.WithOffset(10),
+			},
+			false,
+			nil,
 			nil,
 		},
 	}
@@ -517,19 +576,22 @@ func TestClient_Read(t *testing.T) {
 	for _, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
 			fakeFile := &os.File{}
+			monkey.PatchInstanceMethod(reflect.TypeOf(fakeFile), "Seek", func(f *os.File, offset int64, whence int) (ret int64, err error) {
+				t.Logf("Seek has been called.")
+				assert.Equal(t, int64(10), offset)
+				assert.Equal(t, 0, whence)
+				return 0, v.seekErr
+			})
 
 			client := Client{
 				osOpen: func(name string) (file *os.File, e error) {
 					assert.Equal(t, v.path, name)
-					if v.isNil {
-						return nil, v.err
-					}
-					return fakeFile, v.err
+					return fakeFile, v.openErr
 				},
 			}
 
-			o, err := client.Read(v.path)
-			assert.Equal(t, v.err == nil, err == nil)
+			o, err := client.Read(v.path, v.pairs...)
+			assert.Equal(t, v.openErr == nil && v.seekErr == nil, err == nil)
 			assert.Equal(t, v.isNil, o == nil)
 		})
 	}

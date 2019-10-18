@@ -22,6 +22,10 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 	storage.ActionListDir: {
 		"recursive": struct{}{},
 	},
+	storage.ActionRead: {
+		"offset": struct{}{},
+		"size":   struct{}{},
+	},
 	storage.ActionWrite: {
 		"size": struct{}{},
 	},
@@ -92,6 +96,41 @@ func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 	if ok {
 		result.HasRecursive = true
 		result.Recursive = v.(bool)
+	}
+	return result, nil
+}
+
+type pairStorageRead struct {
+	HasOffset bool
+	Offset    int64
+	HasSize   bool
+	Size      int64
+}
+
+func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
+	result := &pairStorageRead{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedStoragePairs[storage.ActionRead]; !ok {
+			continue
+		}
+		if _, ok := allowedStoragePairs[storage.ActionRead][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.Offset]
+	if ok {
+		result.HasOffset = true
+		result.Offset = v.(int64)
+	}
+	v, ok = values[types.Size]
+	if ok {
+		result.HasSize = true
+		result.Size = v.(int64)
 	}
 	return result, nil
 }

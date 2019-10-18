@@ -15,6 +15,7 @@ const (
 	Host         = "host"
 	Location     = "location"
 	Name         = "name"
+	Offset       = "offset"
 	Port         = "port"
 	Protocol     = "protocol"
 	Recursive    = "recursive"
@@ -85,6 +86,14 @@ func WithLocation(v string) *Pair {
 func WithName(v string) *Pair {
 	return &Pair{
 		Key:   Name,
+		Value: v,
+	}
+}
+
+// WithOffset will apply offset value to Options
+func WithOffset(v int64) *Pair {
+	return &Pair{
+		Key:   Offset,
 		Value: v,
 	}
 }
