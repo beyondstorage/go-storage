@@ -6,12 +6,9 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-// CapabilityRead    = true
-// CapabilityWrite   = true
-// CapabilityFile    = true
-// CapabilityStream  = false
 // CapabilitySegment = true
-const capability = types.Capability(23)
+// CapabilityReach = true
+const capability = types.Capability(3)
 
 // Capability implements Storager.Capability().
 func (c *Client) Capability() types.Capability {
@@ -19,17 +16,15 @@ func (c *Client) Capability() types.Capability {
 }
 
 var allowedStoragePairs = map[string]map[string]struct{}{
-	storage.ActionCreateDir: {
-		"location": struct{}{},
-	},
 	storage.ActionListDir: {
 		"delimiter": struct{}{},
 	},
 	storage.ActionReach: {
 		"expire": struct{}{},
 	},
-	storage.ActionWriteFile: {
+	storage.ActionWrite: {
 		"checksum":      struct{}{},
+		"size":          struct{}{},
 		"storage_class": struct{}{},
 	},
 }
@@ -65,37 +60,6 @@ func (c *Client) IsPairAvailable(action, pair string) bool {
 		return false
 	}
 	return true
-}
-
-type pairStorageCreateDir struct {
-	HasLocation bool
-	Location    string
-}
-
-func parseStoragePairCreateDir(opts ...*types.Pair) (*pairStorageCreateDir, error) {
-	result := &pairStorageCreateDir{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionCreateDir]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs[storage.ActionCreateDir][v.Key]; !ok {
-			continue
-		}
-		values[v.Key] = v.Value
-	}
-	var v interface{}
-	var ok bool
-	v, ok = values[types.Location]
-	if !ok {
-		return nil, types.NewErrPairRequired(types.Location)
-	}
-	if ok {
-		result.HasLocation = true
-		result.Location = v.(string)
-	}
-	return result, nil
 }
 
 type pairStorageListDir struct {
@@ -157,22 +121,24 @@ func parseStoragePairReach(opts ...*types.Pair) (*pairStorageReach, error) {
 	return result, nil
 }
 
-type pairStorageWriteFile struct {
+type pairStorageWrite struct {
 	HasChecksum     bool
 	Checksum        string
+	HasSize         bool
+	Size            int64
 	HasStorageClass bool
 	StorageClass    string
 }
 
-func parseStoragePairWriteFile(opts ...*types.Pair) (*pairStorageWriteFile, error) {
-	result := &pairStorageWriteFile{}
+func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
+	result := &pairStorageWrite{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionWriteFile]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionWrite]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionWriteFile][v.Key]; !ok {
+		if _, ok := allowedStoragePairs[storage.ActionWrite][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -183,6 +149,14 @@ func parseStoragePairWriteFile(opts ...*types.Pair) (*pairStorageWriteFile, erro
 	if ok {
 		result.HasChecksum = true
 		result.Checksum = v.(string)
+	}
+	v, ok = values[types.Size]
+	if !ok {
+		return nil, types.NewErrPairRequired(types.Size)
+	}
+	if ok {
+		result.HasSize = true
+		result.Size = v.(int64)
 	}
 	v, ok = values[types.StorageClass]
 	if ok {

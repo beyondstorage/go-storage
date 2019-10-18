@@ -19,12 +19,10 @@ const (
 	ActionCreateDir = "create_dir"
 	ActionListDir   = "list_dir"
 
-	ActionRead        = "read"
-	ActionWriteFile   = "write_file"
-	ActionWriteStream = "write_stream"
+	ActionRead  = "read"
+	ActionWrite = "write"
 
 	ActionInitSegment     = "init_segment"
-	ActionReadSegment     = "read_segment"
 	ActionWriteSegment    = "write_segment"
 	ActionCompleteSegment = "complete_segment"
 	ActionAbortSegment    = "abort_segment"
@@ -92,8 +90,7 @@ type Storager interface {
 	// Metadata will return current storager's metadata.
 	//
 	// Implementer:
-	//   - MUST return following data: Name
-	//   - MAY return following data: Location, Size, Count
+	//   - MAY return following data: Name,Location, Size, Count
 	Metadata() (types.Metadata, error)
 	// Stat will stat a path to get info of an object.
 	//
@@ -140,22 +137,11 @@ type Storager interface {
 	// Caller:
 	//   - MUST close reader while error happened or all data read.
 	Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
-
-	// File Only Operations.
-
 	// WriteFile will write data into file.
 	//
 	// Caller:
 	//   - MUST close reader while error happened or all data written.
-	WriteFile(path string, size int64, r io.Reader, pairs ...*types.Pair) (err error)
-
-	// Stream Operations.
-
-	// WriteStream will write data into file.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data written.
-	WriteStream(path string, r io.Reader, pairs ...*types.Pair) (err error)
+	Write(path string, r io.Reader, pairs ...*types.Pair) (err error)
 
 	// Segment Operations.
 

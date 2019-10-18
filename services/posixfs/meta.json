@@ -1,16 +1,18 @@
 {
   "name": "posixfs",
   "capability": {
-    "read": true,
-    "write": true,
-    "file": true,
-    "stream": true,
     "segment": true,
     "reach": false
   },
   "storage": {
     "list_dir": {
       "recursive": false
+    },
+    "delete": {
+      "recursive": false
+    },
+    "write": {
+      "size": false
     }
   }
 }

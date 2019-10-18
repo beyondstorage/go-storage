@@ -6,12 +6,9 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-// CapabilityRead    = true
-// CapabilityWrite   = true
-// CapabilityFile    = true
-// CapabilityStream  = true
 // CapabilitySegment = true
-const capability = types.Capability(31)
+// CapabilityReach = false
+const capability = types.Capability(1)
 
 // Capability implements Storager.Capability().
 func (c *Client) Capability() types.Capability {
@@ -19,8 +16,14 @@ func (c *Client) Capability() types.Capability {
 }
 
 var allowedStoragePairs = map[string]map[string]struct{}{
+	storage.ActionDelete: {
+		"recursive": struct{}{},
+	},
 	storage.ActionListDir: {
 		"recursive": struct{}{},
+	},
+	storage.ActionWrite: {
+		"size": struct{}{},
 	},
 }
 
@@ -35,6 +38,34 @@ func (c *Client) IsPairAvailable(action, pair string) bool {
 		return false
 	}
 	return true
+}
+
+type pairStorageDelete struct {
+	HasRecursive bool
+	Recursive    bool
+}
+
+func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
+	result := &pairStorageDelete{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedStoragePairs[storage.ActionDelete]; !ok {
+			continue
+		}
+		if _, ok := allowedStoragePairs[storage.ActionDelete][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.Recursive]
+	if ok {
+		result.HasRecursive = true
+		result.Recursive = v.(bool)
+	}
+	return result, nil
 }
 
 type pairStorageListDir struct {
@@ -61,6 +92,34 @@ func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 	if ok {
 		result.HasRecursive = true
 		result.Recursive = v.(bool)
+	}
+	return result, nil
+}
+
+type pairStorageWrite struct {
+	HasSize bool
+	Size    int64
+}
+
+func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
+	result := &pairStorageWrite{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedStoragePairs[storage.ActionWrite]; !ok {
+			continue
+		}
+		if _, ok := allowedStoragePairs[storage.ActionWrite][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.Size]
+	if ok {
+		result.HasSize = true
+		result.Size = v.(int64)
 	}
 	return result, nil
 }

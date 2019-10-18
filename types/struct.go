@@ -1,18 +1,22 @@
 package types
 
+// ObjectType is the type for object, under layer type is string.
+type ObjectType string
+
 // All available type for object.
 const (
-	ObjectTypeFile   = "file"
-	ObjectTypeStream = "stream"
-	ObjectTypeDir    = "dir"
+	ObjectTypeFile    ObjectType = "file"
+	ObjectTypeStream  ObjectType = "stream"
+	ObjectTypeDir     ObjectType = "dir"
+	ObjectTypeInvalid ObjectType = "invalid"
 )
 
 // Object may be a *File, *Dir or a *Stream.
 type Object struct {
 	// name must a complete path instead of basename in POSIX.
 	Name string
-	// type should be one of "file", "stream" or "dir".
-	Type string
+	// type should be one of "file", "stream", "dir" or "invalid".
+	Type ObjectType
 
 	// metadata is the metadata of the object.
 	Metadata

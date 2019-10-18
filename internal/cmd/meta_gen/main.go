@@ -13,29 +13,17 @@ import (
 )
 
 type capability struct {
-	Read    bool `json:"read"`
-	Write   bool `json:"write"`
-	File    bool `json:"file"`
-	Stream  bool `json:"stream"`
 	Segment bool `json:"segment"`
+	Reach   bool `json:"reach"`
 }
 
 func parseCapability(c capability) uint64 {
 	v := types.Capability(0)
-	if c.Read {
-		v |= types.CapabilityRead
-	}
-	if c.Write {
-		v |= types.CapabilityWrite
-	}
-	if c.File {
-		v |= types.CapabilityFile
-	}
-	if c.Stream {
-		v |= types.CapabilityStream
-	}
 	if c.Segment {
 		v |= types.CapabilitySegment
+	}
+	if c.Reach {
+		v |= types.CapabilityReach
 	}
 
 	return uint64(v)
@@ -100,11 +88,8 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-// CapabilityRead    = {{ .Capability.Read }}
-// CapabilityWrite   = {{ .Capability.Write }}
-// CapabilityFile    = {{ .Capability.File }}
-// CapabilityStream  = {{ .Capability.Stream }}
 // CapabilitySegment = {{ .Capability.Segment }}
+// CapabilityReach = {{ .Capability.Reach }}
 const capability = types.Capability({{ .ParsedCapability }})
 
 // Capability implements Storager.Capability().

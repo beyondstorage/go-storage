@@ -1,10 +1,6 @@
 {
   "name": "qingstor",
   "capability": {
-    "read": true,
-    "write": true,
-    "file": true,
-    "stream": false,
     "segment": true,
     "reach": true
   },
@@ -33,13 +29,11 @@
     "reach": {
       "expire": true
     },
-    "create_dir": {
-      "location": true
-    },
     "list_dir": {
       "delimiter": false
     },
-    "write_file": {
+    "write": {
+      "size": true,
       "checksum": false,
       "storage_class": false
     }
