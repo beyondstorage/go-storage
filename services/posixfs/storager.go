@@ -221,9 +221,15 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 		return fmt.Errorf(errorMessage, path, err)
 	}
 
-	f, err := c.osCreate(path)
-	if err != nil {
-		return fmt.Errorf(errorMessage, path, handleOsError(err))
+	var f io.WriteCloser
+	// If path is "-", use stdout directly.
+	if path == "-" {
+		f = os.Stdout
+	} else {
+		f, err = c.osCreate(path)
+		if err != nil {
+			return fmt.Errorf(errorMessage, path, handleOsError(err))
+		}
 	}
 
 	if opt.HasSize {

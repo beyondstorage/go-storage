@@ -535,17 +535,18 @@ func TestClient_Read(t *testing.T) {
 	}
 }
 
-func TestClient_WriteFile(t *testing.T) {
+func TestClient_Write(t *testing.T) {
 	paths := make([]string, 10)
 	for k := range paths {
 		paths[k] = uuid.New().String()
 	}
 
 	tests := []struct {
-		name     string
-		osCreate func(name string) (*os.File, error)
-		ioCopyN  func(dst io.Writer, src io.Reader, n int64) (written int64, err error)
-		hasErr   bool
+		name         string
+		osCreate     func(name string) (*os.File, error)
+		ioCopyN      func(dst io.Writer, src io.Reader, n int64) (written int64, err error)
+		ioCopyBuffer func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
+		hasErr       bool
 	}{
 		{
 			"failed os create",
@@ -558,6 +559,7 @@ func TestClient_WriteFile(t *testing.T) {
 				}
 			},
 			nil,
+			nil,
 			true,
 		},
 		{
@@ -569,17 +571,39 @@ func TestClient_WriteFile(t *testing.T) {
 			func(dst io.Writer, src io.Reader, n int64) (written int64, err error) {
 				return 0, io.EOF
 			},
+			nil,
 			true,
 		},
 		{
-			"success",
+			"failed io copy buffer",
+			nil,
+			nil,
+			func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error) {
+				return 0, io.EOF
+			},
+			true,
+		},
+		{
+			"success with size",
 			func(name string) (file *os.File, e error) {
-				assert.Equal(t, paths[2], name)
+				assert.Equal(t, paths[3], name)
 				return &os.File{}, nil
 			},
 			func(dst io.Writer, src io.Reader, n int64) (written int64, err error) {
+				assert.Equal(t, int64(1234), n)
 				return 0, nil
 			},
+			nil,
+			false,
+		},
+		{
+			"success with stdout",
+			nil,
+			func(dst io.Writer, src io.Reader, n int64) (written int64, err error) {
+				assert.Equal(t, int64(1234), n)
+				return 0, nil
+			},
+			nil,
 			false,
 		},
 	}
@@ -587,11 +611,22 @@ func TestClient_WriteFile(t *testing.T) {
 	for k, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
 			client := Client{
-				osCreate: v.osCreate,
-				ioCopyN:  v.ioCopyN,
+				osCreate:     v.osCreate,
+				ioCopyN:      v.ioCopyN,
+				ioCopyBuffer: v.ioCopyBuffer,
 			}
 
-			err := client.Write(paths[k], nil, types.WithSize(1234))
+			var pairs []*types.Pair
+			if v.ioCopyN != nil {
+				pairs = append(pairs, types.WithSize(1234))
+			}
+
+			var err error
+			if v.osCreate == nil {
+				err = client.Write("-", nil, pairs...)
+			} else {
+				err = client.Write(paths[k], nil, pairs...)
+			}
 			assert.Equal(t, v.hasErr, err != nil)
 		})
 	}
