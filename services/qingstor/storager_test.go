@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io/ioutil"
-	"os"
 	"testing"
 	"time"
 
@@ -673,7 +672,7 @@ func TestClient_Stat(t *testing.T) {
 	}
 }
 
-func TestClient_WriteFile(t *testing.T) {
+func TestClient_Write(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -706,7 +705,7 @@ func TestClient_WriteFile(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		err := client.WriteFile(v.path, v.size, nil)
+		err := client.Write(v.path, nil, types.WithSize(v.size))
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -778,14 +777,6 @@ func TestClient_WriteSegment(t *testing.T) {
 			assert.NoError(t, err)
 		}
 	}
-}
-
-func TestClient_WriteStream(t *testing.T) {
-	client := Client{}
-
-	assert.Panics(t, func() {
-		client.WriteStream("", os.Stdin)
-	})
 }
 
 func TestClient_ListSegments(t *testing.T) {

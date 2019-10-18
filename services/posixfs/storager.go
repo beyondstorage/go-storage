@@ -213,24 +213,28 @@ func (c *Client) Read(path string, option ...*types.Pair) (r io.ReadCloser, err 
 }
 
 // WriteFile implements Storager.WriteFile
-func (c *Client) WriteFile(path string, size int64, r io.Reader, option ...*types.Pair) (err error) {
+func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs WriteFile [%s]: %w"
+
+	opt, err := parseStoragePairWrite(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, err)
+	}
 
 	f, err := c.osCreate(path)
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
 
-	_, err = c.ioCopyN(f, r, size)
+	if opt.HasSize {
+		_, err = c.ioCopyN(f, r, opt.Size)
+	} else {
+		_, err = c.ioCopyBuffer(f, r, make([]byte, 1024*1024))
+	}
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
 	return
-}
-
-// WriteStream implements Storager.WriteStream
-func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (err error) {
-	panic("implement me")
 }
 
 func (c *Client) ListSegments(path string, option ...*types.Pair) iterator.SegmentIterator {

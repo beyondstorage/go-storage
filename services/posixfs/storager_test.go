@@ -591,7 +591,7 @@ func TestClient_WriteFile(t *testing.T) {
 				ioCopyN:  v.ioCopyN,
 			}
 
-			err := client.WriteFile(paths[k], 1234, nil)
+			err := client.Write(paths[k], nil, types.WithSize(1234))
 			assert.Equal(t, v.hasErr, err != nil)
 		})
 	}

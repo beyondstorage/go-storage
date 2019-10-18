@@ -6,12 +6,9 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-// CapabilityRead    = true
-// CapabilityWrite   = true
-// CapabilityFile    = true
-// CapabilityStream  = true
 // CapabilitySegment = true
-const capability = types.Capability(31)
+// CapabilityReach = false
+const capability = types.Capability(1)
 
 // Capability implements Storager.Capability().
 func (c *Client) Capability() types.Capability {
@@ -24,6 +21,9 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 	},
 	storage.ActionListDir: {
 		"recursive": struct{}{},
+	},
+	storage.ActionWrite: {
+		"size": struct{}{},
 	},
 }
 
@@ -92,6 +92,34 @@ func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 	if ok {
 		result.HasRecursive = true
 		result.Recursive = v.(bool)
+	}
+	return result, nil
+}
+
+type pairStorageWrite struct {
+	HasSize bool
+	Size    int64
+}
+
+func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
+	result := &pairStorageWrite{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedStoragePairs[storage.ActionWrite]; !ok {
+			continue
+		}
+		if _, ok := allowedStoragePairs[storage.ActionWrite][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.Size]
+	if ok {
+		result.HasSize = true
+		result.Size = v.(int64)
 	}
 	return result, nil
 }

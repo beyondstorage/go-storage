@@ -289,23 +289,23 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 }
 
 // WriteFile implements Storager.WriteFile
-func (c *Client) WriteFile(path string, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
+func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteFile for id %s: %w"
 
-	opts, err := parseStoragePairWriteFile(pairs...)
+	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, err)
 	}
 
 	input := &service.PutObjectInput{
-		ContentLength: &size,
+		ContentLength: &opt.Size,
 		Body:          r,
 	}
-	if opts.HasChecksum {
-		input.ContentMD5 = &opts.Checksum
+	if opt.HasChecksum {
+		input.ContentMD5 = &opt.Checksum
 	}
-	if opts.HasStorageClass {
-		input.XQSStorageClass = &opts.StorageClass
+	if opt.HasStorageClass {
+		input.XQSStorageClass = &opt.StorageClass
 	}
 
 	_, err = c.bucket.PutObject(path, input)
@@ -314,11 +314,6 @@ func (c *Client) WriteFile(path string, size int64, r io.Reader, pairs ...*types
 		return fmt.Errorf(errorMessage, path, err)
 	}
 	return nil
-}
-
-// WriteStream implements Storager.WriteStream
-func (c *Client) WriteStream(path string, r io.Reader, option ...*types.Pair) (err error) {
-	panic("not supported")
 }
 
 // ListSegments implements Storager.ListSegments
