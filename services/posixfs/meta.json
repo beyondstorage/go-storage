@@ -13,6 +13,10 @@
     },
     "write": {
       "size": false
+    },
+    "read": {
+      "size": false,
+      "offset": false
     }
   }
 }
