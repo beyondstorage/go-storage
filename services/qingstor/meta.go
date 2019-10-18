@@ -16,9 +16,6 @@ func (c *Client) Capability() types.Capability {
 }
 
 var allowedStoragePairs = map[string]map[string]struct{}{
-	storage.ActionCreateDir: {
-		"location": struct{}{},
-	},
 	storage.ActionListDir: {
 		"delimiter": struct{}{},
 	},
@@ -63,37 +60,6 @@ func (c *Client) IsPairAvailable(action, pair string) bool {
 		return false
 	}
 	return true
-}
-
-type pairStorageCreateDir struct {
-	HasLocation bool
-	Location    string
-}
-
-func parseStoragePairCreateDir(opts ...*types.Pair) (*pairStorageCreateDir, error) {
-	result := &pairStorageCreateDir{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionCreateDir]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs[storage.ActionCreateDir][v.Key]; !ok {
-			continue
-		}
-		values[v.Key] = v.Value
-	}
-	var v interface{}
-	var ok bool
-	v, ok = values[types.Location]
-	if !ok {
-		return nil, types.NewErrPairRequired(types.Location)
-	}
-	if ok {
-		result.HasLocation = true
-		result.Location = v.(string)
-	}
-	return result, nil
 }
 
 type pairStorageListDir struct {

@@ -29,9 +29,6 @@
     "reach": {
       "expire": true
     },
-    "create_dir": {
-      "location": true
-    },
     "list_dir": {
       "delimiter": false
     },
