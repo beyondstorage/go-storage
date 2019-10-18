@@ -30,6 +30,7 @@ type Client struct {
 	osStat        func(name string) (os.FileInfo, error)
 }
 
+// NewClient will create a posix client.
 func NewClient() *Client {
 	return &Client{
 		ioCopyBuffer:  io.CopyBuffer,
@@ -243,6 +244,7 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 	return
 }
 
+// ListSegments implements Storager.ListSegments
 func (c *Client) ListSegments(path string, option ...*types.Pair) iterator.SegmentIterator {
 	panic("implement me")
 }
