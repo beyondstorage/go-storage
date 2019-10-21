@@ -1,11 +1,17 @@
 package qingstor
 
 import (
+	"errors"
 	"fmt"
 
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 
 	"github.com/Xuanwo/storage/types"
+)
+
+var (
+	// ErrInvalidBucketName will be returned while bucket name is invalid.
+	ErrInvalidBucketName = errors.New("invalid bucket name")
 )
 
 func handleQingStorError(err error) error {

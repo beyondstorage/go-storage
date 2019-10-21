@@ -157,6 +157,11 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 func (s *Service) get(name, location string) (*service.Bucket, error) {
 	errorMessage := "get qingstor storager [%s]: %w"
 
+	if !IsBucketNameValid(name) {
+		err := handleQingStorError(ErrInvalidBucketName)
+		return nil, fmt.Errorf(errorMessage, name, err)
+	}
+
 	// TODO: add bucket name check here.
 	if location != "" {
 		bucket, err := s.service.Bucket(name, location)
