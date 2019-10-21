@@ -122,6 +122,24 @@ func TestService_Get(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, s)
 	}
+
+	{
+		// Test case 3: invalid bucket name.
+
+		srv := New()
+		srv.service = mockService
+		srv.config = &config.Config{
+			AccessKeyID:     uuid.New().String(),
+			SecretAccessKey: uuid.New().String(),
+			Host:            uuid.New().String(),
+			Port:            1234,
+			Protocol:        uuid.New().String(),
+		}
+
+		s, err := srv.Get("1234")
+		assert.Error(t, err)
+		assert.Nil(t, s)
+	}
 }
 
 func TestService_Create(t *testing.T) {
