@@ -88,6 +88,14 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+{{- if .Service }}
+// ServicerType is the servicer type for {{ .Name }}
+const ServicerType = types.ServicerType("{{ .Name }}")
+{{- end }}
+
+// StoragerType is the storager type for {{ .Name }}
+const StoragerType = types.StoragerType("{{ .Name }}")
+
 // CapabilitySegment = {{ .Capability.Segment }}
 // CapabilityReach = {{ .Capability.Reach }}
 const capability = types.Capability({{ .ParsedCapability }})

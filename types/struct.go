@@ -1,5 +1,11 @@
 package types
 
+// ServicerType is the type for service, under layer type is string.
+type ServicerType string
+
+// StoragerType is the type for storager, under layer type is string.
+type StoragerType string
+
 // ObjectType is the type for object, under layer type is string.
 type ObjectType string
 

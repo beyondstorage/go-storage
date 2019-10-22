@@ -6,6 +6,9 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+// StoragerType is the storager type for posixfs
+const StoragerType = types.StoragerType("posixfs")
+
 // CapabilitySegment = true
 // CapabilityReach = false
 const capability = types.Capability(1)

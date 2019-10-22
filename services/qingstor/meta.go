@@ -6,6 +6,12 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+// ServicerType is the servicer type for qingstor
+const ServicerType = types.ServicerType("qingstor")
+
+// StoragerType is the storager type for qingstor
+const StoragerType = types.StoragerType("qingstor")
+
 // CapabilitySegment = true
 // CapabilityReach = true
 const capability = types.Capability(3)
