@@ -191,7 +191,7 @@ func (c *Client) ListDir(path string, option ...*types.Pair) (it iterator.Object
 
 		// Set input objects
 		*objects = buf[:idx]
-		return nil
+		return iterator.ErrDone
 	})
 
 	it = iterator.NewObjectIterator(fn)

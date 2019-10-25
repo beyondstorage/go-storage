@@ -446,10 +446,16 @@ func TestClient_ListDir(t *testing.T) {
 			nil,
 		},
 		{
-			"error",
+			"os error",
 			nil,
 			nil,
 			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
+		},
+		{
+			"done",
+			nil,
+			nil,
+			nil,
 		},
 	}
 
