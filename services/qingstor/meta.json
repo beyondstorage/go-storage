@@ -1,8 +1,7 @@
 {
   "name": "qingstor",
   "capability": {
-    "segment": true,
-    "reach": true
+    "create_dir": false
   },
   "service": {
     "init": {

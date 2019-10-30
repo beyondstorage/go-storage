@@ -9,13 +9,8 @@ import (
 // StoragerType is the storager type for posixfs
 const StoragerType = types.StoragerType("posixfs")
 
-// CapabilitySegment = true
-// CapabilityReach = false
-const capability = types.Capability(1)
-
-// Capability implements Storager.Capability().
-func (c *Client) Capability() types.Capability {
-	return capability
+var notAllowedStorageAction = map[string]struct{}{
+	"reach": struct{}{},
 }
 
 var allowedStoragePairs = map[string]map[string]struct{}{
@@ -36,13 +31,23 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 
 var allowedServicePairs = map[string]map[string]struct{}{}
 
-// IsPairAvailable implements Storager.IsPairAvailable().
-func (c *Client) IsPairAvailable(action, pair string) bool {
+// Capable implements Storager.Capable().
+func (c *Client) Capable(action string, pair ...string) bool {
+	if _, ok := notAllowedStorageAction[action]; ok {
+		return false
+	}
+	// If no pair input, we only need to check action.
+	if len(pair) == 0 {
+		return true
+	}
+
 	if _, ok := allowedStoragePairs[action]; !ok {
 		return false
 	}
-	if _, ok := allowedStoragePairs[action][pair]; !ok {
-		return false
+	for _, v := range pair {
+		if _, ok := allowedStoragePairs[action][v]; !ok {
+			return false
+		}
 	}
 	return true
 }

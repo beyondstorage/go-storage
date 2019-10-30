@@ -1,7 +1,6 @@
 {
   "name": "posixfs",
   "capability": {
-    "segment": true,
     "reach": false
   },
   "storage": {

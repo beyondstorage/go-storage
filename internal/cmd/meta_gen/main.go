@@ -12,30 +12,11 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-type capability struct {
-	Segment bool `json:"segment"`
-	Reach   bool `json:"reach"`
-}
-
-func parseCapability(c capability) uint64 {
-	v := types.Capability(0)
-	if c.Segment {
-		v |= types.CapabilitySegment
-	}
-	if c.Reach {
-		v |= types.CapabilityReach
-	}
-
-	return uint64(v)
-}
-
 type metadata struct {
 	Name       string                     `json:"name"`
-	Capability capability                 `json:"capability"`
+	Capability map[string]bool            `json:"capability"`
 	Service    map[string]map[string]bool `json:"service"`
 	Storage    map[string]map[string]bool `json:"storage"`
-
-	ParsedCapability uint64 `json:"-"`
 
 	TypeMap map[string]string `json:"-"`
 }
@@ -62,7 +43,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
-	meta.ParsedCapability = parseCapability(meta.Capability)
 	meta.TypeMap = types.AvailablePairs
 
 	filePath := "meta.go"
@@ -95,19 +75,17 @@ const ServicerType = types.ServicerType("{{ .Name }}")
 
 // StoragerType is the storager type for {{ .Name }}
 const StoragerType = types.StoragerType("{{ .Name }}")
-
-// CapabilitySegment = {{ .Capability.Segment }}
-// CapabilityReach = {{ .Capability.Reach }}
-const capability = types.Capability({{ .ParsedCapability }})
-
-// Capability implements Storager.Capability().
-func (c *Client) Capability() types.Capability {
-	return capability
-}
 `))
 
 var pairTmpl = template.Must(template.New("pair").Funcs(templateutils.FuncMap()).Parse(`
 {{ $Data := . }}
+
+var notAllowedStorageAction = map[string]struct{}{
+{{- range $k, $v := .Capability }}
+	"{{$k}}": struct{}{},
+{{- end }}
+}
+
 
 var allowedStoragePairs = map[string]map[string]struct{}{
 {{- range $k, $v := .Storage }}
@@ -129,13 +107,23 @@ var allowedServicePairs = map[string]map[string]struct{}{
 {{- end }}
 }
 
-// IsPairAvailable implements Storager.IsPairAvailable().
-func (c *Client) IsPairAvailable(action, pair string) bool {
+// Capable implements Storager.Capable().
+func (c *Client) Capable(action string, pair ...string) bool {
+	if _, ok := notAllowedStorageAction[action]; ok {
+		return false
+	}
+	// If no pair input, we only need to check action.
+	if len(pair) == 0 {
+		return true
+	}
+
 	if _, ok := allowedStoragePairs[action]; !ok {
 		return false
 	}
-	if _, ok := allowedStoragePairs[action][pair]; !ok {
-		return false
+	for _, v := range pair {
+		if _, ok := allowedStoragePairs[action][v]; !ok {
+			return false
+		}
 	}
 	return true
 }

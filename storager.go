@@ -71,19 +71,11 @@ In the comments of every method, we will use following rules to standardize the 
   - Caller is the user of the service, while you trying to use the Storager interface, you need to follow.
 */
 type Storager interface {
-	// Meta Operations.
-	// They will be generated via meta.json, don't need to implement manually.
-
-	// Capability will return the capability of current storage services.
-	//
-	// Caller:
-	//   - SHOULD check capability before use file, stream or segment related operations.
-	Capability() types.Capability
-	// IsPairAvailable will check whether current service support this pair.
+	// Capable will check whether current service support this action or key.
 	//
 	// Caller:
 	//   - SHOULD check pairs availability before use any pairs.
-	IsPairAvailable(action, key string) bool
+	Capable(action string, key ...string) bool
 
 	// Base Operations.
 
