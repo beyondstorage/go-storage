@@ -22,6 +22,15 @@ func TestNewClient(t *testing.T) {
 	assert.NotNil(t, c)
 }
 
+func TestClient_Capable(t *testing.T) {
+	client := Client{}
+	assert.True(t, client.Capable("read"))
+	assert.True(t, client.Capable("list_dir", types.Recursive))
+	assert.False(t, client.Capable("list_dir", types.Expire))
+	assert.False(t, client.Capable("reach"))
+	assert.False(t, client.Capable("read", types.Expire))
+}
+
 func TestClient_Metadata(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
