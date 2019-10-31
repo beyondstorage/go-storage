@@ -29,7 +29,7 @@
       "expire": true
     },
     "list_dir": {
-      "delimiter": false
+      "recursive": false
     },
     "write": {
       "size": true,

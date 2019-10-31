@@ -158,41 +158,94 @@ func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, option ...*types.Pair) (it iterator.ObjectIterator) {
+func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectIterator) {
 	errorMessage := "posixfs ListDir [%s]: %w"
 
-	fn := iterator.NextObjectFunc(func(objects *[]*types.Object) error {
-		fi, err := c.ioutilReadDir(path)
-		if err != nil {
-			return fmt.Errorf(errorMessage, path, handleOsError(err))
-		}
+	opt, _ := parseStoragePairListDir(pairs...)
 
-		idx := 0
-		buf := make([]*types.Object, len(fi))
+	recursive := false
+	if opt.HasRecursive && opt.Recursive {
+		recursive = true
+	}
 
-		for _, v := range fi {
-			o := &types.Object{
-				Name:     v.Name(),
-				Metadata: make(types.Metadata),
+	var fn iterator.NextObjectFunc
+	if !recursive {
+		fn = func(objects *[]*types.Object) error {
+			fi, err := c.ioutilReadDir(path)
+			if err != nil {
+				return fmt.Errorf(errorMessage, path, handleOsError(err))
 			}
 
-			if v.IsDir() {
-				o.Type = types.ObjectTypeDir
-			} else {
-				o.Type = types.ObjectTypeFile
+			idx := 0
+			buf := make([]*types.Object, len(fi))
+
+			for _, v := range fi {
+				o := &types.Object{
+					Name:     v.Name(),
+					Metadata: make(types.Metadata),
+				}
+
+				if v.IsDir() {
+					o.Type = types.ObjectTypeDir
+				} else {
+					o.Type = types.ObjectTypeFile
+				}
+
+				o.SetSize(v.Size())
+				o.SetUpdatedAt(v.ModTime())
+
+				buf[idx] = o
+				idx++
 			}
 
-			o.SetSize(v.Size())
-			o.SetUpdatedAt(v.ModTime())
-
-			buf[idx] = o
-			idx++
+			// Set input objects
+			*objects = buf[:idx]
+			return iterator.ErrDone
 		}
+	} else {
+		paths := []string{path}
 
-		// Set input objects
-		*objects = buf[:idx]
-		return iterator.ErrDone
-	})
+		fn = func(objects *[]*types.Object) error {
+			if len(paths) == 0 {
+				return iterator.ErrDone
+			}
+			p := paths[0]
+
+			fi, err := c.ioutilReadDir(p)
+			if err != nil {
+				return fmt.Errorf(errorMessage, path, handleOsError(err))
+			}
+
+			// Remove the first path.
+			paths = paths[1:]
+
+			idx := 0
+			buf := make([]*types.Object, len(fi))
+
+			for _, v := range fi {
+				if v.IsDir() {
+					paths = append(paths, v.Name())
+					continue
+				}
+
+				o := &types.Object{
+					Name:     v.Name(),
+					Metadata: make(types.Metadata),
+					Type:     types.ObjectTypeFile,
+				}
+
+				o.SetSize(v.Size())
+				o.SetUpdatedAt(v.ModTime())
+
+				buf[idx] = o
+				idx++
+			}
+
+			// Set input objects
+			*objects = buf[:idx]
+			return iterator.ErrDone
+		}
+	}
 
 	it = iterator.NewObjectIterator(fn)
 	return

@@ -185,9 +185,9 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 	marker := ""
 	limit := 200
-	delimiter := ""
-	if opt.HasDelimiter {
-		delimiter = opt.Delimiter
+	delimiter := "/"
+	if opt.HasRecursive {
+		delimiter = ""
 	}
 
 	var output *service.ListObjectsOutput

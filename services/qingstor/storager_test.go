@@ -22,7 +22,7 @@ import (
 func TestClient_Capable(t *testing.T) {
 	client := Client{}
 	assert.True(t, client.Capable("read"))
-	assert.True(t, client.Capable("list_dir", types.Delimiter))
+	assert.True(t, client.Capable("list_dir", types.Recursive))
 	assert.False(t, client.Capable("list_dir", types.Expire))
 	assert.False(t, client.Capable("create_dir"))
 	assert.False(t, client.Capable("read", types.Expire))
@@ -379,7 +379,7 @@ func TestClient_ListDir(t *testing.T) {
 		{
 			"list with delimiter",
 			[]*types.Pair{
-				types.WithDelimiter("/"),
+				types.WithRecursive(true),
 			},
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
@@ -399,7 +399,7 @@ func TestClient_ListDir(t *testing.T) {
 		{
 			"list with return next marker",
 			[]*types.Pair{
-				types.WithDelimiter("/"),
+				types.WithRecursive(true),
 			},
 			&service.ListObjectsOutput{
 				NextMarker: service.String("test_marker"),
@@ -420,7 +420,7 @@ func TestClient_ListDir(t *testing.T) {
 		{
 			"list with return empty keys",
 			[]*types.Pair{
-				types.WithDelimiter("/"),
+				types.WithRecursive(true),
 			},
 			&service.ListObjectsOutput{
 				NextMarker: service.String("test_marker"),
@@ -829,7 +829,7 @@ func TestClient_ListSegments(t *testing.T) {
 		{
 			"list with return next marker",
 			[]*types.Pair{
-				types.WithDelimiter("/"),
+				types.WithRecursive(true),
 			},
 			&service.ListMultipartUploadsOutput{
 				NextKeyMarker: service.String("test_marker"),

@@ -10,7 +10,6 @@ const (
 	AccessKey    = "access_key"
 	Checksum     = "checksum"
 	Count        = "count"
-	Delimiter    = "delimiter"
 	Expire       = "expire"
 	Host         = "host"
 	Location     = "location"
@@ -46,14 +45,6 @@ func WithChecksum(v string) *Pair {
 func WithCount(v int64) *Pair {
 	return &Pair{
 		Key:   Count,
-		Value: v,
-	}
-}
-
-// WithDelimiter will apply delimiter value to Options
-func WithDelimiter(v string) *Pair {
-	return &Pair{
-		Key:   Delimiter,
 		Value: v,
 	}
 }

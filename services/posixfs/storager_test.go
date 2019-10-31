@@ -406,12 +406,39 @@ func TestClient_CreateDir(t *testing.T) {
 func TestClient_ListDir(t *testing.T) {
 	tests := []struct {
 		name  string
+		pairs []*types.Pair
 		fi    []os.FileInfo
 		items []*types.Object
 		err   error
 	}{
 		{
 			"success file",
+			nil,
+			[]os.FileInfo{
+				fileInfo{
+					name:    "test_file",
+					size:    1234,
+					mode:    0644,
+					modTime: time.Unix(1, 0),
+				},
+			},
+			[]*types.Object{
+				{
+					Name: "test_file",
+					Type: types.ObjectTypeFile,
+					Metadata: types.Metadata{
+						types.Size:      int64(1234),
+						types.UpdatedAt: time.Unix(1, 0),
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"success file recursively",
+			[]*types.Pair{
+				types.WithRecursive(true),
+			},
 			[]os.FileInfo{
 				fileInfo{
 					name:    "test_file",
@@ -434,6 +461,7 @@ func TestClient_ListDir(t *testing.T) {
 		},
 		{
 			"success dir",
+			nil,
 			[]os.FileInfo{
 				fileInfo{
 					name:    "test_dir",
@@ -455,13 +483,40 @@ func TestClient_ListDir(t *testing.T) {
 			nil,
 		},
 		{
+			"success dir recursively",
+			[]*types.Pair{
+				types.WithRecursive(true),
+			},
+			[]os.FileInfo{
+				fileInfo{
+					name:    "test_dir",
+					size:    0,
+					mode:    os.ModeDir | 0755,
+					modTime: time.Unix(1, 0),
+				},
+			},
+			nil,
+			nil,
+		},
+		{
 			"os error",
+			[]*types.Pair{
+				types.WithRecursive(true),
+			},
+			nil,
+			nil,
+			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
+		},
+		{
+			"os error",
+			nil,
 			nil,
 			nil,
 			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
 		},
 		{
 			"done",
+			nil,
 			nil,
 			nil,
 			nil,
@@ -479,7 +534,7 @@ func TestClient_ListDir(t *testing.T) {
 				},
 			}
 
-			x := client.ListDir(path)
+			x := client.ListDir(path, v.pairs...)
 			for _, expectItem := range v.items {
 				item, err := x.Next()
 				if v.err != nil {

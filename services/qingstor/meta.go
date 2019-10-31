@@ -18,7 +18,7 @@ var notAllowedStorageAction = map[string]struct{}{
 
 var allowedStoragePairs = map[string]map[string]struct{}{
 	storage.ActionListDir: {
-		"delimiter": struct{}{},
+		"recursive": struct{}{},
 	},
 	storage.ActionReach: {
 		"expire": struct{}{},
@@ -74,8 +74,8 @@ func (c *Client) Capable(action string, pair ...string) bool {
 }
 
 type pairStorageListDir struct {
-	HasDelimiter bool
-	Delimiter    string
+	HasRecursive bool
+	Recursive    bool
 }
 
 func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
@@ -93,10 +93,10 @@ func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Delimiter]
+	v, ok = values[types.Recursive]
 	if ok {
-		result.HasDelimiter = true
-		result.Delimiter = v.(string)
+		result.HasRecursive = true
+		result.Recursive = v.(bool)
 	}
 	return result, nil
 }
