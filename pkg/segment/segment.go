@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"sync"
 )
 
 // All errors that segment could return.
@@ -31,6 +32,8 @@ type Segment struct {
 	ID    string
 	Path  string
 	Parts []*Part
+
+	l sync.RWMutex
 }
 
 func (s *Segment) String() string {
@@ -44,6 +47,9 @@ func (s *Segment) GetPartIndex(p *Part) (cur int, err error) {
 	if p.Size == 0 {
 		panic(ErrPartSizeInvalid)
 	}
+
+	s.l.RLock()
+	defer s.l.RUnlock()
 
 	length := len(s.Parts)
 	// Get the index for insert.
@@ -95,6 +101,10 @@ func (s *Segment) InsertPart(p *Part) (err error) {
 	if err != nil {
 		return err
 	}
+
+	s.l.Lock()
+	defer s.l.Unlock()
+
 	s.Parts = append(s.Parts, &Part{})
 	copy(s.Parts[cur+1:], s.Parts[cur:])
 	s.Parts[cur] = p
@@ -104,6 +114,9 @@ func (s *Segment) InsertPart(p *Part) (err error) {
 // ValidateParts will validate a segment's parts.
 func (s *Segment) ValidateParts() (err error) {
 	errorMessage := "%s validate parts failed: %w"
+
+	s.l.RLock()
+	defer s.l.RUnlock()
 
 	// Zero parts are not allowed, cause they can't be completed.
 	if len(s.Parts) == 0 {

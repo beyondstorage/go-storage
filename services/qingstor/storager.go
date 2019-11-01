@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pengsrc/go-shared/convert"
@@ -22,7 +23,8 @@ import (
 type Client struct {
 	bucket iface.Bucket
 
-	segments map[string]*segment.Segment
+	segments    map[string]*segment.Segment
+	segmentLock sync.RWMutex
 }
 
 // newClient will create a new client.
@@ -352,8 +354,10 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 			buf[idx] = s
 			idx++
 
+			c.segmentLock.Lock()
 			// Update client's segments.
 			c.segments[s.ID] = s
+			c.segmentLock.Unlock()
 		}
 
 		// Set input objects
@@ -388,11 +392,13 @@ func (c *Client) InitSegment(path string, pairs ...*types.Pair) (id string, err 
 
 	id = *output.UploadID
 
+	c.segmentLock.Lock()
 	c.segments[id] = &segment.Segment{
 		Path:  path,
 		ID:    id,
 		Parts: make([]*segment.Part, 0),
 	}
+	c.segmentLock.Unlock()
 	return
 }
 
@@ -400,10 +406,12 @@ func (c *Client) InitSegment(path string, pairs ...*types.Pair) (id string, err 
 func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteSegment for id %s: %w"
 
+	c.segmentLock.RLock()
 	s, ok := c.segments[id]
 	if !ok {
 		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
+	c.segmentLock.RUnlock()
 
 	p := &segment.Part{
 		Offset: offset,
@@ -437,10 +445,12 @@ func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs 
 func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor CompleteSegment for id %s: %w"
 
+	c.segmentLock.RLock()
 	s, ok := c.segments[id]
 	if !ok {
 		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
+	c.segmentLock.RUnlock()
 
 	err = s.ValidateParts()
 	if err != nil {
@@ -465,7 +475,9 @@ func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
+	c.segmentLock.Lock()
 	delete(c.segments, id)
+	c.segmentLock.Unlock()
 	return
 }
 
@@ -473,10 +485,12 @@ func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor AbortSegment for id %s: %w"
 
+	c.segmentLock.RLock()
 	s, ok := c.segments[id]
 	if !ok {
 		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
+	c.segmentLock.RUnlock()
 
 	_, err = c.bucket.AbortMultipartUpload(s.Path, &service.AbortMultipartUploadInput{
 		UploadID: &s.ID,
@@ -486,6 +500,8 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
+	c.segmentLock.Lock()
 	delete(c.segments, id)
+	c.segmentLock.Unlock()
 	return
 }
