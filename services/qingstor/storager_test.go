@@ -148,8 +148,8 @@ func TestClient_CompleteSegment(t *testing.T) {
 				"test_id": {
 					ID:   "test_id",
 					Path: "test_path",
-					Parts: []*segment.Part{
-						{Offset: 0, Size: 1},
+					Parts: map[int64]*segment.Part{
+						0: {Offset: 0, Size: 1},
 					},
 				},
 			},
@@ -754,7 +754,7 @@ func TestClient_WriteSegment(t *testing.T) {
 				"test_id": {
 					ID:    "test_id",
 					Path:  "test_path",
-					Parts: []*segment.Part{},
+					Parts: make(map[int64]*segment.Part),
 				},
 			}, 0, 1,
 			true,

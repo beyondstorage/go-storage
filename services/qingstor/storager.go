@@ -393,11 +393,7 @@ func (c *Client) InitSegment(path string, pairs ...*types.Pair) (id string, err 
 	id = *output.UploadID
 
 	c.segmentLock.Lock()
-	c.segments[id] = &segment.Segment{
-		Path:  path,
-		ID:    id,
-		Parts: make([]*segment.Part, 0),
-	}
+	c.segments[id] = segment.NewSegment(path, id)
 	c.segmentLock.Unlock()
 	return
 }
@@ -418,7 +414,7 @@ func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs 
 		Size:   size,
 	}
 
-	partNumber, err := s.GetPartIndex(p)
+	partNumber, err := s.InsertPart(p)
 	if err != nil {
 		return fmt.Errorf(errorMessage, id, err)
 	}
@@ -431,11 +427,6 @@ func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs 
 	})
 	if err != nil {
 		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, id, err)
-	}
-
-	err = s.InsertPart(p)
-	if err != nil {
 		return fmt.Errorf(errorMessage, id, err)
 	}
 	return
@@ -458,10 +449,9 @@ func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 	}
 
 	objectParts := make([]*service.ObjectPartType, len(s.Parts))
-	for k, v := range s.Parts {
-		partNumber := k
-		objectParts[k] = &service.ObjectPartType{
-			PartNumber: &partNumber,
+	for _, v := range s.Parts {
+		objectParts[v.Index] = &service.ObjectPartType{
+			PartNumber: &v.Index,
 			Size:       &v.Size,
 		}
 	}
