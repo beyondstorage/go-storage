@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/pkg/iterator"
@@ -224,12 +225,16 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 			for _, v := range fi {
 				if v.IsDir() {
-					paths = append(paths, v.Name())
+					paths = append(paths, filepath.Join(p, v.Name()))
 					continue
 				}
 
+				name, err := filepath.Rel(path, filepath.Join(p, v.Name()))
+				if err != nil {
+					return fmt.Errorf(errorMessage, path, handleOsError(err))
+				}
 				o := &types.Object{
-					Name:     v.Name(),
+					Name:     name,
 					Metadata: make(types.Metadata),
 					Type:     types.ObjectTypeFile,
 				}
@@ -243,7 +248,8 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 			// Set input objects
 			*objects = buf[:idx]
-			return iterator.ErrDone
+			return nil
+			// return iterator.ErrDone
 		}
 	}
 
