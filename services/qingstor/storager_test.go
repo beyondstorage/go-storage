@@ -301,8 +301,7 @@ func TestClient_InitSegment(t *testing.T) {
 			"test",
 			map[string]*segment.Segment{
 				"test": {
-					ID:    "test_segment_id",
-					Parts: nil,
+					ID: "test_segment_id",
 				},
 			},
 			true,
@@ -751,11 +750,7 @@ func TestClient_WriteSegment(t *testing.T) {
 			"valid segment",
 			"test_id",
 			map[string]*segment.Segment{
-				"test_id": {
-					ID:    "test_id",
-					Path:  "test_path",
-					Parts: make(map[int64]*segment.Part),
-				},
+				"test_id": segment.NewSegment("test_path", "test_id"),
 			}, 0, 1,
 			true,
 			func(objectKey string, input *service.UploadMultipartInput) (*service.UploadMultipartOutput, error) {
@@ -819,10 +814,7 @@ func TestClient_ListSegments(t *testing.T) {
 				},
 			},
 			[]*segment.Segment{
-				{
-					Path: keys[0],
-					ID:   keys[1],
-				},
+				segment.NewSegment(keys[0], keys[1]),
 			},
 			nil,
 		},
@@ -842,10 +834,7 @@ func TestClient_ListSegments(t *testing.T) {
 				},
 			},
 			[]*segment.Segment{
-				{
-					Path: keys[1],
-					ID:   keys[2],
-				},
+				segment.NewSegment(keys[1], keys[2]),
 			},
 			nil,
 		},

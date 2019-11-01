@@ -101,3 +101,37 @@ func TestSegment_ValidateParts(t *testing.T) {
 		})
 	}
 }
+
+func TestSegment_SortedParts(t *testing.T) {
+	type fields struct {
+		ID    string
+		Parts map[int64]*Part
+	}
+	tests := []struct {
+		name          string
+		parts         map[int64]*Part
+		expectedParts []*Part
+	}{
+		{
+			"normal case",
+			map[int64]*Part{
+				0: {0, 5, 0},
+				5: {5, 5, 0},
+			},
+			[]*Part{
+				{0, 5, 0},
+				{5, 5, 0},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Segment{
+				Parts: tt.parts,
+			}
+
+			gotParts := s.SortedParts()
+			assert.EqualValues(t, tt.expectedParts, gotParts)
+		})
+	}
+}

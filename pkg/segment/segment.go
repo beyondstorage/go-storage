@@ -13,7 +13,7 @@ var (
 	ErrPartIntersected         = errors.New("part intersected")
 	ErrSegmentAlreadyInitiated = errors.New("segment already initiated")
 	ErrSegmentNotInitiated     = errors.New("segment not initiated")
-	ErrSegmentPartsEmpty       = errors.New("segment parts are empty")
+	ErrSegmentPartsEmpty       = errors.New("segment Parts are empty")
 	ErrSegmentNotFulfilled     = errors.New("segment not fulfilled")
 )
 
@@ -69,32 +69,42 @@ func (s *Segment) InsertPart(p *Part) (index int, err error) {
 	return p.Index, nil
 }
 
-// ValidateParts will validate a segment's parts.
+// SortedParts will return sorted Parts.
+func (s *Segment) SortedParts() []*Part {
+	s.l.RLock()
+	defer s.l.RUnlock()
+
+	x := make([]*Part, 0, len(s.Parts))
+	for _, v := range s.Parts {
+		v := v
+		x = append(x, v)
+	}
+	sort.Slice(x, func(i, j int) bool { return x[i].Offset < x[j].Offset })
+	return x
+}
+
+// ValidateParts will validate a segment's Parts.
 func (s *Segment) ValidateParts() (err error) {
-	errorMessage := "%s validate parts failed: %w"
+	errorMessage := "%s validate Parts failed: %w"
 
 	s.l.RLock()
 	defer s.l.RUnlock()
 
-	// Zero parts are not allowed, cause they can't be completed.
+	// Zero Parts are not allowed, cause they can't be completed.
 	if len(s.Parts) == 0 {
 		return fmt.Errorf(errorMessage, s, ErrSegmentPartsEmpty)
 	}
 
-	x := make([]int64, 0, len(s.Parts))
-	for _, v := range s.Parts {
-		x = append(x, v.Offset)
-	}
-	sort.Slice(x, func(i, j int) bool { return x[i] < x[j] })
+	p := s.SortedParts()
 
 	// First part offset must be 0
-	if x[0] != 0 {
+	if p[0].Offset != 0 {
 		return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
 	}
 
 	for idx := 1; idx < len(s.Parts); idx++ {
-		last := s.Parts[x[idx-1]]
-		cur := s.Parts[x[idx]]
+		last := p[idx-1]
+		cur := p[idx]
 		if last.Offset+last.Size != cur.Offset {
 			return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
 		}

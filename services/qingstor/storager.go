@@ -345,11 +345,7 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 		}
 
 		for _, v := range output.Uploads {
-			s := &segment.Segment{
-				ID:    *v.UploadID,
-				Path:  *v.Key,
-				Parts: nil,
-			}
+			s := segment.NewSegment(*v.Key, *v.UploadID)
 
 			buf[idx] = s
 			idx++
@@ -448,9 +444,10 @@ func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	objectParts := make([]*service.ObjectPartType, len(s.Parts))
-	for _, v := range s.Parts {
-		objectParts[v.Index] = &service.ObjectPartType{
+	parts := s.SortedParts()
+	objectParts := make([]*service.ObjectPartType, len(parts))
+	for k, v := range parts {
+		objectParts[k] = &service.ObjectPartType{
 			PartNumber: &v.Index,
 			Size:       &v.Size,
 		}
