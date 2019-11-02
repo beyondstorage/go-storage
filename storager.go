@@ -9,6 +9,8 @@ import (
 
 // All actions that storager used.
 const (
+	ActionInit = "init"
+
 	ActionStat   = "stat"
 	ActionDelete = "delete"
 	ActionCopy   = "copy"
@@ -71,13 +73,17 @@ In the comments of every method, we will use following rules to standardize the 
   - Caller is the user of the service, while you trying to use the Storager interface, you need to follow.
 */
 type Storager interface {
+	// Init will init storager itself.
+	//
+	// Caller:
+	//   - Init MUST be called after created.
+	Init(pairs ...*types.Pair) (err error)
+
 	// Capable will check whether current service support this action or key.
 	//
 	// Caller:
 	//   - SHOULD check pairs availability before use any pairs.
 	Capable(action string, key ...string) bool
-
-	// Base Operations.
 
 	// Metadata will return current storager's metadata.
 	//
@@ -115,14 +121,10 @@ type Storager interface {
 	//   - SHOULD return a publicly reachable http url.
 	Reach(path string, pairs ...*types.Pair) (url string, err error)
 
-	// Dir Operations.
-
 	// CreateDir will create a Dir in the services.
 	CreateDir(path string, pairs ...*types.Pair) (err error)
 	// ListDir will return an ObjectIterator which can list all object under the Dir.
 	ListDir(path string, pairs ...*types.Pair) iterator.ObjectIterator
-
-	// File && Stream Operations.
 
 	// Read will read the file's data.
 	//

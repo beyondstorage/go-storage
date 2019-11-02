@@ -23,6 +23,9 @@ import (
 type Client struct {
 	bucket iface.Bucket
 
+	// options for this storager.
+	base string // base dir for all operation.
+
 	segments    map[string]*segment.Segment
 	segmentLock sync.RWMutex
 }
@@ -33,6 +36,24 @@ func newClient(bucket iface.Bucket) *Client {
 		bucket:   bucket,
 		segments: make(map[string]*segment.Segment),
 	}
+}
+
+// Init implements Storager.Init
+func (c *Client) Init(pairs ...*types.Pair) (err error) {
+	errorMessage := "qingstor Init: %w"
+
+	opt, err := parseStoragePairInit(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	if opt.HasBase {
+		// TODO: we should validate base
+		c.base = opt.Base
+	} else {
+		c.base = "/"
+	}
+	return nil
 }
 
 // Metadata implements Storager.Metadata
@@ -67,7 +88,9 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 
 	input := &service.HeadObjectInput{}
 
-	output, err := c.bucket.HeadObject(path, input)
+	rp := c.getAbsPath(path)
+
+	output, err := c.bucket.HeadObject(rp, input)
 	if err != nil {
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, err)
@@ -103,9 +126,9 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Delete: %w"
 
-	// TODO: support delete dir.
+	rp := c.getAbsPath(path)
 
-	_, err = c.bucket.DeleteObject(path)
+	_, err = c.bucket.DeleteObject(rp)
 	if err != nil {
 		err = handleQingStorError(err)
 		return fmt.Errorf(errorMessage, err)
@@ -117,8 +140,11 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 func (c *Client) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Copy: %w"
 
-	_, err = c.bucket.PutObject(dst, &service.PutObjectInput{
-		XQSCopySource: &src,
+	rs := c.getAbsPath(src)
+	rd := c.getAbsPath(dst)
+
+	_, err = c.bucket.PutObject(rd, &service.PutObjectInput{
+		XQSCopySource: &rs,
 	})
 	if err != nil {
 		err = handleQingStorError(err)
@@ -131,8 +157,11 @@ func (c *Client) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 func (c *Client) Move(src, dst string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Move: %w"
 
-	_, err = c.bucket.PutObject(dst, &service.PutObjectInput{
-		XQSMoveSource: &src,
+	rs := c.getAbsPath(src)
+	rd := c.getAbsPath(dst)
+
+	_, err = c.bucket.PutObject(rd, &service.PutObjectInput{
+		XQSMoveSource: &rs,
 	})
 	if err != nil {
 		err = handleQingStorError(err)
@@ -153,7 +182,9 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 	// FIXME: sdk should export GetObjectRequest as interface too?
 	bucket := c.bucket.(*service.Bucket)
 
-	r, _, err := bucket.GetObjectRequest(path, nil)
+	rp := c.getAbsPath(path)
+
+	r, _, err := bucket.GetObjectRequest(rp, nil)
 	if err != nil {
 		err = handleQingStorError(err)
 		return "", fmt.Errorf(errorMessage, err)
@@ -192,17 +223,18 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 		delimiter = ""
 	}
 
+	rp := c.getAbsPath(path)
+
 	var output *service.ListObjectsOutput
 	var err error
 
 	fn := iterator.NextObjectFunc(func(objects *[]*types.Object) error {
-		idx := 0
-		buf := make([]*types.Object, limit)
+		buf := make([]*types.Object, 0, limit)
 
 		output, err = c.bucket.ListObjects(&service.ListObjectsInput{
 			Limit:     &limit,
 			Marker:    &marker,
-			Prefix:    &path,
+			Prefix:    &rp,
 			Delimiter: &delimiter,
 		})
 		if err != nil {
@@ -212,18 +244,17 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
-				Name:     *v,
+				Name:     c.getRelativePath(*v),
 				Type:     types.ObjectTypeDir,
 				Metadata: make(types.Metadata),
 			}
 
-			buf[idx] = o
-			idx++
+			buf = append(buf, o)
 		}
 
 		for _, v := range output.Keys {
 			o := &types.Object{
-				Name:     *v.Key,
+				Name:     c.getRelativePath(*v.Key),
 				Metadata: make(types.Metadata),
 			}
 
@@ -252,12 +283,11 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 				o.SetUpdatedAt(time.Unix(int64(service.IntValue(v.Modified)), 0))
 			}
 
-			buf[idx] = o
-			idx++
+			buf = append(buf, o)
 		}
 
 		// Set input objects
-		*objects = buf[:idx]
+		*objects = buf
 
 		marker = convert.StringValue(output.NextMarker)
 		if marker == "" {
@@ -282,7 +312,9 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 
 	input := &service.GetObjectInput{}
 
-	output, err := c.bucket.GetObject(path, input)
+	rp := c.getAbsPath(path)
+
+	output, err := c.bucket.GetObject(rp, input)
 	if err != nil {
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, err)
@@ -310,7 +342,9 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 		input.XQSStorageClass = &opt.StorageClass
 	}
 
-	_, err = c.bucket.PutObject(path, input)
+	rp := c.getAbsPath(path)
+
+	_, err = c.bucket.PutObject(rp, input)
 	if err != nil {
 		err = handleQingStorError(err)
 		return fmt.Errorf(errorMessage, path, err)
@@ -326,6 +360,8 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 	uploadIDMarker := ""
 	limit := 200
 
+	rp := c.getAbsPath(path)
+
 	var output *service.ListMultipartUploadsOutput
 	var err error
 
@@ -336,7 +372,7 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 		output, err = c.bucket.ListMultipartUploads(&service.ListMultipartUploadsInput{
 			KeyMarker:      &keyMarker,
 			Limit:          &limit,
-			Prefix:         &path,
+			Prefix:         &rp,
 			UploadIDMarker: &uploadIDMarker,
 		})
 		if err != nil {
@@ -380,7 +416,9 @@ func (c *Client) InitSegment(path string, pairs ...*types.Pair) (id string, err 
 
 	input := &service.InitiateMultipartUploadInput{}
 
-	output, err := c.bucket.InitiateMultipartUpload(path, input)
+	rp := c.getAbsPath(path)
+
+	output, err := c.bucket.InitiateMultipartUpload(rp, input)
 	if err != nil {
 		err = handleQingStorError(err)
 		return "", fmt.Errorf(errorMessage, path, err)
@@ -415,7 +453,9 @@ func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs 
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	_, err = c.bucket.UploadMultipart(s.Path, &service.UploadMultipartInput{
+	rp := c.getAbsPath(s.Path)
+
+	_, err = c.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
 		PartNumber:    &partNumber,
 		UploadID:      &s.ID,
 		ContentLength: &size,
@@ -453,7 +493,9 @@ func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		}
 	}
 
-	_, err = c.bucket.CompleteMultipartUpload(s.Path, &service.CompleteMultipartUploadInput{
+	rp := c.getAbsPath(s.Path)
+
+	_, err = c.bucket.CompleteMultipartUpload(rp, &service.CompleteMultipartUploadInput{
 		UploadID:    &s.ID,
 		ObjectParts: objectParts,
 	})
@@ -479,7 +521,9 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 	}
 	c.segmentLock.RUnlock()
 
-	_, err = c.bucket.AbortMultipartUpload(s.Path, &service.AbortMultipartUploadInput{
+	rp := c.getAbsPath(s.Path)
+
+	_, err = c.bucket.AbortMultipartUpload(rp, &service.AbortMultipartUploadInput{
 		UploadID: &s.ID,
 	})
 	if err != nil {
@@ -491,4 +535,12 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 	delete(c.segments, id)
 	c.segmentLock.Unlock()
 	return
+}
+
+func (c *Client) getAbsPath(path string) string {
+	return strings.TrimLeft(c.base+"/"+path, "/")
+}
+
+func (c *Client) getRelativePath(path string) string {
+	return strings.TrimLeft(path, c.base[1:]+"/")
 }

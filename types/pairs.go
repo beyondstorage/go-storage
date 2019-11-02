@@ -8,6 +8,7 @@ import (
 // All available pairs.
 const (
 	AccessKey    = "access_key"
+	Base         = "base"
 	Checksum     = "checksum"
 	Count        = "count"
 	Expire       = "expire"
@@ -29,6 +30,14 @@ const (
 func WithAccessKey(v string) *Pair {
 	return &Pair{
 		Key:   AccessKey,
+		Value: v,
+	}
+}
+
+// WithBase will apply base value to Options
+func WithBase(v string) *Pair {
+	return &Pair{
+		Key:   Base,
 		Value: v,
 	}
 }

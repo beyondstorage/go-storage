@@ -19,6 +19,22 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+func TestClient_Init(t *testing.T) {
+	t.Run("without options", func(t *testing.T) {
+		client := Client{}
+		err := client.Init()
+		assert.NoError(t, err)
+		assert.Equal(t, "/", client.base)
+	})
+
+	t.Run("with base", func(t *testing.T) {
+		client := Client{}
+		err := client.Init(types.WithBase("test"))
+		assert.NoError(t, err)
+		assert.Equal(t, "test", client.base)
+	})
+}
+
 func TestClient_Capable(t *testing.T) {
 	client := Client{}
 	assert.True(t, client.Capable("read"))
@@ -505,6 +521,7 @@ func TestClient_ListDir(t *testing.T) {
 
 			client := Client{
 				bucket: mockBucket,
+				base:   "/",
 			}
 
 			x := client.ListDir(path, v.pairs...)
@@ -560,6 +577,7 @@ func TestClient_Move(t *testing.T) {
 
 		client := Client{
 			bucket: mockBucket,
+			base:   "/",
 		}
 
 		err := client.Move(v.src, v.dst)
@@ -589,7 +607,7 @@ func TestClient_Read(t *testing.T) {
 			"valid copy",
 			"/test_src",
 			func(inputPath string, input *service.GetObjectInput) (*service.GetObjectOutput, error) {
-				assert.Equal(t, "/test_src", inputPath)
+				assert.Equal(t, "test_src", inputPath)
 				return &service.GetObjectOutput{
 					Body: ioutil.NopCloser(bytes.NewBuffer([]byte("content"))),
 				}, nil
@@ -699,7 +717,7 @@ func TestClient_Write(t *testing.T) {
 			"/test_src",
 			100,
 			func(inputPath string, input *service.PutObjectInput) (*service.PutObjectOutput, error) {
-				assert.Equal(t, "/test_src", inputPath)
+				assert.Equal(t, "test_src", inputPath)
 				return nil, nil
 			},
 			false, nil,
