@@ -247,19 +247,16 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 				return fmt.Errorf(errorMessage, path, handleOsError(err))
 			}
 
-			// Remove the first path.
-			paths = paths[1:]
-
 			buf := make([]*types.Object, 0, len(fi))
 
 			for _, v := range fi {
 				if v.IsDir() {
-					paths = append(paths, v.Name())
+					paths = append(paths, filepath.Join(paths[0], v.Name()))
 					continue
 				}
 
 				o := &types.Object{
-					Name:     v.Name(),
+					Name:     filepath.Join(paths[0], v.Name()),
 					Metadata: make(types.Metadata),
 					Type:     types.ObjectTypeFile,
 				}
@@ -272,6 +269,9 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 			// Set input objects
 			*objects = buf
+
+			// Remove the first path.
+			paths = paths[1:]
 			return nil
 		}
 	}
