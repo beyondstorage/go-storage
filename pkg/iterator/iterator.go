@@ -64,7 +64,10 @@ func (it *GenericObjectIterator) Next() (i *types.Object, err error) {
 
 	// Reset buf before call next.
 	it.buf = nil
-	err = it.next(&it.buf)
+	// next may return empty buf without done, we should keep going.
+	for err == nil && len(it.buf) == 0 {
+		err = it.next(&it.buf)
+	}
 	if err == nil {
 		it.index = 1
 		return it.buf[0], nil
