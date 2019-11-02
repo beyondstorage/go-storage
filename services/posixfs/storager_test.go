@@ -22,6 +22,22 @@ func TestNewClient(t *testing.T) {
 	assert.NotNil(t, c)
 }
 
+func TestClient_Init(t *testing.T) {
+	t.Run("without options", func(t *testing.T) {
+		client := Client{}
+		err := client.Init()
+		assert.Error(t, err)
+		assert.Equal(t, "", client.base)
+	})
+
+	t.Run("with base", func(t *testing.T) {
+		client := Client{}
+		err := client.Init(types.WithBase("test"))
+		assert.NoError(t, err)
+		assert.Equal(t, "test", client.base)
+	})
+}
+
 func TestClient_Capable(t *testing.T) {
 	client := Client{}
 	assert.True(t, client.Capable("read"))
@@ -527,8 +543,13 @@ func TestClient_ListDir(t *testing.T) {
 		t.Run(v.name, func(t *testing.T) {
 			path := uuid.New().String()
 
+			called := false
 			client := Client{
 				ioutilReadDir: func(dirname string) (infos []os.FileInfo, e error) {
+					if called {
+						return nil, nil
+					}
+					called = true
 					assert.Equal(t, path, dirname)
 					return v.fi, v.err
 				},

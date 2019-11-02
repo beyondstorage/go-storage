@@ -25,6 +25,9 @@
     }
   },
   "storage": {
+    "init": {
+      "base": false
+    },
     "reach": {
       "expire": true
     },

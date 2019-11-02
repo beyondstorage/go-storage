@@ -19,6 +19,9 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 //
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 type Client struct {
+	// options for this storager.
+	base string // base dir for all operation.
+
 	// All stdlib call will be added here for better unit test.
 	ioCopyBuffer  func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
 	ioCopyN       func(dst io.Writer, src io.Reader, n int64) (written int64, err error)
@@ -48,6 +51,21 @@ func NewClient() *Client {
 	}
 }
 
+// Init implements Storager.Init
+func (c *Client) Init(pairs ...*types.Pair) (err error) {
+	errorMessage := "posixfs Init: %w"
+
+	opt, err := parseStoragePairInit(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	if opt.HasBase {
+		c.base = opt.Base
+	}
+	return nil
+}
+
 // Metadata implements Storager.Metadata
 //
 // Currently, there is no useful metadata for posixfs, just keep it empty.
@@ -60,13 +78,15 @@ func (c *Client) Metadata() (m types.Metadata, err error) {
 func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
 	errorMessage := "posixfs Stat path [%s]: %w"
 
-	fi, err := c.osStat(path)
+	rp := c.getRealPath(path)
+
+	fi, err := c.osStat(rp)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
 
 	o = &types.Object{
-		Name:     path,
+		Name:     rp,
 		Metadata: make(types.Metadata),
 	}
 
@@ -97,10 +117,12 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, path, err)
 	}
 
+	rp := c.getRealPath(path)
+
 	if opt.HasRecursive && opt.Recursive {
-		err = c.osRemoveAll(path)
+		err = c.osRemoveAll(rp)
 	} else {
-		err = c.osRemove(path)
+		err = c.osRemove(rp)
 	}
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, handleOsError(err))
@@ -112,13 +134,16 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 	errorMessage := "posixfs Copy from [%s] to [%s]: %w"
 
-	srcFile, err := c.osOpen(src)
+	rs := c.getRealPath(src)
+	rd := c.getRealPath(dst)
+
+	srcFile, err := c.osOpen(rs)
 	if err != nil {
 		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
 	}
 	defer srcFile.Close()
 
-	dstFile, err := c.osCreate(dst)
+	dstFile, err := c.osCreate(rd)
 	if err != nil {
 		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
 	}
@@ -135,7 +160,10 @@ func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 	errorMessage := "posixfs Move from [%s] to [%s]: %w"
 
-	err = c.osRename(src, dst)
+	rs := c.getRealPath(src)
+	rd := c.getRealPath(dst)
+
+	err = c.osRename(rs, rd)
 	if err != nil {
 		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
 	}
@@ -151,7 +179,9 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 	errorMessage := "posixfs CreateDir [%s]: %w"
 
-	err = c.osMkdirAll(path, 0755)
+	rp := filepath.Join(c.base, path)
+
+	err = c.osMkdirAll(rp, 0755)
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
@@ -171,14 +201,15 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 	var fn iterator.NextObjectFunc
 	if !recursive {
+		rp := c.getRealPath(path)
+
 		fn = func(objects *[]*types.Object) error {
-			fi, err := c.ioutilReadDir(path)
+			fi, err := c.ioutilReadDir(rp)
 			if err != nil {
 				return fmt.Errorf(errorMessage, path, handleOsError(err))
 			}
 
-			idx := 0
-			buf := make([]*types.Object, len(fi))
+			buf := make([]*types.Object, 0, len(fi))
 
 			for _, v := range fi {
 				o := &types.Object{
@@ -195,12 +226,11 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 				o.SetSize(v.Size())
 				o.SetUpdatedAt(v.ModTime())
 
-				buf[idx] = o
-				idx++
+				buf = append(buf, o)
 			}
 
 			// Set input objects
-			*objects = buf[:idx]
+			*objects = buf
 			return iterator.ErrDone
 		}
 	} else {
@@ -210,7 +240,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 			if len(paths) == 0 {
 				return iterator.ErrDone
 			}
-			p := paths[0]
+			p := c.getRealPath(paths[0])
 
 			fi, err := c.ioutilReadDir(p)
 			if err != nil {
@@ -220,21 +250,16 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 			// Remove the first path.
 			paths = paths[1:]
 
-			idx := 0
-			buf := make([]*types.Object, len(fi))
+			buf := make([]*types.Object, 0, len(fi))
 
 			for _, v := range fi {
 				if v.IsDir() {
-					paths = append(paths, filepath.Join(p, v.Name()))
+					paths = append(paths, v.Name())
 					continue
 				}
 
-				name, err := filepath.Rel(path, filepath.Join(p, v.Name()))
-				if err != nil {
-					return fmt.Errorf(errorMessage, path, handleOsError(err))
-				}
 				o := &types.Object{
-					Name:     name,
+					Name:     v.Name(),
 					Metadata: make(types.Metadata),
 					Type:     types.ObjectTypeFile,
 				}
@@ -242,14 +267,12 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 				o.SetSize(v.Size())
 				o.SetUpdatedAt(v.ModTime())
 
-				buf[idx] = o
-				idx++
+				buf = append(buf, o)
 			}
 
 			// Set input objects
-			*objects = buf[:idx]
+			*objects = buf
 			return nil
-			// return iterator.ErrDone
 		}
 	}
 
@@ -275,7 +298,9 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 		return f, nil
 	}
 
-	f, err := c.osOpen(path)
+	rp := c.getRealPath(path)
+
+	f, err := c.osOpen(rp)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
@@ -308,7 +333,9 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 	if path == "-" {
 		f = os.Stdout
 	} else {
-		f, err = c.osCreate(path)
+		rp := c.getRealPath(path)
+
+		f, err = c.osCreate(rp)
 		if err != nil {
 			return fmt.Errorf(errorMessage, path, handleOsError(err))
 		}
@@ -348,4 +375,8 @@ func (c *Client) CompleteSegment(path string, option ...*types.Pair) (err error)
 // AbortSegment implements Storager.AbortSegment
 func (c *Client) AbortSegment(path string, option ...*types.Pair) (err error) {
 	panic("implement me")
+}
+
+func (c *Client) getRealPath(path string) string {
+	return filepath.Join(c.base, path)
 }

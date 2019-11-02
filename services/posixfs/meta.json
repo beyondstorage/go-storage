@@ -4,6 +4,9 @@
     "reach": false
   },
   "storage": {
+    "init": {
+      "base": true
+    },
     "list_dir": {
       "recursive": false
     },
