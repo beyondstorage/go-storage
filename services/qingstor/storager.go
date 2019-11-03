@@ -50,7 +50,9 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 	if opt.HasBase {
 		// TODO: we should validate base
 		c.base = opt.Base
-	} else {
+	}
+	// Always set default base to "/"
+	if c.base == "" {
 		c.base = "/"
 	}
 	return nil
