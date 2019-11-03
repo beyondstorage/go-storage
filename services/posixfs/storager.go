@@ -78,7 +78,7 @@ func (c *Client) Metadata() (m types.Metadata, err error) {
 func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
 	errorMessage := "posixfs Stat path [%s]: %w"
 
-	rp := c.getRealPath(path)
+	rp := c.getAbsPath(path)
 
 	fi, err := c.osStat(rp)
 	if err != nil {
@@ -117,7 +117,7 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, path, err)
 	}
 
-	rp := c.getRealPath(path)
+	rp := c.getAbsPath(path)
 
 	if opt.HasRecursive && opt.Recursive {
 		err = c.osRemoveAll(rp)
@@ -134,8 +134,8 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 	errorMessage := "posixfs Copy from [%s] to [%s]: %w"
 
-	rs := c.getRealPath(src)
-	rd := c.getRealPath(dst)
+	rs := c.getAbsPath(src)
+	rd := c.getAbsPath(dst)
 
 	srcFile, err := c.osOpen(rs)
 	if err != nil {
@@ -160,8 +160,8 @@ func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 	errorMessage := "posixfs Move from [%s] to [%s]: %w"
 
-	rs := c.getRealPath(src)
-	rd := c.getRealPath(dst)
+	rs := c.getAbsPath(src)
+	rd := c.getAbsPath(dst)
 
 	err = c.osRename(rs, rd)
 	if err != nil {
@@ -201,7 +201,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 	var fn iterator.NextObjectFunc
 	if !recursive {
-		rp := c.getRealPath(path)
+		rp := c.getAbsPath(path)
 
 		fn = func(objects *[]*types.Object) error {
 			fi, err := c.ioutilReadDir(rp)
@@ -213,7 +213,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 			for _, v := range fi {
 				o := &types.Object{
-					Name:     v.Name(),
+					Name:     filepath.Join(path, v.Name()),
 					Metadata: make(types.Metadata),
 				}
 
@@ -240,7 +240,8 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 			if len(paths) == 0 {
 				return iterator.ErrDone
 			}
-			p := c.getRealPath(paths[0])
+			p := c.getAbsPath(paths[0])
+			cp := paths[0]
 
 			fi, err := c.ioutilReadDir(p)
 			if err != nil {
@@ -254,12 +255,12 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 			for _, v := range fi {
 				if v.IsDir() {
-					paths = append(paths, v.Name())
+					paths = append(paths, filepath.Join(cp, v.Name()))
 					continue
 				}
 
 				o := &types.Object{
-					Name:     v.Name(),
+					Name:     filepath.Join(cp, v.Name()),
 					Metadata: make(types.Metadata),
 					Type:     types.ObjectTypeFile,
 				}
@@ -298,7 +299,7 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 		return f, nil
 	}
 
-	rp := c.getRealPath(path)
+	rp := c.getAbsPath(path)
 
 	f, err := c.osOpen(rp)
 	if err != nil {
@@ -333,7 +334,7 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 	if path == "-" {
 		f = os.Stdout
 	} else {
-		rp := c.getRealPath(path)
+		rp := c.getAbsPath(path)
 
 		f, err = c.osCreate(rp)
 		if err != nil {
@@ -377,6 +378,6 @@ func (c *Client) AbortSegment(path string, option ...*types.Pair) (err error) {
 	panic("implement me")
 }
 
-func (c *Client) getRealPath(path string) string {
+func (c *Client) getAbsPath(path string) string {
 	return filepath.Join(c.base, path)
 }
