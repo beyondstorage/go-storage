@@ -244,7 +244,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
-				Name:     c.getRelativePath(*v),
+				Name:     c.getRelPath(*v),
 				Type:     types.ObjectTypeDir,
 				Metadata: make(types.Metadata),
 			}
@@ -254,7 +254,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 
 		for _, v := range output.Keys {
 			o := &types.Object{
-				Name:     c.getRelativePath(*v.Key),
+				Name:     c.getRelPath(*v.Key),
 				Metadata: make(types.Metadata),
 			}
 
@@ -541,6 +541,6 @@ func (c *Client) getAbsPath(path string) string {
 	return strings.TrimLeft(c.base+"/"+path, "/")
 }
 
-func (c *Client) getRelativePath(path string) string {
+func (c *Client) getRelPath(path string) string {
 	return strings.TrimLeft(path, c.base[1:]+"/")
 }

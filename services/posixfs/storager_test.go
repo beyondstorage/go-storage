@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 	"reflect"
 	"syscall"
 	"testing"
@@ -420,6 +421,11 @@ func TestClient_CreateDir(t *testing.T) {
 }
 
 func TestClient_ListDir(t *testing.T) {
+	paths := make([]string, 100)
+	for k := range paths {
+		paths[k] = uuid.New().String()
+	}
+
 	tests := []struct {
 		name  string
 		pairs []*types.Pair
@@ -440,7 +446,7 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name: "test_file",
+					Name: filepath.Join(paths[0], "test_file"),
 					Type: types.ObjectTypeFile,
 					Metadata: types.Metadata{
 						types.Size:      int64(1234),
@@ -465,7 +471,7 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name: "test_file",
+					Name: filepath.Join(paths[1], "test_file"),
 					Type: types.ObjectTypeFile,
 					Metadata: types.Metadata{
 						types.Size:      int64(1234),
@@ -488,7 +494,7 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name: "test_dir",
+					Name: filepath.Join(paths[2], "test_dir"),
 					Type: types.ObjectTypeDir,
 					Metadata: types.Metadata{
 						types.Size:      int64(0),
@@ -539,10 +545,8 @@ func TestClient_ListDir(t *testing.T) {
 		},
 	}
 
-	for _, v := range tests {
+	for k, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			path := uuid.New().String()
-
 			called := false
 			client := Client{
 				ioutilReadDir: func(dirname string) (infos []os.FileInfo, e error) {
@@ -550,12 +554,12 @@ func TestClient_ListDir(t *testing.T) {
 						return nil, nil
 					}
 					called = true
-					assert.Equal(t, path, dirname)
+					assert.Equal(t, paths[k], dirname)
 					return v.fi, v.err
 				},
 			}
 
-			x := client.ListDir(path, v.pairs...)
+			x := client.ListDir(paths[k], v.pairs...)
 			for _, expectItem := range v.items {
 				item, err := x.Next()
 				if v.err != nil {
