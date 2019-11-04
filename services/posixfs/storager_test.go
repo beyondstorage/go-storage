@@ -23,6 +23,16 @@ func TestNewClient(t *testing.T) {
 	assert.NotNil(t, c)
 }
 
+func TestClient_String(t *testing.T) {
+	c := Client{}
+	err := c.Init(types.WithBase("/test"))
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal(t, "posixfs Storager {Base /test}", c.String())
+}
+
 func TestClient_Init(t *testing.T) {
 	t.Run("without options", func(t *testing.T) {
 		client := Client{}

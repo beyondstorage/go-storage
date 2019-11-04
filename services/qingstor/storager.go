@@ -38,6 +38,11 @@ func newClient(bucket iface.Bucket) *Client {
 	}
 }
 
+// String implements Storager.String
+func (c *Client) String() string {
+	return fmt.Sprintf("qingstor Storager {Base %s}", "/"+c.base)
+}
+
 // Init implements Storager.Init
 func (c *Client) Init(pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Init: %w"
@@ -65,6 +70,8 @@ func (c *Client) Metadata() (m types.Metadata, err error) {
 	}
 
 	m = make(types.Metadata)
+	// Base must be set.
+	m.SetBase(c.base)
 	if output.Name != nil {
 		m.SetName(*output.Name)
 	}
