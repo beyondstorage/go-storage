@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
 
@@ -220,7 +219,7 @@ func TestClient_Delete(t *testing.T) {
 		{"delete nonempty dir", &os.PathError{
 			Op:   "remove",
 			Path: "delete nonempty dir",
-			Err:  syscall.ENOTEMPTY,
+			Err:  errors.New("remove fail"),
 		}, false},
 	}
 
@@ -260,7 +259,7 @@ func TestClient_Copy(t *testing.T) {
 				assert.Equal(t, srcName, name)
 				return nil, &os.PathError{
 					Op:  "open",
-					Err: syscall.ENONET,
+					Err: errors.New("path error"),
 				}
 			},
 		}
@@ -281,7 +280,7 @@ func TestClient_Copy(t *testing.T) {
 				assert.Equal(t, dstName, name)
 				return nil, &os.PathError{
 					Op:  "open",
-					Err: syscall.EEXIST,
+					Err: errors.New("open fail"),
 				}
 			},
 		}
@@ -353,7 +352,7 @@ func TestClient_Move(t *testing.T) {
 					Op:  "rename",
 					Old: oldpath,
 					New: newpath,
-					Err: syscall.EISDIR,
+					Err: errors.New("rename fail"),
 				}
 			},
 		}
@@ -398,7 +397,7 @@ func TestClient_CreateDir(t *testing.T) {
 	}{
 		{
 			"error",
-			&os.PathError{Op: "mkdir", Path: paths[0], Err: syscall.ENOTDIR},
+			&os.PathError{Op: "mkdir", Path: paths[0], Err: errors.New("mkdir fail")},
 		},
 		{
 			"success",
@@ -529,14 +528,14 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			nil,
 			nil,
-			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
+			&os.PathError{Op: "readdir", Path: "", Err: errors.New("readdir fail")},
 		},
 		{
 			"os error",
 			nil,
 			nil,
 			nil,
-			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
+			&os.PathError{Op: "readdir", Path: "", Err: errors.New("readdir fail")},
 		},
 		{
 			"done",
@@ -606,7 +605,7 @@ func TestClient_Read(t *testing.T) {
 			"test_error",
 			nil,
 			true,
-			&os.PathError{Op: "readdir", Path: "", Err: syscall.ENOTDIR},
+			&os.PathError{Op: "readdir", Path: "", Err: errors.New("readdir fail")},
 			nil,
 		},
 		{
