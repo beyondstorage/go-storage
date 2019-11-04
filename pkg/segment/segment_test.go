@@ -88,6 +88,18 @@ func TestSegment_ValidateParts(t *testing.T) {
 			0: {0, 5, 0},
 			5: {5, 5, 1},
 		}}, false, nil},
+		{"empty parts", fields{"", map[int64]*Part{}}, true, ErrSegmentPartsEmpty},
+		{"first part is not 0", fields{"", map[int64]*Part{
+			1: {1, 5, 0},
+		}}, true, ErrSegmentNotFulfilled},
+		{"intersected part", fields{"", map[int64]*Part{
+			0: {0, 5, 0},
+			2: {2, 5, 1},
+		}}, true, ErrPartIntersected},
+		{"not fulfilled part", fields{"", map[int64]*Part{
+			0:  {0, 5, 0},
+			10: {10, 5, 2},
+		}}, true, ErrSegmentNotFulfilled},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

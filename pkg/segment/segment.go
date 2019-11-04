@@ -9,12 +9,11 @@ import (
 
 // All errors that segment could return.
 var (
-	ErrPartSizeInvalid         = errors.New("part size invalid")
-	ErrPartIntersected         = errors.New("part intersected")
-	ErrSegmentAlreadyInitiated = errors.New("segment already initiated")
-	ErrSegmentNotInitiated     = errors.New("segment not initiated")
-	ErrSegmentPartsEmpty       = errors.New("segment Parts are empty")
-	ErrSegmentNotFulfilled     = errors.New("segment not fulfilled")
+	ErrPartSizeInvalid     = errors.New("part size invalid")
+	ErrPartIntersected     = errors.New("part intersected")
+	ErrSegmentNotInitiated = errors.New("segment not initiated")
+	ErrSegmentPartsEmpty   = errors.New("segment Parts are empty")
+	ErrSegmentNotFulfilled = errors.New("segment not fulfilled")
 )
 
 // Part is a part of segment.
@@ -115,9 +114,13 @@ func (s *Segment) ValidateParts() (err error) {
 	for idx := 1; idx < len(s.Parts); idx++ {
 		last := p[idx-1]
 		cur := p[idx]
-		if last.Offset+last.Size != cur.Offset {
-			return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
+		if last.Offset+last.Size == cur.Offset {
+			continue
 		}
+		if last.Offset+last.Size > cur.Offset {
+			return fmt.Errorf(errorMessage, s, ErrPartIntersected)
+		}
+		return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
 	}
 
 	return nil
