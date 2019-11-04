@@ -49,11 +49,7 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 
 	if opt.HasBase {
 		// TODO: we should validate base
-		c.base = opt.Base
-	}
-	// Always set default base to "/"
-	if c.base == "" {
-		c.base = "/"
+		c.base = strings.TrimLeft(opt.Base, "/")
 	}
 	return nil
 }
@@ -541,9 +537,9 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 }
 
 func (c *Client) getAbsPath(path string) string {
-	return strings.TrimLeft(c.base+"/"+path, "/")
+	return strings.TrimPrefix(c.base+"/"+path, "/")
 }
 
 func (c *Client) getRelPath(path string) string {
-	return strings.TrimLeft(path, c.base[1:]+"/")
+	return strings.TrimPrefix(path, c.base+"/")
 }

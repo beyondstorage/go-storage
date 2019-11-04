@@ -7,13 +7,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/stretchr/testify/assert"
 	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
+
+	"github.com/Xuanwo/storage/pkg/iterator"
 
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
@@ -24,7 +25,7 @@ func TestClient_Init(t *testing.T) {
 		client := Client{}
 		err := client.Init()
 		assert.NoError(t, err)
-		assert.Equal(t, "/", client.base)
+		assert.Equal(t, "", client.base)
 	})
 
 	t.Run("with base", func(t *testing.T) {
@@ -521,7 +522,6 @@ func TestClient_ListDir(t *testing.T) {
 
 			client := Client{
 				bucket: mockBucket,
-				base:   "/",
 			}
 
 			x := client.ListDir(path, v.pairs...)
@@ -577,7 +577,6 @@ func TestClient_Move(t *testing.T) {
 
 		client := Client{
 			bucket: mockBucket,
-			base:   "/",
 		}
 
 		err := client.Move(v.src, v.dst)
@@ -605,7 +604,7 @@ func TestClient_Read(t *testing.T) {
 	}{
 		{
 			"valid copy",
-			"/test_src",
+			"test_src",
 			func(inputPath string, input *service.GetObjectInput) (*service.GetObjectOutput, error) {
 				assert.Equal(t, "test_src", inputPath)
 				return &service.GetObjectOutput{
@@ -714,7 +713,7 @@ func TestClient_Write(t *testing.T) {
 	}{
 		{
 			"valid copy",
-			"/test_src",
+			"test_src",
 			100,
 			func(inputPath string, input *service.PutObjectInput) (*service.PutObjectOutput, error) {
 				assert.Equal(t, "test_src", inputPath)
@@ -901,6 +900,56 @@ func TestClient_ListSegments(t *testing.T) {
 				}
 				assert.Nil(t, item)
 			}
+		})
+	}
+}
+
+func TestGetAbsPath(t *testing.T) {
+	cases := []struct {
+		name         string
+		base         string
+		path         string
+		expectedPath string
+	}{
+		{"under root", "/", "abc", "abc"},
+		{"under sub dir", "/root", "abc", "root/abc"},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			client := Client{}
+			err := client.Init(types.WithBase(tt.base))
+			if err != nil {
+				t.Error(err)
+			}
+
+			gotPath := client.getAbsPath(tt.path)
+			assert.Equal(t, tt.expectedPath, gotPath)
+		})
+	}
+}
+
+func TestGetRelPath(t *testing.T) {
+	cases := []struct {
+		name         string
+		base         string
+		path         string
+		expectedPath string
+	}{
+		{"under root", "/", "abc", "abc"},
+		{"under sub dir", "/root", "root/abc", "abc"},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &Client{}
+			err := client.Init(types.WithBase(tt.base))
+			if err != nil {
+				t.Error(err)
+			}
+
+			gotPath := client.getRelPath(tt.path)
+			assert.Equal(t, tt.expectedPath, gotPath)
 		})
 	}
 }
