@@ -541,9 +541,11 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 }
 
 func (c *Client) getAbsPath(path string) string {
-	return strings.TrimLeft(c.base+"/"+path, "/")
+	return strings.TrimPrefix(c.base+"/"+path, "/")
 }
 
 func (c *Client) getRelPath(path string) string {
-	return strings.TrimLeft(path, c.base[1:]+"/")
+	// both base and path need to trim prefix "/"
+	base, path := strings.TrimPrefix(c.base, "/"), strings.TrimPrefix(path, "/")
+	return strings.TrimPrefix(path, base+"/")
 }

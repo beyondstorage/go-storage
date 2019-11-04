@@ -6,16 +6,18 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
 
 	"bou.ke/monkey"
-	"github.com/Xuanwo/storage/pkg/iterator"
-	"github.com/Xuanwo/storage/types"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Xuanwo/storage/pkg/iterator"
+	"github.com/Xuanwo/storage/types"
 )
 
 func TestNewClient(t *testing.T) {
@@ -786,5 +788,29 @@ func TestClient_Write(t *testing.T) {
 			}
 			assert.Equal(t, v.hasErr, err != nil)
 		})
+	}
+}
+
+func TestGetAbsPath(t *testing.T) {
+	paths := make([]string, 10)
+	for k := range paths {
+		paths[k] = uuid.New().String()
+	}
+
+	cases := []struct {
+		base string
+	}{
+		{paths[0]},
+		{paths[1]},
+	}
+
+	for _, tt := range cases {
+		client := Client{
+			base: tt.base,
+		}
+
+		absPath := client.getAbsPath(paths[9])
+		assert.True(t, strings.HasPrefix(absPath, tt.base))
+		assert.Equal(t, tt.base, filepath.Dir(absPath))
 	}
 }

@@ -4,16 +4,18 @@ import (
 	"bytes"
 	"errors"
 	"io/ioutil"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/stretchr/testify/assert"
 	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
+
+	"github.com/Xuanwo/storage/pkg/iterator"
 
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
@@ -902,5 +904,55 @@ func TestClient_ListSegments(t *testing.T) {
 				assert.Nil(t, item)
 			}
 		})
+	}
+}
+
+func TestGetAbsPath(t *testing.T) {
+	paths := make([]string, 10)
+	for k := range paths {
+		paths[k] = uuid.New().String()
+	}
+
+	cases := []struct {
+		base string
+	}{
+		{paths[0]},
+	}
+
+	for _, tt := range cases {
+		client := Client{
+			base: tt.base,
+		}
+
+		absPath := client.getAbsPath(paths[9])
+		assert.False(t, strings.HasPrefix(absPath, "/"))
+
+		parts := strings.Split(absPath, "/")
+		assert.Equal(t, 2, len(parts))
+		assert.Equal(t, tt.base, parts[0])
+		assert.Equal(t, paths[9], parts[1])
+	}
+}
+
+func TestGetRelPath(t *testing.T) {
+	paths := make([]string, 10)
+	for k := range paths {
+		paths[k] = uuid.New().String()
+	}
+
+	cases := []struct {
+		base string
+	}{
+		{paths[0]},
+		{"/" + paths[1]},
+	}
+
+	for _, tt := range cases {
+		client := &Client{
+			base: tt.base,
+		}
+		relPath := client.getRelPath(tt.base + "/" + paths[9])
+		assert.False(t, strings.HasPrefix(relPath, "/"))
+		assert.Equal(t, paths[9], relPath)
 	}
 }
