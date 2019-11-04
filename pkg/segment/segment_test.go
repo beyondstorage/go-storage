@@ -7,6 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewSegment(t *testing.T) {
+	s := NewSegment("test", "xxxx", 10)
+	assert.Equal(t, "test", s.Path)
+	assert.Equal(t, "xxxx", s.ID)
+	assert.Equal(t, int64(10), s.PartSize)
+	assert.NotNil(t, s.Parts)
+}
+
 func TestSegment_InsertPart(t *testing.T) {
 	type fields struct {
 		TotalSize int64
