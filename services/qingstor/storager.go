@@ -49,11 +49,7 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 
 	if opt.HasBase {
 		// TODO: we should validate base
-		c.base = opt.Base
-	}
-	// Always set default base to "/"
-	if c.base == "" {
-		c.base = "/"
+		c.base = strings.TrimLeft(opt.Base, "/")
 	}
 	return nil
 }
@@ -545,7 +541,5 @@ func (c *Client) getAbsPath(path string) string {
 }
 
 func (c *Client) getRelPath(path string) string {
-	// both base and path need to trim prefix "/"
-	base, path := strings.TrimPrefix(c.base, "/"), strings.TrimPrefix(path, "/")
-	return strings.TrimPrefix(path, base+"/")
+	return strings.TrimPrefix(path, c.base+"/")
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io/ioutil"
-	"strings"
 	"testing"
 	"time"
 
@@ -26,7 +25,7 @@ func TestClient_Init(t *testing.T) {
 		client := Client{}
 		err := client.Init()
 		assert.NoError(t, err)
-		assert.Equal(t, "/", client.base)
+		assert.Equal(t, "", client.base)
 	})
 
 	t.Run("with base", func(t *testing.T) {
@@ -523,7 +522,6 @@ func TestClient_ListDir(t *testing.T) {
 
 			client := Client{
 				bucket: mockBucket,
-				base:   "/",
 			}
 
 			x := client.ListDir(path, v.pairs...)
@@ -579,7 +577,6 @@ func TestClient_Move(t *testing.T) {
 
 		client := Client{
 			bucket: mockBucket,
-			base:   "/",
 		}
 
 		err := client.Move(v.src, v.dst)
@@ -607,7 +604,7 @@ func TestClient_Read(t *testing.T) {
 	}{
 		{
 			"valid copy",
-			"/test_src",
+			"test_src",
 			func(inputPath string, input *service.GetObjectInput) (*service.GetObjectOutput, error) {
 				assert.Equal(t, "test_src", inputPath)
 				return &service.GetObjectOutput{
@@ -716,7 +713,7 @@ func TestClient_Write(t *testing.T) {
 	}{
 		{
 			"valid copy",
-			"/test_src",
+			"test_src",
 			100,
 			func(inputPath string, input *service.PutObjectInput) (*service.PutObjectOutput, error) {
 				assert.Equal(t, "test_src", inputPath)
@@ -908,51 +905,51 @@ func TestClient_ListSegments(t *testing.T) {
 }
 
 func TestGetAbsPath(t *testing.T) {
-	paths := make([]string, 10)
-	for k := range paths {
-		paths[k] = uuid.New().String()
-	}
-
 	cases := []struct {
-		base string
+		name         string
+		base         string
+		path         string
+		expectedPath string
 	}{
-		{paths[0]},
+		{"under root", "/", "abc", "abc"},
+		{"under sub dir", "/root", "abc", "root/abc"},
 	}
 
 	for _, tt := range cases {
-		client := Client{
-			base: tt.base,
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			client := Client{}
+			err := client.Init(types.WithBase(tt.base))
+			if err != nil {
+				t.Error(err)
+			}
 
-		absPath := client.getAbsPath(paths[9])
-		assert.False(t, strings.HasPrefix(absPath, "/"))
-
-		parts := strings.Split(absPath, "/")
-		assert.Equal(t, 2, len(parts))
-		assert.Equal(t, tt.base, parts[0])
-		assert.Equal(t, paths[9], parts[1])
+			gotPath := client.getAbsPath(tt.path)
+			assert.Equal(t, tt.expectedPath, gotPath)
+		})
 	}
 }
 
 func TestGetRelPath(t *testing.T) {
-	paths := make([]string, 10)
-	for k := range paths {
-		paths[k] = uuid.New().String()
-	}
-
 	cases := []struct {
-		base string
+		name         string
+		base         string
+		path         string
+		expectedPath string
 	}{
-		{paths[0]},
-		{"/" + paths[1]},
+		{"under root", "/", "abc", "abc"},
+		{"under sub dir", "/root", "root/abc", "abc"},
 	}
 
 	for _, tt := range cases {
-		client := &Client{
-			base: tt.base,
-		}
-		relPath := client.getRelPath(tt.base + "/" + paths[9])
-		assert.False(t, strings.HasPrefix(relPath, "/"))
-		assert.Equal(t, paths[9], relPath)
+		t.Run(tt.name, func(t *testing.T) {
+			client := &Client{}
+			err := client.Init(types.WithBase(tt.base))
+			if err != nil {
+				t.Error(err)
+			}
+
+			gotPath := client.getRelPath(tt.path)
+			assert.Equal(t, tt.expectedPath, gotPath)
+		})
 	}
 }
