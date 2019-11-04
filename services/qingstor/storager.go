@@ -383,7 +383,7 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 		}
 
 		for _, v := range output.Uploads {
-			s := segment.NewSegment(*v.Key, *v.UploadID)
+			s := segment.NewSegment(*v.Key, *v.UploadID, 0)
 
 			buf[idx] = s
 			idx++
@@ -416,6 +416,11 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 func (c *Client) InitSegment(path string, pairs ...*types.Pair) (id string, err error) {
 	errorMessage := "qingstor InitSegment for id %s: %w"
 
+	opt, err := parseStoragePairInitSegment(pairs...)
+	if err != nil {
+		return "", fmt.Errorf(errorMessage, path, err)
+	}
+
 	input := &service.InitiateMultipartUploadInput{}
 
 	rp := c.getAbsPath(path)
@@ -429,7 +434,7 @@ func (c *Client) InitSegment(path string, pairs ...*types.Pair) (id string, err 
 	id = *output.UploadID
 
 	c.segmentLock.Lock()
-	c.segments[id] = segment.NewSegment(path, id)
+	c.segments[id] = segment.NewSegment(path, id, opt.PartSize)
 	c.segmentLock.Unlock()
 	return
 }
@@ -445,12 +450,7 @@ func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs 
 	}
 	c.segmentLock.RUnlock()
 
-	p := &segment.Part{
-		Offset: offset,
-		Size:   size,
-	}
-
-	partNumber, err := s.InsertPart(p)
+	p, err := s.InsertPart(offset, size)
 	if err != nil {
 		return fmt.Errorf(errorMessage, id, err)
 	}
@@ -458,7 +458,7 @@ func (c *Client) WriteSegment(id string, offset, size int64, r io.Reader, pairs 
 	rp := c.getAbsPath(s.Path)
 
 	_, err = c.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
-		PartNumber:    &partNumber,
+		PartNumber:    &p.Index,
 		UploadID:      &s.ID,
 		ContentLength: &size,
 		Body:          r,
@@ -487,12 +487,13 @@ func (c *Client) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 	}
 
 	parts := s.SortedParts()
-	objectParts := make([]*service.ObjectPartType, len(parts))
+	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for k, v := range parts {
-		objectParts[k] = &service.ObjectPartType{
-			PartNumber: &v.Index,
+		k := k
+		objectParts = append(objectParts, &service.ObjectPartType{
+			PartNumber: &k,
 			Size:       &v.Size,
-		}
+		})
 	}
 
 	rp := c.getAbsPath(s.Path)

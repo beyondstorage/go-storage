@@ -20,6 +20,9 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 	storage.ActionInit: {
 		"base": struct{}{},
 	},
+	storage.ActionInitSegment: {
+		"part_size": struct{}{},
+	},
 	storage.ActionListDir: {
 		"recursive": struct{}{},
 	},
@@ -100,6 +103,37 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 	if ok {
 		result.HasBase = true
 		result.Base = v.(string)
+	}
+	return result, nil
+}
+
+type pairStorageInitSegment struct {
+	HasPartSize bool
+	PartSize    int64
+}
+
+func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, error) {
+	result := &pairStorageInitSegment{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedStoragePairs[storage.ActionInitSegment]; !ok {
+			continue
+		}
+		if _, ok := allowedStoragePairs[storage.ActionInitSegment][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.PartSize]
+	if !ok {
+		return nil, types.NewErrPairRequired(types.PartSize)
+	}
+	if ok {
+		result.HasPartSize = true
+		result.PartSize = v.(int64)
 	}
 	return result, nil
 }

@@ -131,6 +131,20 @@ func (m Metadata) SetOffset(v int64) {
 	m[Offset] = v
 }
 
+// GetPartSize will get part_size value from metadata.
+func (m Metadata) GetPartSize() (int64, bool) {
+	v, ok := m[PartSize]
+	if !ok {
+		return 0, false
+	}
+	return v.(int64), true
+}
+
+// SetPartSize will set part_size value into metadata.
+func (m Metadata) SetPartSize(v int64) {
+	m[PartSize] = v
+}
+
 // GetPort will get port value from metadata.
 func (m Metadata) GetPort() (int, bool) {
 	v, ok := m[Port]
