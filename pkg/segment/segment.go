@@ -26,7 +26,7 @@ type Part struct {
 }
 
 func (p *Part) String() string {
-	return fmt.Sprintf("Part {Offset: %d, Size: %d}", p.Offset, p.Size)
+	return fmt.Sprintf("Part {Offset: %d, Size: %d, Index: %d}", p.Offset, p.Size, p.Index)
 }
 
 // Segment will hold the whole segment operations.
