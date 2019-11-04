@@ -16,6 +16,7 @@ const (
 	Location     = "location"
 	Name         = "name"
 	Offset       = "offset"
+	PartSize     = "part_size"
 	Port         = "port"
 	Protocol     = "protocol"
 	Recursive    = "recursive"
@@ -94,6 +95,14 @@ func WithName(v string) *Pair {
 func WithOffset(v int64) *Pair {
 	return &Pair{
 		Key:   Offset,
+		Value: v,
+	}
+}
+
+// WithPartSize will apply part_size value to Options
+func WithPartSize(v int64) *Pair {
+	return &Pair{
+		Key:   PartSize,
 		Value: v,
 	}
 }

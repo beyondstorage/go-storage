@@ -60,4 +60,5 @@ var AvailablePairs = map[string]string{
 	"storage_class": "string",
 	"type":          "string",
 	"updated_at":    "time.Time",
+	"part_size":     "int64",
 }

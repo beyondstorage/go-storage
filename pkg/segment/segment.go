@@ -9,12 +9,11 @@ import (
 
 // All errors that segment could return.
 var (
-	ErrPartSizeInvalid         = errors.New("part size invalid")
-	ErrPartIntersected         = errors.New("part intersected")
-	ErrSegmentAlreadyInitiated = errors.New("segment already initiated")
-	ErrSegmentNotInitiated     = errors.New("segment not initiated")
-	ErrSegmentPartsEmpty       = errors.New("segment Parts are empty")
-	ErrSegmentNotFulfilled     = errors.New("segment not fulfilled")
+	ErrPartSizeInvalid     = errors.New("part size invalid")
+	ErrPartIntersected     = errors.New("part intersected")
+	ErrSegmentNotInitiated = errors.New("segment not initiated")
+	ErrSegmentPartsEmpty   = errors.New("segment Parts are empty")
+	ErrSegmentNotFulfilled = errors.New("segment not fulfilled")
 )
 
 // Part is a part of segment.
@@ -22,51 +21,61 @@ type Part struct {
 	Offset int64
 	Size   int64
 
-	Index int // The Index of this part.
+	Index int
 }
 
 func (p *Part) String() string {
-	return fmt.Sprintf("Part {Offset: %d, Size: %d}", p.Offset, p.Size)
+	return fmt.Sprintf("Part {Offset: %d, Size: %d, Index: %d}", p.Offset, p.Size, p.Index)
 }
 
 // Segment will hold the whole segment operations.
 type Segment struct {
-	ID    string
-	Path  string
-	Parts map[int64]*Part
+	ID       string
+	Path     string
+	PartSize int64
+	Parts    map[int64]*Part
 
-	index int // current part Index
-	l     sync.RWMutex
+	l sync.RWMutex
 }
 
 // NewSegment will init a new segment.
-func NewSegment(path, id string) *Segment {
+func NewSegment(path, id string, partSize int64) *Segment {
 	return &Segment{
-		ID:    id,
-		Path:  path,
-		Parts: make(map[int64]*Part),
+		ID:       id,
+		Path:     path,
+		PartSize: partSize,
+		Parts:    make(map[int64]*Part),
 	}
 }
 
 func (s *Segment) String() string {
-	return fmt.Sprintf("Segment {ID: %s, Path: %s}", s.ID, s.Path)
+	return fmt.Sprintf(
+		"Segment {ID: %s, Path: %s, PartSize: %d}",
+		s.ID, s.Path, s.PartSize,
+	)
 }
 
 // InsertPart will insert a part into a segment and return it's Index.
-func (s *Segment) InsertPart(p *Part) (index int, err error) {
-	if p.Size == 0 {
+// Index will start from 0.
+func (s *Segment) InsertPart(offset, size int64) (p *Part, err error) {
+	if size == 0 {
+		panic(ErrPartSizeInvalid)
+	}
+	if s.PartSize == 0 {
 		panic(ErrPartSizeInvalid)
 	}
 
 	s.l.Lock()
 	defer s.l.Unlock()
 
-	// Update segment Index.
-	p.Index = s.index
-	s.index++
+	p = &Part{
+		Offset: offset,
+		Size:   size,
+		Index:  int(offset / s.PartSize),
+	}
 
-	s.Parts[p.Offset] = p
-	return p.Index, nil
+	s.Parts[offset] = p
+	return p, nil
 }
 
 // SortedParts will return sorted Parts.
@@ -105,9 +114,13 @@ func (s *Segment) ValidateParts() (err error) {
 	for idx := 1; idx < len(s.Parts); idx++ {
 		last := p[idx-1]
 		cur := p[idx]
-		if last.Offset+last.Size != cur.Offset {
-			return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
+		if last.Offset+last.Size == cur.Offset {
+			continue
 		}
+		if last.Offset+last.Size > cur.Offset {
+			return fmt.Errorf(errorMessage, s, ErrPartIntersected)
+		}
+		return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
 	}
 
 	return nil

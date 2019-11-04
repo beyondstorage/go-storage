@@ -38,6 +38,9 @@
       "size": true,
       "checksum": false,
       "storage_class": false
+    },
+    "init_segment": {
+      "part_size": true
     }
   }
 }

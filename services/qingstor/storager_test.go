@@ -343,7 +343,7 @@ func TestClient_InitSegment(t *testing.T) {
 			segments: v.segments,
 		}
 
-		_, err := client.InitSegment(v.path)
+		_, err := client.InitSegment(v.path, types.WithPartSize(10))
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -768,7 +768,7 @@ func TestClient_WriteSegment(t *testing.T) {
 			"valid segment",
 			"test_id",
 			map[string]*segment.Segment{
-				"test_id": segment.NewSegment("test_path", "test_id"),
+				"test_id": segment.NewSegment("test_path", "test_id", 1),
 			}, 0, 1,
 			true,
 			func(objectKey string, input *service.UploadMultipartInput) (*service.UploadMultipartOutput, error) {
@@ -832,7 +832,7 @@ func TestClient_ListSegments(t *testing.T) {
 				},
 			},
 			[]*segment.Segment{
-				segment.NewSegment(keys[0], keys[1]),
+				segment.NewSegment(keys[0], keys[1], 0),
 			},
 			nil,
 		},
@@ -852,7 +852,7 @@ func TestClient_ListSegments(t *testing.T) {
 				},
 			},
 			[]*segment.Segment{
-				segment.NewSegment(keys[1], keys[2]),
+				segment.NewSegment(keys[1], keys[2], 0),
 			},
 			nil,
 		},
