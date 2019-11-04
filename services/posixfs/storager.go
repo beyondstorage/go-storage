@@ -51,6 +51,11 @@ func NewClient() *Client {
 	}
 }
 
+// String implements Storager.String
+func (c *Client) String() string {
+	return fmt.Sprintf("posixfs Storager {Base %s}", c.base)
+}
+
 // Init implements Storager.Init
 func (c *Client) Init(pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs Init: %w"
@@ -61,6 +66,7 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 	}
 
 	if opt.HasBase {
+		// TODO: validate base.
 		c.base = opt.Base
 	}
 	return nil
@@ -71,6 +77,8 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 // Currently, there is no useful metadata for posixfs, just keep it empty.
 func (c *Client) Metadata() (m types.Metadata, err error) {
 	m = make(types.Metadata)
+	// Base must be set.
+	m.SetBase(c.base)
 	return m, nil
 }
 

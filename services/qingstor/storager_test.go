@@ -36,6 +36,16 @@ func TestClient_Init(t *testing.T) {
 	})
 }
 
+func TestClient_String(t *testing.T) {
+	c := Client{}
+	err := c.Init(types.WithBase("/test"))
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal(t, "qingstor Storager {Base /test}", c.String())
+}
+
 func TestClient_Capable(t *testing.T) {
 	client := Client{}
 	assert.True(t, client.Capable("read"))

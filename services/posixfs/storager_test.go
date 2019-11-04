@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -22,6 +21,16 @@ import (
 func TestNewClient(t *testing.T) {
 	c := NewClient()
 	assert.NotNil(t, c)
+}
+
+func TestClient_String(t *testing.T) {
+	c := Client{}
+	err := c.Init(types.WithBase("/test"))
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal(t, "posixfs Storager {Base /test}", c.String())
 }
 
 func TestClient_Init(t *testing.T) {
@@ -54,11 +63,13 @@ func TestClient_Metadata(t *testing.T) {
 	defer ctrl.Finish()
 
 	{
-		client := Client{}
+		client := Client{base: "/test"}
 
 		m, err := client.Metadata()
 		assert.NoError(t, err)
-		assert.Equal(t, 0, len(m))
+		gotBase, ok := m.GetBase()
+		assert.True(t, true, ok)
+		assert.Equal(t, "/test", gotBase)
 	}
 }
 
@@ -791,25 +802,26 @@ func TestClient_Write(t *testing.T) {
 }
 
 func TestGetAbsPath(t *testing.T) {
-	paths := make([]string, 10)
-	for k := range paths {
-		paths[k] = uuid.New().String()
-	}
-
 	cases := []struct {
-		base string
+		name         string
+		base         string
+		path         string
+		expectedPath string
 	}{
-		{paths[0]},
-		{paths[1]},
+		{"under root", "/", "abc", "/abc"},
+		{"under sub dir", "/root", "abc", "/root/abc"},
 	}
 
 	for _, tt := range cases {
-		client := Client{
-			base: tt.base,
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			client := Client{}
+			err := client.Init(types.WithBase(tt.base))
+			if err != nil {
+				t.Error(err)
+			}
 
-		absPath := client.getAbsPath(paths[9])
-		assert.True(t, strings.HasPrefix(absPath, tt.base))
-		assert.Equal(t, tt.base, filepath.Dir(absPath))
+			gotPath := client.getAbsPath(tt.path)
+			assert.Equal(t, tt.expectedPath, gotPath)
+		})
 	}
 }
