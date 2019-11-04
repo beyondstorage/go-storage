@@ -63,11 +63,13 @@ func TestClient_Metadata(t *testing.T) {
 	defer ctrl.Finish()
 
 	{
-		client := Client{}
+		client := Client{base: "/test"}
 
 		m, err := client.Metadata()
 		assert.NoError(t, err)
-		assert.Equal(t, 0, len(m))
+		gotBase, ok := m.GetBase()
+		assert.True(t, true, ok)
+		assert.Equal(t, "/test", gotBase)
 	}
 }
 
