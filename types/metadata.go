@@ -19,20 +19,6 @@ func (m Metadata) SetAccessKey(v string) {
 	m[AccessKey] = v
 }
 
-// GetBase will get base value from metadata.
-func (m Metadata) GetBase() (string, bool) {
-	v, ok := m[Base]
-	if !ok {
-		return "", false
-	}
-	return v.(string), true
-}
-
-// SetBase will set base value into metadata.
-func (m Metadata) SetBase(v string) {
-	m[Base] = v
-}
-
 // GetChecksum will get checksum value from metadata.
 func (m Metadata) GetChecksum() (string, bool) {
 	v, ok := m[Checksum]
@@ -255,4 +241,18 @@ func (m Metadata) GetUpdatedAt() (time.Time, bool) {
 // SetUpdatedAt will set updated_at value into metadata.
 func (m Metadata) SetUpdatedAt(v time.Time) {
 	m[UpdatedAt] = v
+}
+
+// GetWorkDir will get work_dir value from metadata.
+func (m Metadata) GetWorkDir() (string, bool) {
+	v, ok := m[WorkDir]
+	if !ok {
+		return "", false
+	}
+	return v.(string), true
+}
+
+// SetWorkDir will set work_dir value into metadata.
+func (m Metadata) SetWorkDir(v string) {
+	m[WorkDir] = v
 }

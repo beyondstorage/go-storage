@@ -25,12 +25,12 @@ func TestNewClient(t *testing.T) {
 
 func TestClient_String(t *testing.T) {
 	c := Client{}
-	err := c.Init(types.WithBase("/test"))
+	err := c.Init(types.WithWorkDir("/test"))
 	if err != nil {
 		t.Error(err)
 	}
 
-	assert.Equal(t, "posixfs Storager {Base /test}", c.String())
+	assert.Equal(t, "posixfs Storager {WorkDir /test}", c.String())
 }
 
 func TestClient_Init(t *testing.T) {
@@ -38,14 +38,14 @@ func TestClient_Init(t *testing.T) {
 		client := Client{}
 		err := client.Init()
 		assert.Error(t, err)
-		assert.Equal(t, "", client.base)
+		assert.Equal(t, "", client.workDir)
 	})
 
-	t.Run("with base", func(t *testing.T) {
+	t.Run("with workDir", func(t *testing.T) {
 		client := Client{}
-		err := client.Init(types.WithBase("test"))
+		err := client.Init(types.WithWorkDir("test"))
 		assert.NoError(t, err)
-		assert.Equal(t, "test", client.base)
+		assert.Equal(t, "test", client.workDir)
 	})
 }
 
@@ -63,11 +63,11 @@ func TestClient_Metadata(t *testing.T) {
 	defer ctrl.Finish()
 
 	{
-		client := Client{base: "/test"}
+		client := Client{workDir: "/test"}
 
 		m, err := client.Metadata()
 		assert.NoError(t, err)
-		gotBase, ok := m.GetBase()
+		gotBase, ok := m.GetWorkDir()
 		assert.True(t, true, ok)
 		assert.Equal(t, "/test", gotBase)
 	}
@@ -815,7 +815,7 @@ func TestGetAbsPath(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			client := Client{}
-			err := client.Init(types.WithBase(tt.base))
+			err := client.Init(types.WithWorkDir(tt.base))
 			if err != nil {
 				t.Error(err)
 			}

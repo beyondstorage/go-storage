@@ -24,7 +24,7 @@ type Client struct {
 	bucket iface.Bucket
 
 	// options for this storager.
-	base string // base dir for all operation.
+	workDir string // workDir dir for all operation.
 
 	segments    map[string]*segment.Segment
 	segmentLock sync.RWMutex
@@ -40,7 +40,7 @@ func newClient(bucket iface.Bucket) *Client {
 
 // String implements Storager.String
 func (c *Client) String() string {
-	return fmt.Sprintf("qingstor Storager {Base %s}", "/"+c.base)
+	return fmt.Sprintf("qingstor Storager {WorkDir %s}", "/"+c.workDir)
 }
 
 // Init implements Storager.Init
@@ -52,9 +52,9 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, err)
 	}
 
-	if opt.HasBase {
-		// TODO: we should validate base
-		c.base = strings.TrimLeft(opt.Base, "/")
+	if opt.HasWorkDir {
+		// TODO: we should validate workDir
+		c.workDir = strings.TrimLeft(opt.WorkDir, "/")
 	}
 	return nil
 }
@@ -70,8 +70,8 @@ func (c *Client) Metadata() (m types.Metadata, err error) {
 	}
 
 	m = make(types.Metadata)
-	// Base must be set.
-	m.SetBase(c.base)
+	// WorkDir must be set.
+	m.SetWorkDir(c.workDir)
 	if output.Name != nil {
 		m.SetName(*output.Name)
 	}
@@ -544,9 +544,9 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 }
 
 func (c *Client) getAbsPath(path string) string {
-	return strings.TrimPrefix(c.base+"/"+path, "/")
+	return strings.TrimPrefix(c.workDir+"/"+path, "/")
 }
 
 func (c *Client) getRelPath(path string) string {
-	return strings.TrimPrefix(path, c.base+"/")
+	return strings.TrimPrefix(path, c.workDir+"/")
 }

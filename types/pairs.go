@@ -8,7 +8,6 @@ import (
 // All available pairs.
 const (
 	AccessKey    = "access_key"
-	Base         = "base"
 	Checksum     = "checksum"
 	Count        = "count"
 	Expire       = "expire"
@@ -25,20 +24,13 @@ const (
 	StorageClass = "storage_class"
 	Type         = "type"
 	UpdatedAt    = "updated_at"
+	WorkDir      = "work_dir"
 )
 
 // WithAccessKey will apply access_key value to Options
 func WithAccessKey(v string) *Pair {
 	return &Pair{
 		Key:   AccessKey,
-		Value: v,
-	}
-}
-
-// WithBase will apply base value to Options
-func WithBase(v string) *Pair {
-	return &Pair{
-		Key:   Base,
 		Value: v,
 	}
 }
@@ -167,6 +159,14 @@ func WithType(v string) *Pair {
 func WithUpdatedAt(v time.Time) *Pair {
 	return &Pair{
 		Key:   UpdatedAt,
+		Value: v,
+	}
+}
+
+// WithWorkDir will apply work_dir value to Options
+func WithWorkDir(v string) *Pair {
+	return &Pair{
+		Key:   WorkDir,
 		Value: v,
 	}
 }

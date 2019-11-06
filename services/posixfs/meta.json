@@ -5,7 +5,7 @@
   },
   "storage": {
     "init": {
-      "base": true
+      "work_dir": true
     },
     "list_dir": {
       "recursive": false

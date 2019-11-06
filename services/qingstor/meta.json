@@ -26,7 +26,7 @@
   },
   "storage": {
     "init": {
-      "base": false
+      "work_dir": false
     },
     "reach": {
       "expire": true

@@ -25,25 +25,25 @@ func TestClient_Init(t *testing.T) {
 		client := Client{}
 		err := client.Init()
 		assert.NoError(t, err)
-		assert.Equal(t, "", client.base)
+		assert.Equal(t, "", client.workDir)
 	})
 
-	t.Run("with base", func(t *testing.T) {
+	t.Run("with workDir", func(t *testing.T) {
 		client := Client{}
-		err := client.Init(types.WithBase("test"))
+		err := client.Init(types.WithWorkDir("test"))
 		assert.NoError(t, err)
-		assert.Equal(t, "test", client.base)
+		assert.Equal(t, "test", client.workDir)
 	})
 }
 
 func TestClient_String(t *testing.T) {
 	c := Client{}
-	err := c.Init(types.WithBase("/test"))
+	err := c.Init(types.WithWorkDir("/test"))
 	if err != nil {
 		t.Error(err)
 	}
 
-	assert.Equal(t, "qingstor Storager {Base /test}", c.String())
+	assert.Equal(t, "qingstor Storager {WorkDir /test}", c.String())
 }
 
 func TestClient_Capable(t *testing.T) {
@@ -928,7 +928,7 @@ func TestGetAbsPath(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			client := Client{}
-			err := client.Init(types.WithBase(tt.base))
+			err := client.Init(types.WithWorkDir(tt.base))
 			if err != nil {
 				t.Error(err)
 			}
@@ -953,7 +953,7 @@ func TestGetRelPath(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			client := &Client{}
-			err := client.Init(types.WithBase(tt.base))
+			err := client.Init(types.WithWorkDir(tt.base))
 			if err != nil {
 				t.Error(err)
 			}

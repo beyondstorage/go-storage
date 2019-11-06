@@ -44,7 +44,6 @@ type Pair struct {
 // This will be used to generate options.go
 var AvailablePairs = map[string]string{
 	"access_key":    "string",
-	"base":          "string",
 	"checksum":      "string",
 	"count":         "int64",
 	"expire":        "int",
@@ -60,5 +59,6 @@ var AvailablePairs = map[string]string{
 	"storage_class": "string",
 	"type":          "string",
 	"updated_at":    "time.Time",
+	"work_dir":      "string",
 	"part_size":     "int64",
 }
