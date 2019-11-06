@@ -146,9 +146,9 @@ func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 	rd := c.getAbsPath(dst)
 
 	// Create dir for dst.
-	err = c.createDir(c.getDirPath(dst))
+	err = c.createDir(dst)
 	if err != nil {
-		return fmt.Errorf(errorMessage, dst, err)
+		return fmt.Errorf(errorMessage, src, dst, err)
 	}
 
 	srcFile, err := c.osOpen(rs)
@@ -178,9 +178,9 @@ func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 	rd := c.getAbsPath(dst)
 
 	// Create dir for dst path.
-	err = c.createDir(c.getDirPath(dst))
+	err = c.createDir(dst)
 	if err != nil {
-		return fmt.Errorf(errorMessage, dst, err)
+		return fmt.Errorf(errorMessage, src, dst, err)
 	}
 
 	err = c.osRename(rs, rd)
@@ -342,7 +342,7 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 		f = os.Stdout
 	} else {
 		// Create dir for path.
-		err = c.createDir(c.getDirPath(path))
+		err = c.createDir(path)
 		if err != nil {
 			return fmt.Errorf(errorMessage, path, err)
 		}

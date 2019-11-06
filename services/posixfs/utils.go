@@ -8,7 +8,7 @@ import (
 func (c *Client) createDir(path string) (err error) {
 	errorMessage := "posixfs createDir [%s]: %w"
 
-	rp := filepath.Join(c.workDir, path)
+	rp := c.getDirPath(path)
 
 	err = c.osMkdirAll(rp, 0755)
 	if err != nil {
