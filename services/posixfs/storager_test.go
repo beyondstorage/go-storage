@@ -415,41 +415,6 @@ func TestClient_Reach(t *testing.T) {
 	})
 }
 
-func TestClient_CreateDir(t *testing.T) {
-	paths := make([]string, 10)
-	for k := range paths {
-		paths[k] = uuid.New().String()
-	}
-	tests := []struct {
-		name string
-		err  error
-	}{
-		{
-			"error",
-			&os.PathError{Op: "mkdir", Path: paths[0], Err: errors.New("mkdir fail")},
-		},
-		{
-			"success",
-			nil,
-		},
-	}
-
-	for k, v := range tests {
-		t.Run(v.name, func(t *testing.T) {
-			client := Client{
-				osMkdirAll: func(path string, perm os.FileMode) error {
-					assert.Equal(t, paths[k], path)
-					assert.Equal(t, os.FileMode(0755), perm)
-					return v.err
-				},
-			}
-
-			err := client.createDir(paths[k])
-			assert.Equal(t, v.err == nil, err == nil)
-		})
-	}
-}
-
 func TestClient_ListDir(t *testing.T) {
 	paths := make([]string, 100)
 	for k := range paths {
