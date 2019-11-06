@@ -20,7 +20,7 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 //go:generate go run ../../internal/cmd/meta_gen/main.go
 type Client struct {
 	// options for this storager.
-	base string // base dir for all operation.
+	workDir string // workDir dir for all operation.
 
 	// All stdlib call will be added here for better unit test.
 	ioCopyBuffer  func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
@@ -53,7 +53,7 @@ func NewClient() *Client {
 
 // String implements Storager.String
 func (c *Client) String() string {
-	return fmt.Sprintf("posixfs Storager {Base %s}", c.base)
+	return fmt.Sprintf("posixfs Storager {WorkDir %s}", c.workDir)
 }
 
 // Init implements Storager.Init
@@ -65,9 +65,9 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, err)
 	}
 
-	if opt.HasBase {
-		// TODO: validate base.
-		c.base = opt.Base
+	if opt.HasWorkDir {
+		// TODO: validate workDir.
+		c.workDir = opt.WorkDir
 	}
 	return nil
 }
@@ -77,8 +77,8 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 // Currently, there is no useful metadata for posixfs, just keep it empty.
 func (c *Client) Metadata() (m types.Metadata, err error) {
 	m = make(types.Metadata)
-	// Base must be set.
-	m.SetBase(c.base)
+	// WorkDir must be set.
+	m.SetWorkDir(c.workDir)
 	return m, nil
 }
 
@@ -187,7 +187,7 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
 	errorMessage := "posixfs CreateDir [%s]: %w"
 
-	rp := filepath.Join(c.base, path)
+	rp := filepath.Join(c.workDir, path)
 
 	err = c.osMkdirAll(rp, 0755)
 	if err != nil {
@@ -387,5 +387,5 @@ func (c *Client) AbortSegment(path string, option ...*types.Pair) (err error) {
 }
 
 func (c *Client) getAbsPath(path string) string {
-	return filepath.Join(c.base, path)
+	return filepath.Join(c.workDir, path)
 }

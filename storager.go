@@ -85,7 +85,7 @@ type Storager interface {
 	//   - SHOULD check pairs availability before use any pairs.
 	Capable(action string, key ...string) bool
 
-	// String will implement Stringrer.
+	// String will implement Stringer.
 	String() string
 	// Metadata will return current storager's metadata.
 	//

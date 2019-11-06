@@ -18,7 +18,7 @@ var notAllowedStorageAction = map[string]struct{}{
 
 var allowedStoragePairs = map[string]map[string]struct{}{
 	storage.ActionInit: {
-		"base": struct{}{},
+		"work_dir": struct{}{},
 	},
 	storage.ActionInitSegment: {
 		"part_size": struct{}{},
@@ -80,8 +80,8 @@ func (c *Client) Capable(action string, pair ...string) bool {
 }
 
 type pairStorageInit struct {
-	HasBase bool
-	Base    string
+	HasWorkDir bool
+	WorkDir    string
 }
 
 func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
@@ -99,10 +99,10 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Base]
+	v, ok = values[types.WorkDir]
 	if ok {
-		result.HasBase = true
-		result.Base = v.(string)
+		result.HasWorkDir = true
+		result.WorkDir = v.(string)
 	}
 	return result, nil
 }
