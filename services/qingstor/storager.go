@@ -210,11 +210,6 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 	return r.HTTPRequest.URL.String(), nil
 }
 
-// CreateDir implements Storager.CreateDir
-func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
-	panic("not supported")
-}
-
 // ListDir implements Storager.ListDir
 func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectIterator) {
 	errorMessage := "qingstor ListDir: %w"

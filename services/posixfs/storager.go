@@ -145,6 +145,12 @@ func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 	rs := c.getAbsPath(src)
 	rd := c.getAbsPath(dst)
 
+	// Create dir for dst.
+	err = c.createDir(c.getDirPath(dst))
+	if err != nil {
+		return fmt.Errorf(errorMessage, dst, err)
+	}
+
 	srcFile, err := c.osOpen(rs)
 	if err != nil {
 		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
@@ -171,6 +177,12 @@ func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 	rs := c.getAbsPath(src)
 	rd := c.getAbsPath(dst)
 
+	// Create dir for dst path.
+	err = c.createDir(c.getDirPath(dst))
+	if err != nil {
+		return fmt.Errorf(errorMessage, dst, err)
+	}
+
 	err = c.osRename(rs, rd)
 	if err != nil {
 		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
@@ -181,19 +193,6 @@ func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 // Reach implements Storager.Reach
 func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error) {
 	panic("not supported")
-}
-
-// CreateDir implements Storager.CreateDir
-func (c *Client) CreateDir(path string, option ...*types.Pair) (err error) {
-	errorMessage := "posixfs CreateDir [%s]: %w"
-
-	rp := filepath.Join(c.workDir, path)
-
-	err = c.osMkdirAll(rp, 0755)
-	if err != nil {
-		return fmt.Errorf(errorMessage, path, handleOsError(err))
-	}
-	return
 }
 
 // ListDir implements Storager.ListDir
@@ -342,6 +341,12 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 	if path == "-" {
 		f = os.Stdout
 	} else {
+		// Create dir for path.
+		err = c.createDir(c.getDirPath(path))
+		if err != nil {
+			return fmt.Errorf(errorMessage, path, err)
+		}
+
 		rp := c.getAbsPath(path)
 
 		f, err = c.osCreate(rp)
@@ -384,8 +389,4 @@ func (c *Client) CompleteSegment(path string, option ...*types.Pair) (err error)
 // AbortSegment implements Storager.AbortSegment
 func (c *Client) AbortSegment(path string, option ...*types.Pair) (err error) {
 	panic("implement me")
-}
-
-func (c *Client) getAbsPath(path string) string {
-	return filepath.Join(c.workDir, path)
 }
