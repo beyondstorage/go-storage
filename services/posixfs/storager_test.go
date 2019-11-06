@@ -273,6 +273,9 @@ func TestClient_Copy(t *testing.T) {
 					Err: errors.New("path error"),
 				}
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Copy(srcName, dstName)
@@ -294,6 +297,9 @@ func TestClient_Copy(t *testing.T) {
 					Err: errors.New("open fail"),
 				}
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Copy(srcName, dstName)
@@ -314,6 +320,9 @@ func TestClient_Copy(t *testing.T) {
 			},
 			ioCopyBuffer: func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error) {
 				return 0, io.ErrShortWrite
+			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
 			},
 		}
 
@@ -343,6 +352,9 @@ func TestClient_Copy(t *testing.T) {
 			ioCopyBuffer: func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error) {
 				return 0, nil
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Copy(srcName, dstName)
@@ -366,6 +378,9 @@ func TestClient_Move(t *testing.T) {
 					Err: errors.New("rename fail"),
 				}
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Move(srcName, dstName)
@@ -380,6 +395,9 @@ func TestClient_Move(t *testing.T) {
 			osRename: func(oldpath, newpath string) error {
 				assert.Equal(t, srcName, oldpath)
 				assert.Equal(t, dstName, newpath)
+				return nil
+			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
 				return nil
 			},
 		}
@@ -783,6 +801,9 @@ func TestClient_Write(t *testing.T) {
 				osCreate:     v.osCreate,
 				ioCopyN:      v.ioCopyN,
 				ioCopyBuffer: v.ioCopyBuffer,
+				osMkdirAll: func(path string, perm os.FileMode) error {
+					return nil
+				},
 			}
 
 			var pairs []*types.Pair
