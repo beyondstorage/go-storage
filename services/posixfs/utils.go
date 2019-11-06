@@ -9,6 +9,10 @@ func (c *Client) createDir(path string) (err error) {
 	errorMessage := "posixfs createDir [%s]: %w"
 
 	rp := c.getDirPath(path)
+	// Don't need to create work dir.
+	if rp == c.workDir {
+		return
+	}
 
 	err = c.osMkdirAll(rp, 0755)
 	if err != nil {
@@ -22,5 +26,8 @@ func (c *Client) getAbsPath(path string) string {
 }
 
 func (c *Client) getDirPath(path string) string {
+	if path == "" {
+		return c.workDir
+	}
 	return filepath.Join(c.workDir, filepath.Dir(path))
 }
