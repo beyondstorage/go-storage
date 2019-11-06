@@ -273,6 +273,9 @@ func TestClient_Copy(t *testing.T) {
 					Err: errors.New("path error"),
 				}
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Copy(srcName, dstName)
@@ -294,6 +297,9 @@ func TestClient_Copy(t *testing.T) {
 					Err: errors.New("open fail"),
 				}
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Copy(srcName, dstName)
@@ -314,6 +320,9 @@ func TestClient_Copy(t *testing.T) {
 			},
 			ioCopyBuffer: func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error) {
 				return 0, io.ErrShortWrite
+			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
 			},
 		}
 
@@ -343,6 +352,9 @@ func TestClient_Copy(t *testing.T) {
 			ioCopyBuffer: func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error) {
 				return 0, nil
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Copy(srcName, dstName)
@@ -366,6 +378,9 @@ func TestClient_Move(t *testing.T) {
 					Err: errors.New("rename fail"),
 				}
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Move(srcName, dstName)
@@ -382,6 +397,9 @@ func TestClient_Move(t *testing.T) {
 				assert.Equal(t, dstName, newpath)
 				return nil
 			},
+			osMkdirAll: func(path string, perm os.FileMode) error {
+				return nil
+			},
 		}
 
 		err := client.Move(srcName, dstName)
@@ -395,41 +413,6 @@ func TestClient_Reach(t *testing.T) {
 	assert.Panics(t, func() {
 		_, _ = client.Reach(uuid.New().String())
 	})
-}
-
-func TestClient_CreateDir(t *testing.T) {
-	paths := make([]string, 10)
-	for k := range paths {
-		paths[k] = uuid.New().String()
-	}
-	tests := []struct {
-		name string
-		err  error
-	}{
-		{
-			"error",
-			&os.PathError{Op: "mkdir", Path: paths[0], Err: errors.New("mkdir fail")},
-		},
-		{
-			"success",
-			nil,
-		},
-	}
-
-	for k, v := range tests {
-		t.Run(v.name, func(t *testing.T) {
-			client := Client{
-				osMkdirAll: func(path string, perm os.FileMode) error {
-					assert.Equal(t, paths[k], path)
-					assert.Equal(t, os.FileMode(0755), perm)
-					return v.err
-				},
-			}
-
-			err := client.CreateDir(paths[k])
-			assert.Equal(t, v.err == nil, err == nil)
-		})
-	}
 }
 
 func TestClient_ListDir(t *testing.T) {
@@ -783,6 +766,9 @@ func TestClient_Write(t *testing.T) {
 				osCreate:     v.osCreate,
 				ioCopyN:      v.ioCopyN,
 				ioCopyBuffer: v.ioCopyBuffer,
+				osMkdirAll: func(path string, perm os.FileMode) error {
+					return nil
+				},
 			}
 
 			var pairs []*types.Pair
@@ -797,31 +783,6 @@ func TestClient_Write(t *testing.T) {
 				err = client.Write(paths[k], nil, pairs...)
 			}
 			assert.Equal(t, v.hasErr, err != nil)
-		})
-	}
-}
-
-func TestGetAbsPath(t *testing.T) {
-	cases := []struct {
-		name         string
-		base         string
-		path         string
-		expectedPath string
-	}{
-		{"under root", "/", "abc", "/abc"},
-		{"under sub dir", "/root", "abc", "/root/abc"},
-	}
-
-	for _, tt := range cases {
-		t.Run(tt.name, func(t *testing.T) {
-			client := Client{}
-			err := client.Init(types.WithWorkDir(tt.base))
-			if err != nil {
-				t.Error(err)
-			}
-
-			gotPath := client.getAbsPath(tt.path)
-			assert.Equal(t, tt.expectedPath, gotPath)
 		})
 	}
 }

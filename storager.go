@@ -18,8 +18,7 @@ const (
 
 	ActionReach = "reach"
 
-	ActionCreateDir = "create_dir"
-	ActionListDir   = "list_dir"
+	ActionListDir = "list_dir"
 
 	ActionRead  = "read"
 	ActionWrite = "write"
@@ -92,6 +91,19 @@ type Storager interface {
 	// Implementer:
 	//   - MAY return following data: Name,Location, Size, Count
 	Metadata() (types.Metadata, error)
+
+	// ListDir will return an ObjectIterator which can list all object under the Dir.
+	ListDir(path string, pairs ...*types.Pair) iterator.ObjectIterator
+	// Read will read the file's data.
+	//
+	// Caller:
+	//   - MUST close reader while error happened or all data read.
+	Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
+	// WriteFile will write data into file.
+	//
+	// Caller:
+	//   - MUST close reader while error happened or all data written.
+	Write(path string, r io.Reader, pairs ...*types.Pair) (err error)
 	// Stat will stat a path to get info of an object.
 	//
 	// Implementer:
@@ -113,31 +125,11 @@ type Storager interface {
 	// Implementer:
 	//   - MAY accept a recursive pairs to support move recursively.
 	Move(src, dst string, pairs ...*types.Pair) (err error)
-
-	// Fetch Operation.
-	// Fetch(src, dst string) ?
-
 	// Reach will provide a way which can reach the object.
 	//
 	// Implementer:
 	//   - SHOULD return a publicly reachable http url.
 	Reach(path string, pairs ...*types.Pair) (url string, err error)
-
-	// CreateDir will create a Dir in the services.
-	CreateDir(path string, pairs ...*types.Pair) (err error)
-	// ListDir will return an ObjectIterator which can list all object under the Dir.
-	ListDir(path string, pairs ...*types.Pair) iterator.ObjectIterator
-
-	// Read will read the file's data.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data read.
-	Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
-	// WriteFile will write data into file.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data written.
-	Write(path string, r io.Reader, pairs ...*types.Pair) (err error)
 
 	// Segment Operations.
 
