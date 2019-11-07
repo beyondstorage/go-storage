@@ -105,6 +105,7 @@ func (f fileInfo) Sys() interface{} {
 }
 
 func TestClient_Stat(t *testing.T) {
+	nowTime := time.Now()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -122,13 +123,14 @@ func TestClient_Stat(t *testing.T) {
 				name:    "regular file",
 				size:    1234,
 				mode:    0777,
-				modTime: time.Now(),
+				modTime: nowTime,
 			},
 			&types.Object{
 				Name: "regular file",
 				Type: types.ObjectTypeFile,
 				Metadata: types.Metadata{
-					types.Size: int64(1234),
+					types.Size:      int64(1234),
+					types.UpdatedAt: nowTime,
 				},
 			},
 		},
@@ -139,7 +141,7 @@ func TestClient_Stat(t *testing.T) {
 				name:    "dir",
 				size:    0,
 				mode:    os.ModeDir | 0777,
-				modTime: time.Now(),
+				modTime: nowTime,
 			},
 			&types.Object{
 				Name:     "dir",
@@ -154,7 +156,7 @@ func TestClient_Stat(t *testing.T) {
 				name:    "stream",
 				size:    0,
 				mode:    os.ModeDevice | 0777,
-				modTime: time.Now(),
+				modTime: nowTime,
 			},
 			&types.Object{
 				Name:     "stream",
@@ -169,7 +171,7 @@ func TestClient_Stat(t *testing.T) {
 				name:    "invalid",
 				size:    0,
 				mode:    os.ModeIrregular | 0777,
-				modTime: time.Now(),
+				modTime: nowTime,
 			},
 			&types.Object{
 				Name:     "invalid",

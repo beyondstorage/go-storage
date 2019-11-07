@@ -105,6 +105,7 @@ func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err 
 	if fi.Mode().IsRegular() {
 		o.Type = types.ObjectTypeFile
 		o.SetSize(fi.Size())
+		o.SetUpdatedAt(fi.ModTime())
 		return
 	}
 	if fi.Mode()&StreamModeType != 0 {
