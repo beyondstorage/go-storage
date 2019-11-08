@@ -12,9 +12,7 @@ var (
 	ErrPermissionDenied = errors.New("permission denied")
 
 	// caller handleable error
-	ErrPairRequired = errors.New("pair required")
-
-	// unhandleable but information available
+	ErrPairRequired    = errors.New("pair required")
 	ErrObjectNotExist  = errors.New("object not exist")
 	ErrDirAlreadyExist = errors.New("dir already exist")
 	ErrDirNotEmpty     = errors.New("dir not empty")
