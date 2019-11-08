@@ -1,8 +1,12 @@
 package posixfs
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
+
+	"github.com/Xuanwo/storage/types"
 )
 
 func (c *Client) createDir(path string) (err error) {
@@ -30,4 +34,17 @@ func (c *Client) getDirPath(path string) string {
 		return c.workDir
 	}
 	return filepath.Join(c.workDir, filepath.Dir(path))
+}
+
+func handleOsError(err error) error {
+	if err == nil {
+		panic("error must not be nil")
+	}
+
+	// Add two conditions in case of os.IsNotExist not work with fmt.Errorf
+	if errors.Is(err, os.ErrNotExist) || os.IsNotExist(err) {
+		return fmt.Errorf("%w: %v", types.ErrObjectNotExist, err)
+	}
+	// TODO: handle other osError here.
+	return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
 }

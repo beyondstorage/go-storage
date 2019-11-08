@@ -2,13 +2,15 @@ package posixfs
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/Xuanwo/storage/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Xuanwo/storage/types"
 )
 
 func TestGetAbsPath(t *testing.T) {
@@ -68,5 +70,43 @@ func TestClient_CreateDir(t *testing.T) {
 			err := client.createDir(paths[k])
 			assert.Equal(t, v.err == nil, err == nil)
 		})
+	}
+}
+
+func TestHandleOsError(t *testing.T) {
+	t.Run("nil error will panic", func(t *testing.T) {
+		assert.Panics(t, func() {
+			_ = handleOsError(nil)
+		})
+	})
+
+	{
+		tests := []struct {
+			name     string
+			input    error
+			expected error
+		}{
+			{
+				"not found",
+				os.ErrNotExist,
+				types.ErrObjectNotExist,
+			},
+			{
+				"wrapped not found",
+				fmt.Errorf("%w: some other infos", os.ErrNotExist),
+				types.ErrObjectNotExist,
+			},
+			{
+				"other errors",
+				errors.New("expect unhandled error"),
+				types.ErrUnhandledError,
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				assert.True(t, errors.Is(handleOsError(tt.input), tt.expected))
+			})
+		}
 	}
 }
