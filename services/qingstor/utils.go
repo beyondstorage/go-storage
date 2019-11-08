@@ -1,7 +1,11 @@
 package qingstor
 
 import (
+	"fmt"
 	"regexp"
+
+	"github.com/Xuanwo/storage/types"
+	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 )
 
 // bucketNameRegexp is the bucket name regexp, which indicates:
@@ -13,4 +17,36 @@ var bucketNameRegexp = regexp.MustCompile(`^[a-z\d][a-z-\d]{4,61}[a-z\d]$`)
 // IsBucketNameValid will check whether given string is a valid bucket name.
 func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
+}
+
+func handleQingStorError(err error) error {
+	if err == nil {
+		panic("error must not be nil")
+	}
+
+	var e *qserror.QingStorError
+	e, ok := err.(*qserror.QingStorError)
+	if !ok {
+		return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
+	}
+
+	if e.Code == "" {
+		switch e.StatusCode {
+		case 404:
+			return fmt.Errorf("%w: %v", types.ErrObjectNotExist, err)
+		default:
+			return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
+		}
+	}
+
+	switch e.Code {
+	case "permission_denied":
+		return fmt.Errorf("%w: %v", types.ErrPermissionDenied, err)
+	case "object_not_exists":
+		return fmt.Errorf("%w: %v", types.ErrObjectNotExist, err)
+	case "invalid_access_key_id":
+		return fmt.Errorf("%w: %v", types.ErrConfigIncorrect, err)
+	default:
+		return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
+	}
 }
