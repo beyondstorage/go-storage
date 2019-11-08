@@ -3,6 +3,7 @@ package qingstor
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/Xuanwo/storage/types"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
@@ -17,6 +18,14 @@ var bucketNameRegexp = regexp.MustCompile(`^[a-z\d][a-z-\d]{4,61}[a-z\d]$`)
 // IsBucketNameValid will check whether given string is a valid bucket name.
 func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
+}
+
+func (c *Client) getAbsPath(path string) string {
+	return strings.TrimPrefix(c.workDir+"/"+path, "/")
+}
+
+func (c *Client) getRelPath(path string) string {
+	return strings.TrimPrefix(path, c.workDir+"/")
 }
 
 func handleQingStorError(err error) error {

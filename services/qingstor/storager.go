@@ -538,10 +538,3 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 	return
 }
 
-func (c *Client) getAbsPath(path string) string {
-	return strings.TrimPrefix(c.workDir+"/"+path, "/")
-}
-
-func (c *Client) getRelPath(path string) string {
-	return strings.TrimPrefix(path, c.workDir+"/")
-}
