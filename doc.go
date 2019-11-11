@@ -30,19 +30,26 @@ The most common case to use a Storager service could be following:
 		log.Printf("service init failed: %v", err)
 	}
 
-2. Get a storage instance from a initiated service
+2. Get a storage instance from an initiated service
 
 	store, err := srv.Get("test_bucket_name")
 	if err != nil {
 		log.Printf("service get bucket failed: %v", err)
 	}
 
-3. Use Storager API to maintain data
+3. Init a storage
+
+	err := store.Init(types.WithWorkDir("/prefix"))
+	if err != nil {
+		log.Printf("storager init failed: %v", err)
+	}
+
+4. Use Storager API to maintain data
 
 	ch := make(chan *types.Object, 1)
 	defer close(ch)
 
-	it := store.ListDir("/prefix")
+	it := store.ListDir("prefix")
 	for {
 		o, err := it.Next()
 		if err != nil && errors.Is(err, iterator.ErrDone) {

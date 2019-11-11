@@ -11,17 +11,14 @@ import (
 const (
 	ActionInit = "init"
 
-	ActionStat   = "stat"
-	ActionDelete = "delete"
-	ActionCopy   = "copy"
-	ActionMove   = "move"
-
-	ActionReach = "reach"
-
+	ActionStat    = "stat"
+	ActionDelete  = "delete"
+	ActionCopy    = "copy"
+	ActionMove    = "move"
+	ActionReach   = "reach"
 	ActionListDir = "list_dir"
-
-	ActionRead  = "read"
-	ActionWrite = "write"
+	ActionRead    = "read"
+	ActionWrite   = "write"
 
 	ActionInitSegment     = "init_segment"
 	ActionWriteSegment    = "write_segment"
@@ -53,22 +50,23 @@ type Servicer interface {
 /*
 Storager is the interface for storage service.
 
-Currently we support two different type storage services: prefix based and directory based. Prefix based storage
+Currently, we support two different type storage services: prefix based and directory based. Prefix based storage
 service is usually a object storage service, such as AWS; And directory based service is often a POSIX file system.
 We used to treat them as different abstract level services, but in this project, we will unify both of them to make a
 production ready high performance vendor lock free storage layer.
 
-Every service will implement the same interface but with different capability and operation pairs set.
+Every storager will implement the same interface but with different capability and operation pairs set.
 
-Everything in a service is an Object with three types: File, Stream, Dir.
-Both File and Stream are smallest unit in service, they will have content and metadata. The difference is File has
-determined size but Stream's size is uncertain. Dir is a container for File, Stream and Dir. In prefix based storage
-service, Dir is usually an empty key end with "/" or with special content type. And for directory based service, Dir
-will be corresponded to the real directory on file system.
+Everything in a storager is an Object with three types: File, Dir.
+File is the smallest unit in service, it will have content and metadata. Dir is a container for File and Dir.
+In prefix-based storage service, Dir is usually an empty key end with "/" or with special content type.
+For directory-based service, Dir will be corresponded to the real directory on file system.
+
+Every API call in storager is relative to it's workdir which set in Init().
 
 In the comments of every method, we will use following rules to standardize the Storager's behavior:
 
-  - The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY",
+  - The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY",
     and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
   - Implementer is the provider of the service, while you trying to implement Storager interface, you need to follow.
   - Caller is the user of the service, while you trying to use the Storager interface, you need to follow.
