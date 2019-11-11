@@ -322,7 +322,7 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 	return output.Body, nil
 }
 
-// WriteFile implements Storager.WriteFile
+// Write implements Storager.Write
 func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteFile for id %s: %w"
 

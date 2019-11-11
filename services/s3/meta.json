@@ -1,0 +1,44 @@
+{
+  "name": "s3",
+  "capability": {},
+  "service": {
+    "init": {
+      "access_key": true,
+      "secret_key": true,
+      "host": false,
+      "port": false,
+      "protocol": false
+    },
+    "get": {
+      "location": false
+    },
+    "create": {
+      "location": true
+    },
+    "delete": {
+      "location": false
+    },
+    "list": {
+      "location": false
+    }
+  },
+  "storage": {
+    "init": {
+      "work_dir": false
+    },
+    "reach": {
+      "expire": true
+    },
+    "list_dir": {
+      "recursive": false
+    },
+    "write": {
+      "size": true,
+      "checksum": false,
+      "storage_class": false
+    },
+    "init_segment": {
+      "part_size": true
+    }
+  }
+}
