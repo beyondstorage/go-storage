@@ -1,7 +1,6 @@
 {
   "name": "qingstor",
   "capability": {
-    "create_dir": false
   },
   "service": {
     "init": {

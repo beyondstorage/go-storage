@@ -12,9 +12,7 @@ const ServicerType = types.ServicerType("qingstor")
 // StoragerType is the storager type for qingstor
 const StoragerType = types.StoragerType("qingstor")
 
-var notAllowedStorageAction = map[string]struct{}{
-	"create_dir": struct{}{},
-}
+var notAllowedStorageAction = map[string]struct{}{}
 
 var allowedStoragePairs = map[string]map[string]struct{}{
 	storage.ActionInit: {
