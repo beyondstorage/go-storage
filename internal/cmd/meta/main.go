@@ -27,7 +27,7 @@ type metadata struct {
 	TypeMap map[string]string `json:"-"`
 }
 
-//go:generate go-bindata -ignore ".*.go" .
+//go:generate go-bindata -nometadata -ignore ".*.go" .
 func main() {
 	_, err := ioutil.ReadDir(".")
 	if err != nil {

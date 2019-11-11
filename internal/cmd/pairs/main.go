@@ -21,7 +21,7 @@ var (
 			Parse(string(MustAsset("metadata.tmpl"))))
 )
 
-//go:generate go-bindata -ignore ".*.go" .
+//go:generate go-bindata -nometadata -ignore ".*.go" .
 func main() {
 	pairFile, err := os.Create("pairs.go")
 	if err != nil {
