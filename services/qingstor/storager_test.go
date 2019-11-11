@@ -50,7 +50,6 @@ func TestClient_Capable(t *testing.T) {
 	assert.True(t, client.Capable("read"))
 	assert.True(t, client.Capable("list_dir", types.Recursive))
 	assert.False(t, client.Capable("list_dir", types.Expire))
-	assert.False(t, client.Capable("create_dir"))
 	assert.False(t, client.Capable("read", types.Expire))
 }
 
