@@ -7,6 +7,8 @@ install:
   - go get -u golang.org/x/lint/golint
   # mock generator
   - go get github.com/golang/mock/mockgen
+  # go-bindata
+  - go get -u github.com/kevinburke/go-bindata/...
 
 script:
   - make check
