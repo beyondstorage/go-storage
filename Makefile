@@ -9,6 +9,9 @@ help:
 	@echo "  generate   to generate code"
 	@echo "  test       to run test"
 
+# mockgen: go get github.com/golang/mock/mockgen
+# golint: go get -u golang.org/x/lint/golint
+# go-bindata: go get -u github.com/kevinburke/go-bindata/...
 tools := mockgen golint go-bindata
 
 $(tools):
