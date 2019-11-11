@@ -35,6 +35,8 @@ Servicer can maintain multipart storage services.
 Implementer can choose to implement this interface or not.
 */
 type Servicer interface {
+	// String will implement Stringer.
+	String() string
 	// Init will init service itself.
 	Init(pairs ...*types.Pair) (err error)
 
@@ -72,6 +74,9 @@ In the comments of every method, we will use following rules to standardize the 
   - Caller is the user of the service, while you trying to use the Storager interface, you need to follow.
 */
 type Storager interface {
+	// String will implement Stringer.
+	String() string
+
 	// Init will init storager itself.
 	//
 	// Caller:
@@ -84,8 +89,6 @@ type Storager interface {
 	//   - SHOULD check pairs availability before use any pairs.
 	Capable(action string, key ...string) bool
 
-	// String will implement Stringer.
-	String() string
 	// Metadata will return current storager's metadata.
 	//
 	// Implementer:
