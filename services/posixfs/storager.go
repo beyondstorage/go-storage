@@ -17,7 +17,7 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 
 // Client is the posixfs client.
 //
-//go:generate go run ../../internal/cmd/meta_gen/main.go
+//go:generate ../../internal/bin/meta
 type Client struct {
 	// options for this storager.
 	workDir string // workDir dir for all operation.

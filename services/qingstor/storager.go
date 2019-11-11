@@ -18,7 +18,7 @@ import (
 
 // Client is the qingstor object storage client.
 //
-//go:generate go run ../../internal/cmd/meta_gen/main.go
+//go:generate ../../internal/bin/meta
 //go:generate mockgen -package qingstor -destination mock_test.go github.com/yunify/qingstor-sdk-go/v3/interface Service,Bucket
 type Client struct {
 	bucket iface.Bucket

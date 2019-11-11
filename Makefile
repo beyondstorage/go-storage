@@ -9,7 +9,7 @@ help:
 	@echo "  generate   to generate code"
 	@echo "  test       to run test"
 
-tools := mockgen golint
+tools := mockgen golint go-bindata
 
 $(tools):
 	@command -v $@ >/dev/null 2>&1 || echo "$@ is not found, plese install it."
@@ -31,7 +31,16 @@ lint: golint
 	@golint ./...
 	@echo "ok"
 
-generate: mockgen
+build_generator: go-bindata
+	@echo "build storage generator"
+	@pushd internal/cmd \
+		&& go generate ./... \
+		&& go build -o ../bin/meta ./meta \
+		&& go build -o ../bin/pairs ./pairs \
+		&& popd
+	@echo "Done"
+
+generate: build_generator mockgen
 	@echo "generate code"
 	@rm types/metadata.go types/pairs.go services/*/meta.go || true
 	@go generate ./...

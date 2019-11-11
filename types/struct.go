@@ -33,8 +33,7 @@ type Metadata map[string]interface{}
 
 // Pair will store option for storage service.
 //
-//go:generate go run ../internal/cmd/pairs_gen/main.go
-//go:generate go run ../internal/cmd/metadata_gen/main.go
+//go:generate ../internal/bin/pairs
 type Pair struct {
 	Key   string
 	Value interface{}
