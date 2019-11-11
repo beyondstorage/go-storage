@@ -40,7 +40,7 @@ func newClient(bucket iface.Bucket) *Client {
 
 // String implements Storager.String
 func (c *Client) String() string {
-	return fmt.Sprintf("qingstor Storager {WorkDir %s}", "/"+c.workDir)
+	return fmt.Sprintf("qingstor Storager {WorkDir: %s}", "/"+c.workDir)
 }
 
 // Init implements Storager.Init
@@ -537,4 +537,3 @@ func (c *Client) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 	c.segmentLock.Unlock()
 	return
 }
-

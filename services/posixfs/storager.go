@@ -53,7 +53,7 @@ func NewClient() *Client {
 
 // String implements Storager.String
 func (c *Client) String() string {
-	return fmt.Sprintf("posixfs Storager {WorkDir %s}", c.workDir)
+	return fmt.Sprintf("posixfs Storager {WorkDir: %s}", c.workDir)
 }
 
 // Init implements Storager.Init

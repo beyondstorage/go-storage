@@ -32,6 +32,11 @@ func New() *Service {
 	}
 }
 
+// String implements Service.String
+func (s *Service) String() string {
+	return fmt.Sprintf("qingstor Service {Host: %s, Port: %d, Protocol: %s, AccessKey: %s}", s.config.Host, s.config.Port, s.config.Protocol, s.config.AccessKeyID)
+}
+
 // Init implements Servicer.Init
 func (s *Service) Init(pairs ...*types.Pair) (err error) {
 	errorMessage := "init qingstor service: %w"

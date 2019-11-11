@@ -19,6 +19,19 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+func TestService_String(t *testing.T) {
+	accessKey := uuid.New().String()
+	secretKey := uuid.New().String()
+
+	srv := Service{}
+	err := srv.Init(types.WithAccessKey(accessKey), types.WithSecretKey(secretKey))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotEmpty(t, srv.String())
+}
+
 func TestService_Init(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
