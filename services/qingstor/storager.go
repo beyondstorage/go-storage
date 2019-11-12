@@ -1,6 +1,7 @@
 package qingstor
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -131,12 +132,41 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Delete: %w"
 
+	opt, err := parseStoragePairDelete(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, err)
+	}
+
 	rp := c.getAbsPath(path)
 
-	_, err = c.bucket.DeleteObject(rp)
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, err)
+	if !opt.HasRecursive || !opt.Recursive {
+		_, err = c.bucket.DeleteObject(rp)
+		if err != nil {
+			err = handleQingStorError(err)
+			return fmt.Errorf(errorMessage, err)
+		}
+		return
+	}
+
+	// Support delete recursively.
+	// TODO: split listDir from ListDir.
+	it := c.ListDir(path, types.WithRecursive(true))
+	for {
+		v, err := it.Next()
+		if err != nil && errors.Is(err, iterator.ErrDone) {
+			break
+		}
+		if err != nil {
+			err = handleQingStorError(err)
+			return fmt.Errorf(errorMessage, err)
+		}
+
+		rp := c.getAbsPath(v.Name)
+		_, err = c.bucket.DeleteObject(rp)
+		if err != nil {
+			err = handleQingStorError(err)
+			return fmt.Errorf(errorMessage, err)
+		}
 	}
 	return nil
 }

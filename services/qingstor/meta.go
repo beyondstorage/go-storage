@@ -17,6 +17,9 @@ var notAllowedStorageAction = map[string]struct{}{
 }
 
 var allowedStoragePairs = map[string]map[string]struct{}{
+	storage.ActionDelete: {
+		"recursive": struct{}{},
+	},
 	storage.ActionInit: {
 		"work_dir": struct{}{},
 	},
@@ -77,6 +80,34 @@ func (c *Client) Capable(action string, pair ...string) bool {
 		}
 	}
 	return true
+}
+
+type pairStorageDelete struct {
+	HasRecursive bool
+	Recursive    bool
+}
+
+func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
+	result := &pairStorageDelete{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedStoragePairs[storage.ActionDelete]; !ok {
+			continue
+		}
+		if _, ok := allowedStoragePairs[storage.ActionDelete][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[types.Recursive]
+	if ok {
+		result.HasRecursive = true
+		result.Recursive = v.(bool)
+	}
+	return result, nil
 }
 
 type pairStorageInit struct {
