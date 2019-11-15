@@ -1,36 +1,16 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: draft
-updated_at: 2019-11-13
+updated_at: 2019-11-15
 ---
 
 # Proposal: Unify storager behavior
 
 ## Background
 
-We provide a `Capable` function for developers to check whether underlying storager support action/pair or not. But in reality, no one use them. As a `unified storage layer`, it's strange that coder still need to take care of the difference of storager services.
+We provide a `Capable` function for developers to check whether underlying storager support action/pair or not. In fact, no one use them. As a `unified storage layer`, it's strange coder still need to take care of the difference of storager services.
 
-But differences indeed exist. Either we give up some power of storager services, or provide better way to developers to handle the complexity. We need to eliminate the inconsistent behavior for base actions, and provide convenient ways for user to use high-level actions.
-
-Except for better consistence, current API design also lead to some wired results. One of the case looks like following:
-
-```go
-it := store.ListDir(path, types.WithRecursive(true)
-
-for {
-    o, err := it.Next()
-    if err != nil && errors.Is(err, iterator.ErrDone) {
-        break
-    }
-    if err != nil {
-        t.TriggerFault(types.NewErrUnhandled(err))
-        return
-    }
-    store.Delete(o.Name)
-}
-```
-
-In order to remove all Object under a path, it's obviously that we need to list them recursively and delete them one by one. This algorithm works well for object storage, a.k.a. prefix based storage. But it will fail on POSIX file systems, because our `List` doesn't return folders.
+However, differences indeed exist. Either we give up some power of storager services, or provide better way to developers to handle the complexity. We need to eliminate the inconsistent behavior for base actions, and provide convenient ways for user to use high-level actions.
 
 ## Proposal
 
@@ -38,7 +18,7 @@ So I propose following changes:
 
 ### Split Base Storage
 
-Split base storager for currently `Storager` interface, and make sure every storage will have same operations for same action and pairs. If storage don't support specific pairs, them need to ignore them.
+Split base storager for currently `Storager` interface, and make sure every storage will have same operations for same action and pairs. If storage don't support specific pairs, storage need to ignore them.
 
 The base `Storager` could be:
 
@@ -50,7 +30,7 @@ type Storager interface {
 	Capable(action string, key ...string) bool
 	Metadata() (types.Metadata, error)
 
-	ListDir(path string, pairs ...*types.Pair) (err error)
+	ListDir(path string, pairs ...*types.Pair) iterator.ObjectIterator
 	Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
 	Write(path string, r io.Reader, pairs ...*types.Pair) (err error)
 	Stat(path string, pairs ...*types.Pair) (o *types.Object, err error)
@@ -79,37 +59,13 @@ There will be a `Segmenter` interface for all segments related operations.
 
 ```go
 type Segmenter interface {
-	ListSegments(path string, pairs ...*types.Pair) (err error)
+	ListSegments(path string, pairs ...*types.Pair) iterator.SegmentIterator
 	InitSegment(path string, pairs ...*types.Pair) (id string, err error)
 	WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error)
 	CompleteSegment(id string, pairs ...*types.Pair) (err error)
 	AbortSegment(id string, pairs ...*types.Pair) (err error)
 }
 ```
-
-### Add callback func for all list operations
-
-List operations will not return `iterator.ObjectIterator` anymore, instead, it will allow input `WithDirFunc` and `WithFileFunc` via `Pair`.
-
-```go
-dirFunc := func(object *types.Object) {
-    printf("dir %s", object.Name)
-}
-fileFunc := func(object *types.Object) {
-    printf("file %s", object.Name)
-}
-
-err := store.List("prefix", types.WithDirFunc(dirFunc), types.WithFileFunc(fileFunc))
-if err != nil {
-    return err
-}
-```
-
-### Remove recursive for List
-
-Based on the work of `callback in list`, we can remove all recursive support in list.
-
-Directory based storage will only list one directory, and prefix based storage will only list one prefix without a delimiter.
 
 ## Rationale
 
@@ -157,7 +113,7 @@ if store.Copyable() {
 }
 ```
 
-Add different `XXXable` func call which return bool for different capability, and Caller need to check it's return value before use them.
+Add different `XXXable` func call which return bool for different capability, and Caller need to check its return value before use them.
 
 For Copy Capability
 
@@ -186,17 +142,17 @@ func(store *Storager) Copy() {
 
 `Storager` will panic or return error for not supported funcs, Caller need to do `recover` or error check after use them.
 
-Benchmark file could be found [here](./1/storager_interface_test.go), and the results looks like:
+Benchmark file could be found [here](./1/main_test.go), and the results looks like:
 
 ```go
 goos: linux
 goarch: amd64
 pkg: github.com/Xuanwo/storage/docs/design/1
-BenchmarkCopierInterface-8    	144869151	         8.48 ns/op
-BenchmarkCopyableFuncCall-8   	397990764	         3.03 ns/op
-BenchmarkCopyCapability-8     	503389296	         2.26 ns/op
-BenchmarkError-8              	49897329	        25.1 ns/op
-BenchmarkPanic-8              	17014038	        71.4 ns/op
+BenchmarkCopierInterface-8    	141224794	         7.99 ns/op
+BenchmarkCopyableFuncCall-8   	405428164	         2.94 ns/op
+BenchmarkCopyCapability-8     	512795942	         2.21 ns/op
+BenchmarkError-8              	48293546	        25.3 ns/op
+BenchmarkPanic-8              	16575105	        67.0 ns/op
 PASS
 ```
 
@@ -210,10 +166,6 @@ The more import thing for Interface usage is that we can enforce Caller to check
 
 So we pick Interface for it's centered performance and mandatory ability.
 
-### Why callback
-
-TODO
-
 ## Compatibility
 
 ### Copy, Move and Reach
@@ -223,10 +175,6 @@ Copy, Move and Reach will be removed from `Storager` interface, Caller should do
 ### Segments Related Operations.
 
 All segments related operations will be remove from `Storager` interface, Caller should do type assert of `Segmenter` before use them.
-
-### No recursive in list
-
-`ListDir` will not support recursive anymore, handle `recursive` in `DirFunc` instead.
 
 ## Implementation
 
