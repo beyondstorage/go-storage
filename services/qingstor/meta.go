@@ -2,7 +2,6 @@
 package qingstor
 
 import (
-	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/types"
 )
 
@@ -12,24 +11,20 @@ const ServicerType = types.ServicerType("qingstor")
 // StoragerType is the storager type for qingstor
 const StoragerType = types.StoragerType("qingstor")
 
-var notAllowedStorageAction = map[string]struct{}{
-	"create_dir": struct{}{},
-}
-
 var allowedStoragePairs = map[string]map[string]struct{}{
-	storage.ActionInit: {
+	"init": {
 		"work_dir": struct{}{},
 	},
-	storage.ActionInitSegment: {
+	"init_segment": {
 		"part_size": struct{}{},
 	},
-	storage.ActionListDir: {
+	"list_dir": {
 		"recursive": struct{}{},
 	},
-	storage.ActionReach: {
+	"reach": {
 		"expire": struct{}{},
 	},
-	storage.ActionWrite: {
+	"write": {
 		"checksum":      struct{}{},
 		"size":          struct{}{},
 		"storage_class": struct{}{},
@@ -58,27 +53,6 @@ var allowedServicePairs = map[string]map[string]struct{}{
 	},
 }
 
-// Capable implements Storager.Capable().
-func (c *Client) Capable(action string, pair ...string) bool {
-	if _, ok := notAllowedStorageAction[action]; ok {
-		return false
-	}
-	// If no pair input, we only need to check action.
-	if len(pair) == 0 {
-		return true
-	}
-
-	if _, ok := allowedStoragePairs[action]; !ok {
-		return false
-	}
-	for _, v := range pair {
-		if _, ok := allowedStoragePairs[action][v]; !ok {
-			return false
-		}
-	}
-	return true
-}
-
 type pairStorageInit struct {
 	HasWorkDir bool
 	WorkDir    string
@@ -89,10 +63,10 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionInit]; !ok {
+		if _, ok := allowedStoragePairs["init"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionInit][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["init"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -117,10 +91,10 @@ func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, 
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionInitSegment]; !ok {
+		if _, ok := allowedStoragePairs["init_segment"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionInitSegment][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["init_segment"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -148,10 +122,10 @@ func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionListDir]; !ok {
+		if _, ok := allowedStoragePairs["list_dir"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionListDir][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["list_dir"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -176,10 +150,10 @@ func parseStoragePairReach(opts ...*types.Pair) (*pairStorageReach, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionReach]; !ok {
+		if _, ok := allowedStoragePairs["reach"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionReach][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["reach"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -211,10 +185,10 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionWrite]; !ok {
+		if _, ok := allowedStoragePairs["write"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionWrite][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["write"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value

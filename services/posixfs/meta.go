@@ -2,58 +2,32 @@
 package posixfs
 
 import (
-	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/types"
 )
 
 // StoragerType is the storager type for posixfs
 const StoragerType = types.StoragerType("posixfs")
 
-var notAllowedStorageAction = map[string]struct{}{
-	"reach": struct{}{},
-}
-
 var allowedStoragePairs = map[string]map[string]struct{}{
-	storage.ActionDelete: {
+	"delete": {
 		"recursive": struct{}{},
 	},
-	storage.ActionInit: {
+	"init": {
 		"work_dir": struct{}{},
 	},
-	storage.ActionListDir: {
+	"list_dir": {
 		"recursive": struct{}{},
 	},
-	storage.ActionRead: {
+	"read": {
 		"offset": struct{}{},
 		"size":   struct{}{},
 	},
-	storage.ActionWrite: {
+	"write": {
 		"size": struct{}{},
 	},
 }
 
 var allowedServicePairs = map[string]map[string]struct{}{}
-
-// Capable implements Storager.Capable().
-func (c *Client) Capable(action string, pair ...string) bool {
-	if _, ok := notAllowedStorageAction[action]; ok {
-		return false
-	}
-	// If no pair input, we only need to check action.
-	if len(pair) == 0 {
-		return true
-	}
-
-	if _, ok := allowedStoragePairs[action]; !ok {
-		return false
-	}
-	for _, v := range pair {
-		if _, ok := allowedStoragePairs[action][v]; !ok {
-			return false
-		}
-	}
-	return true
-}
 
 type pairStorageDelete struct {
 	HasRecursive bool
@@ -65,10 +39,10 @@ func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionDelete]; !ok {
+		if _, ok := allowedStoragePairs["delete"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionDelete][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["delete"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -93,10 +67,10 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionInit]; !ok {
+		if _, ok := allowedStoragePairs["init"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionInit][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["init"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -124,10 +98,10 @@ func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionListDir]; !ok {
+		if _, ok := allowedStoragePairs["list_dir"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionListDir][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["list_dir"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -154,10 +128,10 @@ func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionRead]; !ok {
+		if _, ok := allowedStoragePairs["read"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionRead][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["read"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value
@@ -187,10 +161,10 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs[storage.ActionWrite]; !ok {
+		if _, ok := allowedStoragePairs["write"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs[storage.ActionWrite][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["write"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value

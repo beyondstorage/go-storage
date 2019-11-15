@@ -1,24 +1,21 @@
 {
   "name": "posixfs",
-  "capability": {
-    "reach": false
-  },
   "storage": {
+    "delete": {
+      "recursive": false
+    },
     "init": {
       "work_dir": true
     },
     "list_dir": {
       "recursive": false
     },
-    "delete": {
-      "recursive": false
+    "read": {
+      "offset": false,
+      "size": false
     },
     "write": {
       "size": false
-    },
-    "read": {
-      "size": false,
-      "offset": false
     }
   }
 }

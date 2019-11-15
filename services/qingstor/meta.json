@@ -1,24 +1,21 @@
 {
   "name": "qingstor",
-  "capability": {
-    "create_dir": false
-  },
   "service": {
-    "init": {
-      "access_key": true,
-      "secret_key": true,
-      "host": false,
-      "port": false,
-      "protocol": false
-    },
-    "get": {
-      "location": false
-    },
     "create": {
       "location": true
     },
     "delete": {
       "location": false
+    },
+    "get": {
+      "location": false
+    },
+    "init": {
+      "access_key": true,
+      "host": false,
+      "port": false,
+      "protocol": false,
+      "secret_key": true
     },
     "list": {
       "location": false
@@ -28,19 +25,19 @@
     "init": {
       "work_dir": false
     },
-    "reach": {
-      "expire": true
+    "init_segment": {
+      "part_size": true
     },
     "list_dir": {
       "recursive": false
     },
-    "write": {
-      "size": true,
-      "checksum": false,
-      "storage_class": false
+    "reach": {
+      "expire": true
     },
-    "init_segment": {
-      "part_size": true
+    "write": {
+      "checksum": false,
+      "size": true,
+      "storage_class": false
     }
   }
 }
