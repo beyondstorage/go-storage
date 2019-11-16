@@ -19,10 +19,9 @@ var (
 )
 
 type metadata struct {
-	Name       string                     `json:"name"`
-	Capability map[string]bool            `json:"capability"`
-	Service    map[string]map[string]bool `json:"service"`
-	Storage    map[string]map[string]bool `json:"storage"`
+	Name    string                     `json:"name"`
+	Service map[string]map[string]bool `json:"service,omitempty"`
+	Storage map[string]map[string]bool `json:"storage"`
 
 	TypeMap map[string]string `json:"-"`
 }
@@ -51,6 +50,16 @@ func main() {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
 	meta.TypeMap = types.AvailablePairs
+
+	// Format input meta.json
+	data, err := json.MarshalIndent(meta, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = ioutil.WriteFile(metaPath, data, 0664)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	filePath := "meta.go"
 	f, err := os.Create(filePath)
