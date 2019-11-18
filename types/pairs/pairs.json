@@ -1,0 +1,21 @@
+{
+  "access_key": "string",
+  "checksum": "string",
+  "dir_func": "types.ObjectFunc",
+  "expire": "int",
+  "file_func": "types.ObjectFunc",
+  "host": "string",
+  "location": "string",
+  "name": "string",
+  "offset": "int64",
+  "part_size": "int64",
+  "port": "int",
+  "protocol": "string",
+  "secret_key": "string",
+  "segment_func": "segment.Func",
+  "size": "int64",
+  "storage_class": "string",
+  "storager_func": "storage.StoragerFunc",
+  "type": "string",
+  "work_dir": "string"
+}
