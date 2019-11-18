@@ -1,0 +1,13 @@
+{
+  "checksum": "string",
+  "count": "int64",
+  "expire": "int",
+  "host": "string",
+  "location": "string",
+  "name": "string",
+  "size": "int64",
+  "storage_class": "string",
+  "type": "string",
+  "updated_at": "time.Time",
+  "work_dir": "string"
+}

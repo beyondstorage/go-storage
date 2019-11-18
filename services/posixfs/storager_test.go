@@ -10,12 +10,13 @@ import (
 	"time"
 
 	"bou.ke/monkey"
+	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/pairs"
 )
 
 func TestNewClient(t *testing.T) {
@@ -25,7 +26,7 @@ func TestNewClient(t *testing.T) {
 
 func TestClient_String(t *testing.T) {
 	c := Client{}
-	err := c.Init(types.WithWorkDir("/test"))
+	err := c.Init(pairs.WithWorkDir("/test"))
 	if err != nil {
 		t.Error(err)
 	}
@@ -43,7 +44,7 @@ func TestClient_Init(t *testing.T) {
 
 	t.Run("with workDir", func(t *testing.T) {
 		client := Client{}
-		err := client.Init(types.WithWorkDir("test"))
+		err := client.Init(pairs.WithWorkDir("test"))
 		assert.NoError(t, err)
 		assert.Equal(t, "test", client.workDir)
 	})
@@ -119,9 +120,9 @@ func TestClient_Stat(t *testing.T) {
 			&types.Object{
 				Name: "regular file",
 				Type: types.ObjectTypeFile,
-				Metadata: types.Metadata{
-					types.Size:      int64(1234),
-					types.UpdatedAt: nowTime,
+				Metadata: metadata.Metadata{
+					metadata.Size:      int64(1234),
+					metadata.UpdatedAt: nowTime,
 				},
 			},
 		},
@@ -137,7 +138,7 @@ func TestClient_Stat(t *testing.T) {
 			&types.Object{
 				Name:     "dir",
 				Type:     types.ObjectTypeDir,
-				Metadata: make(types.Metadata),
+				Metadata: make(metadata.Metadata),
 			},
 		},
 		{
@@ -152,7 +153,7 @@ func TestClient_Stat(t *testing.T) {
 			&types.Object{
 				Name:     "stream",
 				Type:     types.ObjectTypeStream,
-				Metadata: make(types.Metadata),
+				Metadata: make(metadata.Metadata),
 			},
 		},
 		{
@@ -167,7 +168,7 @@ func TestClient_Stat(t *testing.T) {
 			&types.Object{
 				Name:     "invalid",
 				Type:     types.ObjectTypeInvalid,
-				Metadata: make(types.Metadata),
+				Metadata: make(metadata.Metadata),
 			},
 		},
 		{
@@ -214,17 +215,15 @@ func TestClient_Delete(t *testing.T) {
 	defer ctrl.Finish()
 
 	tests := []struct {
-		name      string
-		err       error
-		recursive bool
+		name string
+		err  error
 	}{
-		{"delete file", nil, false},
-		{"delete dir", nil, true},
+		{"delete file", nil},
 		{"delete nonempty dir", &os.PathError{
 			Op:   "remove",
 			Path: "delete nonempty dir",
 			Err:  errors.New("remove fail"),
-		}, false},
+		}},
 	}
 
 	for _, v := range tests {
@@ -235,20 +234,10 @@ func TestClient_Delete(t *testing.T) {
 			client := Client{
 				osRemove: func(name string) error {
 					assert.Equal(t, v.name, name)
-					assert.False(t, v.recursive)
-					return v.err
-				},
-				osRemoveAll: func(name string) error {
-					assert.Equal(t, v.name, name)
-					assert.True(t, v.recursive)
 					return v.err
 				},
 			}
-			pairs := make([]*types.Pair, 0)
-			if v.recursive {
-				pairs = append(pairs, types.WithRecursive(true))
-			}
-			err := client.Delete(v.name, pairs...)
+			err := client.Delete(v.name)
 			assert.Equal(t, v.err == nil, err == nil)
 		})
 	}
@@ -416,14 +405,12 @@ func TestClient_ListDir(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		pairs []*types.Pair
 		fi    []os.FileInfo
 		items []*types.Object
 		err   error
 	}{
 		{
 			"success file",
-			nil,
 			[]os.FileInfo{
 				fileInfo{
 					name:    "test_file",
@@ -436,9 +423,9 @@ func TestClient_ListDir(t *testing.T) {
 				{
 					Name: filepath.Join(paths[0], "test_file"),
 					Type: types.ObjectTypeFile,
-					Metadata: types.Metadata{
-						types.Size:      int64(1234),
-						types.UpdatedAt: time.Unix(1, 0),
+					Metadata: metadata.Metadata{
+						metadata.Size:      int64(1234),
+						metadata.UpdatedAt: time.Unix(1, 0),
 					},
 				},
 			},
@@ -446,9 +433,6 @@ func TestClient_ListDir(t *testing.T) {
 		},
 		{
 			"success file recursively",
-			[]*types.Pair{
-				types.WithRecursive(true),
-			},
 			[]os.FileInfo{
 				fileInfo{
 					name:    "test_file",
@@ -461,9 +445,9 @@ func TestClient_ListDir(t *testing.T) {
 				{
 					Name: filepath.Join(paths[1], "test_file"),
 					Type: types.ObjectTypeFile,
-					Metadata: types.Metadata{
-						types.Size:      int64(1234),
-						types.UpdatedAt: time.Unix(1, 0),
+					Metadata: metadata.Metadata{
+						metadata.Size:      int64(1234),
+						metadata.UpdatedAt: time.Unix(1, 0),
 					},
 				},
 			},
@@ -471,7 +455,6 @@ func TestClient_ListDir(t *testing.T) {
 		},
 		{
 			"success dir",
-			nil,
 			[]os.FileInfo{
 				fileInfo{
 					name:    "test_dir",
@@ -484,9 +467,9 @@ func TestClient_ListDir(t *testing.T) {
 				{
 					Name: filepath.Join(paths[2], "test_dir"),
 					Type: types.ObjectTypeDir,
-					Metadata: types.Metadata{
-						types.Size:      int64(0),
-						types.UpdatedAt: time.Unix(1, 0),
+					Metadata: metadata.Metadata{
+						metadata.Size:      int64(0),
+						metadata.UpdatedAt: time.Unix(1, 0),
 					},
 				},
 			},
@@ -494,9 +477,6 @@ func TestClient_ListDir(t *testing.T) {
 		},
 		{
 			"success dir recursively",
-			[]*types.Pair{
-				types.WithRecursive(true),
-			},
 			[]os.FileInfo{
 				fileInfo{
 					name:    "test_dir",
@@ -505,67 +485,44 @@ func TestClient_ListDir(t *testing.T) {
 					modTime: time.Unix(1, 0),
 				},
 			},
-			nil,
-			nil,
-		},
-		{
-			"os error",
-			[]*types.Pair{
-				types.WithRecursive(true),
+			[]*types.Object{
+				{
+					Name: filepath.Join(paths[3], "test_dir"),
+					Type: types.ObjectTypeDir,
+					Metadata: metadata.Metadata{
+						metadata.Size:      int64(0),
+						metadata.UpdatedAt: time.Unix(1, 0),
+					},
+				},
 			},
 			nil,
-			nil,
-			&os.PathError{Op: "readdir", Path: "", Err: errors.New("readdir fail")},
 		},
 		{
 			"os error",
 			nil,
-			nil,
-			nil,
+			[]*types.Object{},
 			&os.PathError{Op: "readdir", Path: "", Err: errors.New("readdir fail")},
-		},
-		{
-			"done",
-			nil,
-			nil,
-			nil,
-			nil,
 		},
 	}
 
 	for k, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			called := false
 			client := Client{
 				ioutilReadDir: func(dirname string) (infos []os.FileInfo, e error) {
-					if called {
-						return nil, nil
-					}
-					called = true
 					assert.Equal(t, paths[k], dirname)
 					return v.fi, v.err
 				},
 			}
 
-			x := client.ListDir(paths[k], v.pairs...)
-			for _, expectItem := range v.items {
-				item, err := x.Next()
-				if v.err != nil {
-					assert.Error(t, err)
-					assert.True(t, errors.Is(err, v.err))
-				}
-				assert.NotNil(t, item)
-				assert.EqualValues(t, expectItem, item)
-			}
-			if len(v.items) == 0 {
-				item, err := x.Next()
-				if v.err != nil {
-					assert.Error(t, err)
-				} else {
-					assert.True(t, errors.Is(err, iterator.ErrDone))
-				}
-				assert.Nil(t, item)
-			}
+			items := make([]*types.Object, 0)
+
+			err := client.ListDir(paths[k], pairs.WithDirFunc(func(object *types.Object) {
+				items = append(items, object)
+			}), pairs.WithFileFunc(func(object *types.Object) {
+				items = append(items, object)
+			}))
+			assert.Equal(t, v.err == nil, err == nil)
+			assert.EqualValues(t, v.items, items)
 		})
 	}
 }
@@ -607,7 +564,7 @@ func TestClient_Read(t *testing.T) {
 			"stdin with size",
 			"-",
 			[]*types.Pair{
-				types.WithSize(100),
+				pairs.WithSize(100),
 			},
 			false,
 			nil,
@@ -617,7 +574,7 @@ func TestClient_Read(t *testing.T) {
 			"success with size",
 			"test_success",
 			[]*types.Pair{
-				types.WithSize(100),
+				pairs.WithSize(100),
 			},
 			false,
 			nil,
@@ -627,7 +584,7 @@ func TestClient_Read(t *testing.T) {
 			"success with offset",
 			"test_success",
 			[]*types.Pair{
-				types.WithOffset(10),
+				pairs.WithOffset(10),
 			},
 			false,
 			nil,
@@ -637,7 +594,7 @@ func TestClient_Read(t *testing.T) {
 			"error with offset",
 			"test_success",
 			[]*types.Pair{
-				types.WithOffset(10),
+				pairs.WithOffset(10),
 			},
 			true,
 			nil,
@@ -647,8 +604,8 @@ func TestClient_Read(t *testing.T) {
 			"success with and size offset",
 			"test_success",
 			[]*types.Pair{
-				types.WithSize(100),
-				types.WithOffset(10),
+				pairs.WithSize(100),
+				pairs.WithOffset(10),
 			},
 			false,
 			nil,
@@ -764,16 +721,16 @@ func TestClient_Write(t *testing.T) {
 				},
 			}
 
-			var pairs []*types.Pair
+			var pair []*types.Pair
 			if v.ioCopyN != nil {
-				pairs = append(pairs, types.WithSize(1234))
+				pair = append(pair, pairs.WithSize(1234))
 			}
 
 			var err error
 			if v.osCreate == nil {
-				err = client.Write("-", nil, pairs...)
+				err = client.Write("-", nil, pair...)
 			} else {
-				err = client.Write(paths[k], nil, pairs...)
+				err = client.Write(paths[k], nil, pair...)
 			}
 			assert.Equal(t, v.hasErr, err != nil)
 		})

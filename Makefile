@@ -40,12 +40,12 @@ build_generator: go-bindata
 		&& go generate ./... \
 		&& go build -o ../bin/meta ./meta \
 		&& go build -o ../bin/pairs ./pairs \
+		&& go build -o ../bin/metadata ./metadata \
 		&& popd
 	@echo "Done"
 
 generate: build_generator mockgen
 	@echo "generate code"
-	@rm types/metadata.go types/pairs.go services/*/meta.go || true
 	@go generate ./...
 	@echo "ok"
 

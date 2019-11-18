@@ -11,46 +11,46 @@ import (
 )
 
 var (
-	pairsT = template.Must(
+	metadataT = template.Must(
 		template.New("meta").
 			Funcs(templateutils.FuncMap()).
-			Parse(string(MustAsset("pair.tmpl"))))
+			Parse(string(MustAsset("metadata.tmpl"))))
 )
 
 //go:generate go-bindata -nometadata -ignore ".*.go" .
 func main() {
-	pairsPath := "pairs.json"
-	content, err := ioutil.ReadFile(pairsPath)
+	metadataPath := "metadata.json"
+	content, err := ioutil.ReadFile(metadataPath)
 	if err != nil {
 		log.Fatalf("read file failed: %v", err)
 	}
 
-	var pairs map[string]string
-	err = json.Unmarshal(content, &pairs)
+	var metadata map[string]string
+	err = json.Unmarshal(content, &metadata)
 	if err != nil {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
 
 	// Format input meta.json
-	data, err := json.MarshalIndent(pairs, "", "  ")
+	data, err := json.MarshalIndent(metadata, "", "  ")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = ioutil.WriteFile(pairsPath, data, 0664)
+	err = ioutil.WriteFile(metadataPath, data, 0664)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pairsFile, err := os.Create("pairs.go")
+	metadataFile, err := os.Create("metadata.go")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer pairsFile.Close()
+	defer metadataFile.Close()
 
-	err = pairsT.Execute(pairsFile, struct {
+	err = metadataT.Execute(metadataFile, struct {
 		Data map[string]string
 	}{
-		pairs,
+		metadata,
 	})
 	if err != nil {
 		log.Fatal(err)

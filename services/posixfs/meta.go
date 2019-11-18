@@ -2,21 +2,25 @@
 package posixfs
 
 import (
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/pairs"
 )
+
+var _ storage.Storager
+var _ segment.Segment
 
 // StoragerType is the storager type for posixfs
 const StoragerType = types.StoragerType("posixfs")
 
 var allowedStoragePairs = map[string]map[string]struct{}{
-	"delete": {
-		"recursive": struct{}{},
-	},
 	"init": {
 		"work_dir": struct{}{},
 	},
 	"list_dir": {
-		"recursive": struct{}{},
+		"dir_func":  struct{}{},
+		"file_func": struct{}{},
 	},
 	"read": {
 		"offset": struct{}{},
@@ -28,34 +32,6 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 }
 
 var allowedServicePairs = map[string]map[string]struct{}{}
-
-type pairStorageDelete struct {
-	HasRecursive bool
-	Recursive    bool
-}
-
-func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
-	result := &pairStorageDelete{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := allowedStoragePairs["delete"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["delete"][v.Key]; !ok {
-			continue
-		}
-		values[v.Key] = v.Value
-	}
-	var v interface{}
-	var ok bool
-	v, ok = values[types.Recursive]
-	if ok {
-		result.HasRecursive = true
-		result.Recursive = v.(bool)
-	}
-	return result, nil
-}
 
 type pairStorageInit struct {
 	HasWorkDir bool
@@ -77,9 +53,9 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.WorkDir]
+	v, ok = values[pairs.WorkDir]
 	if !ok {
-		return nil, types.NewErrPairRequired(types.WorkDir)
+		return nil, types.NewErrPairRequired(pairs.WorkDir)
 	}
 	if ok {
 		result.HasWorkDir = true
@@ -89,8 +65,10 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 }
 
 type pairStorageListDir struct {
-	HasRecursive bool
-	Recursive    bool
+	HasDirFunc  bool
+	DirFunc     types.ObjectFunc
+	HasFileFunc bool
+	FileFunc    types.ObjectFunc
 }
 
 func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
@@ -108,10 +86,15 @@ func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Recursive]
+	v, ok = values[pairs.DirFunc]
 	if ok {
-		result.HasRecursive = true
-		result.Recursive = v.(bool)
+		result.HasDirFunc = true
+		result.DirFunc = v.(types.ObjectFunc)
+	}
+	v, ok = values[pairs.FileFunc]
+	if ok {
+		result.HasFileFunc = true
+		result.FileFunc = v.(types.ObjectFunc)
 	}
 	return result, nil
 }
@@ -138,12 +121,12 @@ func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Offset]
+	v, ok = values[pairs.Offset]
 	if ok {
 		result.HasOffset = true
 		result.Offset = v.(int64)
 	}
-	v, ok = values[types.Size]
+	v, ok = values[pairs.Size]
 	if ok {
 		result.HasSize = true
 		result.Size = v.(int64)
@@ -171,7 +154,7 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Size]
+	v, ok = values[pairs.Size]
 	if ok {
 		result.HasSize = true
 		result.Size = v.(int64)

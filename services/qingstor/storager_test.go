@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/pengsrc/go-shared/convert"
@@ -14,10 +15,9 @@ import (
 	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
-	"github.com/Xuanwo/storage/pkg/iterator"
-
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/pairs"
 )
 
 func TestClient_Init(t *testing.T) {
@@ -30,7 +30,7 @@ func TestClient_Init(t *testing.T) {
 
 	t.Run("with workDir", func(t *testing.T) {
 		client := Client{}
-		err := client.Init(types.WithWorkDir("test"))
+		err := client.Init(pairs.WithWorkDir("test"))
 		assert.NoError(t, err)
 		assert.Equal(t, "test", client.workDir)
 	})
@@ -38,7 +38,7 @@ func TestClient_Init(t *testing.T) {
 
 func TestClient_String(t *testing.T) {
 	c := Client{}
-	err := c.Init(types.WithWorkDir("/test"))
+	err := c.Init(pairs.WithWorkDir("/test"))
 	if err != nil {
 		t.Error(err)
 	}
@@ -344,7 +344,7 @@ func TestClient_InitSegment(t *testing.T) {
 			segments: v.segments,
 		}
 
-		_, err := client.InitSegment(v.path, types.WithPartSize(10))
+		_, err := client.InitSegment(v.path, pairs.WithPartSize(10))
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -367,14 +367,12 @@ func TestClient_ListDir(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		pairs  []*types.Pair
 		output *service.ListObjectsOutput
 		items  []*types.Object
 		err    error
 	}{
 		{
 			"list without delimiter",
-			nil,
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
 				Keys: []*service.KeyType{
@@ -387,36 +385,13 @@ func TestClient_ListDir(t *testing.T) {
 				{
 					Name:     keys[0],
 					Type:     types.ObjectTypeFile,
-					Metadata: make(types.Metadata),
-				},
-			},
-			nil,
-		},
-		{
-			"list with delimiter",
-			[]*types.Pair{
-				types.WithRecursive(true),
-			},
-			&service.ListObjectsOutput{
-				HasMore: service.Bool(false),
-				CommonPrefixes: []*string{
-					service.String(keys[1]),
-				},
-			},
-			[]*types.Object{
-				{
-					Name:     keys[1],
-					Type:     types.ObjectTypeDir,
-					Metadata: make(types.Metadata),
+					Metadata: make(metadata.Metadata),
 				},
 			},
 			nil,
 		},
 		{
 			"list with return next marker",
-			[]*types.Pair{
-				types.WithRecursive(true),
-			},
 			&service.ListObjectsOutput{
 				NextMarker: service.String("test_marker"),
 				HasMore:    service.Bool(false),
@@ -428,35 +403,30 @@ func TestClient_ListDir(t *testing.T) {
 				{
 					Name:     keys[2],
 					Type:     types.ObjectTypeDir,
-					Metadata: make(types.Metadata),
+					Metadata: make(metadata.Metadata),
 				},
 			},
 			nil,
 		},
 		{
 			"list with return empty keys",
-			[]*types.Pair{
-				types.WithRecursive(true),
-			},
 			&service.ListObjectsOutput{
 				NextMarker: service.String("test_marker"),
 				HasMore:    service.Bool(true),
 			},
-			nil,
+			[]*types.Object{},
 			nil,
 		},
 		{
 			"list with error return",
 			nil,
-			nil,
-			nil,
+			[]*types.Object{},
 			&qerror.QingStorError{
 				StatusCode: 401,
 			},
 		},
 		{
 			"list with all data returned",
-			nil,
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
 				Keys: []*service.KeyType{
@@ -474,12 +444,12 @@ func TestClient_ListDir(t *testing.T) {
 				{
 					Name: keys[5],
 					Type: types.ObjectTypeFile,
-					Metadata: types.Metadata{
-						types.Type:         "application/json",
-						types.StorageClass: "cool",
-						types.Checksum:     "xxxxx",
-						types.Size:         int64(1233),
-						types.UpdatedAt:    time.Unix(1233, 0),
+					Metadata: metadata.Metadata{
+						metadata.Type:         "application/json",
+						metadata.StorageClass: "cool",
+						metadata.Checksum:     "xxxxx",
+						metadata.Size:         int64(1233),
+						metadata.UpdatedAt:    time.Unix(1233, 0),
 					},
 				},
 			},
@@ -487,13 +457,12 @@ func TestClient_ListDir(t *testing.T) {
 		},
 		{
 			"list with return a dir MIME type",
-			nil,
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
 				Keys: []*service.KeyType{
 					{
 						Key:      service.String(keys[6]),
-						MimeType: convert.String(DirectoryMIMEType),
+						MimeType: convert.String(DirectoryContentType),
 					},
 				},
 			},
@@ -501,8 +470,8 @@ func TestClient_ListDir(t *testing.T) {
 				{
 					Name: keys[6],
 					Type: types.ObjectTypeDir,
-					Metadata: types.Metadata{
-						types.Type: DirectoryMIMEType,
+					Metadata: metadata.Metadata{
+						metadata.Type: DirectoryContentType,
 					},
 				},
 			},
@@ -524,25 +493,15 @@ func TestClient_ListDir(t *testing.T) {
 				bucket: mockBucket,
 			}
 
-			x := client.ListDir(path, v.pairs...)
-			for _, expectItem := range v.items {
-				item, err := x.Next()
-				if v.err != nil {
-					assert.Error(t, err)
-					assert.True(t, errors.Is(err, v.err))
-				}
-				assert.NotNil(t, item)
-				assert.EqualValues(t, expectItem, item)
-			}
-			if len(v.items) == 0 {
-				item, err := x.Next()
-				if v.err != nil {
-					assert.True(t, errors.Is(err, types.ErrUnhandledError))
-				} else {
-					assert.True(t, errors.Is(err, iterator.ErrDone))
-				}
-				assert.Nil(t, item)
-			}
+			items := make([]*types.Object, 0)
+
+			err := client.ListDir(path, pairs.WithDirFunc(func(object *types.Object) {
+				items = append(items, object)
+			}), pairs.WithFileFunc(func(object *types.Object) {
+				items = append(items, object)
+			}))
+			assert.Equal(t, v.err == nil, err == nil)
+			assert.EqualValues(t, v.items, items)
 		})
 	}
 }
@@ -730,7 +689,7 @@ func TestClient_Write(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		err := client.Write(v.path, nil, types.WithSize(v.size))
+		err := client.Write(v.path, nil, pairs.WithSize(v.size))
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -813,14 +772,12 @@ func TestClient_ListSegments(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		pairs  []*types.Pair
 		output *service.ListMultipartUploadsOutput
 		items  []*segment.Segment
 		err    error
 	}{
 		{
 			"list without delimiter",
-			nil,
 			&service.ListMultipartUploadsOutput{
 				HasMore: service.Bool(false),
 				Uploads: []*service.UploadsType{
@@ -837,9 +794,6 @@ func TestClient_ListSegments(t *testing.T) {
 		},
 		{
 			"list with return next marker",
-			[]*types.Pair{
-				types.WithRecursive(true),
-			},
 			&service.ListMultipartUploadsOutput{
 				NextKeyMarker: service.String("test_marker"),
 				HasMore:       service.Bool(false),
@@ -858,8 +812,7 @@ func TestClient_ListSegments(t *testing.T) {
 		{
 			"list with error return",
 			nil,
-			nil,
-			nil,
+			[]*segment.Segment{},
 			&qerror.QingStorError{
 				StatusCode: 401,
 			},
@@ -881,25 +834,15 @@ func TestClient_ListSegments(t *testing.T) {
 				segments: make(map[string]*segment.Segment),
 			}
 
-			x := client.ListSegments(path, v.pairs...)
-			for _, expectItem := range v.items {
-				item, err := x.Next()
-				if v.err != nil {
-					assert.Error(t, err)
-					assert.True(t, errors.Is(err, v.err))
-				}
-				assert.NotNil(t, item)
-				assert.EqualValues(t, expectItem, item)
-			}
-			if len(v.items) == 0 {
-				item, err := x.Next()
-				if v.err != nil {
-					assert.True(t, errors.Is(err, types.ErrUnhandledError))
-				} else {
-					assert.True(t, errors.Is(err, iterator.ErrDone))
-				}
-				assert.Nil(t, item)
-			}
+			items := make([]*segment.Segment, 0)
+
+			err := client.ListSegments(path,
+				pairs.WithSegmentFunc(func(segment *segment.Segment) {
+					items = append(items, segment)
+				}),
+			)
+			assert.Equal(t, v.err == nil, err == nil)
+			assert.Equal(t, v.items, items)
 		})
 	}
 }

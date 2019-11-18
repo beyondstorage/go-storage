@@ -7,7 +7,6 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/templateutils"
 )
 
@@ -49,7 +48,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
-	meta.TypeMap = types.AvailablePairs
+
+	pairsPath := "../../types/pairs/pairs.json"
+	content, err = ioutil.ReadFile(pairsPath)
+	if err != nil {
+		log.Fatalf("read file failed: %v", err)
+	}
+	err = json.Unmarshal(content, &meta.TypeMap)
+	if err != nil {
+		log.Fatalf("json unmarshal failed: %v", err)
+	}
 
 	// Format input meta.json
 	data, err := json.MarshalIndent(meta, "", "  ")
