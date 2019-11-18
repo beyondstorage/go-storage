@@ -15,7 +15,6 @@ var _ segment.Segment
 const StoragerType = types.StoragerType("posixfs")
 
 var allowedStoragePairs = map[string]map[string]struct{}{
-	"delete": {},
 	"init": {
 		"work_dir": struct{}{},
 	},
@@ -33,25 +32,6 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 }
 
 var allowedServicePairs = map[string]map[string]struct{}{}
-
-type pairStorageDelete struct {
-}
-
-func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
-	result := &pairStorageDelete{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := allowedStoragePairs["delete"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["delete"][v.Key]; !ok {
-			continue
-		}
-		values[v.Key] = v.Value
-	}
-	return result, nil
-}
 
 type pairStorageInit struct {
 	HasWorkDir bool

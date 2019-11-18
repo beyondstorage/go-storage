@@ -1,7 +1,6 @@
 {
   "name": "posixfs",
   "storage": {
-    "delete": {},
     "init": {
       "work_dir": true
     },
