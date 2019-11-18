@@ -1,7 +1,7 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
-updated_at: 2019-11-15
+status: finished
+updated_at: 2019-11-18
 ---
 
 # Proposal: Use callback in List operations
