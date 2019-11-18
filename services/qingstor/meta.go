@@ -2,8 +2,14 @@
 package qingstor
 
 import (
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/pairs"
 )
+
+var _ storage.Storager
+var _ segment.Segment
 
 // ServicerType is the servicer type for qingstor
 const ServicerType = types.ServicerType("qingstor")
@@ -19,7 +25,11 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 		"part_size": struct{}{},
 	},
 	"list_dir": {
-		"recursive": struct{}{},
+		"dir_func":  struct{}{},
+		"file_func": struct{}{},
+	},
+	"list_segments": {
+		"segment_func": struct{}{},
 	},
 	"reach": {
 		"expire": struct{}{},
@@ -49,7 +59,8 @@ var allowedServicePairs = map[string]map[string]struct{}{
 		"secret_key": struct{}{},
 	},
 	"list": {
-		"location": struct{}{},
+		"location":      struct{}{},
+		"storager_func": struct{}{},
 	},
 }
 
@@ -73,7 +84,7 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.WorkDir]
+	v, ok = values[pairs.WorkDir]
 	if ok {
 		result.HasWorkDir = true
 		result.WorkDir = v.(string)
@@ -101,9 +112,9 @@ func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, 
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.PartSize]
+	v, ok = values[pairs.PartSize]
 	if !ok {
-		return nil, types.NewErrPairRequired(types.PartSize)
+		return nil, types.NewErrPairRequired(pairs.PartSize)
 	}
 	if ok {
 		result.HasPartSize = true
@@ -113,8 +124,10 @@ func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, 
 }
 
 type pairStorageListDir struct {
-	HasRecursive bool
-	Recursive    bool
+	HasDirFunc  bool
+	DirFunc     types.ObjectFunc
+	HasFileFunc bool
+	FileFunc    types.ObjectFunc
 }
 
 func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
@@ -132,10 +145,43 @@ func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Recursive]
+	v, ok = values[pairs.DirFunc]
 	if ok {
-		result.HasRecursive = true
-		result.Recursive = v.(bool)
+		result.HasDirFunc = true
+		result.DirFunc = v.(types.ObjectFunc)
+	}
+	v, ok = values[pairs.FileFunc]
+	if ok {
+		result.HasFileFunc = true
+		result.FileFunc = v.(types.ObjectFunc)
+	}
+	return result, nil
+}
+
+type pairStorageListSegments struct {
+	HasSegmentFunc bool
+	SegmentFunc    segment.Func
+}
+
+func parseStoragePairListSegments(opts ...*types.Pair) (*pairStorageListSegments, error) {
+	result := &pairStorageListSegments{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedStoragePairs["list_segments"]; !ok {
+			continue
+		}
+		if _, ok := allowedStoragePairs["list_segments"][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[pairs.SegmentFunc]
+	if ok {
+		result.HasSegmentFunc = true
+		result.SegmentFunc = v.(segment.Func)
 	}
 	return result, nil
 }
@@ -160,9 +206,9 @@ func parseStoragePairReach(opts ...*types.Pair) (*pairStorageReach, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Expire]
+	v, ok = values[pairs.Expire]
 	if !ok {
-		return nil, types.NewErrPairRequired(types.Expire)
+		return nil, types.NewErrPairRequired(pairs.Expire)
 	}
 	if ok {
 		result.HasExpire = true
@@ -195,20 +241,20 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Checksum]
+	v, ok = values[pairs.Checksum]
 	if ok {
 		result.HasChecksum = true
 		result.Checksum = v.(string)
 	}
-	v, ok = values[types.Size]
+	v, ok = values[pairs.Size]
 	if !ok {
-		return nil, types.NewErrPairRequired(types.Size)
+		return nil, types.NewErrPairRequired(pairs.Size)
 	}
 	if ok {
 		result.HasSize = true
 		result.Size = v.(int64)
 	}
-	v, ok = values[types.StorageClass]
+	v, ok = values[pairs.StorageClass]
 	if ok {
 		result.HasStorageClass = true
 		result.StorageClass = v.(string)
@@ -236,9 +282,9 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Location]
+	v, ok = values[pairs.Location]
 	if !ok {
-		return nil, types.NewErrPairRequired(types.Location)
+		return nil, types.NewErrPairRequired(pairs.Location)
 	}
 	if ok {
 		result.HasLocation = true
@@ -267,7 +313,7 @@ func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Location]
+	v, ok = values[pairs.Location]
 	if ok {
 		result.HasLocation = true
 		result.Location = v.(string)
@@ -295,7 +341,7 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Location]
+	v, ok = values[pairs.Location]
 	if ok {
 		result.HasLocation = true
 		result.Location = v.(string)
@@ -331,32 +377,32 @@ func parseServicePairInit(opts ...*types.Pair) (*pairServiceInit, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.AccessKey]
+	v, ok = values[pairs.AccessKey]
 	if !ok {
-		return nil, types.NewErrPairRequired(types.AccessKey)
+		return nil, types.NewErrPairRequired(pairs.AccessKey)
 	}
 	if ok {
 		result.HasAccessKey = true
 		result.AccessKey = v.(string)
 	}
-	v, ok = values[types.Host]
+	v, ok = values[pairs.Host]
 	if ok {
 		result.HasHost = true
 		result.Host = v.(string)
 	}
-	v, ok = values[types.Port]
+	v, ok = values[pairs.Port]
 	if ok {
 		result.HasPort = true
 		result.Port = v.(int)
 	}
-	v, ok = values[types.Protocol]
+	v, ok = values[pairs.Protocol]
 	if ok {
 		result.HasProtocol = true
 		result.Protocol = v.(string)
 	}
-	v, ok = values[types.SecretKey]
+	v, ok = values[pairs.SecretKey]
 	if !ok {
-		return nil, types.NewErrPairRequired(types.SecretKey)
+		return nil, types.NewErrPairRequired(pairs.SecretKey)
 	}
 	if ok {
 		result.HasSecretKey = true
@@ -366,8 +412,10 @@ func parseServicePairInit(opts ...*types.Pair) (*pairServiceInit, error) {
 }
 
 type pairServiceList struct {
-	HasLocation bool
-	Location    string
+	HasLocation     bool
+	Location        string
+	HasStoragerFunc bool
+	StoragerFunc    storage.StoragerFunc
 }
 
 func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
@@ -385,10 +433,15 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[types.Location]
+	v, ok = values[pairs.Location]
 	if ok {
 		result.HasLocation = true
 		result.Location = v.(string)
+	}
+	v, ok = values[pairs.StoragerFunc]
+	if ok {
+		result.HasStoragerFunc = true
+		result.StoragerFunc = v.(storage.StoragerFunc)
 	}
 	return result, nil
 }

@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/metadata"
 )
 
 // StreamModeType is the stream mode type.
@@ -30,7 +30,6 @@ type Client struct {
 	osMkdirAll    func(path string, perm os.FileMode) error
 	osOpen        func(name string) (*os.File, error)
 	osRemove      func(name string) error
-	osRemoveAll   func(name string) error
 	osRename      func(oldpath, newpath string) error
 	osStat        func(name string) (os.FileInfo, error)
 }
@@ -45,7 +44,6 @@ func NewClient() *Client {
 		osMkdirAll:    os.MkdirAll,
 		osOpen:        os.Open,
 		osRemove:      os.Remove,
-		osRemoveAll:   os.RemoveAll,
 		osRename:      os.Rename,
 		osStat:        os.Stat,
 	}
@@ -75,8 +73,8 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 // Metadata implements Storager.Metadata
 //
 // Currently, there is no useful metadata for posixfs, just keep it empty.
-func (c *Client) Metadata() (m types.Metadata, err error) {
-	m = make(types.Metadata)
+func (c *Client) Metadata() (m metadata.Metadata, err error) {
+	m = make(metadata.Metadata)
 	// WorkDir must be set.
 	m.SetWorkDir(c.workDir)
 	return m, nil
@@ -95,7 +93,7 @@ func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err 
 
 	o = &types.Object{
 		Name:     rp,
-		Metadata: make(types.Metadata),
+		Metadata: make(metadata.Metadata),
 	}
 
 	if fi.IsDir() {
@@ -121,18 +119,9 @@ func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err 
 func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs Delete path [%s]: %w"
 
-	opt, err := parseStoragePairDelete(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, path, err)
-	}
-
 	rp := c.getAbsPath(path)
 
-	if opt.HasRecursive && opt.Recursive {
-		err = c.osRemoveAll(rp)
-	} else {
-		err = c.osRemove(rp)
-	}
+	err = c.osRemove(rp)
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
@@ -197,95 +186,43 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectIterator) {
+func (c *Client) ListDir(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs ListDir [%s]: %w"
 
-	opt, _ := parseStoragePairListDir(pairs...)
-
-	recursive := false
-	if opt.HasRecursive && opt.Recursive {
-		recursive = true
+	opt, err := parseStoragePairListDir(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, err)
 	}
 
-	var fn iterator.NextObjectFunc
-	if !recursive {
-		rp := c.getAbsPath(path)
+	rp := c.getAbsPath(path)
 
-		fn = func(objects *[]*types.Object) error {
-			fi, err := c.ioutilReadDir(rp)
-			if err != nil {
-				return fmt.Errorf(errorMessage, path, handleOsError(err))
-			}
-
-			buf := make([]*types.Object, 0, len(fi))
-
-			for _, v := range fi {
-				o := &types.Object{
-					Name:     filepath.Join(path, v.Name()),
-					Metadata: make(types.Metadata),
-				}
-
-				if v.IsDir() {
-					o.Type = types.ObjectTypeDir
-				} else {
-					o.Type = types.ObjectTypeFile
-				}
-
-				o.SetSize(v.Size())
-				o.SetUpdatedAt(v.ModTime())
-
-				buf = append(buf, o)
-			}
-
-			// Set input objects
-			*objects = buf
-			return iterator.ErrDone
-		}
-	} else {
-		paths := []string{path}
-
-		fn = func(objects *[]*types.Object) error {
-			if len(paths) == 0 {
-				return iterator.ErrDone
-			}
-			p := c.getAbsPath(paths[0])
-			cp := paths[0]
-
-			fi, err := c.ioutilReadDir(p)
-			if err != nil {
-				return fmt.Errorf(errorMessage, path, handleOsError(err))
-			}
-
-			// Remove the first path.
-			paths = paths[1:]
-
-			buf := make([]*types.Object, 0, len(fi))
-
-			for _, v := range fi {
-				if v.IsDir() {
-					paths = append(paths, filepath.Join(cp, v.Name()))
-					continue
-				}
-
-				o := &types.Object{
-					Name:     filepath.Join(cp, v.Name()),
-					Metadata: make(types.Metadata),
-					Type:     types.ObjectTypeFile,
-				}
-
-				o.SetSize(v.Size())
-				o.SetUpdatedAt(v.ModTime())
-
-				buf = append(buf, o)
-			}
-
-			// Set input objects
-			*objects = buf
-			return nil
-		}
+	fi, err := c.ioutilReadDir(rp)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
 
-	it = iterator.NewObjectIterator(fn)
+	for _, v := range fi {
+		o := &types.Object{
+			Name:     filepath.Join(path, v.Name()),
+			Metadata: make(metadata.Metadata),
+		}
+
+		o.SetSize(v.Size())
+		o.SetUpdatedAt(v.ModTime())
+
+		if v.IsDir() {
+			o.Type = types.ObjectTypeDir
+			if opt.HasDirFunc {
+				opt.DirFunc(o)
+			}
+			continue
+		}
+
+		o.Type = types.ObjectTypeFile
+		if opt.HasFileFunc {
+			opt.FileFunc(o)
+		}
+	}
 	return
 }
 
@@ -365,29 +302,4 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 		return fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
 	return
-}
-
-// ListSegments implements Storager.ListSegments
-func (c *Client) ListSegments(path string, option ...*types.Pair) iterator.SegmentIterator {
-	panic("implement me")
-}
-
-// InitSegment implements Storager.InitSegment
-func (c *Client) InitSegment(path string, option ...*types.Pair) (id string, err error) {
-	panic("implement me")
-}
-
-// WriteSegment implements Storager.WriteSegment
-func (c *Client) WriteSegment(path string, offset, size int64, r io.Reader, option ...*types.Pair) (err error) {
-	panic("implement me")
-}
-
-// CompleteSegment implements Storager.CompleteSegment
-func (c *Client) CompleteSegment(path string, option ...*types.Pair) (err error) {
-	panic("implement me")
-}
-
-// AbortSegment implements Storager.AbortSegment
-func (c *Client) AbortSegment(path string, option ...*types.Pair) (err error) {
-	panic("implement me")
 }

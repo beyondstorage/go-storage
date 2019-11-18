@@ -3,8 +3,8 @@ package storage
 import (
 	"io"
 
-	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/metadata"
 )
 
 /*
@@ -19,7 +19,7 @@ type Servicer interface {
 	Init(pairs ...*types.Pair) (err error)
 
 	// List will list all storager instances under this service.
-	List(pairs ...*types.Pair) ([]Storager, error)
+	List(pairs ...*types.Pair) (err error)
 	// Get will get a valid storager instance for service.
 	Get(name string, pairs ...*types.Pair) (Storager, error)
 	// Create will create a new storager instance.
@@ -28,6 +28,7 @@ type Servicer interface {
 	Delete(name string, pairs ...*types.Pair) (err error)
 }
 
+// Copier is the interface for Copy.
 type Copier interface {
 	// Copy will copy an Object or multiple object in the service.
 	//
@@ -36,6 +37,7 @@ type Copier interface {
 	Copy(src, dst string, pairs ...*types.Pair) (err error)
 }
 
+// Mover is the interface for Move.
 type Mover interface {
 	// Move will move an object or multiple object in the service.
 	//
@@ -44,6 +46,7 @@ type Mover interface {
 	Move(src, dst string, pairs ...*types.Pair) (err error)
 }
 
+// Reacher is the interface for Reach.
 type Reacher interface {
 	// Reach will provide a way which can reach the object.
 	//
@@ -52,6 +55,7 @@ type Reacher interface {
 	Reach(path string, pairs ...*types.Pair) (url string, err error)
 }
 
+// Segmenter is the interface for Segment.
 type Segmenter interface {
 	// Segment Operations.
 
@@ -59,7 +63,7 @@ type Segmenter interface {
 	//
 	// Implementer:
 	//   - If path == "/", services should return all segments.
-	ListSegments(path string, pairs ...*types.Pair) iterator.SegmentIterator
+	ListSegments(path string, pairs ...*types.Pair) (err error)
 	// InitSegment will init a segment which could be a File after complete.
 	//
 	// Implementer:
@@ -129,10 +133,10 @@ type Storager interface {
 	//
 	// Implementer:
 	//   - MAY return following data: Name,Location, Size, Count
-	Metadata() (types.Metadata, error)
+	Metadata() (metadata.Metadata, error)
 
 	// ListDir will return an ObjectIterator which can list all object under the Dir.
-	ListDir(path string, pairs ...*types.Pair) iterator.ObjectIterator
+	ListDir(path string, pairs ...*types.Pair) (err error)
 	// Read will read the file's data.
 	//
 	// Caller:
@@ -155,3 +159,6 @@ type Storager interface {
 	//   - MAY accept a recursive pair to support delete Dir recursively.
 	Delete(path string, pairs ...*types.Pair) (err error)
 }
+
+// StoragerFunc will handle a storager.
+type StoragerFunc func(Storager)

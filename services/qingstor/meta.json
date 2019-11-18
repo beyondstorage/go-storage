@@ -18,7 +18,8 @@
       "secret_key": true
     },
     "list": {
-      "location": false
+      "location": false,
+      "storager_func": false
     }
   },
   "storage": {
@@ -29,7 +30,11 @@
       "part_size": true
     },
     "list_dir": {
-      "recursive": false
+      "dir_func": false,
+      "file_func": false
+    },
+    "list_segments": {
+      "segment_func": false
     },
     "reach": {
       "expire": true

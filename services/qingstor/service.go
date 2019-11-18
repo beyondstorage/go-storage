@@ -108,12 +108,12 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 }
 
 // List implements Servicer.List
-func (s *Service) List(pairs ...*types.Pair) ([]storage.Storager, error) {
+func (s *Service) List(pairs ...*types.Pair) (err error) {
 	errorMessage := "list qingstor storager: %w"
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, err)
 	}
 
 	input := &service.ListBucketsInput{}
@@ -124,18 +124,19 @@ func (s *Service) List(pairs ...*types.Pair) ([]storage.Storager, error) {
 	output, err := s.service.ListBuckets(input)
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, err)
 	}
 
-	storagers := make([]storage.Storager, len(output.Buckets))
-	for k, v := range output.Buckets {
+	for _, v := range output.Buckets {
 		store, err := s.get(*v.Name, *v.Location)
 		if err != nil {
-			return nil, fmt.Errorf(errorMessage, err)
+			return fmt.Errorf(errorMessage, err)
 		}
-		storagers[k] = newClient(store)
+		if opt.HasStoragerFunc {
+			opt.StoragerFunc(newClient(store))
+		}
 	}
-	return storagers, nil
+	return nil
 }
 
 // Delete implements Servicer.Delete

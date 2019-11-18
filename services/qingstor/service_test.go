@@ -17,6 +17,7 @@ import (
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/pairs"
 )
 
 func TestService_String(t *testing.T) {
@@ -24,7 +25,7 @@ func TestService_String(t *testing.T) {
 	secretKey := uuid.New().String()
 
 	srv := Service{}
-	err := srv.Init(types.WithAccessKey(accessKey), types.WithSecretKey(secretKey))
+	err := srv.Init(pairs.WithAccessKey(accessKey), pairs.WithSecretKey(secretKey))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,11 +51,11 @@ func TestService_Init(t *testing.T) {
 	port := 1234
 	protocol := uuid.New().String()
 	err = srv.Init(
-		types.WithAccessKey(accessKey),
-		types.WithSecretKey(secretKey),
-		types.WithHost(host),
-		types.WithPort(port),
-		types.WithProtocol(protocol),
+		pairs.WithAccessKey(accessKey),
+		pairs.WithSecretKey(secretKey),
+		pairs.WithHost(host),
+		pairs.WithPort(port),
+		pairs.WithProtocol(protocol),
 	)
 	assert.NoError(t, err)
 	assert.NotNil(t, srv.service)
@@ -86,7 +87,7 @@ func TestService_Get(t *testing.T) {
 			assert.Equal(t, location, inputLocation)
 		})
 
-		s, err := srv.Get(name, types.WithLocation(location))
+		s, err := srv.Get(name, pairs.WithLocation(location))
 		assert.NoError(t, err)
 		assert.NotNil(t, s)
 	}
@@ -188,7 +189,7 @@ func TestService_Create(t *testing.T) {
 		assert.Equal(t, location, inputLocation)
 	}).Return(bucket, nil)
 
-	_, err = srv.Create(path, types.WithLocation(location))
+	_, err = srv.Create(path, pairs.WithLocation(location))
 	assert.NoError(t, err)
 }
 
@@ -220,7 +221,7 @@ func TestService_Delete(t *testing.T) {
 			return bucket, nil
 		})
 
-		err := srv.Delete(name, types.WithLocation(location))
+		err := srv.Delete(name, pairs.WithLocation(location))
 		assert.NoError(t, err)
 	}
 }
@@ -251,9 +252,9 @@ func TestService_List(t *testing.T) {
 			}, nil
 		})
 
-		s, err := srv.List(types.WithLocation(location))
+		err := srv.List(pairs.WithLocation(location))
 		assert.NoError(t, err)
-		assert.Equal(t, 1, len(s))
+		// assert.Equal(t, 1, len(s))
 	}
 
 	{
@@ -270,9 +271,9 @@ func TestService_List(t *testing.T) {
 			}, nil
 		})
 
-		s, err := srv.List()
+		err := srv.List()
 		assert.NoError(t, err)
-		assert.Equal(t, 1, len(s))
+		// assert.Equal(t, 1, len(s))
 	}
 
 	{
@@ -281,7 +282,7 @@ func TestService_List(t *testing.T) {
 			return nil, &qerror.QingStorError{}
 		})
 
-		_, err := srv.List()
+		err := srv.List()
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	}
@@ -290,8 +291,8 @@ func TestService_List(t *testing.T) {
 func ExampleService_Init() {
 	srv := New()
 	err := srv.Init(
-		types.WithAccessKey("test_access_key"),
-		types.WithSecretKey("test_secret_key"),
+		pairs.WithAccessKey("test_access_key"),
+		pairs.WithSecretKey("test_secret_key"),
 	)
 	if err != nil {
 		log.Printf("service init failed: %v", err)
@@ -301,14 +302,14 @@ func ExampleService_Init() {
 func ExampleService_Get() {
 	srv := New()
 	err := srv.Init(
-		types.WithAccessKey("test_access_key"),
-		types.WithSecretKey("test_secret_key"),
+		pairs.WithAccessKey("test_access_key"),
+		pairs.WithSecretKey("test_secret_key"),
 	)
 	if err != nil {
 		log.Printf("service init failed: %v", err)
 	}
 
-	store, err := srv.Get("bucket_name", types.WithLocation("location"))
+	store, err := srv.Get("bucket_name", pairs.WithLocation("location"))
 	if err != nil {
 		log.Printf("service get bucket failed: %v", err)
 	}

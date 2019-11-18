@@ -11,9 +11,9 @@ import (
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
-	"github.com/Xuanwo/storage/pkg/iterator"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/metadata"
 )
 
 // Client is the qingstor object storage client.
@@ -60,7 +60,7 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (c *Client) Metadata() (m types.Metadata, err error) {
+func (c *Client) Metadata() (m metadata.Metadata, err error) {
 	errorMessage := "qingstor Metadata: %w"
 
 	output, err := c.bucket.GetStatistics()
@@ -69,7 +69,7 @@ func (c *Client) Metadata() (m types.Metadata, err error) {
 		return nil, fmt.Errorf(errorMessage, err)
 	}
 
-	m = make(types.Metadata)
+	m = make(metadata.Metadata)
 	// WorkDir must be set.
 	m.SetWorkDir(c.workDir)
 	if output.Name != nil {
@@ -106,7 +106,7 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 	o = &types.Object{
 		Name:     path,
 		Type:     types.ObjectTypeFile,
-		Metadata: make(types.Metadata),
+		Metadata: make(metadata.Metadata),
 	}
 
 	if output.ContentType != nil {
@@ -211,31 +211,22 @@ func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectIterator) {
+func (c *Client) ListDir(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor ListDir: %w"
 
 	opt, _ := parseStoragePairListDir(pairs...)
 
 	marker := ""
 	limit := 200
-	delimiter := "/"
-	if opt.HasRecursive && opt.Recursive {
-		delimiter = ""
-	}
 
 	rp := c.getAbsPath(path)
 
 	var output *service.ListObjectsOutput
-	var err error
-
-	fn := iterator.NextObjectFunc(func(objects *[]*types.Object) error {
-		buf := make([]*types.Object, 0, limit)
-
+	for {
 		output, err = c.bucket.ListObjects(&service.ListObjectsInput{
-			Limit:     &limit,
-			Marker:    &marker,
-			Prefix:    &rp,
-			Delimiter: &delimiter,
+			Limit:  &limit,
+			Marker: &marker,
+			Prefix: &rp,
 		})
 		if err != nil {
 			err = handleQingStorError(err)
@@ -246,25 +237,18 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 			o := &types.Object{
 				Name:     c.getRelPath(*v),
 				Type:     types.ObjectTypeDir,
-				Metadata: make(types.Metadata),
+				Metadata: make(metadata.Metadata),
 			}
 
-			buf = append(buf, o)
+			if opt.HasDirFunc {
+				opt.DirFunc(o)
+			}
 		}
 
 		for _, v := range output.Keys {
 			o := &types.Object{
 				Name:     c.getRelPath(*v.Key),
-				Metadata: make(types.Metadata),
-			}
-
-			// If Key end with delimiter or key's MimeType == DirectoryMIMEType,
-			// we should treat this key as a Dir Object.
-			if (delimiter != "" && strings.HasSuffix(*v.Key, delimiter)) ||
-				service.StringValue(v.MimeType) == DirectoryMIMEType {
-				o.Type = types.ObjectTypeDir
-			} else {
-				o.Type = types.ObjectTypeFile
+				Metadata: make(metadata.Metadata),
 			}
 
 			if v.MimeType != nil {
@@ -283,26 +267,34 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (it iterator.ObjectI
 				o.SetUpdatedAt(time.Unix(int64(service.IntValue(v.Modified)), 0))
 			}
 
-			buf = append(buf, o)
-		}
+			// If key's content type == DirectoryContentType,
+			// we should treat this key as a Dir Object.
+			if service.StringValue(v.MimeType) == DirectoryContentType {
+				o.Type = types.ObjectTypeDir
 
-		// Set input objects
-		*objects = buf
+				if opt.HasDirFunc {
+					opt.DirFunc(o)
+				}
+				continue
+			}
+
+			o.Type = types.ObjectTypeFile
+			if opt.HasFileFunc {
+				opt.FileFunc(o)
+			}
+		}
 
 		marker = convert.StringValue(output.NextMarker)
 		if marker == "" {
-			return iterator.ErrDone
+			break
 		}
 		if output.HasMore != nil && !*output.HasMore {
-			return iterator.ErrDone
+			break
 		}
 		if len(output.Keys) == 0 {
-			return iterator.ErrDone
+			break
 		}
-		return nil
-	})
-
-	it = iterator.NewObjectIterator(fn)
+	}
 	return
 }
 
@@ -353,8 +345,13 @@ func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 }
 
 // ListSegments implements Storager.ListSegments
-func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.SegmentIterator) {
+func (c *Client) ListSegments(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor ListSegments: %w"
+
+	opt, err := parseStoragePairListSegments(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, err)
+	}
 
 	keyMarker := ""
 	uploadIDMarker := ""
@@ -363,12 +360,7 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 	rp := c.getAbsPath(path)
 
 	var output *service.ListMultipartUploadsOutput
-	var err error
-
-	fn := iterator.NextSegmentFunc(func(segments *[]*segment.Segment) error {
-		idx := 0
-		buf := make([]*segment.Segment, limit)
-
+	for {
 		output, err = c.bucket.ListMultipartUploads(&service.ListMultipartUploadsInput{
 			KeyMarker:      &keyMarker,
 			Limit:          &limit,
@@ -383,8 +375,9 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 		for _, v := range output.Uploads {
 			s := segment.NewSegment(*v.Key, *v.UploadID, 0)
 
-			buf[idx] = s
-			idx++
+			if opt.HasSegmentFunc {
+				opt.SegmentFunc(s)
+			}
 
 			c.segmentLock.Lock()
 			// Update client's segments.
@@ -392,21 +385,15 @@ func (c *Client) ListSegments(path string, pairs ...*types.Pair) (it iterator.Se
 			c.segmentLock.Unlock()
 		}
 
-		// Set input objects
-		*segments = buf[:idx]
-
 		keyMarker = convert.StringValue(output.NextKeyMarker)
 		uploadIDMarker = convert.StringValue(output.NextUploadIDMarker)
 		if keyMarker == "" && uploadIDMarker == "" {
-			return iterator.ErrDone
+			break
 		}
 		if output.HasMore != nil && !*output.HasMore {
-			return iterator.ErrDone
+			break
 		}
-		return nil
-	})
-
-	it = iterator.NewSegmentIterator(fn)
+	}
 	return
 }
 
