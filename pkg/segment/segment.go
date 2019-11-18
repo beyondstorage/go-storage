@@ -38,6 +38,9 @@ type Segment struct {
 	l sync.RWMutex
 }
 
+// Func will handle a Segment.
+type Func func(segment *Segment)
+
 // NewSegment will init a new segment.
 func NewSegment(path, id string, partSize int64) *Segment {
 	return &Segment{
