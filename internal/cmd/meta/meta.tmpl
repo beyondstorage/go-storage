@@ -2,8 +2,14 @@
 package {{ .Name }}
 
 import (
+    "github.com/Xuanwo/storage"
     "github.com/Xuanwo/storage/types"
+    "github.com/Xuanwo/storage/types/pairs"
+    "github.com/Xuanwo/storage/pkg/segment"
 )
+
+var _ storage.Storager
+var _ segment.Segment
 
 {{- if .Service }}
 // ServicerType is the servicer type for {{ .Name }}
@@ -63,10 +69,10 @@ func parseStoragePair{{ $k | camelCase}}(opts ...*types.Pair) (*pairStorage{{ $k
     {{- end }}
 
     {{- range $key, $required := $v }}
-    v, ok = values[types.{{ $key | camelCase}}]
+    v, ok = values[pairs.{{ $key | camelCase}}]
     {{- if $required }}
     if !ok {
-        return nil, types.NewErrPairRequired(types.{{ $key | camelCase}})
+        return nil, types.NewErrPairRequired(pairs.{{ $key | camelCase}})
     }
     {{- end }}
     if ok {
@@ -106,10 +112,10 @@ func parseServicePair{{ $k | camelCase}}(opts ...*types.Pair) (*pairService{{ $k
     {{- end }}
 
     {{- range $key, $required := $v }}
-    v, ok = values[types.{{ $key | camelCase}}]
+    v, ok = values[pairs.{{ $key | camelCase}}]
     {{- if $required }}
     if !ok {
-        return nil, types.NewErrPairRequired(types.{{ $key | camelCase}})
+        return nil, types.NewErrPairRequired(pairs.{{ $key | camelCase}})
     }
     {{- end }}
     if ok {
