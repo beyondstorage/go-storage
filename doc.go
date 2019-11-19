@@ -12,53 +12,48 @@ Goals
 Details
 
 There two public interfaces: Servicer and Storager. Storager is a fully functional storage client, and Servicer is a
-manager of Storager instances which will be useful for services like object storage. For any service, Storager is
+manager of Storager instances, which will be useful for services like object storage. For any service, Storager is
 required to implement and Servicer is optional.
 
 Examples
 
 The most common case to use a Storager service could be following:
 
-1. Init a service
+1. Init a service.
 
     srv := qingstor.New()
 	err := srv.Init(
-		types.WithAccessKey("test_access_key"),
-		types.WithSecretKey("test_secret_key"),
+		pairs.WithAccessKey("test_access_key"),
+		pairs.WithSecretKey("test_secret_key"),
 	)
 	if err != nil {
 		log.Printf("service init failed: %v", err)
 	}
 
-2. Get a storage instance from an initiated service
+2. Get a storage instance from an initiated service.
 
 	store, err := srv.Get("test_bucket_name")
 	if err != nil {
 		log.Printf("service get bucket failed: %v", err)
 	}
 
-3. Init a storage
+3. Init a storage.
 
-	err := store.Init(types.WithWorkDir("/prefix"))
+	err := store.Init(pairs.WithWorkDir("/prefix"))
 	if err != nil {
 		log.Printf("storager init failed: %v", err)
 	}
 
-4. Use Storager API to maintain data
+4. Use Storager API to maintain data.
 
 	ch := make(chan *types.Object, 1)
 	defer close(ch)
 
-	it := store.ListDir("prefix")
-	for {
-		o, err := it.Next()
-		if err != nil && errors.Is(err, iterator.ErrDone) {
-			break
-		}
-		if err != nil {
-			return fmt.Errorf("store list objects: %w", err)
-		}
+	err := store.ListDir("prefix", pairs.WithFileFunc(func(*types.Object){
 		ch <- o
+	}))
+	if err != nil {
+		log.Printf("storager listdir failed: %v", err)
 	}
 
 Notes

@@ -1,3 +1,6 @@
+/*
+Package metadata intend to provide all available metadata.
+*/
 package metadata
 
 // Metadata will hold storager or object's metadata.

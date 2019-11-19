@@ -48,7 +48,7 @@ type Mover interface {
 
 // Reacher is the interface for Reach.
 type Reacher interface {
-	// Reach will provide a way which can reach the object.
+	// Reach will provide a way, which can reach the object.
 	//
 	// Implementer:
 	//   - SHOULD return a publicly reachable http url.
