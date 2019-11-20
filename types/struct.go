@@ -30,7 +30,11 @@ type Object struct {
 	// type should be one of "file", "stream", "dir" or "invalid".
 	Type ObjectType
 
-	Size      int64
+	// Size is the size of this Object.
+	// If the Object do not have a Size, it will be 0.
+	Size int64
+	// UpdatedAt is the update time of this Object.
+	// If the Object do not have a UpdatedAt, it will be time.Time{wall:0x0, ext:0, loc:(*time.Location)(nil)}
 	UpdatedAt time.Time
 
 	// metadata is the metadata of the object.
