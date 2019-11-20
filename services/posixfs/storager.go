@@ -92,8 +92,10 @@ func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err 
 	}
 
 	o = &types.Object{
-		Name:     rp,
-		Metadata: make(metadata.Metadata),
+		Name:      rp,
+		Size:      fi.Size(),
+		UpdatedAt: fi.ModTime(),
+		Metadata:  make(metadata.Metadata),
 	}
 
 	if fi.IsDir() {
@@ -102,8 +104,6 @@ func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err 
 	}
 	if fi.Mode().IsRegular() {
 		o.Type = types.ObjectTypeFile
-		o.SetSize(fi.Size())
-		o.SetUpdatedAt(fi.ModTime())
 		return
 	}
 	if fi.Mode()&StreamModeType != 0 {
@@ -203,12 +203,11 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 	for _, v := range fi {
 		o := &types.Object{
-			Name:     filepath.Join(path, v.Name()),
-			Metadata: make(metadata.Metadata),
+			Name:      filepath.Join(path, v.Name()),
+			Size:      v.Size(),
+			UpdatedAt: v.ModTime(),
+			Metadata:  make(metadata.Metadata),
 		}
-
-		o.SetSize(v.Size())
-		o.SetUpdatedAt(v.ModTime())
 
 		if v.IsDir() {
 			o.Type = types.ObjectTypeDir

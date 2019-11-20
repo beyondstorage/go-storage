@@ -1,6 +1,8 @@
 package types
 
 import (
+	"time"
+
 	"github.com/Xuanwo/storage/types/metadata"
 )
 
@@ -27,6 +29,9 @@ type Object struct {
 	Name string
 	// type should be one of "file", "stream", "dir" or "invalid".
 	Type ObjectType
+
+	Size      int64
+	UpdatedAt time.Time
 
 	// metadata is the metadata of the object.
 	metadata.Metadata

@@ -442,14 +442,14 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name: keys[5],
-					Type: types.ObjectTypeFile,
+					Name:      keys[5],
+					Type:      types.ObjectTypeFile,
+					Size:      1233,
+					UpdatedAt: time.Unix(1233, 0),
 					Metadata: metadata.Metadata{
-						metadata.Type:         "application/json",
-						metadata.StorageClass: "cool",
-						metadata.Checksum:     "xxxxx",
-						metadata.Size:         int64(1233),
-						metadata.UpdatedAt:    time.Unix(1233, 0),
+						metadata.Type:     "application/json",
+						metadata.Class:    "cool",
+						metadata.Checksum: "xxxxx",
 					},
 				},
 			},
@@ -640,16 +640,14 @@ func TestClient_Stat(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, o)
 			assert.Equal(t, types.ObjectTypeFile, o.Type)
-			size, ok := o.GetSize()
-			assert.True(t, ok)
-			assert.Equal(t, int64(100), size)
+			assert.Equal(t, int64(100), o.Size)
 			contentType, ok := o.GetType()
 			assert.True(t, ok)
 			assert.Equal(t, "test_content_type", contentType)
 			checkSum, ok := o.GetChecksum()
 			assert.True(t, ok)
 			assert.Equal(t, "test_etag", checkSum)
-			storageClass, ok := o.GetStorageClass()
+			storageClass, ok := o.GetClass()
 			assert.True(t, ok)
 			assert.Equal(t, "test_storage_class", storageClass)
 		}

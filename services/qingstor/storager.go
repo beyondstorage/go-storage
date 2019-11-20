@@ -5,7 +5,6 @@ import (
 	"io"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/pengsrc/go-shared/convert"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
@@ -104,25 +103,21 @@ func (c *Client) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 	// TODO: Add dir support.
 
 	o = &types.Object{
-		Name:     path,
-		Type:     types.ObjectTypeFile,
-		Metadata: make(metadata.Metadata),
+		Name:      path,
+		Type:      types.ObjectTypeFile,
+		Size:      service.Int64Value(output.ContentLength),
+		UpdatedAt: service.TimeValue(output.LastModified),
+		Metadata:  make(metadata.Metadata),
 	}
 
 	if output.ContentType != nil {
 		o.SetType(service.StringValue(output.ContentType))
 	}
-	if output.ContentLength != nil {
-		o.SetSize(*output.ContentLength)
-	}
 	if output.ETag != nil {
 		o.SetChecksum(service.StringValue(output.ETag))
 	}
 	if output.XQSStorageClass != nil {
-		o.SetStorageClass(service.StringValue(output.XQSStorageClass))
-	}
-	if output.LastModified != nil {
-		o.SetUpdatedAt(service.TimeValue(output.LastModified))
+		o.SetClass(service.StringValue(output.XQSStorageClass))
 	}
 	return o, nil
 }
@@ -247,24 +242,20 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Keys {
 			o := &types.Object{
-				Name:     c.getRelPath(*v.Key),
-				Metadata: make(metadata.Metadata),
+				Name:      c.getRelPath(*v.Key),
+				Size:      service.Int64Value(v.Size),
+				UpdatedAt: convertUnixTimestampToTime(service.IntValue(v.Modified)),
+				Metadata:  make(metadata.Metadata),
 			}
 
 			if v.MimeType != nil {
 				o.SetType(service.StringValue(v.MimeType))
 			}
 			if v.StorageClass != nil {
-				o.SetStorageClass(service.StringValue(v.StorageClass))
+				o.SetClass(service.StringValue(v.StorageClass))
 			}
 			if v.Etag != nil {
 				o.SetChecksum(service.StringValue(v.Etag))
-			}
-			if v.Size != nil {
-				o.SetSize(service.Int64Value(v.Size))
-			}
-			if v.Modified != nil {
-				o.SetUpdatedAt(time.Unix(int64(service.IntValue(v.Modified)), 0))
 			}
 
 			// If key's content type == DirectoryContentType,
