@@ -118,12 +118,11 @@ func TestClient_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				Name: "regular file",
-				Type: types.ObjectTypeFile,
-				Metadata: metadata.Metadata{
-					metadata.Size:      int64(1234),
-					metadata.UpdatedAt: nowTime,
-				},
+				Name:      "regular file",
+				Type:      types.ObjectTypeFile,
+				Size:      1234,
+				UpdatedAt: nowTime,
+				Metadata:  metadata.Metadata{},
 			},
 		},
 		{
@@ -138,6 +137,7 @@ func TestClient_Stat(t *testing.T) {
 			&types.Object{
 				Name:     "dir",
 				Type:     types.ObjectTypeDir,
+				UpdatedAt: nowTime,
 				Metadata: make(metadata.Metadata),
 			},
 		},
@@ -153,6 +153,7 @@ func TestClient_Stat(t *testing.T) {
 			&types.Object{
 				Name:     "stream",
 				Type:     types.ObjectTypeStream,
+				UpdatedAt: nowTime,
 				Metadata: make(metadata.Metadata),
 			},
 		},
@@ -168,6 +169,7 @@ func TestClient_Stat(t *testing.T) {
 			&types.Object{
 				Name:     "invalid",
 				Type:     types.ObjectTypeInvalid,
+				UpdatedAt: nowTime,
 				Metadata: make(metadata.Metadata),
 			},
 		},
@@ -421,12 +423,11 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name: filepath.Join(paths[0], "test_file"),
-					Type: types.ObjectTypeFile,
-					Metadata: metadata.Metadata{
-						metadata.Size:      int64(1234),
-						metadata.UpdatedAt: time.Unix(1, 0),
-					},
+					Name:      filepath.Join(paths[0], "test_file"),
+					Type:      types.ObjectTypeFile,
+					Size:      1234,
+					UpdatedAt: time.Unix(1, 0),
+					Metadata:  metadata.Metadata{},
 				},
 			},
 			nil,
@@ -443,12 +444,11 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name: filepath.Join(paths[1], "test_file"),
-					Type: types.ObjectTypeFile,
-					Metadata: metadata.Metadata{
-						metadata.Size:      int64(1234),
-						metadata.UpdatedAt: time.Unix(1, 0),
-					},
+					Name:      filepath.Join(paths[1], "test_file"),
+					Type:      types.ObjectTypeFile,
+					Size:      1234,
+					UpdatedAt: time.Unix(1, 0),
+					Metadata:  metadata.Metadata{},
 				},
 			},
 			nil,
@@ -465,12 +465,11 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name: filepath.Join(paths[2], "test_dir"),
-					Type: types.ObjectTypeDir,
-					Metadata: metadata.Metadata{
-						metadata.Size:      int64(0),
-						metadata.UpdatedAt: time.Unix(1, 0),
-					},
+					Name:      filepath.Join(paths[2], "test_dir"),
+					Type:      types.ObjectTypeDir,
+					Size:      0,
+					UpdatedAt: time.Unix(1, 0),
+					Metadata:  metadata.Metadata{},
 				},
 			},
 			nil,
@@ -487,12 +486,11 @@ func TestClient_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name: filepath.Join(paths[3], "test_dir"),
-					Type: types.ObjectTypeDir,
-					Metadata: metadata.Metadata{
-						metadata.Size:      int64(0),
-						metadata.UpdatedAt: time.Unix(1, 0),
-					},
+					Name:      filepath.Join(paths[3], "test_dir"),
+					Type:      types.ObjectTypeDir,
+					Size:      0,
+					UpdatedAt: time.Unix(1, 0),
+					Metadata:  metadata.Metadata{},
 				},
 			},
 			nil,

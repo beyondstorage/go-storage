@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/Xuanwo/storage/types"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
@@ -58,4 +59,11 @@ func handleQingStorError(err error) error {
 	default:
 		return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
 	}
+}
+
+func convertUnixTimestampToTime(v int) time.Time {
+	if v == 0 {
+		return time.Time{}
+	}
+	return time.Unix(int64(v), 0)
 }
