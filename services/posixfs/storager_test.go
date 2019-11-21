@@ -135,10 +135,10 @@ func TestClient_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				Name:     "dir",
-				Type:     types.ObjectTypeDir,
+				Name:      "dir",
+				Type:      types.ObjectTypeDir,
 				UpdatedAt: nowTime,
-				Metadata: make(metadata.Metadata),
+				Metadata:  make(metadata.Metadata),
 			},
 		},
 		{
@@ -151,10 +151,10 @@ func TestClient_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				Name:     "stream",
-				Type:     types.ObjectTypeStream,
+				Name:      "stream",
+				Type:      types.ObjectTypeStream,
 				UpdatedAt: nowTime,
-				Metadata: make(metadata.Metadata),
+				Metadata:  make(metadata.Metadata),
 			},
 		},
 		{
@@ -167,10 +167,10 @@ func TestClient_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				Name:     "invalid",
-				Type:     types.ObjectTypeInvalid,
+				Name:      "invalid",
+				Type:      types.ObjectTypeInvalid,
 				UpdatedAt: nowTime,
-				Metadata: make(metadata.Metadata),
+				Metadata:  make(metadata.Metadata),
 			},
 		},
 		{

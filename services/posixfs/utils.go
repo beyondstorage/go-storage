@@ -48,4 +48,3 @@ func handleOsError(err error) error {
 	// TODO: handle other osError here.
 	return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
 }
-
