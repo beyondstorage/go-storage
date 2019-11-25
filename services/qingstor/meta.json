@@ -11,11 +11,8 @@
       "location": false
     },
     "init": {
-      "access_key": true,
-      "host": false,
-      "port": false,
-      "protocol": false,
-      "secret_key": true
+      "credential": true,
+      "endpoint": false
     },
     "list": {
       "location": false,

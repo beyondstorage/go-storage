@@ -1,7 +1,9 @@
 {
   "access_key": "string",
   "checksum": "string",
+  "credential": "credential.Provider",
   "dir_func": "types.ObjectFunc",
+  "endpoint": "endpoint.Provider",
   "expire": "int",
   "file_func": "types.ObjectFunc",
   "host": "string",

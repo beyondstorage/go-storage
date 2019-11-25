@@ -46,18 +46,16 @@ func (s *Service) Init(pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, err)
 	}
 
-	cfg, err := config.New(opt.AccessKey, opt.SecretKey)
+	cred := opt.Credential.Value()
+	cfg, err := config.New(cred.AccessKey, cred.SecretKey)
 	if err != nil {
 		return fmt.Errorf(errorMessage, err)
 	}
-	if opt.HasHost {
-		cfg.Host = opt.Host
-	}
-	if opt.HasPort {
-		cfg.Port = opt.Port
-	}
-	if opt.HasProtocol {
-		cfg.Protocol = opt.Protocol
+	if opt.HasEndpoint {
+		ep := opt.Endpoint.Value()
+		cfg.Host = ep.Host
+		cfg.Port = ep.Port
+		cfg.Protocol = ep.Protocol
 	}
 
 	s.config = cfg

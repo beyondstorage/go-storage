@@ -3,13 +3,17 @@ package posixfs
 
 import (
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
-var _ storage.Storager
+var _ credential.Provider
+var _ endpoint.Provider
 var _ segment.Segment
+var _ storage.Storager
 
 // StoragerType is the storager type for posixfs
 const StoragerType = types.StoragerType("posixfs")

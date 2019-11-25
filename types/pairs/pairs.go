@@ -3,6 +3,8 @@ package pairs
 
 import (
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 )
@@ -11,7 +13,9 @@ import (
 const (
 	AccessKey    = "access_key"
 	Checksum     = "checksum"
+	Credential   = "credential"
 	DirFunc      = "dir_func"
+	Endpoint     = "endpoint"
 	Expire       = "expire"
 	FileFunc     = "file_func"
 	Host         = "host"
@@ -46,10 +50,26 @@ func WithChecksum(v string) *types.Pair {
 	}
 }
 
+// WithCredential will apply credential value to Options
+func WithCredential(v credential.Provider) *types.Pair {
+	return &types.Pair{
+		Key:   Credential,
+		Value: v,
+	}
+}
+
 // WithDirFunc will apply dir_func value to Options
 func WithDirFunc(v types.ObjectFunc) *types.Pair {
 	return &types.Pair{
 		Key:   DirFunc,
+		Value: v,
+	}
+}
+
+// WithEndpoint will apply endpoint value to Options
+func WithEndpoint(v endpoint.Provider) *types.Pair {
+	return &types.Pair{
+		Key:   Endpoint,
 		Value: v,
 	}
 }
