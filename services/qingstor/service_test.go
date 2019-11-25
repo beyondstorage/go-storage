@@ -290,8 +290,9 @@ func TestService_List(t *testing.T) {
 func ExampleService_Init() {
 	srv := New()
 	err := srv.Init(
-		pairs.WithAccessKey("test_access_key"),
-		pairs.WithSecretKey("test_secret_key"),
+		pairs.WithCredential(
+			credential.NewStatic("test_access_key", "test_secret_key"),
+		),
 	)
 	if err != nil {
 		log.Printf("service init failed: %v", err)
@@ -301,8 +302,9 @@ func ExampleService_Init() {
 func ExampleService_Get() {
 	srv := New()
 	err := srv.Init(
-		pairs.WithAccessKey("test_access_key"),
-		pairs.WithSecretKey("test_secret_key"),
+		pairs.WithCredential(
+			credential.NewStatic("test_access_key", "test_secret_key"),
+		),
 	)
 	if err != nil {
 		log.Printf("service init failed: %v", err)

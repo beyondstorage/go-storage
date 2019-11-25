@@ -11,21 +11,16 @@ import (
 
 // All available pairs.
 const (
-	AccessKey    = "access_key"
 	Checksum     = "checksum"
 	Credential   = "credential"
 	DirFunc      = "dir_func"
 	Endpoint     = "endpoint"
 	Expire       = "expire"
 	FileFunc     = "file_func"
-	Host         = "host"
 	Location     = "location"
 	Name         = "name"
 	Offset       = "offset"
 	PartSize     = "part_size"
-	Port         = "port"
-	Protocol     = "protocol"
-	SecretKey    = "secret_key"
 	SegmentFunc  = "segment_func"
 	Size         = "size"
 	StorageClass = "storage_class"
@@ -33,14 +28,6 @@ const (
 	Type         = "type"
 	WorkDir      = "work_dir"
 )
-
-// WithAccessKey will apply access_key value to Options
-func WithAccessKey(v string) *types.Pair {
-	return &types.Pair{
-		Key:   AccessKey,
-		Value: v,
-	}
-}
 
 // WithChecksum will apply checksum value to Options
 func WithChecksum(v string) *types.Pair {
@@ -90,14 +77,6 @@ func WithFileFunc(v types.ObjectFunc) *types.Pair {
 	}
 }
 
-// WithHost will apply host value to Options
-func WithHost(v string) *types.Pair {
-	return &types.Pair{
-		Key:   Host,
-		Value: v,
-	}
-}
-
 // WithLocation will apply location value to Options
 func WithLocation(v string) *types.Pair {
 	return &types.Pair{
@@ -126,30 +105,6 @@ func WithOffset(v int64) *types.Pair {
 func WithPartSize(v int64) *types.Pair {
 	return &types.Pair{
 		Key:   PartSize,
-		Value: v,
-	}
-}
-
-// WithPort will apply port value to Options
-func WithPort(v int) *types.Pair {
-	return &types.Pair{
-		Key:   Port,
-		Value: v,
-	}
-}
-
-// WithProtocol will apply protocol value to Options
-func WithProtocol(v string) *types.Pair {
-	return &types.Pair{
-		Key:   Protocol,
-		Value: v,
-	}
-}
-
-// WithSecretKey will apply secret_key value to Options
-func WithSecretKey(v string) *types.Pair {
-	return &types.Pair{
-		Key:   SecretKey,
 		Value: v,
 	}
 }
