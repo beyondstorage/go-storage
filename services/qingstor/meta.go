@@ -3,13 +3,17 @@ package qingstor
 
 import (
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
-var _ storage.Storager
+var _ credential.Provider
+var _ endpoint.Provider
 var _ segment.Segment
+var _ storage.Storager
 
 // ServicerType is the servicer type for qingstor
 const ServicerType = types.ServicerType("qingstor")
@@ -52,11 +56,8 @@ var allowedServicePairs = map[string]map[string]struct{}{
 		"location": struct{}{},
 	},
 	"init": {
-		"access_key": struct{}{},
-		"host":       struct{}{},
-		"port":       struct{}{},
-		"protocol":   struct{}{},
-		"secret_key": struct{}{},
+		"credential": struct{}{},
+		"endpoint":   struct{}{},
 	},
 	"list": {
 		"location":      struct{}{},
@@ -350,16 +351,10 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 }
 
 type pairServiceInit struct {
-	HasAccessKey bool
-	AccessKey    string
-	HasHost      bool
-	Host         string
-	HasPort      bool
-	Port         int
-	HasProtocol  bool
-	Protocol     string
-	HasSecretKey bool
-	SecretKey    string
+	HasCredential bool
+	Credential    credential.Provider
+	HasEndpoint   bool
+	Endpoint      endpoint.Provider
 }
 
 func parseServicePairInit(opts ...*types.Pair) (*pairServiceInit, error) {
@@ -377,36 +372,18 @@ func parseServicePairInit(opts ...*types.Pair) (*pairServiceInit, error) {
 	}
 	var v interface{}
 	var ok bool
-	v, ok = values[pairs.AccessKey]
+	v, ok = values[pairs.Credential]
 	if !ok {
-		return nil, types.NewErrPairRequired(pairs.AccessKey)
+		return nil, types.NewErrPairRequired(pairs.Credential)
 	}
 	if ok {
-		result.HasAccessKey = true
-		result.AccessKey = v.(string)
+		result.HasCredential = true
+		result.Credential = v.(credential.Provider)
 	}
-	v, ok = values[pairs.Host]
+	v, ok = values[pairs.Endpoint]
 	if ok {
-		result.HasHost = true
-		result.Host = v.(string)
-	}
-	v, ok = values[pairs.Port]
-	if ok {
-		result.HasPort = true
-		result.Port = v.(int)
-	}
-	v, ok = values[pairs.Protocol]
-	if ok {
-		result.HasProtocol = true
-		result.Protocol = v.(string)
-	}
-	v, ok = values[pairs.SecretKey]
-	if !ok {
-		return nil, types.NewErrPairRequired(pairs.SecretKey)
-	}
-	if ok {
-		result.HasSecretKey = true
-		result.SecretKey = v.(string)
+		result.HasEndpoint = true
+		result.Endpoint = v.(endpoint.Provider)
 	}
 	return result, nil
 }

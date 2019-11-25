@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"bou.ke/monkey"
+	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +27,7 @@ func TestService_String(t *testing.T) {
 	secretKey := uuid.New().String()
 
 	srv := Service{}
-	err := srv.Init(pairs.WithAccessKey(accessKey), pairs.WithSecretKey(secretKey))
+	err := srv.Init(pairs.WithCredential(credential.NewStatic(accessKey, secretKey)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,11 +53,8 @@ func TestService_Init(t *testing.T) {
 	port := 1234
 	protocol := uuid.New().String()
 	err = srv.Init(
-		pairs.WithAccessKey(accessKey),
-		pairs.WithSecretKey(secretKey),
-		pairs.WithHost(host),
-		pairs.WithPort(port),
-		pairs.WithProtocol(protocol),
+		pairs.WithCredential(credential.NewStatic(accessKey, secretKey)),
+		pairs.WithEndpoint(endpoint.NewStaticFromParsedURL(protocol, host, port)),
 	)
 	assert.NoError(t, err)
 	assert.NotNil(t, srv.service)
@@ -291,8 +290,9 @@ func TestService_List(t *testing.T) {
 func ExampleService_Init() {
 	srv := New()
 	err := srv.Init(
-		pairs.WithAccessKey("test_access_key"),
-		pairs.WithSecretKey("test_secret_key"),
+		pairs.WithCredential(
+			credential.NewStatic("test_access_key", "test_secret_key"),
+		),
 	)
 	if err != nil {
 		log.Printf("service init failed: %v", err)
@@ -302,8 +302,9 @@ func ExampleService_Init() {
 func ExampleService_Get() {
 	srv := New()
 	err := srv.Init(
-		pairs.WithAccessKey("test_access_key"),
-		pairs.WithSecretKey("test_secret_key"),
+		pairs.WithCredential(
+			credential.NewStatic("test_access_key", "test_secret_key"),
+		),
 	)
 	if err != nil {
 		log.Printf("service init failed: %v", err)

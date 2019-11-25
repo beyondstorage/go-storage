@@ -3,25 +3,24 @@ package pairs
 
 import (
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 )
 
 // All available pairs.
 const (
-	AccessKey    = "access_key"
 	Checksum     = "checksum"
+	Credential   = "credential"
 	DirFunc      = "dir_func"
+	Endpoint     = "endpoint"
 	Expire       = "expire"
 	FileFunc     = "file_func"
-	Host         = "host"
 	Location     = "location"
 	Name         = "name"
 	Offset       = "offset"
 	PartSize     = "part_size"
-	Port         = "port"
-	Protocol     = "protocol"
-	SecretKey    = "secret_key"
 	SegmentFunc  = "segment_func"
 	Size         = "size"
 	StorageClass = "storage_class"
@@ -29,14 +28,6 @@ const (
 	Type         = "type"
 	WorkDir      = "work_dir"
 )
-
-// WithAccessKey will apply access_key value to Options
-func WithAccessKey(v string) *types.Pair {
-	return &types.Pair{
-		Key:   AccessKey,
-		Value: v,
-	}
-}
 
 // WithChecksum will apply checksum value to Options
 func WithChecksum(v string) *types.Pair {
@@ -46,10 +37,26 @@ func WithChecksum(v string) *types.Pair {
 	}
 }
 
+// WithCredential will apply credential value to Options
+func WithCredential(v credential.Provider) *types.Pair {
+	return &types.Pair{
+		Key:   Credential,
+		Value: v,
+	}
+}
+
 // WithDirFunc will apply dir_func value to Options
 func WithDirFunc(v types.ObjectFunc) *types.Pair {
 	return &types.Pair{
 		Key:   DirFunc,
+		Value: v,
+	}
+}
+
+// WithEndpoint will apply endpoint value to Options
+func WithEndpoint(v endpoint.Provider) *types.Pair {
+	return &types.Pair{
+		Key:   Endpoint,
 		Value: v,
 	}
 }
@@ -66,14 +73,6 @@ func WithExpire(v int) *types.Pair {
 func WithFileFunc(v types.ObjectFunc) *types.Pair {
 	return &types.Pair{
 		Key:   FileFunc,
-		Value: v,
-	}
-}
-
-// WithHost will apply host value to Options
-func WithHost(v string) *types.Pair {
-	return &types.Pair{
-		Key:   Host,
 		Value: v,
 	}
 }
@@ -106,30 +105,6 @@ func WithOffset(v int64) *types.Pair {
 func WithPartSize(v int64) *types.Pair {
 	return &types.Pair{
 		Key:   PartSize,
-		Value: v,
-	}
-}
-
-// WithPort will apply port value to Options
-func WithPort(v int) *types.Pair {
-	return &types.Pair{
-		Key:   Port,
-		Value: v,
-	}
-}
-
-// WithProtocol will apply protocol value to Options
-func WithProtocol(v string) *types.Pair {
-	return &types.Pair{
-		Key:   Protocol,
-		Value: v,
-	}
-}
-
-// WithSecretKey will apply secret_key value to Options
-func WithSecretKey(v string) *types.Pair {
-	return &types.Pair{
-		Key:   SecretKey,
 		Value: v,
 	}
 }
