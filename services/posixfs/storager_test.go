@@ -158,6 +158,16 @@ func TestClient_Stat(t *testing.T) {
 			},
 		},
 		{
+			"-",
+			nil,
+			fileInfo{},
+			&types.Object{
+				Name:     "-",
+				Type:     types.ObjectTypeStream,
+				Metadata: make(metadata.Metadata),
+			},
+		},
+		{
 			"invalid",
 			nil,
 			fileInfo{
