@@ -84,6 +84,15 @@ func (c *Client) Metadata() (m metadata.Metadata, err error) {
 func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
 	errorMessage := "posixfs Stat path [%s]: %w"
 
+	if path == "-" {
+		return &types.Object{
+			Name:     "-",
+			Type:     types.ObjectTypeStream,
+			Size:     0,
+			Metadata: make(metadata.Metadata),
+		}, nil
+	}
+
 	rp := c.getAbsPath(path)
 
 	fi, err := c.osStat(rp)
