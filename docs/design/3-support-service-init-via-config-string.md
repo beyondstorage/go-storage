@@ -123,16 +123,27 @@ Like we did in URL, we can use different part in a formatted string to represent
 
 Config string in storage would be like:
 
-`<credential>@<endpoint>/<name>?<options>`
+```
+<type>://<config>
+             +
+             |
+             v
+<credential>@<endpoint>/<name>?<options>
+     +            +                 +
+     |            +------------+    +----------------------+
+     v                         v                           v
+<protocol>:<data>   <protocol>:<host>:<port>   <key>:<value>[&<key>:<value>]
+```
 
-- credential: `<protocol>://<data>`, static credential could be `static://<access_key>:<secret_key>`.
-- endpoint: `<protocol>://<host>:<port>`, qingstor's valid endpoint could be `https://qingstor.com:443`, 80 and 443 can be emitted with matched protocol.
+- credential: `<protocol>:<data>`, static credential could be `static://<access_key>:<secret_key>`.
+- endpoint: `<protocol>:<host>:<port>`, qingstor's valid endpoint could be `https://qingstor.com:443`, 80 and 443 can be emitted with matched protocol.
 - name: a valid storager name for this services
 - options: multiple `<key>=<value>` connected with `&`
 
-So a valid config string for qingstor service could be:
+So a valid config string could be:
 
-`static://<access_key_id>:<secret_access_key>@https://qingstor.com:443/<bucket_name>?zone=pek3b&work_dir=/storage`
+- `qos://static:<access_key_id>:<secret_access_key>@https:qingstor.com:443/<bucket_name>?zone=pek3b&work_dir=/storage`
+- `posixfs:///<path>`
 
 ### Implement functions to support init via type and Config string
 
@@ -140,7 +151,7 @@ With de definition of Config string, we can implement functions for more general
 
 We will add following changes in codebase:
 
-- Add `Open(t, config string) (Servicer, Storager, error)` function in `coreutils` package.
+- Add `Open(config string) (Servicer, Storager, error)` function in `coreutils` package.
 - Add `config` package in `pkg` to do config string parse.
 - Implement `<service>.New(pairs ...*Pair) (Servicer, error)` (we should implement Service interface for posixfs) 
 
