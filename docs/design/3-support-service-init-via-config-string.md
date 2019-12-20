@@ -104,7 +104,7 @@ if err != nil {
 It's better, but not enough. We need a general way to init all service like:
 
 ```go
-srv := storage.SomeCall("<type>", something)
+srv := storage.SomeCall(something)
 ```
 
 ## Proposal
