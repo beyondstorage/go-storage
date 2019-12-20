@@ -130,8 +130,8 @@ Config string in storage would be like:
              v
 <credential>@<endpoint>/<name>?<options>
      +            +                 +
-     |            +------------+    +----------------------+
-     v                         v                           v
+     |            +---------+       +----------------------+
+     v                      v                              v
 <protocol>:<data>   <protocol>:<data>         <key>:<value>[&<key>:<value>]
 ```
 
