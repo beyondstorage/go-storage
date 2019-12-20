@@ -151,9 +151,9 @@ With de definition of Config string, we can implement functions for more general
 
 We will add following changes in codebase:
 
-- Add `Open(config string) (Servicer, Storager, error)` function in `coreutils` package.
+- Add `OpenService(config string) (Servicer, error)` and `OpenStorage(config string) (Storager, error)` function in `coreutils` package.
 - Add `config` package in `pkg` to do config string parse.
-- Implement `<service>.New(pairs ...*Pair) (Servicer, error)` (we should implement Service interface for posixfs) 
+- Implement `<service>.New(pairs ...*Pair) (Servicer, error)`
 
 ### Remove Init in Storager and Servicer interface
 
