@@ -132,11 +132,11 @@ Config string in storage would be like:
      +            +                 +
      |            +------------+    +----------------------+
      v                         v                           v
-<protocol>:<data>   <protocol>:<host>:<port>   <key>:<value>[&<key>:<value>]
+<protocol>:<data>   <protocol>:<data>         <key>:<value>[&<key>:<value>]
 ```
 
-- credential: `<protocol>:<data>`, static credential could be `static://<access_key>:<secret_key>`.
-- endpoint: `<protocol>:<host>:<port>`, qingstor's valid endpoint could be `https://qingstor.com:443`, 80 and 443 can be emitted with matched protocol.
+- credential: `<protocol>:<data>`, data's content decided by different credential protocol,static credential could be `static:<access_key>:<secret_key>`.
+- endpoint: `<protocol>:<data>`, data's content decided by different endpoint protocol, qingstor's valid endpoint could be `https:qingstor.com:443`.
 - name: a valid storager name for this services
 - options: multiple `<key>=<value>` connected with `&`
 
