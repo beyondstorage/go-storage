@@ -1,7 +1,7 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: draft
-updated_at: 2019-12-19
+updated_at: 2019-12-20
 ---
 
 # Proposal: Support service init via config string
