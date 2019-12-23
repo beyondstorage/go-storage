@@ -15,8 +15,6 @@ Implementer can choose to implement this interface or not.
 type Servicer interface {
 	// String will implement Stringer.
 	String() string
-	// Init will init service itself.
-	Init(pairs ...*types.Pair) (err error)
 
 	// List will list all storager instances under this service.
 	List(pairs ...*types.Pair) (err error)
