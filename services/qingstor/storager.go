@@ -79,6 +79,7 @@ func (c *Storage) Metadata() (m metadata.Storage, err error) {
 	return m, nil
 }
 
+// Statistical implements Storager.Statistical
 func (c *Storage) Statistical() (m metadata.Metadata, err error) {
 	errorMessage := "qingstor Statistical: %w"
 
