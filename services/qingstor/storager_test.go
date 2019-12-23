@@ -20,12 +20,46 @@ import (
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
-func TestClient_String(t *testing.T) {
-	c := Storage{workDir: "/test"}
+func TestStorage_String(t *testing.T) {
+	bucketName := "test_bucket"
+	zone := "test_zone"
+	c := Storage{
+		workDir: "/test",
+		properties: &service.Properties{
+			BucketName: &bucketName,
+			Zone:       &zone,
+		},
+	}
 	assert.NotEmpty(t, c.String())
 }
 
-func TestClient_Metadata(t *testing.T) {
+func TestStorage_Metadata(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBucket := NewMockBucket(ctrl)
+
+	{
+		name := uuid.New().String()
+		location := uuid.New().String()
+
+		client := Storage{
+			bucket: mockBucket,
+			properties: &service.Properties{
+				BucketName: &name,
+				Zone:       &location,
+			},
+		}
+
+		m, err := client.Metadata()
+		assert.NoError(t, err)
+		assert.NotNil(t, m)
+		assert.Equal(t, name, m.Name)
+		assert.Equal(t, location, m.MustGetLocation())
+	}
+}
+
+func TestStorage_Statistical(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -49,12 +83,9 @@ func TestClient_Metadata(t *testing.T) {
 				Count:    &count,
 			}, nil
 		})
-		m, err := client.Metadata()
+		m, err := client.Statistical()
 		assert.NoError(t, err)
 		assert.NotNil(t, m)
-		gotName, ok := m.GetName()
-		assert.True(t, ok)
-		assert.Equal(t, name, gotName)
 	}
 
 	{
@@ -65,13 +96,13 @@ func TestClient_Metadata(t *testing.T) {
 		mockBucket.EXPECT().GetStatistics().DoAndReturn(func() (*service.GetBucketStatisticsOutput, error) {
 			return nil, &qerror.QingStorError{}
 		})
-		_, err := client.Metadata()
+		_, err := client.Statistical()
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	}
 }
 
-func TestClient_AbortSegment(t *testing.T) {
+func TestStorage_AbortSegment(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -104,7 +135,7 @@ func TestClient_AbortSegment(t *testing.T) {
 	assert.True(t, errors.Is(err, segment.ErrSegmentNotInitiated))
 }
 
-func TestClient_CompleteSegment(t *testing.T) {
+func TestStorage_CompleteSegment(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -182,7 +213,7 @@ func TestClient_CompleteSegment(t *testing.T) {
 	}
 }
 
-func TestClient_Copy(t *testing.T) {
+func TestStorage_Copy(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -224,7 +255,7 @@ func TestClient_Copy(t *testing.T) {
 	}
 }
 
-func TestClient_Delete(t *testing.T) {
+func TestStorage_Delete(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -264,7 +295,7 @@ func TestClient_Delete(t *testing.T) {
 	}
 }
 
-func TestClient_InitSegment(t *testing.T) {
+func TestStorage_InitSegment(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -334,7 +365,7 @@ func TestClient_InitSegment(t *testing.T) {
 	}
 }
 
-func TestClient_ListDir(t *testing.T) {
+func TestStorage_ListDir(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -486,7 +517,7 @@ func TestClient_ListDir(t *testing.T) {
 	}
 }
 
-func TestClient_Move(t *testing.T) {
+func TestStorage_Move(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -528,7 +559,7 @@ func TestClient_Move(t *testing.T) {
 	}
 }
 
-func TestClient_Read(t *testing.T) {
+func TestStorage_Read(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -575,7 +606,7 @@ func TestClient_Read(t *testing.T) {
 	}
 }
 
-func TestClient_Stat(t *testing.T) {
+func TestStorage_Stat(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -634,7 +665,7 @@ func TestClient_Stat(t *testing.T) {
 	}
 }
 
-func TestClient_Write(t *testing.T) {
+func TestStorage_Write(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -677,7 +708,7 @@ func TestClient_Write(t *testing.T) {
 	}
 }
 
-func TestClient_WriteSegment(t *testing.T) {
+func TestStorage_WriteSegment(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -737,7 +768,7 @@ func TestClient_WriteSegment(t *testing.T) {
 	}
 }
 
-func TestClient_ListSegments(t *testing.T) {
+func TestStorage_ListSegments(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

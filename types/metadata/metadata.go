@@ -3,154 +3,175 @@ package metadata
 
 // All available metadata.
 const (
-	Checksum = "checksum"
-	Class    = "class"
-	Count    = "count"
-	Expire   = "expire"
-	Host     = "host"
-	Location = "location"
-	Name     = "name"
-	Size     = "size"
-	Type     = "type"
-	WorkDir  = "work_dir"
+    Checksum = "checksum"
+    Class = "class"
+    Count = "count"
+    Expire = "expire"
+    Host = "host"
+    Location = "location"
+    Size = "size"
+    Type = "type"
+    WorkDir = "work_dir"
 )
-
 // GetChecksum will get checksum value from metadata.
-func (m Metadata) GetChecksum() (string, bool) {
-	v, ok := m[Checksum]
-	if !ok {
-		return "", false
-	}
-	return v.(string), true
+func (m Metadata) GetChecksum() (string, bool)  {
+    v, ok := m[Checksum]
+    if !ok {
+        return "", false
+    }
+    return v.(string), true
+}
+
+// MustGetChecksum will get checksum value from metadata.
+func (m Metadata) MustGetChecksum() string  {
+    return m[Checksum].(string)
 }
 
 // SetChecksum will set checksum value into metadata.
-func (m Metadata) SetChecksum(v string) {
-	m[Checksum] = v
+func (m Metadata) SetChecksum(v string)  {
+    m[Checksum] = v
+}
+// GetClass will get class value from metadata.
+func (m Metadata) GetClass() (string, bool)  {
+    v, ok := m[Class]
+    if !ok {
+        return "", false
+    }
+    return v.(string), true
 }
 
-// GetClass will get class value from metadata.
-func (m Metadata) GetClass() (string, bool) {
-	v, ok := m[Class]
-	if !ok {
-		return "", false
-	}
-	return v.(string), true
+// MustGetClass will get class value from metadata.
+func (m Metadata) MustGetClass() string  {
+    return m[Class].(string)
 }
 
 // SetClass will set class value into metadata.
-func (m Metadata) SetClass(v string) {
-	m[Class] = v
+func (m Metadata) SetClass(v string)  {
+    m[Class] = v
+}
+// GetCount will get count value from metadata.
+func (m Metadata) GetCount() (int64, bool)  {
+    v, ok := m[Count]
+    if !ok {
+        return 0, false
+    }
+    return v.(int64), true
 }
 
-// GetCount will get count value from metadata.
-func (m Metadata) GetCount() (int64, bool) {
-	v, ok := m[Count]
-	if !ok {
-		return 0, false
-	}
-	return v.(int64), true
+// MustGetCount will get count value from metadata.
+func (m Metadata) MustGetCount() int64  {
+    return m[Count].(int64)
 }
 
 // SetCount will set count value into metadata.
-func (m Metadata) SetCount(v int64) {
-	m[Count] = v
+func (m Metadata) SetCount(v int64)  {
+    m[Count] = v
+}
+// GetExpire will get expire value from metadata.
+func (m Metadata) GetExpire() (int, bool)  {
+    v, ok := m[Expire]
+    if !ok {
+        return 0, false
+    }
+    return v.(int), true
 }
 
-// GetExpire will get expire value from metadata.
-func (m Metadata) GetExpire() (int, bool) {
-	v, ok := m[Expire]
-	if !ok {
-		return 0, false
-	}
-	return v.(int), true
+// MustGetExpire will get expire value from metadata.
+func (m Metadata) MustGetExpire() int  {
+    return m[Expire].(int)
 }
 
 // SetExpire will set expire value into metadata.
-func (m Metadata) SetExpire(v int) {
-	m[Expire] = v
+func (m Metadata) SetExpire(v int)  {
+    m[Expire] = v
+}
+// GetHost will get host value from metadata.
+func (m Metadata) GetHost() (string, bool)  {
+    v, ok := m[Host]
+    if !ok {
+        return "", false
+    }
+    return v.(string), true
 }
 
-// GetHost will get host value from metadata.
-func (m Metadata) GetHost() (string, bool) {
-	v, ok := m[Host]
-	if !ok {
-		return "", false
-	}
-	return v.(string), true
+// MustGetHost will get host value from metadata.
+func (m Metadata) MustGetHost() string  {
+    return m[Host].(string)
 }
 
 // SetHost will set host value into metadata.
-func (m Metadata) SetHost(v string) {
-	m[Host] = v
+func (m Metadata) SetHost(v string)  {
+    m[Host] = v
+}
+// GetLocation will get location value from metadata.
+func (m Metadata) GetLocation() (string, bool)  {
+    v, ok := m[Location]
+    if !ok {
+        return "", false
+    }
+    return v.(string), true
 }
 
-// GetLocation will get location value from metadata.
-func (m Metadata) GetLocation() (string, bool) {
-	v, ok := m[Location]
-	if !ok {
-		return "", false
-	}
-	return v.(string), true
+// MustGetLocation will get location value from metadata.
+func (m Metadata) MustGetLocation() string  {
+    return m[Location].(string)
 }
 
 // SetLocation will set location value into metadata.
-func (m Metadata) SetLocation(v string) {
-	m[Location] = v
+func (m Metadata) SetLocation(v string)  {
+    m[Location] = v
 }
-
-// GetName will get name value from metadata.
-func (m Metadata) GetName() (string, bool) {
-	v, ok := m[Name]
-	if !ok {
-		return "", false
-	}
-	return v.(string), true
-}
-
-// SetName will set name value into metadata.
-func (m Metadata) SetName(v string) {
-	m[Name] = v
-}
-
 // GetSize will get size value from metadata.
-func (m Metadata) GetSize() (int64, bool) {
-	v, ok := m[Size]
-	if !ok {
-		return 0, false
-	}
-	return v.(int64), true
+func (m Metadata) GetSize() (int64, bool)  {
+    v, ok := m[Size]
+    if !ok {
+        return 0, false
+    }
+    return v.(int64), true
+}
+
+// MustGetSize will get size value from metadata.
+func (m Metadata) MustGetSize() int64  {
+    return m[Size].(int64)
 }
 
 // SetSize will set size value into metadata.
-func (m Metadata) SetSize(v int64) {
-	m[Size] = v
+func (m Metadata) SetSize(v int64)  {
+    m[Size] = v
+}
+// GetType will get type value from metadata.
+func (m Metadata) GetType() (string, bool)  {
+    v, ok := m[Type]
+    if !ok {
+        return "", false
+    }
+    return v.(string), true
 }
 
-// GetType will get type value from metadata.
-func (m Metadata) GetType() (string, bool) {
-	v, ok := m[Type]
-	if !ok {
-		return "", false
-	}
-	return v.(string), true
+// MustGetType will get type value from metadata.
+func (m Metadata) MustGetType() string  {
+    return m[Type].(string)
 }
 
 // SetType will set type value into metadata.
-func (m Metadata) SetType(v string) {
-	m[Type] = v
+func (m Metadata) SetType(v string)  {
+    m[Type] = v
+}
+// GetWorkDir will get work_dir value from metadata.
+func (m Metadata) GetWorkDir() (string, bool)  {
+    v, ok := m[WorkDir]
+    if !ok {
+        return "", false
+    }
+    return v.(string), true
 }
 
-// GetWorkDir will get work_dir value from metadata.
-func (m Metadata) GetWorkDir() (string, bool) {
-	v, ok := m[WorkDir]
-	if !ok {
-		return "", false
-	}
-	return v.(string), true
+// MustGetWorkDir will get work_dir value from metadata.
+func (m Metadata) MustGetWorkDir() string  {
+    return m[WorkDir].(string)
 }
 
 // SetWorkDir will set work_dir value into metadata.
-func (m Metadata) SetWorkDir(v string) {
-	m[WorkDir] = v
+func (m Metadata) SetWorkDir(v string)  {
+    m[WorkDir] = v
 }

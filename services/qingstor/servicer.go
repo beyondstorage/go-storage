@@ -74,7 +74,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, name, err)
 	}
-	return newClient(bucket)
+	return newStorage(bucket)
 }
 
 // Create implements Servicer.Create
@@ -99,7 +99,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, name, err)
 	}
-	return newClient(bucket)
+	return newStorage(bucket)
 }
 
 // List implements Servicer.List
@@ -128,7 +128,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 			return fmt.Errorf(errorMessage, err)
 		}
 		if opt.HasStoragerFunc {
-			c, err := newClient(store)
+			c, err := newStorage(store)
 			if err != nil {
 				return fmt.Errorf(errorMessage, err)
 			}

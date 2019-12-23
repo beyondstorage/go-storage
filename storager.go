@@ -7,6 +7,76 @@ import (
 	"github.com/Xuanwo/storage/types/metadata"
 )
 
+// StoragerFunc will handle a storager.
+type StoragerFunc func(Storager)
+
+/*
+Storager is the interface for storage service.
+
+Currently, we support two different type storage services: prefix based and directory based. Prefix based storage
+service is usually a object storage service, such as AWS; And directory based service is often a POSIX file system.
+We used to treat them as different abstract level services, but in this project, we will unify both of them to make a
+production ready high performance vendor lock free storage layer.
+
+Every storager will implement the same interface but with different capability and operation pairs set.
+
+Everything in a storager is an Object with three types: File, Dir.
+File is the smallest unit in service, it will have content and metadata. Dir is a container for File and Dir.
+In prefix-based storage service, Dir is usually an empty key end with "/" or with special content type.
+For directory-based service, Dir will be corresponded to the real directory on file system.
+
+Every API call in storager is relative to it's workdir which set in Init().
+
+In the comments of every method, we will use following rules to standardize the Storager's behavior:
+
+  - The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY",
+    and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
+  - Implementer is the provider of the service, while you trying to implement Storager interface, you need to follow.
+  - Caller is the user of the service, while you trying to use the Storager interface, you need to follow.
+*/
+type Storager interface {
+	// String will implement Stringer.
+	String() string
+
+	// Init will init storager itself.
+	//
+	// Caller:
+	//   - Init MUST be called after created.
+	Init(pairs ...*types.Pair) (err error)
+
+	// Metadata will return current storager's metadata.
+	//
+	// Implementer:
+	//   - Metadata SHOULD only return static data without API call or with a cache.
+	// Caller:
+	//   - Metadata SHOULD be cheap.
+	Metadata() (m metadata.Storage, err error)
+
+	// ListDir will return an ObjectIterator which can list all object under the Dir.
+	ListDir(path string, pairs ...*types.Pair) (err error)
+	// Read will read the file's data.
+	//
+	// Caller:
+	//   - MUST close reader while error happened or all data read.
+	Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
+	// WriteFile will write data into file.
+	//
+	// Caller:
+	//   - MUST close reader while error happened or all data written.
+	Write(path string, r io.Reader, pairs ...*types.Pair) (err error)
+	// Stat will stat a path to get info of an object.
+	//
+	// Implementer:
+	//   - MUST fill object's name and type.
+	Stat(path string, pairs ...*types.Pair) (o *types.Object, err error)
+	// Delete will delete an Object or multiple object from service.
+	// path could be File, Stream or Dir
+	//
+	// Implementer:
+	//   - MAY accept a recursive pair to support delete Dir recursively.
+	Delete(path string, pairs ...*types.Pair) (err error)
+}
+
 /*
 Servicer can maintain multipart storage services.
 
@@ -53,6 +123,17 @@ type Reacher interface {
 	Reach(path string, pairs ...*types.Pair) (url string, err error)
 }
 
+// Statistician is the interface for Statistical.
+type Statistician interface {
+	// Statistical will count service's statistics, such as Size, Count.
+	//
+	// Implementer:
+	//   - Statistical SHOULD only return dynamic data like Size, Count.
+	// Caller:
+	//   - Statistical call COULD be expensive.
+	Statistical() (metadata.Metadata, error)
+}
+
 // Segmenter is the interface for Segment.
 type Segmenter interface {
 	// Segment Operations.
@@ -92,71 +173,3 @@ type Segmenter interface {
 	//   - SHOULD call InitSegment before AbortSegment.
 	AbortSegment(id string, pairs ...*types.Pair) (err error)
 }
-
-/*
-Storager is the interface for storage service.
-
-Currently, we support two different type storage services: prefix based and directory based. Prefix based storage
-service is usually a object storage service, such as AWS; And directory based service is often a POSIX file system.
-We used to treat them as different abstract level services, but in this project, we will unify both of them to make a
-production ready high performance vendor lock free storage layer.
-
-Every storager will implement the same interface but with different capability and operation pairs set.
-
-Everything in a storager is an Object with three types: File, Dir.
-File is the smallest unit in service, it will have content and metadata. Dir is a container for File and Dir.
-In prefix-based storage service, Dir is usually an empty key end with "/" or with special content type.
-For directory-based service, Dir will be corresponded to the real directory on file system.
-
-Every API call in storager is relative to it's workdir which set in Init().
-
-In the comments of every method, we will use following rules to standardize the Storager's behavior:
-
-  - The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY",
-    and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
-  - Implementer is the provider of the service, while you trying to implement Storager interface, you need to follow.
-  - Caller is the user of the service, while you trying to use the Storager interface, you need to follow.
-*/
-type Storager interface {
-	// String will implement Stringer.
-	String() string
-
-	// Init will init storager itself.
-	//
-	// Caller:
-	//   - Init MUST be called after created.
-	Init(pairs ...*types.Pair) (err error)
-
-	// Metadata will return current storager's metadata.
-	//
-	// Implementer:
-	//   - MAY return following data: Name,Location, Size, Count
-	Metadata() (metadata.Metadata, error)
-
-	// ListDir will return an ObjectIterator which can list all object under the Dir.
-	ListDir(path string, pairs ...*types.Pair) (err error)
-	// Read will read the file's data.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data read.
-	Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
-	// WriteFile will write data into file.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data written.
-	Write(path string, r io.Reader, pairs ...*types.Pair) (err error)
-	// Stat will stat a path to get info of an object.
-	//
-	// Implementer:
-	//   - MUST fill object's name and type.
-	Stat(path string, pairs ...*types.Pair) (o *types.Object, err error)
-	// Delete will delete an Object or multiple object from service.
-	// path could be File, Stream or Dir
-	//
-	// Implementer:
-	//   - MAY accept a recursive pair to support delete Dir recursively.
-	Delete(path string, pairs ...*types.Pair) (err error)
-}
-
-// StoragerFunc will handle a storager.
-type StoragerFunc func(Storager)
