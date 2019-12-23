@@ -39,7 +39,7 @@ func TestService_New(t *testing.T) {
 	defer ctrl.Finish()
 
 	// Missing required pair
-	srv, err := New()
+	_, err := New()
 	assert.Error(t, err)
 	assert.True(t, errors.Is(err, types.ErrPairRequired))
 
@@ -48,7 +48,7 @@ func TestService_New(t *testing.T) {
 	secretKey := uuid.New().String()
 	host := uuid.New().String()
 	port := 1234
-	srv, err = New(
+	srv, err := New(
 		pairs.WithCredential(credential.NewStatic(accessKey, secretKey)),
 		pairs.WithEndpoint(endpoint.NewHTTP(host, port)),
 	)
