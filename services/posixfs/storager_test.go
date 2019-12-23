@@ -25,7 +25,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestClient_String(t *testing.T) {
-	c := Client{}
+	c := Storage{}
 	err := c.Init(pairs.WithWorkDir("/test"))
 	if err != nil {
 		t.Error(err)
@@ -36,14 +36,14 @@ func TestClient_String(t *testing.T) {
 
 func TestClient_Init(t *testing.T) {
 	t.Run("without options", func(t *testing.T) {
-		client := Client{}
+		client := Storage{}
 		err := client.Init()
 		assert.Error(t, err)
 		assert.Equal(t, "", client.workDir)
 	})
 
 	t.Run("with workDir", func(t *testing.T) {
-		client := Client{}
+		client := Storage{}
 		err := client.Init(pairs.WithWorkDir("test"))
 		assert.NoError(t, err)
 		assert.Equal(t, "test", client.workDir)
@@ -55,7 +55,7 @@ func TestClient_Metadata(t *testing.T) {
 	defer ctrl.Finish()
 
 	{
-		client := Client{workDir: "/test"}
+		client := Storage{workDir: "/test"}
 
 		m, err := client.Metadata()
 		assert.NoError(t, err)
@@ -196,7 +196,7 @@ func TestClient_Stat(t *testing.T) {
 
 	for _, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			client := Client{
+			client := Storage{
 				osStat: func(name string) (os.FileInfo, error) {
 					assert.Equal(t, v.name, name)
 					return v.file, v.err
@@ -243,7 +243,7 @@ func TestClient_Delete(t *testing.T) {
 
 		t.Run(v.name, func(t *testing.T) {
 
-			client := Client{
+			client := Storage{
 				osRemove: func(name string) error {
 					assert.Equal(t, v.name, name)
 					return v.err
@@ -259,7 +259,7 @@ func TestClient_Copy(t *testing.T) {
 	t.Run("Failed at open source file", func(t *testing.T) {
 		srcName := uuid.New().String()
 		dstName := uuid.New().String()
-		client := Client{
+		client := Storage{
 			osOpen: func(name string) (file *os.File, e error) {
 				assert.Equal(t, srcName, name)
 				return nil, &os.PathError{
@@ -279,7 +279,7 @@ func TestClient_Copy(t *testing.T) {
 	t.Run("Failed at open dst file", func(t *testing.T) {
 		srcName := uuid.New().String()
 		dstName := uuid.New().String()
-		client := Client{
+		client := Storage{
 			osOpen: func(name string) (file *os.File, e error) {
 				assert.Equal(t, srcName, name)
 				return nil, nil
@@ -303,7 +303,7 @@ func TestClient_Copy(t *testing.T) {
 	t.Run("Failed at io.CopyBuffer", func(t *testing.T) {
 		srcName := uuid.New().String()
 		dstName := uuid.New().String()
-		client := Client{
+		client := Storage{
 			osOpen: func(name string) (file *os.File, e error) {
 				assert.Equal(t, srcName, name)
 				return nil, nil
@@ -334,7 +334,7 @@ func TestClient_Copy(t *testing.T) {
 
 		srcName := uuid.New().String()
 		dstName := uuid.New().String()
-		client := Client{
+		client := Storage{
 			osOpen: func(name string) (file *os.File, e error) {
 				assert.Equal(t, srcName, name)
 				return fakeFile, nil
@@ -361,7 +361,7 @@ func TestClient_Move(t *testing.T) {
 		srcName := uuid.New().String()
 		dstName := uuid.New().String()
 
-		client := Client{
+		client := Storage{
 			osRename: func(oldpath, newpath string) error {
 				assert.Equal(t, srcName, oldpath)
 				assert.Equal(t, dstName, newpath)
@@ -385,7 +385,7 @@ func TestClient_Move(t *testing.T) {
 		srcName := uuid.New().String()
 		dstName := uuid.New().String()
 
-		client := Client{
+		client := Storage{
 			osRename: func(oldpath, newpath string) error {
 				assert.Equal(t, srcName, oldpath)
 				assert.Equal(t, dstName, newpath)
@@ -402,7 +402,7 @@ func TestClient_Move(t *testing.T) {
 }
 
 func TestClient_Reach(t *testing.T) {
-	client := Client{}
+	client := Storage{}
 
 	assert.Panics(t, func() {
 		_, _ = client.Reach(uuid.New().String())
@@ -515,7 +515,7 @@ func TestClient_ListDir(t *testing.T) {
 
 	for k, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			client := Client{
+			client := Storage{
 				ioutilReadDir: func(dirname string) (infos []os.FileInfo, e error) {
 					assert.Equal(t, paths[k], dirname)
 					return v.fi, v.err
@@ -631,7 +631,7 @@ func TestClient_Read(t *testing.T) {
 				return 0, v.seekErr
 			})
 
-			client := Client{
+			client := Storage{
 				osOpen: func(name string) (file *os.File, e error) {
 					assert.Equal(t, v.path, name)
 					return fakeFile, v.openErr
@@ -720,7 +720,7 @@ func TestClient_Write(t *testing.T) {
 
 	for k, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			client := Client{
+			client := Storage{
 				osCreate:     v.osCreate,
 				ioCopyN:      v.ioCopyN,
 				ioCopyBuffer: v.ioCopyBuffer,

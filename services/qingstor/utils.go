@@ -21,11 +21,11 @@ func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
 }
 
-func (c *Client) getAbsPath(path string) string {
+func (c *Storage) getAbsPath(path string) string {
 	return strings.TrimPrefix(c.workDir+"/"+path, "/")
 }
 
-func (c *Client) getRelPath(path string) string {
+func (c *Storage) getRelPath(path string) string {
 	return strings.TrimPrefix(path, c.workDir+"/")
 }
 

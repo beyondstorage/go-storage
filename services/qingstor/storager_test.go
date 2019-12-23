@@ -21,7 +21,7 @@ import (
 )
 
 func TestClient_String(t *testing.T) {
-	c := Client{workDir: "/test"}
+	c := Storage{workDir: "/test"}
 	assert.NotEmpty(t, c.String())
 }
 
@@ -32,7 +32,7 @@ func TestClient_Metadata(t *testing.T) {
 	mockBucket := NewMockBucket(ctrl)
 
 	{
-		client := Client{
+		client := Storage{
 			bucket: mockBucket,
 		}
 
@@ -58,7 +58,7 @@ func TestClient_Metadata(t *testing.T) {
 	}
 
 	{
-		client := Client{
+		client := Storage{
 			bucket: mockBucket,
 		}
 
@@ -77,7 +77,7 @@ func TestClient_AbortSegment(t *testing.T) {
 
 	mockBucket := NewMockBucket(ctrl)
 
-	client := Client{
+	client := Storage{
 		bucket:   mockBucket,
 		segments: make(map[string]*segment.Segment),
 	}
@@ -165,7 +165,7 @@ func TestClient_CompleteSegment(t *testing.T) {
 				mockBucket.EXPECT().CompleteMultipartUpload(gomock.Any(), gomock.Any()).Do(v.mockFn)
 			}
 
-			client := Client{
+			client := Storage{
 				bucket:   mockBucket,
 				segments: v.segments,
 			}
@@ -210,7 +210,7 @@ func TestClient_Copy(t *testing.T) {
 	for _, v := range tests {
 		mockBucket.EXPECT().PutObject(gomock.Any(), gomock.Any()).Do(v.mockFn)
 
-		client := Client{
+		client := Storage{
 			bucket: mockBucket,
 		}
 
@@ -250,7 +250,7 @@ func TestClient_Delete(t *testing.T) {
 	for _, v := range tests {
 		mockBucket.EXPECT().DeleteObject(gomock.Any()).Do(v.mockFn)
 
-		client := Client{
+		client := Storage{
 			bucket: mockBucket,
 		}
 
@@ -319,7 +319,7 @@ func TestClient_InitSegment(t *testing.T) {
 			mockBucket.EXPECT().InitiateMultipartUpload(gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
 		}
 
-		client := Client{
+		client := Storage{
 			bucket:   mockBucket,
 			segments: v.segments,
 		}
@@ -469,7 +469,7 @@ func TestClient_ListDir(t *testing.T) {
 				return v.output, v.err
 			})
 
-			client := Client{
+			client := Storage{
 				bucket: mockBucket,
 			}
 
@@ -514,7 +514,7 @@ func TestClient_Move(t *testing.T) {
 	for _, v := range tests {
 		mockBucket.EXPECT().PutObject(gomock.Any(), gomock.Any()).Do(v.mockFn)
 
-		client := Client{
+		client := Storage{
 			bucket: mockBucket,
 		}
 
@@ -557,7 +557,7 @@ func TestClient_Read(t *testing.T) {
 	for _, v := range tests {
 		mockBucket.EXPECT().GetObject(gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
 
-		client := Client{
+		client := Storage{
 			bucket: mockBucket,
 		}
 
@@ -608,7 +608,7 @@ func TestClient_Stat(t *testing.T) {
 	for _, v := range tests {
 		mockBucket.EXPECT().HeadObject(gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
 
-		client := Client{
+		client := Storage{
 			bucket: mockBucket,
 		}
 
@@ -663,7 +663,7 @@ func TestClient_Write(t *testing.T) {
 	for _, v := range tests {
 		mockBucket.EXPECT().PutObject(gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
 
-		client := Client{
+		client := Storage{
 			bucket: mockBucket,
 		}
 
@@ -722,7 +722,7 @@ func TestClient_WriteSegment(t *testing.T) {
 			mockBucket.EXPECT().UploadMultipart(gomock.Any(), gomock.Any()).Do(v.mockFn)
 		}
 
-		client := Client{
+		client := Storage{
 			bucket:   mockBucket,
 			segments: v.segments,
 		}
@@ -807,7 +807,7 @@ func TestClient_ListSegments(t *testing.T) {
 				return v.output, v.err
 			})
 
-			client := Client{
+			client := Storage{
 				bucket:   mockBucket,
 				segments: make(map[string]*segment.Segment),
 			}
