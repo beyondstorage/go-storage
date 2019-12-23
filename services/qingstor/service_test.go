@@ -26,8 +26,7 @@ func TestService_String(t *testing.T) {
 	accessKey := uuid.New().String()
 	secretKey := uuid.New().String()
 
-	srv := Service{}
-	err := srv.Init(pairs.WithCredential(credential.NewStatic(accessKey, secretKey)))
+	srv, err := New(pairs.WithCredential(credential.NewStatic(accessKey, secretKey)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,26 +34,23 @@ func TestService_String(t *testing.T) {
 	assert.NotEmpty(t, srv.String())
 }
 
-func TestService_Init(t *testing.T) {
+func TestService_New(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	// Missing required pair
-	srv := Service{}
-	err := srv.Init()
+	srv, err := New()
 	assert.Error(t, err)
 	assert.True(t, errors.Is(err, types.ErrPairRequired))
 
 	// Valid case
-	srv = Service{}
 	accessKey := uuid.New().String()
 	secretKey := uuid.New().String()
 	host := uuid.New().String()
 	port := 1234
-	protocol := uuid.New().String()
-	err = srv.Init(
+	srv, err = New(
 		pairs.WithCredential(credential.NewStatic(accessKey, secretKey)),
-		pairs.WithEndpoint(endpoint.NewStaticFromParsedURL(protocol, host, port)),
+		pairs.WithEndpoint(endpoint.NewHTTP(host, port)),
 	)
 	assert.NoError(t, err)
 	assert.NotNil(t, srv.service)
@@ -63,7 +59,7 @@ func TestService_Init(t *testing.T) {
 	assert.Equal(t, srv.config.SecretAccessKey, secretKey)
 	assert.Equal(t, srv.config.Host, host)
 	assert.Equal(t, srv.config.Port, port)
-	assert.Equal(t, srv.config.Protocol, protocol)
+	assert.Equal(t, srv.config.Protocol, "http")
 }
 
 func TestService_Get(t *testing.T) {
@@ -93,7 +89,7 @@ func TestService_Get(t *testing.T) {
 
 	{
 		// Test case 2: without location
-		srv := New()
+		srv := &Service{}
 		srv.service = mockService
 		srv.config = &config.Config{
 			AccessKeyID:     uuid.New().String(),
@@ -138,8 +134,7 @@ func TestService_Get(t *testing.T) {
 
 	{
 		// Test case 3: invalid bucket name.
-
-		srv := New()
+		srv := &Service{}
 		srv.service = mockService
 		srv.config = &config.Config{
 			AccessKeyID:     uuid.New().String(),
@@ -287,9 +282,8 @@ func TestService_List(t *testing.T) {
 	}
 }
 
-func ExampleService_Init() {
-	srv := New()
-	err := srv.Init(
+func ExampleNew() {
+	_, err := New(
 		pairs.WithCredential(
 			credential.NewStatic("test_access_key", "test_secret_key"),
 		),
@@ -300,8 +294,7 @@ func ExampleService_Init() {
 }
 
 func ExampleService_Get() {
-	srv := New()
-	err := srv.Init(
+	srv, err := New(
 		pairs.WithCredential(
 			credential.NewStatic("test_access_key", "test_secret_key"),
 		),

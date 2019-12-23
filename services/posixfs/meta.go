@@ -15,8 +15,8 @@ var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
 
-// StoragerType is the storager type for posixfs
-const StoragerType = types.StoragerType("posixfs")
+// Type is the type for posixfs
+const Type = "posixfs"
 
 var allowedStoragePairs = map[string]map[string]struct{}{
 	"init": {

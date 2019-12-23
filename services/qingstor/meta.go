@@ -15,11 +15,8 @@ var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
 
-// ServicerType is the servicer type for qingstor
-const ServicerType = types.ServicerType("qingstor")
-
-// StoragerType is the storager type for qingstor
-const StoragerType = types.StoragerType("qingstor")
+// Type is the type for qingstor
+const Type = "qingstor"
 
 var allowedStoragePairs = map[string]map[string]struct{}{
 	"init": {

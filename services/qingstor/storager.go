@@ -30,16 +30,12 @@ type Client struct {
 }
 
 // newClient will create a new client.
-func newClient(bucket iface.Bucket) *Client {
-	return &Client{
+func newClient(bucket iface.Bucket) (*Client, error) {
+	c := &Client{
 		bucket:   bucket,
 		segments: make(map[string]*segment.Segment),
 	}
-}
-
-// String implements Storager.String
-func (c *Client) String() string {
-	return fmt.Sprintf("qingstor Storager {WorkDir: %s}", "/"+c.workDir)
+	return c, nil
 }
 
 // Init implements Storager.Init
@@ -55,7 +51,13 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 		// TODO: we should validate workDir
 		c.workDir = strings.TrimLeft(opt.WorkDir, "/")
 	}
+
 	return nil
+}
+
+// String implements Storager.String
+func (c *Client) String() string {
+	return fmt.Sprintf("qingstor Storager {WorkDir: %s}", "/"+c.workDir)
 }
 
 // Metadata implements Storager.Metadata

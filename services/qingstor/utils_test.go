@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/pairs"
 	"github.com/stretchr/testify/assert"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 )
@@ -46,11 +45,7 @@ func TestGetAbsPath(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := Client{}
-			err := client.Init(pairs.WithWorkDir(tt.base))
-			if err != nil {
-				t.Error(err)
-			}
+			client := Client{workDir: tt.base[1:]}
 
 			gotPath := client.getAbsPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)
@@ -71,11 +66,7 @@ func TestGetRelPath(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := &Client{}
-			err := client.Init(pairs.WithWorkDir(tt.base))
-			if err != nil {
-				t.Error(err)
-			}
+			client := &Client{workDir: tt.base[1:]}
 
 			gotPath := client.getRelPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)
