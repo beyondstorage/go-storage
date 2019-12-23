@@ -15,13 +15,8 @@ var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
 
-{{- if .Service }}
-// ServicerType is the servicer type for {{ .Name }}
-const ServicerType = types.ServicerType("{{ .Name }}")
-{{- end }}
-
-// StoragerType is the storager type for {{ .Name }}
-const StoragerType = types.StoragerType("{{ .Name }}")
+// Type is the type for {{ .Name }}
+const Type = "{{ .Name }}"
 
 {{ $Data := . }}
 
