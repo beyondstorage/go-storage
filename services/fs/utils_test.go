@@ -1,4 +1,4 @@
-package posixfs
+package fs
 
 import (
 	"errors"

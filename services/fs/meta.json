@@ -1,5 +1,5 @@
 {
-  "name": "posixfs",
+  "name": "fs",
   "storage": {
     "init": {
       "work_dir": true

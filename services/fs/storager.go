@@ -1,4 +1,4 @@
-package posixfs
+package fs
 
 import (
 	"fmt"
@@ -34,8 +34,8 @@ type Storage struct {
 	osStat        func(name string) (os.FileInfo, error)
 }
 
-// NewClient will create a posix client.
-func NewClient() *Storage {
+// New will create a posix client.
+func New() *Storage {
 	return &Storage{
 		ioCopyBuffer:  io.CopyBuffer,
 		ioCopyN:       io.CopyN,

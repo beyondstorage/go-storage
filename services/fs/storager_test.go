@@ -1,4 +1,4 @@
-package posixfs
+package fs
 
 import (
 	"errors"
@@ -20,7 +20,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	c := NewClient()
+	c := New()
 	assert.NotNil(t, c)
 }
 
