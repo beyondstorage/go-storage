@@ -21,30 +21,12 @@ The most common case to use a Storager service could be following:
 
 1. Init a service.
 
-    srv := qingstor.New()
-	err := srv.Init(
-		pairs.WithAccessKey("test_access_key"),
-		pairs.WithSecretKey("test_secret_key"),
-	)
+    srv, store, err := coreutils.Open("qingstor://static:test_access_key:test_secret_key@https:qingstor.com:443/test_bucket_name")
 	if err != nil {
-		log.Printf("service init failed: %v", err)
+		log.Fatalf("service init failed: %v", err)
 	}
 
-2. Get a storage instance from an initiated service.
-
-	store, err := srv.Get("test_bucket_name")
-	if err != nil {
-		log.Printf("service get bucket failed: %v", err)
-	}
-
-3. Init a storage.
-
-	err := store.Init(pairs.WithWorkDir("/prefix"))
-	if err != nil {
-		log.Printf("storager init failed: %v", err)
-	}
-
-4. Use Storager API to maintain data.
+2. Use Storager API to maintain data.
 
 	ch := make(chan *types.Object, 1)
 	defer close(ch)

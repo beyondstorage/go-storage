@@ -37,25 +37,9 @@ import "github.com/Xuanwo/storage"
 
 ```go
 // Init a service.
-srv := qingstor.New()
-err := srv.Init(
-    pairs.WithAccessKey("test_access_key"),
-    pairs.WithSecretKey("test_secret_key"),
-)
+srv, store, err := coreutils.Open("qingstor://static:test_access_key:test_secret_key@https:qingstor.com:443/test_bucket_name")
 if err != nil {
-    log.Printf("service init failed: %v", err)
-}
-
-// Get a storage instance from an initiated service.
-store, err := srv.Get("test_bucket_name")
-if err != nil {
-    log.Printf("service get bucket failed: %v", err)
-}
-
-// Init a storage.
-err := store.Init(pairs.WithWorkDir("/prefix"))
-if err != nil {
-    log.Printf("storager init failed: %v", err)
+    log.Fatalf("service init failed: %v", err)
 }
 
 // Use Storager API to maintain data.

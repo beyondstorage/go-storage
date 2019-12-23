@@ -1,6 +1,6 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: candidate
 updated_at: 2019-12-23
 ---
 
@@ -143,7 +143,7 @@ Config string in storage would be like:
 So a valid config string could be:
 
 - `qingstor://static:<access_key_id>:<secret_access_key>@https:qingstor.com:443/<bucket_name>/<prefix>?zone=pek3b`
-- `posixfs:///<work_dir>`
+- `fs:///<work_dir>`
 
 ### Implement functions to support init via type and Config string
 

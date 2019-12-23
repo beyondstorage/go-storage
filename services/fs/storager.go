@@ -15,7 +15,7 @@ import (
 // StreamModeType is the stream mode type.
 const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.ModeCharDevice
 
-// Storage is the posixfs client.
+// Storage is the fs client.
 //
 //go:generate ../../internal/bin/meta
 type Storage struct {
@@ -34,7 +34,7 @@ type Storage struct {
 	osStat        func(name string) (os.FileInfo, error)
 }
 
-// New will create a posix client.
+// New will create a fs client.
 func New() *Storage {
 	return &Storage{
 		ioCopyBuffer:  io.CopyBuffer,
@@ -72,7 +72,7 @@ func (c *Storage) Init(pairs ...*types.Pair) (err error) {
 
 // Metadata implements Storager.Metadata
 //
-// Currently, there is no useful metadata for posixfs, just keep it empty.
+// Currently, there is no useful metadata for fs, just keep it empty.
 func (c *Storage) Metadata() (m metadata.Metadata, err error) {
 	m = make(metadata.Metadata)
 	// WorkDir must be set.
