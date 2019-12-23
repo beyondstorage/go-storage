@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.4.0] - 2019-12-23
+
+### Added
+
+- servicer: Add String() for debug (#23)
+- Implement proposal support service init via config string (#38)
+
+### Changed
+
+- internal: Refactor generator (#24)
+- internal: Don't preserve files' metadata
+- storager: Implement proposal 1-unify-storager-behavior (#30)
+- *: Implement proposal 2-use-callback-in-list-operations (#31)
+- services: Promote values into struct instead of metadata (#33)
+- services: Split endpoint and credential into different pairs (#34)
+- storager: Split Metadata to Metadata and Statistical (#39)
+
+### Fixed
+
+- services/posixfs: Fix std{in/out} support for Stat (#35)
+
 ## [v0.3.0] - 2019-11-11
 
 ### Added
@@ -71,6 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.4.0...HEAD
+[v0.4.0]: https://github.com/Xuanwo/storage/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/Xuanwo/storage/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/Xuanwo/storage/compare/v0.1.0...v0.2.0
