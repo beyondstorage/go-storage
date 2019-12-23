@@ -53,3 +53,16 @@ if err != nil {
     log.Printf("storager listdir failed: %v", err)
 }
 ```
+
+### Services
+
+| Service | Description | Status |
+| ------- | ----------- | ------ |
+| fs | Local file system | stable |
+| qingstor | [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/) | stable |
+| s3 | [Amazon S3](https://aws.amazon.com/s3/) | planned |
+| oss | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | planned |
+| gcs | [Google Cloud Storage](https://cloud.google.com/storage/) | planned |
+| kodo | [qiniu kodo](https://www.qiniu.com/products/kodo) | planned |
+| uss | [UPYUN Storage Service](https://www.upyun.com/products/file-storage) | planned |
+| cos | [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos) | planned |
