@@ -1,7 +1,7 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: draft
-updated_at: 2019-12-20
+updated_at: 2019-12-23
 ---
 
 # Proposal: Support service init via config string
@@ -128,7 +128,7 @@ Config string in storage would be like:
              +
              |
              v
-<credential>@<endpoint>/<name>?<options>
+<credential>@<endpoint>/<namespace>?<options>
      +            +                 +
      |            +---------+       +----------------------+
      v                      v                              v
@@ -137,13 +137,13 @@ Config string in storage would be like:
 
 - credential: `<protocol>:<data>`, data's content decided by different credential protocol,static credential could be `static:<access_key>:<secret_key>`.
 - endpoint: `<protocol>:<data>`, data's content decided by different endpoint protocol, qingstor's valid endpoint could be `https:qingstor.com:443`.
-- name: a valid storager name for this services
+- namespace: namespace is decided by different storage type, for object storage, it could be `<bucket_name>/<prefix>`, for posixfs, it could be `<path>`
 - options: multiple `<key>=<value>` connected with `&`
 
 So a valid config string could be:
 
-- `qingstor://static:<access_key_id>:<secret_access_key>@https:qingstor.com:443/<bucket_name>?zone=pek3b&work_dir=/storage`
-- `posixfs:///<path>`
+- `qingstor://static:<access_key_id>:<secret_access_key>@https:qingstor.com:443/<bucket_name>/<prefix>?zone=pek3b`
+- `posixfs:///<work_dir>`
 
 ### Implement functions to support init via type and Config string
 
@@ -151,7 +151,7 @@ With de definition of Config string, we can implement functions for more general
 
 We will add following changes in codebase:
 
-- Add `OpenService(config string) (Servicer, error)` and `OpenStorage(config string) (Storager, error)` function in `coreutils` package.
+- Add `Open(config string) (Servicer, Storager, error)` function in `coreutils` package.
 - Add `config` package in `pkg` to do config string parse.
 - Implement `<service>.New(pairs ...*Pair) (Servicer, error)`
 
