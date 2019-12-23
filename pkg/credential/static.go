@@ -1,5 +1,10 @@
 package credential
 
+const (
+	// ProtocolStatic is the static credential protocol.
+	ProtocolStatic = "static"
+)
+
 // Static will hold static credential.
 type Static struct {
 	accessKey string
