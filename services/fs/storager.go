@@ -1,4 +1,4 @@
-package posixfs
+package fs
 
 import (
 	"fmt"
@@ -15,10 +15,10 @@ import (
 // StreamModeType is the stream mode type.
 const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.ModeCharDevice
 
-// Client is the posixfs client.
+// Storage is the posixfs client.
 //
 //go:generate ../../internal/bin/meta
-type Client struct {
+type Storage struct {
 	// options for this storager.
 	workDir string // workDir dir for all operation.
 
@@ -34,9 +34,9 @@ type Client struct {
 	osStat        func(name string) (os.FileInfo, error)
 }
 
-// NewClient will create a posix client.
-func NewClient() *Client {
-	return &Client{
+// New will create a posix client.
+func New() *Storage {
+	return &Storage{
 		ioCopyBuffer:  io.CopyBuffer,
 		ioCopyN:       io.CopyN,
 		ioutilReadDir: ioutil.ReadDir,
@@ -50,12 +50,12 @@ func NewClient() *Client {
 }
 
 // String implements Storager.String
-func (c *Client) String() string {
+func (c *Storage) String() string {
 	return fmt.Sprintf("posixfs Storager {WorkDir: %s}", c.workDir)
 }
 
 // Init implements Storager.Init
-func (c *Client) Init(pairs ...*types.Pair) (err error) {
+func (c *Storage) Init(pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs Init: %w"
 
 	opt, err := parseStoragePairInit(pairs...)
@@ -73,7 +73,7 @@ func (c *Client) Init(pairs ...*types.Pair) (err error) {
 // Metadata implements Storager.Metadata
 //
 // Currently, there is no useful metadata for posixfs, just keep it empty.
-func (c *Client) Metadata() (m metadata.Metadata, err error) {
+func (c *Storage) Metadata() (m metadata.Metadata, err error) {
 	m = make(metadata.Metadata)
 	// WorkDir must be set.
 	m.SetWorkDir(c.workDir)
@@ -81,7 +81,7 @@ func (c *Client) Metadata() (m metadata.Metadata, err error) {
 }
 
 // Stat implements Storager.Stat
-func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
+func (c *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
 	errorMessage := "posixfs Stat path [%s]: %w"
 
 	if path == "-" {
@@ -125,7 +125,7 @@ func (c *Client) Stat(path string, option ...*types.Pair) (o *types.Object, err 
 }
 
 // Delete implements Storager.Delete
-func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
+func (c *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs Delete path [%s]: %w"
 
 	rp := c.getAbsPath(path)
@@ -138,7 +138,7 @@ func (c *Client) Delete(path string, pairs ...*types.Pair) (err error) {
 }
 
 // Copy implements Storager.Copy
-func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
+func (c *Storage) Copy(src, dst string, option ...*types.Pair) (err error) {
 	errorMessage := "posixfs Copy from [%s] to [%s]: %w"
 
 	rs := c.getAbsPath(src)
@@ -170,7 +170,7 @@ func (c *Client) Copy(src, dst string, option ...*types.Pair) (err error) {
 }
 
 // Move implements Storager.Move
-func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
+func (c *Storage) Move(src, dst string, option ...*types.Pair) (err error) {
 	errorMessage := "posixfs Move from [%s] to [%s]: %w"
 
 	rs := c.getAbsPath(src)
@@ -190,12 +190,12 @@ func (c *Client) Move(src, dst string, option ...*types.Pair) (err error) {
 }
 
 // Reach implements Storager.Reach
-func (c *Client) Reach(path string, pairs ...*types.Pair) (url string, err error) {
+func (c *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
 	panic("not supported")
 }
 
 // ListDir implements Storager.ListDir
-func (c *Client) ListDir(path string, pairs ...*types.Pair) (err error) {
+func (c *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs ListDir [%s]: %w"
 
 	opt, err := parseStoragePairListDir(pairs...)
@@ -235,7 +235,7 @@ func (c *Client) ListDir(path string, pairs ...*types.Pair) (err error) {
 }
 
 // Read implements Storager.Read
-func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
+func (c *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	errorMessage := "posixfs Read [%s]: %w"
 
 	opt, err := parseStoragePairRead(pairs...)
@@ -274,7 +274,7 @@ func (c *Client) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 }
 
 // WriteFile implements Storager.WriteFile
-func (c *Client) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
+func (c *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "posixfs WriteFile [%s]: %w"
 
 	opt, err := parseStoragePairWrite(pairs...)

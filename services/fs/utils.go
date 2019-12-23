@@ -1,15 +1,24 @@
-package posixfs
+package fs
 
 import (
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Xuanwo/storage/types"
 )
 
-func (c *Client) createDir(path string) (err error) {
+// ParseNamespace will parse namespace for posixfs.
+func ParseNamespace(s string) string {
+	if strings.Contains(s, ":") {
+		return s
+	}
+	return filepath.Join("/", s)
+}
+
+func (c *Storage) createDir(path string) (err error) {
 	errorMessage := "posixfs createDir [%s]: %w"
 
 	rp := c.getDirPath(path)
@@ -25,11 +34,11 @@ func (c *Client) createDir(path string) (err error) {
 	return
 }
 
-func (c *Client) getAbsPath(path string) string {
+func (c *Storage) getAbsPath(path string) string {
 	return filepath.Join(c.workDir, path)
 }
 
-func (c *Client) getDirPath(path string) string {
+func (c *Storage) getDirPath(path string) string {
 	if path == "" {
 		return c.workDir
 	}

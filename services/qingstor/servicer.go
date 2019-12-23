@@ -22,34 +22,26 @@ type Service struct {
 }
 
 // New will create a new qingstor service.
-func New() *Service {
-	return &Service{
+func New(pairs ...*types.Pair) (s *Service, err error) {
+	errorMessage := "init qingstor service: %w"
+
+	s = &Service{
 		noRedirectClient: &http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
 		},
 	}
-}
-
-// String implements Service.String
-func (s *Service) String() string {
-	return fmt.Sprintf("qingstor Service {Host: %s, Port: %d, Protocol: %s, AccessKey: %s}", s.config.Host, s.config.Port, s.config.Protocol, s.config.AccessKeyID)
-}
-
-// Init implements Servicer.Init
-func (s *Service) Init(pairs ...*types.Pair) (err error) {
-	errorMessage := "init qingstor service: %w"
 
 	opt, err := parseServicePairInit(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, err)
 	}
 
 	cred := opt.Credential.Value()
 	cfg, err := config.New(cred.AccessKey, cred.SecretKey)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, err)
 	}
 	if opt.HasEndpoint {
 		ep := opt.Endpoint.Value()
@@ -61,6 +53,11 @@ func (s *Service) Init(pairs ...*types.Pair) (err error) {
 	s.config = cfg
 	s.service, _ = service.Init(cfg)
 	return
+}
+
+// String implements Service.String
+func (s *Service) String() string {
+	return fmt.Sprintf("qingstor Service {Host: %s, Port: %d, Protocol: %s, AccessKey: %s}", s.config.Host, s.config.Port, s.config.Protocol, s.config.AccessKeyID)
 }
 
 // Get implements Servicer.Get
@@ -77,7 +74,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, name, err)
 	}
-	return newClient(bucket), nil
+	return newClient(bucket)
 }
 
 // Create implements Servicer.Create
@@ -102,7 +99,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, name, err)
 	}
-	return newClient(bucket), nil
+	return newClient(bucket)
 }
 
 // List implements Servicer.List
@@ -131,7 +128,11 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 			return fmt.Errorf(errorMessage, err)
 		}
 		if opt.HasStoragerFunc {
-			opt.StoragerFunc(newClient(store))
+			c, err := newClient(store)
+			if err != nil {
+				return fmt.Errorf(errorMessage, err)
+			}
+			opt.StoragerFunc(c)
 		}
 	}
 	return nil

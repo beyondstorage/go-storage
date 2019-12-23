@@ -21,11 +21,11 @@ func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
 }
 
-func (c *Client) getAbsPath(path string) string {
+func (c *Storage) getAbsPath(path string) string {
 	return strings.TrimPrefix(c.workDir+"/"+path, "/")
 }
 
-func (c *Client) getRelPath(path string) string {
+func (c *Storage) getRelPath(path string) string {
 	return strings.TrimPrefix(path, c.workDir+"/")
 }
 
@@ -66,4 +66,16 @@ func convertUnixTimestampToTime(v int) time.Time {
 		return time.Time{}
 	}
 	return time.Unix(int64(v), 0)
+}
+
+// ParseNamespace will parse qingstor namespace.
+func ParseNamespace(s string) (bucketName, prefix string) {
+	x := strings.SplitN(s, "/", 2)
+	if len(x) == 0 {
+		return "", ""
+	}
+	if len(x) == 1 {
+		return x[0], ""
+	}
+	return x[0], x[1]
 }

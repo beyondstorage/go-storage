@@ -46,11 +46,8 @@ func TestGetAbsPath(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := Client{}
-			err := client.Init(pairs.WithWorkDir(tt.base))
-			if err != nil {
-				t.Error(err)
-			}
+			client := Storage{}
+			_ = client.Init(pairs.WithWorkDir(tt.base))
 
 			gotPath := client.getAbsPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)
@@ -71,11 +68,8 @@ func TestGetRelPath(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := &Client{}
-			err := client.Init(pairs.WithWorkDir(tt.base))
-			if err != nil {
-				t.Error(err)
-			}
+			client := &Storage{}
+			_ = client.Init(pairs.WithWorkDir(tt.base))
 
 			gotPath := client.getRelPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)

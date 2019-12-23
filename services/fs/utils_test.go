@@ -1,4 +1,4 @@
-package posixfs
+package fs
 
 import (
 	"errors"
@@ -27,7 +27,7 @@ func TestGetAbsPath(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := Client{}
+			client := Storage{}
 			err := client.Init(pairs.WithWorkDir(tt.base))
 			if err != nil {
 				t.Error(err)
@@ -60,7 +60,7 @@ func TestClient_CreateDir(t *testing.T) {
 
 	for k, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			client := Client{
+			client := Storage{
 				osMkdirAll: func(path string, perm os.FileMode) error {
 					assert.Equal(t, filepath.Dir(paths[k]), path)
 					assert.Equal(t, os.FileMode(0755), perm)
