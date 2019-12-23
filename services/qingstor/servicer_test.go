@@ -77,9 +77,15 @@ func TestService_Get(t *testing.T) {
 		name := uuid.New().String()
 		location := uuid.New().String()
 
-		mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).Do(func(bucketName, inputLocation string) {
+		mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).DoAndReturn(func(bucketName, inputLocation string) (*service.Bucket, error) {
 			assert.Equal(t, name, bucketName)
 			assert.Equal(t, location, inputLocation)
+			return &service.Bucket{
+				Properties: &service.Properties{
+					BucketName: &name,
+					Zone:       &location,
+				},
+			}, nil
 		})
 
 		s, err := srv.Get(name, pairs.WithLocation(location))
@@ -122,9 +128,15 @@ func TestService_Get(t *testing.T) {
 		monkey.PatchInstanceMethod(reflect.TypeOf(srv.noRedirectClient), "Head", fn)
 
 		// Mock Bucket.
-		mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).Do(func(bucketName, inputLocation string) {
+		mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).DoAndReturn(func(bucketName, inputLocation string) (*service.Bucket, error) {
 			assert.Equal(t, name, bucketName)
 			assert.Equal(t, location, inputLocation)
+			return &service.Bucket{
+				Properties: &service.Properties{
+					BucketName: &name,
+					Zone:       &location,
+				},
+			}, nil
 		})
 
 		s, err := srv.Get(name)

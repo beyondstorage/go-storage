@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/pengsrc/go-shared/convert"
+	qsconfig "github.com/yunify/qingstor-sdk-go/v3/config"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
@@ -20,7 +21,9 @@ import (
 //go:generate ../../internal/bin/meta
 //go:generate mockgen -package qingstor -destination mock_test.go github.com/yunify/qingstor-sdk-go/v3/interface Service,Bucket
 type Storage struct {
-	bucket iface.Bucket
+	bucket     iface.Bucket
+	config     *qsconfig.Config
+	properties *service.Properties
 
 	// options for this storager.
 	workDir string // workDir dir for all operation.
@@ -29,11 +32,13 @@ type Storage struct {
 	segmentLock sync.RWMutex
 }
 
-// newClient will create a new client.
-func newClient(bucket iface.Bucket) (*Storage, error) {
+// newStorage will create a new client.
+func newStorage(bucket *service.Bucket) (*Storage, error) {
 	c := &Storage{
-		bucket:   bucket,
-		segments: make(map[string]*segment.Segment),
+		bucket:     bucket,
+		config:     bucket.Config,
+		properties: bucket.Properties,
+		segments:   make(map[string]*segment.Segment),
 	}
 	return c, nil
 }
@@ -57,12 +62,25 @@ func (c *Storage) Init(pairs ...*types.Pair) (err error) {
 
 // String implements Storager.String
 func (c *Storage) String() string {
-	return fmt.Sprintf("qingstor Storager {WorkDir: %s}", "/"+c.workDir)
+	return fmt.Sprintf(
+		"qingstor Storager {Bucket: %s, Location: %s, WorkDir: %s}",
+		*c.properties.BucketName, *c.properties.Zone, "/"+c.workDir,
+	)
 }
 
 // Metadata implements Storager.Metadata
-func (c *Storage) Metadata() (m metadata.Metadata, err error) {
-	errorMessage := "qingstor Metadata: %w"
+func (c *Storage) Metadata() (m metadata.Storage, err error) {
+	m = metadata.Storage{
+		Name:     *c.properties.BucketName,
+		WorkDir:  c.workDir,
+		Metadata: make(metadata.Metadata),
+	}
+	m.SetLocation(*c.properties.Zone)
+	return m, nil
+}
+
+func (c *Storage) Statistical() (m metadata.Metadata, err error) {
+	errorMessage := "qingstor Statistical: %w"
 
 	output, err := c.bucket.GetStatistics()
 	if err != nil {
@@ -71,14 +89,6 @@ func (c *Storage) Metadata() (m metadata.Metadata, err error) {
 	}
 
 	m = make(metadata.Metadata)
-	// WorkDir must be set.
-	m.SetWorkDir(c.workDir)
-	if output.Name != nil {
-		m.SetName(*output.Name)
-	}
-	if output.Location != nil {
-		m.SetLocation(*output.Location)
-	}
 	if output.Size != nil {
 		m.SetSize(*output.Size)
 	}

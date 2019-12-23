@@ -71,12 +71,12 @@ func (c *Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-//
-// Currently, there is no useful metadata for fs, just keep it empty.
-func (c *Storage) Metadata() (m metadata.Metadata, err error) {
-	m = make(metadata.Metadata)
-	// WorkDir must be set.
-	m.SetWorkDir(c.workDir)
+func (c *Storage) Metadata() (m metadata.Storage, err error) {
+	m = metadata.Storage{
+		Name:     "",
+		WorkDir:  c.workDir,
+		Metadata: nil,
+	}
 	return m, nil
 }
 

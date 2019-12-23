@@ -5,7 +5,6 @@
   "expire": "int",
   "host": "string",
   "location": "string",
-  "name": "string",
   "size": "int64",
   "type": "string",
   "work_dir": "string"

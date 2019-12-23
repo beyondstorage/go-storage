@@ -24,7 +24,7 @@ func TestNewClient(t *testing.T) {
 	assert.NotNil(t, c)
 }
 
-func TestClient_String(t *testing.T) {
+func TestStorage_String(t *testing.T) {
 	c := Storage{}
 	err := c.Init(pairs.WithWorkDir("/test"))
 	if err != nil {
@@ -34,7 +34,7 @@ func TestClient_String(t *testing.T) {
 	assert.Equal(t, "posixfs Storager {WorkDir: /test}", c.String())
 }
 
-func TestClient_Init(t *testing.T) {
+func TestStorage_Init(t *testing.T) {
 	t.Run("without options", func(t *testing.T) {
 		client := Storage{}
 		err := client.Init()
@@ -50,7 +50,7 @@ func TestClient_Init(t *testing.T) {
 	})
 }
 
-func TestClient_Metadata(t *testing.T) {
+func TestStorage_Metadata(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -59,9 +59,7 @@ func TestClient_Metadata(t *testing.T) {
 
 		m, err := client.Metadata()
 		assert.NoError(t, err)
-		gotBase, ok := m.GetWorkDir()
-		assert.True(t, true, ok)
-		assert.Equal(t, "/test", gotBase)
+		assert.Equal(t, "/test", m.WorkDir)
 	}
 }
 
@@ -96,7 +94,7 @@ func (f fileInfo) Sys() interface{} {
 	return f
 }
 
-func TestClient_Stat(t *testing.T) {
+func TestStorage_Stat(t *testing.T) {
 	nowTime := time.Now()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -214,7 +212,7 @@ func TestClient_Stat(t *testing.T) {
 	}
 }
 
-func TestClient_WriteStream(t *testing.T) {
+func TestStorage_WriteStream(t *testing.T) {
 	err := os.Remove("/tmp/test")
 	var e *os.PathError
 	if errors.As(err, &e) {
@@ -222,7 +220,7 @@ func TestClient_WriteStream(t *testing.T) {
 	}
 }
 
-func TestClient_Delete(t *testing.T) {
+func TestStorage_Delete(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -255,7 +253,7 @@ func TestClient_Delete(t *testing.T) {
 	}
 }
 
-func TestClient_Copy(t *testing.T) {
+func TestStorage_Copy(t *testing.T) {
 	t.Run("Failed at open source file", func(t *testing.T) {
 		srcName := uuid.New().String()
 		dstName := uuid.New().String()
@@ -356,7 +354,7 @@ func TestClient_Copy(t *testing.T) {
 	})
 }
 
-func TestClient_Move(t *testing.T) {
+func TestStorage_Move(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		srcName := uuid.New().String()
 		dstName := uuid.New().String()
@@ -401,7 +399,7 @@ func TestClient_Move(t *testing.T) {
 	})
 }
 
-func TestClient_Reach(t *testing.T) {
+func TestStorage_Reach(t *testing.T) {
 	client := Storage{}
 
 	assert.Panics(t, func() {
@@ -409,7 +407,7 @@ func TestClient_Reach(t *testing.T) {
 	})
 }
 
-func TestClient_ListDir(t *testing.T) {
+func TestStorage_ListDir(t *testing.T) {
 	paths := make([]string, 100)
 	for k := range paths {
 		paths[k] = uuid.New().String()
@@ -535,7 +533,7 @@ func TestClient_ListDir(t *testing.T) {
 	}
 }
 
-func TestClient_Read(t *testing.T) {
+func TestStorage_Read(t *testing.T) {
 	tests := []struct {
 		name    string
 		path    string
@@ -645,7 +643,7 @@ func TestClient_Read(t *testing.T) {
 	}
 }
 
-func TestClient_Write(t *testing.T) {
+func TestStorage_Write(t *testing.T) {
 	paths := make([]string, 10)
 	for k := range paths {
 		paths[k] = uuid.New().String()
