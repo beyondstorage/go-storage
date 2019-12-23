@@ -151,13 +151,13 @@ With de definition of Config string, we can implement functions for more general
 
 We will add following changes in codebase:
 
-- Add `Open(config string) (Servicer, Storager, error)` function in `coreutils` package.
+- Add `Open(config string) (Servicer, Storager, error)` function in `coreutils` package. `OpenServicer` and `OpenStorager` will be added for more convenient.
 - Add `config` package in `pkg` to do config string parse.
-- Implement `<service>.New(pairs ...*Pair) (Servicer, error)`
+- Implement `<service>.New(pairs ...*Pair) (Servicer, error)` function, if service doesn't implement Servicer, implement `<service>.New(pairs ...*Pair) (Storager, error)` instead.
 
-### Remove Init in Storager and Servicer interface
+### Remove Init from Servicer interface
 
-With the brand-new support of config string, we can remove Init in Storager and Servicer interface.
+With the brand-new support of config string, we can remove Init in Servicer interface.
 
 ## Compatibility
 

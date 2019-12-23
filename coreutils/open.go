@@ -12,12 +12,17 @@ import (
 )
 
 var (
-	// ErrNotSupportedServiceType will be return when service not supported.
-	ErrNotSupportedServiceType = errors.New("not_supported_service_type")
+	// ErrServiceNotSupported will return when service not supported.
+	ErrServiceNotSupported = errors.New("service not supported")
+	// ErrServiceNotImplemented will return when service doesn't implement Servicer.
+	ErrServiceNotImplemented = errors.New("service not implemented")
+	// ErrServiceNamespaceNotGiven will return when service namespace not given.
+	ErrServiceNamespaceNotGiven = errors.New("service namespace not given")
 )
 
 // Open will parse config string and return valid Servicer and Storager.
 //
+// Depends on config string's service type, Servicer could be nil.
 // Depends on config string's content, Storager could be nil if namespace not given.
 func Open(cfg string) (srv storage.Servicer, store storage.Storager, err error) {
 	errorMessage := "coreutils Open [%s]: <%w>"
@@ -59,7 +64,35 @@ func Open(cfg string) (srv storage.Servicer, store storage.Storager, err error) 
 		}
 		return
 	default:
-		err = fmt.Errorf(errorMessage, cfg, ErrNotSupportedServiceType)
+		err = fmt.Errorf(errorMessage, cfg, ErrServiceNotSupported)
 		return nil, nil, err
 	}
+}
+
+// OpenServicer will open a servicer from config string.
+func OpenServicer(cfg string) (srv storage.Servicer, err error) {
+	errorMessage := "coreutils OpenServicer [%s]: <%w>"
+
+	srv, _, err = Open(cfg)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, cfg, err)
+	}
+	if srv == nil {
+		return nil, fmt.Errorf(errorMessage, cfg, ErrServiceNotImplemented)
+	}
+	return
+}
+
+// OpenStorager will open a storager from config string.
+func OpenStorager(cfg string) (store storage.Storager, err error) {
+	errorMessage := "coreutils OpenStorager [%s]: <%w>"
+
+	_, store, err = Open(cfg)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, cfg, err)
+	}
+	if store == nil {
+		return nil, fmt.Errorf(errorMessage, cfg, ErrServiceNamespaceNotGiven)
+	}
+	return
 }
