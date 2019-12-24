@@ -31,7 +31,7 @@ func TestStorage_String(t *testing.T) {
 		t.Error(err)
 	}
 
-	assert.Equal(t, "posixfs Storager {WorkDir: /test}", c.String())
+	assert.Equal(t,  "Storager fs {WorkDir: /test}", c.String())
 }
 
 func TestStorage_Init(t *testing.T) {
@@ -396,14 +396,6 @@ func TestStorage_Move(t *testing.T) {
 
 		err := client.Move(srcName, dstName)
 		assert.NoError(t, err)
-	})
-}
-
-func TestStorage_Reach(t *testing.T) {
-	client := Storage{}
-
-	assert.Panics(t, func() {
-		_, _ = client.Reach(uuid.New().String())
 	})
 }
 

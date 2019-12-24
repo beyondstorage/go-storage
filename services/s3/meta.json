@@ -1,5 +1,5 @@
 {
-  "name": "qingstor",
+  "name": "s3",
   "service": {
     "create": {
       "location": true
@@ -10,13 +10,12 @@
     "get": {
       "location": false
     },
-    "list": {
-      "location": false,
-      "storager_func": false
-    },
-    "new": {
+    "init": {
       "credential": true,
       "endpoint": false
+    },
+    "list": {
+      "storager_func": false
     }
   },
   "storage": {
@@ -32,9 +31,6 @@
     },
     "list_segments": {
       "segment_func": false
-    },
-    "reach": {
-      "expire": true
     },
     "write": {
       "checksum": false,

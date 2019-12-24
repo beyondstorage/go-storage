@@ -23,7 +23,7 @@ type Service struct {
 
 // New will create a new qingstor service.
 func New(pairs ...*types.Pair) (s *Service, err error) {
-	errorMessage := "init qingstor service: %w"
+	const errorMessage = "%s New: %w"
 
 	s = &Service{
 		noRedirectClient: &http.Client{
@@ -33,15 +33,15 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 		},
 	}
 
-	opt, err := parseServicePairInit(pairs...)
+	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, err)
 	}
 
 	cred := opt.Credential.Value()
 	cfg, err := config.New(cred.AccessKey, cred.SecretKey)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, err)
 	}
 	if opt.HasEndpoint {
 		ep := opt.Endpoint.Value()
@@ -57,33 +57,19 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 
 // String implements Service.String
 func (s *Service) String() string {
-	return fmt.Sprintf("qingstor Service {Host: %s, Port: %d, Protocol: %s, AccessKey: %s}", s.config.Host, s.config.Port, s.config.Protocol, s.config.AccessKeyID)
-}
-
-// Get implements Servicer.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	errorMessage := "get qingstor storager [%s]: %w"
-
-	opt, err := parseServicePairGet(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, name, err)
+	if s.config == nil {
+		return fmt.Sprintf("Servicer qingstor")
 	}
-
-	bucket, err := s.get(name, opt.Location)
-	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, name, err)
-	}
-	return newStorage(bucket)
+	return fmt.Sprintf("Servicer qingstor {Host: %s, Port: %d, Protocol: %s, AccessKey: %s}", s.config.Host, s.config.Port, s.config.Protocol, s.config.AccessKeyID)
 }
 
 // Create implements Servicer.Create
 func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	errorMessage := "create qingstor storager [%s]: %w"
+	const errorMessage = "%s Create [%s]: %w"
 
 	opt, err := parseServicePairCreate(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, name, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
 	// TODO: check bucket name here.
@@ -91,24 +77,62 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 	bucket, err := s.service.Bucket(name, opt.Location)
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, name, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
 	_, err = bucket.Put()
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, name, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+	return newStorage(bucket)
+}
+
+// Delete implements Servicer.Delete
+func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Delete [%s]: %w"
+
+	opt, err := parseServicePairDelete(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, name, err)
+	}
+	bucket, err := s.get(name, opt.Location)
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, s, name, err)
+	}
+	_, err = bucket.Delete()
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, s, name, err)
+	}
+	return nil
+}
+
+// Get implements Servicer.Get
+func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
+	const errorMessage = "%s Get [%s]: %w"
+
+	opt, err := parseServicePairGet(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
+	bucket, err := s.get(name, opt.Location)
+	if err != nil {
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 	return newStorage(bucket)
 }
 
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
-	errorMessage := "list qingstor storager: %w"
+	const errorMessage = "%s List: %w"
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, s, err)
 	}
 
 	input := &service.ListBucketsInput{}
@@ -119,18 +143,18 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 	output, err := s.service.ListBuckets(input)
 	if err != nil {
 		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, s, err)
 	}
 
 	for _, v := range output.Buckets {
 		store, err := s.get(*v.Name, *v.Location)
 		if err != nil {
-			return fmt.Errorf(errorMessage, err)
+			return fmt.Errorf(errorMessage, s, err)
 		}
 		if opt.HasStoragerFunc {
 			c, err := newStorage(store)
 			if err != nil {
-				return fmt.Errorf(errorMessage, err)
+				return fmt.Errorf(errorMessage, s, err)
 			}
 			opt.StoragerFunc(c)
 		}
@@ -138,33 +162,12 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 	return nil
 }
 
-// Delete implements Servicer.Delete
-func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	errorMessage := "delete qingstor storager [%s]: %w"
-
-	opt, err := parseServicePairDelete(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, name, err)
-	}
-	bucket, err := s.get(name, opt.Location)
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, name, err)
-	}
-	_, err = bucket.Delete()
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, name, err)
-	}
-	return nil
-}
-
 func (s *Service) get(name, location string) (*service.Bucket, error) {
-	errorMessage := "get qingstor storager [%s]: %w"
+	const errorMessage = "%s get [%s]: %w"
 
 	if !IsBucketNameValid(name) {
 		err := handleQingStorError(ErrInvalidBucketName)
-		return nil, fmt.Errorf(errorMessage, name, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
 	// TODO: add bucket name check here.
@@ -172,7 +175,7 @@ func (s *Service) get(name, location string) (*service.Bucket, error) {
 		bucket, err := s.service.Bucket(name, location)
 		if err != nil {
 			err = handleQingStorError(err)
-			return nil, fmt.Errorf(errorMessage, name, err)
+			return nil, fmt.Errorf(errorMessage, s, name, err)
 		}
 		return bucket, nil
 	}
@@ -182,11 +185,11 @@ func (s *Service) get(name, location string) (*service.Bucket, error) {
 	r, err := s.noRedirectClient.Head(url)
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, name, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 	if r.StatusCode != http.StatusTemporaryRedirect {
 		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
-		return nil, fmt.Errorf(errorMessage, name, handleQingStorError(err))
+		return nil, fmt.Errorf(errorMessage, s, name, handleQingStorError(err))
 	}
 
 	// Example URL: https://bucket.zone.qingstor.com
@@ -194,7 +197,7 @@ func (s *Service) get(name, location string) (*service.Bucket, error) {
 	bucket, err := s.service.Bucket(name, location)
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, name, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 	return bucket, nil
 }

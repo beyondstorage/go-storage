@@ -50,39 +50,39 @@ func New() *Storage {
 }
 
 // String implements Storager.String
-func (c *Storage) String() string {
-	return fmt.Sprintf("posixfs Storager {WorkDir: %s}", c.workDir)
+func (s *Storage) String() string {
+	return fmt.Sprintf("Storager fs {WorkDir: %s}", s.workDir)
 }
 
 // Init implements Storager.Init
-func (c *Storage) Init(pairs ...*types.Pair) (err error) {
-	errorMessage := "posixfs Init: %w"
+func (s *Storage) Init(pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Init: %w"
 
 	opt, err := parseStoragePairInit(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, s, err)
 	}
 
 	if opt.HasWorkDir {
 		// TODO: validate workDir.
-		c.workDir = opt.WorkDir
+		s.workDir = opt.WorkDir
 	}
 	return nil
 }
 
 // Metadata implements Storager.Metadata
-func (c *Storage) Metadata() (m metadata.Storage, err error) {
+func (s *Storage) Metadata() (m metadata.Storage, err error) {
 	m = metadata.Storage{
 		Name:     "",
-		WorkDir:  c.workDir,
+		WorkDir:  s.workDir,
 		Metadata: nil,
 	}
 	return m, nil
 }
 
 // Stat implements Storager.Stat
-func (c *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
-	errorMessage := "posixfs Stat path [%s]: %w"
+func (s *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
+	const errorMessage = "%s Stat [%s]: %w"
 
 	if path == "-" {
 		return &types.Object{
@@ -93,11 +93,11 @@ func (c *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err
 		}, nil
 	}
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	fi, err := c.osStat(rp)
+	fi, err := s.osStat(rp)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
+		return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
 	}
 
 	o = &types.Object{
@@ -125,89 +125,84 @@ func (c *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err
 }
 
 // Delete implements Storager.Delete
-func (c *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "posixfs Delete path [%s]: %w"
+func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Delete [%s]: %w"
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	err = c.osRemove(rp)
+	err = s.osRemove(rp)
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, handleOsError(err))
+		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
 	}
 	return nil
 }
 
 // Copy implements Storager.Copy
-func (c *Storage) Copy(src, dst string, option ...*types.Pair) (err error) {
-	errorMessage := "posixfs Copy from [%s] to [%s]: %w"
+func (s *Storage) Copy(src, dst string, option ...*types.Pair) (err error) {
+	const errorMessage = "%s Copy from [%s] to [%s]: %w"
 
-	rs := c.getAbsPath(src)
-	rd := c.getAbsPath(dst)
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
 
 	// Create dir for dst.
-	err = c.createDir(dst)
+	err = s.createDir(dst)
 	if err != nil {
-		return fmt.Errorf(errorMessage, src, dst, err)
+		return fmt.Errorf(errorMessage, s, src, dst, err)
 	}
 
-	srcFile, err := c.osOpen(rs)
+	srcFile, err := s.osOpen(rs)
 	if err != nil {
-		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
+		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
 	}
 	defer srcFile.Close()
 
-	dstFile, err := c.osCreate(rd)
+	dstFile, err := s.osCreate(rd)
 	if err != nil {
-		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
+		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
 	}
 	defer dstFile.Close()
 
-	_, err = c.ioCopyBuffer(dstFile, srcFile, make([]byte, 1024*1024))
+	_, err = s.ioCopyBuffer(dstFile, srcFile, make([]byte, 1024*1024))
 	if err != nil {
-		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
+		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
 	}
 	return
 }
 
 // Move implements Storager.Move
-func (c *Storage) Move(src, dst string, option ...*types.Pair) (err error) {
-	errorMessage := "posixfs Move from [%s] to [%s]: %w"
+func (s *Storage) Move(src, dst string, option ...*types.Pair) (err error) {
+	const errorMessage = "%s Move from [%s] to [%s]: %w"
 
-	rs := c.getAbsPath(src)
-	rd := c.getAbsPath(dst)
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
 
 	// Create dir for dst path.
-	err = c.createDir(dst)
+	err = s.createDir(dst)
 	if err != nil {
-		return fmt.Errorf(errorMessage, src, dst, err)
+		return fmt.Errorf(errorMessage, s, src, dst, err)
 	}
 
-	err = c.osRename(rs, rd)
+	err = s.osRename(rs, rd)
 	if err != nil {
-		return fmt.Errorf(errorMessage, src, dst, handleOsError(err))
+		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
 	}
 	return
 }
 
-// Reach implements Storager.Reach
-func (c *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
-	panic("not supported")
-}
-
 // ListDir implements Storager.ListDir
-func (c *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	errorMessage := "posixfs ListDir [%s]: %w"
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s ListDir [%s]: %w"
 
 	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, err)
+		return fmt.Errorf(errorMessage, s, path, err)
 	}
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	fi, err := c.ioutilReadDir(rp)
+	fi, err := s.ioutilReadDir(rp)
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, handleOsError(err))
+		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
 	}
 
 	for _, v := range fi {
@@ -235,12 +230,12 @@ func (c *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 }
 
 // Read implements Storager.Read
-func (c *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	errorMessage := "posixfs Read [%s]: %w"
+func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
+	const errorMessage = "%s Read [%s]: %w"
 
 	opt, err := parseStoragePairRead(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, path, err)
+		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
 
 	// If path is "-", return stdin directly.
@@ -252,11 +247,11 @@ func (c *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		return f, nil
 	}
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	f, err := c.osOpen(rp)
+	f, err := s.osOpen(rp)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
+		return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
 	}
 	if opt.HasSize && opt.HasOffset {
 		return iowrap.SectionReadCloser(f, opt.Offset, opt.Size), nil
@@ -267,19 +262,19 @@ func (c *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	if opt.HasOffset {
 		_, err = f.Seek(opt.Offset, 0)
 		if err != nil {
-			return nil, fmt.Errorf(errorMessage, path, handleOsError(err))
+			return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
 		}
 	}
 	return f, nil
 }
 
 // WriteFile implements Storager.WriteFile
-func (c *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	errorMessage := "posixfs WriteFile [%s]: %w"
+func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Write [%s]: %w"
 
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, err)
+		return fmt.Errorf(errorMessage, s, path, err)
 	}
 
 	var f io.WriteCloser
@@ -288,26 +283,26 @@ func (c *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		f = os.Stdout
 	} else {
 		// Create dir for path.
-		err = c.createDir(path)
+		err = s.createDir(path)
 		if err != nil {
-			return fmt.Errorf(errorMessage, path, err)
+			return fmt.Errorf(errorMessage, s, path, err)
 		}
 
-		rp := c.getAbsPath(path)
+		rp := s.getAbsPath(path)
 
-		f, err = c.osCreate(rp)
+		f, err = s.osCreate(rp)
 		if err != nil {
-			return fmt.Errorf(errorMessage, path, handleOsError(err))
+			return fmt.Errorf(errorMessage, s, path, handleOsError(err))
 		}
 	}
 
 	if opt.HasSize {
-		_, err = c.ioCopyN(f, r, opt.Size)
+		_, err = s.ioCopyN(f, r, opt.Size)
 	} else {
-		_, err = c.ioCopyBuffer(f, r, make([]byte, 1024*1024))
+		_, err = s.ioCopyBuffer(f, r, make([]byte, 1024*1024))
 	}
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, handleOsError(err))
+		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
 	}
 	return
 }

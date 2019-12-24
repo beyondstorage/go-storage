@@ -60,7 +60,7 @@ if err != nil {
 | ------- | ----------- | ------ |
 | fs | Local file system | stable |
 | qingstor | [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/) | stable |
-| s3 | [Amazon S3](https://aws.amazon.com/s3/) | planned |
+| s3 | [Amazon S3](https://aws.amazon.com/s3/) | alpha (-segments, -unittests) |
 | oss | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | planned |
 | gcs | [Google Cloud Storage](https://cloud.google.com/storage/) | planned |
 | kodo | [qiniu kodo](https://www.qiniu.com/products/kodo) | planned |
