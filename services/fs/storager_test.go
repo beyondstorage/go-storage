@@ -399,14 +399,6 @@ func TestStorage_Move(t *testing.T) {
 	})
 }
 
-func TestStorage_Reach(t *testing.T) {
-	client := Storage{}
-
-	assert.Panics(t, func() {
-		_, _ = client.Reach(uuid.New().String())
-	})
-}
-
 func TestStorage_ListDir(t *testing.T) {
 	paths := make([]string, 100)
 	for k := range paths {

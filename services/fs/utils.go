@@ -18,31 +18,31 @@ func ParseNamespace(s string) string {
 	return filepath.Join("/", s)
 }
 
-func (c *Storage) createDir(path string) (err error) {
+func (s *Storage) createDir(path string) (err error) {
 	errorMessage := "posixfs createDir [%s]: %w"
 
-	rp := c.getDirPath(path)
+	rp := s.getDirPath(path)
 	// Don't need to create work dir.
-	if rp == c.workDir {
+	if rp == s.workDir {
 		return
 	}
 
-	err = c.osMkdirAll(rp, 0755)
+	err = s.osMkdirAll(rp, 0755)
 	if err != nil {
 		return fmt.Errorf(errorMessage, path, handleOsError(err))
 	}
 	return
 }
 
-func (c *Storage) getAbsPath(path string) string {
-	return filepath.Join(c.workDir, path)
+func (s *Storage) getAbsPath(path string) string {
+	return filepath.Join(s.workDir, path)
 }
 
-func (c *Storage) getDirPath(path string) string {
+func (s *Storage) getDirPath(path string) string {
 	if path == "" {
-		return c.workDir
+		return s.workDir
 	}
-	return filepath.Join(c.workDir, filepath.Dir(path))
+	return filepath.Join(s.workDir, filepath.Dir(path))
 }
 
 func handleOsError(err error) error {
