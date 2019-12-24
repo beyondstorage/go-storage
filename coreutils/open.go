@@ -7,7 +7,9 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/config"
 	"github.com/Xuanwo/storage/services/fs"
+	"github.com/Xuanwo/storage/services/oss"
 	"github.com/Xuanwo/storage/services/qingstor"
+	"github.com/Xuanwo/storage/services/s3"
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
@@ -48,6 +50,50 @@ func Open(cfg string) (srv storage.Servicer, store storage.Storager, err error) 
 			err = fmt.Errorf(errorMessage, cfg, err)
 			return
 		}
+		name, prefix := qingstor.ParseNamespace(namespace)
+		if name == "" {
+			return
+		}
+		store, err = srv.Get(name)
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		err = store.Init(pairs.WithWorkDir(prefix))
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		return
+	case s3.Type:
+		srv, err = s3.New(opt...)
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		// FIXME: this util function should move to config package.
+		name, prefix := qingstor.ParseNamespace(namespace)
+		if name == "" {
+			return
+		}
+		store, err = srv.Get(name)
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		err = store.Init(pairs.WithWorkDir(prefix))
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		return
+	case oss.Type:
+		srv, err = oss.New(opt...)
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		// FIXME: this util function should move to config package.
 		name, prefix := qingstor.ParseNamespace(namespace)
 		if name == "" {
 			return
