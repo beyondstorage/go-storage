@@ -52,13 +52,13 @@ var allowedServicePairs = map[string]map[string]struct{}{
 	"get": {
 		"location": struct{}{},
 	},
-	"init": {
-		"credential": struct{}{},
-		"endpoint":   struct{}{},
-	},
 	"list": {
 		"location":      struct{}{},
 		"storager_func": struct{}{},
+	},
+	"new": {
+		"credential": struct{}{},
+		"endpoint":   struct{}{},
 	},
 }
 
@@ -347,44 +347,6 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 	return result, nil
 }
 
-type pairServiceInit struct {
-	HasCredential bool
-	Credential    credential.Provider
-	HasEndpoint   bool
-	Endpoint      endpoint.Provider
-}
-
-func parseServicePairInit(opts ...*types.Pair) (*pairServiceInit, error) {
-	result := &pairServiceInit{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := allowedServicePairs["init"]; !ok {
-			continue
-		}
-		if _, ok := allowedServicePairs["init"][v.Key]; !ok {
-			continue
-		}
-		values[v.Key] = v.Value
-	}
-	var v interface{}
-	var ok bool
-	v, ok = values[pairs.Credential]
-	if !ok {
-		return nil, types.NewErrPairRequired(pairs.Credential)
-	}
-	if ok {
-		result.HasCredential = true
-		result.Credential = v.(credential.Provider)
-	}
-	v, ok = values[pairs.Endpoint]
-	if ok {
-		result.HasEndpoint = true
-		result.Endpoint = v.(endpoint.Provider)
-	}
-	return result, nil
-}
-
 type pairServiceList struct {
 	HasLocation     bool
 	Location        string
@@ -416,6 +378,44 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	if ok {
 		result.HasStoragerFunc = true
 		result.StoragerFunc = v.(storage.StoragerFunc)
+	}
+	return result, nil
+}
+
+type pairServiceNew struct {
+	HasCredential bool
+	Credential    credential.Provider
+	HasEndpoint   bool
+	Endpoint      endpoint.Provider
+}
+
+func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
+	result := &pairServiceNew{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedServicePairs["new"]; !ok {
+			continue
+		}
+		if _, ok := allowedServicePairs["new"][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[pairs.Credential]
+	if !ok {
+		return nil, types.NewErrPairRequired(pairs.Credential)
+	}
+	if ok {
+		result.HasCredential = true
+		result.Credential = v.(credential.Provider)
+	}
+	v, ok = values[pairs.Endpoint]
+	if ok {
+		result.HasEndpoint = true
+		result.Endpoint = v.(endpoint.Provider)
 	}
 	return result, nil
 }

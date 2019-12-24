@@ -10,13 +10,13 @@
     "get": {
       "location": false
     },
-    "init": {
-      "credential": true,
-      "endpoint": false
-    },
     "list": {
       "location": false,
       "storager_func": false
+    },
+    "new": {
+      "credential": true,
+      "endpoint": false
     }
   },
   "storage": {

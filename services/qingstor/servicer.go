@@ -33,7 +33,7 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 		},
 	}
 
-	opt, err := parseServicePairInit(pairs...)
+	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, err)
 	}
@@ -60,23 +60,6 @@ func (s *Service) String() string {
 	return fmt.Sprintf("qingstor Service {Host: %s, Port: %d, Protocol: %s, AccessKey: %s}", s.config.Host, s.config.Port, s.config.Protocol, s.config.AccessKeyID)
 }
 
-// Get implements Servicer.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	errorMessage := "get qingstor storager [%s]: %w"
-
-	opt, err := parseServicePairGet(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, name, err)
-	}
-
-	bucket, err := s.get(name, opt.Location)
-	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, name, err)
-	}
-	return newStorage(bucket)
-}
-
 // Create implements Servicer.Create
 func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	errorMessage := "create qingstor storager [%s]: %w"
@@ -95,6 +78,44 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 	}
 
 	_, err = bucket.Put()
+	if err != nil {
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, name, err)
+	}
+	return newStorage(bucket)
+}
+
+// Delete implements Servicer.Delete
+func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
+	errorMessage := "delete qingstor storager [%s]: %w"
+
+	opt, err := parseServicePairDelete(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, name, err)
+	}
+	bucket, err := s.get(name, opt.Location)
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, name, err)
+	}
+	_, err = bucket.Delete()
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, name, err)
+	}
+	return nil
+}
+
+// Get implements Servicer.Get
+func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
+	errorMessage := "get qingstor storager [%s]: %w"
+
+	opt, err := parseServicePairGet(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, name, err)
+	}
+
+	bucket, err := s.get(name, opt.Location)
 	if err != nil {
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, name, err)
@@ -134,27 +155,6 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 			}
 			opt.StoragerFunc(c)
 		}
-	}
-	return nil
-}
-
-// Delete implements Servicer.Delete
-func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	errorMessage := "delete qingstor storager [%s]: %w"
-
-	opt, err := parseServicePairDelete(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, name, err)
-	}
-	bucket, err := s.get(name, opt.Location)
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, name, err)
-	}
-	_, err = bucket.Delete()
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, name, err)
 	}
 	return nil
 }
