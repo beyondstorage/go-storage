@@ -18,6 +18,7 @@ type Service struct {
 	service s3iface.S3API
 }
 
+// New will create a new s3 service.
 func New(pairs ...*types.Pair) (s *Service, err error) {
 	errorMessage := "init s3 service: %w"
 
@@ -42,11 +43,12 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 	return s, nil
 }
 
-// String implements Service.String
+// String implements Servicer.String
 func (s *Service) String() string {
 	return fmt.Sprintf("s3 Service")
 }
 
+// List implements Servicer.List
 func (s Service) List(pairs ...*types.Pair) (err error) {
 	errorMessage := "list s3 storager: %w"
 
@@ -75,6 +77,7 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 	return nil
 }
 
+// Get implements Servicer.Get
 func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	errorMessage := "get s3 storager: %w"
 
@@ -85,6 +88,7 @@ func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error
 	return store, nil
 }
 
+// Create implements Servicer.Create
 func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	errorMessage := "create s3 storager: %w"
 
@@ -112,6 +116,7 @@ func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, er
 	return store, nil
 }
 
+// Delete implements Servicer.Delete
 func (s Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	errorMessage := "delete s3 storager: %w"
 
