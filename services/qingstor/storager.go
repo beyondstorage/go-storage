@@ -44,7 +44,7 @@ func newStorage(bucket *service.Bucket) (*Storage, error) {
 }
 
 // Init implements Storager.Init
-func (c *Storage) Init(pairs ...*types.Pair) (err error) {
+func (s *Storage) Init(pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Init: %w"
 
 	opt, err := parseStoragePairInit(pairs...)
@@ -54,36 +54,36 @@ func (c *Storage) Init(pairs ...*types.Pair) (err error) {
 
 	if opt.HasWorkDir {
 		// TODO: we should validate workDir
-		c.workDir = strings.TrimLeft(opt.WorkDir, "/")
+		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
 	}
 
 	return nil
 }
 
 // String implements Storager.String
-func (c *Storage) String() string {
+func (s *Storage) String() string {
 	return fmt.Sprintf(
-		"qingstor Storager {Bucket: %s, Location: %s, WorkDir: %s}",
-		*c.properties.BucketName, *c.properties.Zone, "/"+c.workDir,
+		"Storager qingstor {Name: %s, Location: %s, WorkDir: %s}",
+		*s.properties.BucketName, *s.properties.Zone, "/"+s.workDir,
 	)
 }
 
 // Metadata implements Storager.Metadata
-func (c *Storage) Metadata() (m metadata.Storage, err error) {
+func (s *Storage) Metadata() (m metadata.Storage, err error) {
 	m = metadata.Storage{
-		Name:     *c.properties.BucketName,
-		WorkDir:  c.workDir,
+		Name:     *s.properties.BucketName,
+		WorkDir:  s.workDir,
 		Metadata: make(metadata.Metadata),
 	}
-	m.SetLocation(*c.properties.Zone)
+	m.SetLocation(*s.properties.Zone)
 	return m, nil
 }
 
 // Statistical implements Storager.Statistical
-func (c *Storage) Statistical() (m metadata.Metadata, err error) {
+func (s *Storage) Statistical() (m metadata.Metadata, err error) {
 	errorMessage := "qingstor Statistical: %w"
 
-	output, err := c.bucket.GetStatistics()
+	output, err := s.bucket.GetStatistics()
 	if err != nil {
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, err)
@@ -100,14 +100,14 @@ func (c *Storage) Statistical() (m metadata.Metadata, err error) {
 }
 
 // Stat implements Storager.Stat
-func (c *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
+func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	errorMessage := "qingstor Stat: %w"
 
 	input := &service.HeadObjectInput{}
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	output, err := c.bucket.HeadObject(rp, input)
+	output, err := s.bucket.HeadObject(rp, input)
 	if err != nil {
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, err)
@@ -136,12 +136,12 @@ func (c *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 }
 
 // Delete implements Storager.Delete
-func (c *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Delete: %w"
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	_, err = c.bucket.DeleteObject(rp)
+	_, err = s.bucket.DeleteObject(rp)
 	if err != nil {
 		err = handleQingStorError(err)
 		return fmt.Errorf(errorMessage, err)
@@ -150,13 +150,13 @@ func (c *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 }
 
 // Copy implements Storager.Copy
-func (c *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
+func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Copy: %w"
 
-	rs := c.getAbsPath(src)
-	rd := c.getAbsPath(dst)
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
 
-	_, err = c.bucket.PutObject(rd, &service.PutObjectInput{
+	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
 		XQSCopySource: &rs,
 	})
 	if err != nil {
@@ -167,13 +167,13 @@ func (c *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 }
 
 // Move implements Storager.Move
-func (c *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
+func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor Move: %w"
 
-	rs := c.getAbsPath(src)
-	rd := c.getAbsPath(dst)
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
 
-	_, err = c.bucket.PutObject(rd, &service.PutObjectInput{
+	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
 		XQSMoveSource: &rs,
 	})
 	if err != nil {
@@ -184,7 +184,7 @@ func (c *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 }
 
 // Reach implements Storager.Reach
-func (c *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
+func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
 	errorMessage := "qingstor Reach: %w"
 
 	opt, err := parseStoragePairReach(pairs...)
@@ -193,9 +193,9 @@ func (c *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 	}
 
 	// FIXME: sdk should export GetObjectRequest as interface too?
-	bucket := c.bucket.(*service.Bucket)
+	bucket := s.bucket.(*service.Bucket)
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
 	r, _, err := bucket.GetObjectRequest(rp, nil)
 	if err != nil {
@@ -219,7 +219,7 @@ func (c *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 }
 
 // ListDir implements Storager.ListDir
-func (c *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor ListDir: %w"
 
 	opt, _ := parseStoragePairListDir(pairs...)
@@ -227,11 +227,11 @@ func (c *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	marker := ""
 	limit := 200
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
 	var output *service.ListObjectsOutput
 	for {
-		output, err = c.bucket.ListObjects(&service.ListObjectsInput{
+		output, err = s.bucket.ListObjects(&service.ListObjectsInput{
 			Limit:  &limit,
 			Marker: &marker,
 			Prefix: &rp,
@@ -243,7 +243,7 @@ func (c *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
-				Name:     c.getRelPath(*v),
+				Name:     s.getRelPath(*v),
 				Type:     types.ObjectTypeDir,
 				Metadata: make(metadata.Metadata),
 			}
@@ -255,7 +255,7 @@ func (c *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Keys {
 			o := &types.Object{
-				Name:      c.getRelPath(*v.Key),
+				Name:      s.getRelPath(*v.Key),
 				Size:      service.Int64Value(v.Size),
 				UpdatedAt: convertUnixTimestampToTime(service.IntValue(v.Modified)),
 				Metadata:  make(metadata.Metadata),
@@ -303,14 +303,14 @@ func (c *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 }
 
 // Read implements Storager.Read
-func (c *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
+func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	errorMessage := "qingstor ReadFile: %w"
 
 	input := &service.GetObjectInput{}
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	output, err := c.bucket.GetObject(rp, input)
+	output, err := s.bucket.GetObject(rp, input)
 	if err != nil {
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, err)
@@ -319,7 +319,7 @@ func (c *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 }
 
 // WriteFile implements Storager.WriteFile
-func (c *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteFile for id %s: %w"
 
 	opt, err := parseStoragePairWrite(pairs...)
@@ -338,9 +338,9 @@ func (c *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		input.XQSStorageClass = &opt.StorageClass
 	}
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	_, err = c.bucket.PutObject(rp, input)
+	_, err = s.bucket.PutObject(rp, input)
 	if err != nil {
 		err = handleQingStorError(err)
 		return fmt.Errorf(errorMessage, path, err)
@@ -349,7 +349,7 @@ func (c *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 }
 
 // ListSegments implements Storager.ListSegments
-func (c *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor ListSegments: %w"
 
 	opt, err := parseStoragePairListSegments(pairs...)
@@ -361,11 +361,11 @@ func (c *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 	uploadIDMarker := ""
 	limit := 200
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
 	var output *service.ListMultipartUploadsOutput
 	for {
-		output, err = c.bucket.ListMultipartUploads(&service.ListMultipartUploadsInput{
+		output, err = s.bucket.ListMultipartUploads(&service.ListMultipartUploadsInput{
 			KeyMarker:      &keyMarker,
 			Limit:          &limit,
 			Prefix:         &rp,
@@ -377,16 +377,16 @@ func (c *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range output.Uploads {
-			s := segment.NewSegment(*v.Key, *v.UploadID, 0)
+			seg := segment.NewSegment(*v.Key, *v.UploadID, 0)
 
 			if opt.HasSegmentFunc {
-				opt.SegmentFunc(s)
+				opt.SegmentFunc(seg)
 			}
 
-			c.segmentLock.Lock()
+			s.segmentLock.Lock()
 			// Update client's segments.
-			c.segments[s.ID] = s
-			c.segmentLock.Unlock()
+			s.segments[seg.ID] = seg
+			s.segmentLock.Unlock()
 		}
 
 		keyMarker = convert.StringValue(output.NextKeyMarker)
@@ -402,7 +402,7 @@ func (c *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 }
 
 // InitSegment implements Storager.InitSegment
-func (c *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err error) {
+func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err error) {
 	errorMessage := "qingstor InitSegment for id %s: %w"
 
 	opt, err := parseStoragePairInitSegment(pairs...)
@@ -412,9 +412,9 @@ func (c *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err
 
 	input := &service.InitiateMultipartUploadInput{}
 
-	rp := c.getAbsPath(path)
+	rp := s.getAbsPath(path)
 
-	output, err := c.bucket.InitiateMultipartUpload(rp, input)
+	output, err := s.bucket.InitiateMultipartUpload(rp, input)
 	if err != nil {
 		err = handleQingStorError(err)
 		return "", fmt.Errorf(errorMessage, path, err)
@@ -422,33 +422,33 @@ func (c *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err
 
 	id = *output.UploadID
 
-	c.segmentLock.Lock()
-	c.segments[id] = segment.NewSegment(path, id, opt.PartSize)
-	c.segmentLock.Unlock()
+	s.segmentLock.Lock()
+	s.segments[id] = segment.NewSegment(path, id, opt.PartSize)
+	s.segmentLock.Unlock()
 	return
 }
 
 // WriteSegment implements Storager.WriteSegment
-func (c *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor WriteSegment for id %s: %w"
 
-	c.segmentLock.RLock()
-	s, ok := c.segments[id]
+	s.segmentLock.RLock()
+	seg, ok := s.segments[id]
 	if !ok {
 		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
-	c.segmentLock.RUnlock()
+	s.segmentLock.RUnlock()
 
-	p, err := s.InsertPart(offset, size)
+	p, err := seg.InsertPart(offset, size)
 	if err != nil {
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	rp := c.getAbsPath(s.Path)
+	rp := s.getAbsPath(seg.Path)
 
-	_, err = c.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
+	_, err = s.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
 		PartNumber:    &p.Index,
-		UploadID:      &s.ID,
+		UploadID:      &seg.ID,
 		ContentLength: &size,
 		Body:          r,
 	})
@@ -460,22 +460,22 @@ func (c *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs
 }
 
 // CompleteSegment implements Storager.CompleteSegment
-func (c *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor CompleteSegment for id %s: %w"
 
-	c.segmentLock.RLock()
-	s, ok := c.segments[id]
+	s.segmentLock.RLock()
+	seg, ok := s.segments[id]
 	if !ok {
 		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
-	c.segmentLock.RUnlock()
+	s.segmentLock.RUnlock()
 
-	err = s.ValidateParts()
+	err = seg.ValidateParts()
 	if err != nil {
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	parts := s.SortedParts()
+	parts := seg.SortedParts()
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for k, v := range parts {
 		k := k
@@ -485,10 +485,10 @@ func (c *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		})
 	}
 
-	rp := c.getAbsPath(s.Path)
+	rp := s.getAbsPath(seg.Path)
 
-	_, err = c.bucket.CompleteMultipartUpload(rp, &service.CompleteMultipartUploadInput{
-		UploadID:    &s.ID,
+	_, err = s.bucket.CompleteMultipartUpload(rp, &service.CompleteMultipartUploadInput{
+		UploadID:    &seg.ID,
 		ObjectParts: objectParts,
 	})
 	if err != nil {
@@ -496,35 +496,35 @@ func (c *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	c.segmentLock.Lock()
-	delete(c.segments, id)
-	c.segmentLock.Unlock()
+	s.segmentLock.Lock()
+	delete(s.segments, id)
+	s.segmentLock.Unlock()
 	return
 }
 
 // AbortSegment implements Storager.AbortSegment
-func (c *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 	errorMessage := "qingstor AbortSegment for id %s: %w"
 
-	c.segmentLock.RLock()
-	s, ok := c.segments[id]
+	s.segmentLock.RLock()
+	seg, ok := s.segments[id]
 	if !ok {
 		return fmt.Errorf(errorMessage, id, segment.ErrSegmentNotInitiated)
 	}
-	c.segmentLock.RUnlock()
+	s.segmentLock.RUnlock()
 
-	rp := c.getAbsPath(s.Path)
+	rp := s.getAbsPath(seg.Path)
 
-	_, err = c.bucket.AbortMultipartUpload(rp, &service.AbortMultipartUploadInput{
-		UploadID: &s.ID,
+	_, err = s.bucket.AbortMultipartUpload(rp, &service.AbortMultipartUploadInput{
+		UploadID: &seg.ID,
 	})
 	if err != nil {
 		err = handleQingStorError(err)
 		return fmt.Errorf(errorMessage, id, err)
 	}
 
-	c.segmentLock.Lock()
-	delete(c.segments, id)
-	c.segmentLock.Unlock()
+	s.segmentLock.Lock()
+	delete(s.segments, id)
+	s.segmentLock.Unlock()
 	return
 }

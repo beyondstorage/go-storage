@@ -21,12 +21,12 @@ func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
 }
 
-func (c *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(c.workDir+"/"+path, "/")
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
 }
 
-func (c *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, c.workDir+"/")
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }
 
 func handleQingStorError(err error) error {
