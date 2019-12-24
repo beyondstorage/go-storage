@@ -140,6 +140,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		input.Location = &opt.Location
 	}
 
+	// FIXME: List buckets could be incomplete.
 	output, err := s.service.ListBuckets(input)
 	if err != nil {
 		err = handleQingStorError(err)

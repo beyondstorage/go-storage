@@ -61,7 +61,7 @@ if err != nil {
 | fs | Local file system | stable |
 | qingstor | [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/) | stable |
 | s3 | [Amazon S3](https://aws.amazon.com/s3/) | alpha (-segments, -unittests) |
-| oss | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | planned |
+| oss | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | alpha (-segments, -unittests) |
 | gcs | [Google Cloud Storage](https://cloud.google.com/storage/) | planned |
 | kodo | [qiniu kodo](https://www.qiniu.com/products/kodo) | planned |
 | uss | [UPYUN Storage Service](https://www.upyun.com/products/file-storage) | planned |
@@ -78,3 +78,7 @@ if err != nil {
 ### s3
 
 `s3://static:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+
+### oss
+
+`oss://static:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
