@@ -31,7 +31,7 @@ func TestStorage_String(t *testing.T) {
 		t.Error(err)
 	}
 
-	assert.Equal(t,  "Storager fs {WorkDir: /test}", c.String())
+	assert.Equal(t, "Storager fs {WorkDir: /test}", c.String())
 }
 
 func TestStorage_Init(t *testing.T) {

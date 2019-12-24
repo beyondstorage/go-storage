@@ -37,27 +37,23 @@ func Parse(cfg string) (t, namespace string, opt []*types.Pair, err error) {
 	if s[0] != "" {
 		// Split <credential>@<endpoint> into tow parts.
 		ce := strings.Split(s[0], "@")
-		switch len(ce) {
-		case 1:
-			// @ missing means we only have @ here.
-			end, err := endpoint.Parse(ce[0])
-			if err != nil {
-				return "", "", nil, fmt.Errorf(errorMessage, cfg, err)
-			}
-			opt = append(opt, pairs.WithEndpoint(end))
-		case 2:
-			cred, err := credential.Parse(ce[0])
-			if err != nil {
-				return "", "", nil, fmt.Errorf(errorMessage, cfg, err)
-			}
-			opt = append(opt, pairs.WithCredential(cred))
+		if len(ce) == 0 || len(ce) > 2 {
+			return "", "", nil, fmt.Errorf(errorMessage, cfg, ErrInvalidConfig)
+		}
+
+		// We always have credential part
+		cred, err := credential.Parse(ce[0])
+		if err != nil {
+			return "", "", nil, fmt.Errorf(errorMessage, cfg, err)
+		}
+		opt = append(opt, pairs.WithCredential(cred))
+
+		if len(ce) == 2 {
 			end, err := endpoint.Parse(ce[1])
 			if err != nil {
 				return "", "", nil, fmt.Errorf(errorMessage, cfg, err)
 			}
 			opt = append(opt, pairs.WithEndpoint(end))
-		default:
-			return "", "", nil, fmt.Errorf(errorMessage, cfg, ErrInvalidConfig)
 		}
 	}
 	// Handle name and options.

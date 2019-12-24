@@ -45,12 +45,12 @@ func TestParse(t *testing.T) {
 			nil,
 		},
 		{
-			"no credential, but with endpoint and options",
-			"qingstor://https:qingstor.com:443/path",
+			"no endpoint, but with credential and options",
+			"qingstor://static:ak:sk/path",
 			"qingstor",
 			"path",
 			[]*types.Pair{
-				pairs.WithEndpoint(endpoint.NewHTTPS("qingstor.com", 443)),
+				pairs.WithCredential(credential.NewStatic("ak", "sk")),
 			},
 			nil,
 		},

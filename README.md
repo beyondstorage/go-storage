@@ -1,4 +1,4 @@
-## storage
+# storage
 
 [![Build Status](https://travis-ci.com/Xuanwo/storage.svg?branch=master)](https://travis-ci.com/Xuanwo/storage)
 [![GoDoc](https://godoc.org/github.com/Xuanwo/storage?status.svg)](https://godoc.org/github.com/Xuanwo/storage)
@@ -8,17 +8,17 @@
 
 A unified storage layer for Golang.
 
-### Goal
+## Goal
 
 - Production ready
 - High performance
 - Vendor lock free
 
-### Current Status
+## Current Status
 
 This lib is in heavy development, break changes could be introduced at any time. All public interface or functions expected to be stable at `v1.0.0`.
 
-### Installation
+## Installation
 
 Install will `go get`
 
@@ -32,7 +32,7 @@ Import
 import "github.com/Xuanwo/storage"
 ```
 
-### Quickstart
+## Quickstart
 
 
 ```go
@@ -54,7 +54,7 @@ if err != nil {
 }
 ```
 
-### Services
+## Services
 
 | Service | Description | Status |
 | ------- | ----------- | ------ |
@@ -66,3 +66,15 @@ if err != nil {
 | kodo | [qiniu kodo](https://www.qiniu.com/products/kodo) | planned |
 | uss | [UPYUN Storage Service](https://www.upyun.com/products/file-storage) | planned |
 | cos | [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos) | planned |
+
+### fs
+
+`fs:///path/to/dir`
+
+### qingstor
+
+`qingstor://static:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
+
+### s3
+
+`s3://static:<access_key>:<secret_key>/<bucket_name>/<prefix>`
