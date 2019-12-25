@@ -3,6 +3,7 @@ package s3
 import (
 	"fmt"
 
+	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -27,10 +28,17 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 		return nil, fmt.Errorf(errorMessage, err)
 	}
 
-	cred := opt.Credential.Value()
+	cfg := aws.NewConfig()
 
-	cfg := aws.NewConfig().
-		WithCredentials(credentials.NewStaticCredentials(cred.AccessKey, cred.SecretKey, ""))
+	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
+	switch credProtocol {
+	case credential.ProtocolHmac:
+		cfg = cfg.WithCredentials(credentials.NewStaticCredentials(cred[0], cred[1], ""))
+	case credential.ProtocolEnv:
+		cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
+	default:
+		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
+	}
 
 	sess, err := session.NewSession(cfg)
 	if err != nil {

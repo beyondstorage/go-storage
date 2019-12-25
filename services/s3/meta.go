@@ -314,7 +314,7 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 
 type pairServiceInit struct {
 	HasCredential bool
-	Credential    credential.Provider
+	Credential    *credential.Provider
 	HasEndpoint   bool
 	Endpoint      endpoint.Provider
 }
@@ -340,7 +340,7 @@ func parseServicePairInit(opts ...*types.Pair) (*pairServiceInit, error) {
 	}
 	if ok {
 		result.HasCredential = true
-		result.Credential = v.(credential.Provider)
+		result.Credential = v.(*credential.Provider)
 	}
 	v, ok = values[pairs.Endpoint]
 	if ok {

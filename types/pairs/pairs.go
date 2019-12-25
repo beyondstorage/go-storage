@@ -38,7 +38,7 @@ func WithChecksum(v string) *types.Pair {
 }
 
 // WithCredential will apply credential value to Options
-func WithCredential(v credential.Provider) *types.Pair {
+func WithCredential(v *credential.Provider) *types.Pair {
 	return &types.Pair{
 		Key:   Credential,
 		Value: v,

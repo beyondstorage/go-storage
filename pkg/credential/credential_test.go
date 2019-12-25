@@ -11,7 +11,7 @@ func TestParse(t *testing.T) {
 	cases := []struct {
 		name  string
 		cfg   string
-		value Provider
+		value *Provider
 		err   error
 	}{
 		{
@@ -22,8 +22,8 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"normal static",
-			"static:ak:sk",
-			NewStatic("ak", "sk"),
+			"hmac:ak:sk",
+			&Provider{protocol: ProtocolHmac, args: []string{"ak", "sk"}},
 			nil,
 		},
 		{

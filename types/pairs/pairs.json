@@ -1,6 +1,6 @@
 {
   "checksum": "string",
-  "credential": "credential.Provider",
+  "credential": "*credential.Provider",
   "dir_func": "types.ObjectFunc",
   "endpoint": "endpoint.Provider",
   "expire": "int",
