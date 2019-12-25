@@ -21,11 +21,11 @@ type Service struct {
 
 // New will create a new s3 service.
 func New(pairs ...*types.Pair) (s *Service, err error) {
-	errorMessage := "init s3 service: %w"
+	errorMessage := "%s New: %w"
 
 	opt, err := parseServicePairInit(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, err)
 	}
 
 	cfg := aws.NewConfig()
@@ -42,7 +42,7 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 
 	sess, err := session.NewSession(cfg)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, err)
 	}
 
 	srv := s3.New(sess)
@@ -53,7 +53,7 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 
 // String implements Servicer.String
 func (s *Service) String() string {
-	return fmt.Sprintf("s3 Service")
+	return fmt.Sprintf("Servicer s3")
 }
 
 // List implements Servicer.List
