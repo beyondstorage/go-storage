@@ -1,7 +1,7 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
-updated_at: 2019-12-25
+status: candidate
+updated_at: 2019-12-26
 ---
 
 # Proposal: Credential refactor

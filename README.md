@@ -37,7 +37,7 @@ import "github.com/Xuanwo/storage"
 
 ```go
 // Init a service.
-srv, store, err := coreutils.Open("qingstor://static:test_access_key:test_secret_key@https:qingstor.com:443/test_bucket_name")
+srv, store, err := coreutils.Open("qingstor://hmac:test_access_key:test_secret_key@https:qingstor.com:443/test_bucket_name")
 if err != nil {
     log.Fatalf("service init failed: %v", err)
 }
@@ -73,12 +73,12 @@ if err != nil {
 
 ### qingstor
 
-`qingstor://static:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
+`qingstor://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
 
 ### s3
 
-`s3://static:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`s3://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
 
 ### oss
 
-`oss://static:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
+`oss://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
