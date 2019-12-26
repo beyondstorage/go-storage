@@ -58,11 +58,11 @@ func (s *Service) String() string {
 
 // List implements Servicer.List
 func (s Service) List(pairs ...*types.Pair) (err error) {
-	errorMessage := "list s3 storager: %w"
+	const errorMessage = "%s List: %w"
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, s, err)
 	}
 
 	input := &s3.ListBucketsInput{}
@@ -70,13 +70,13 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 	output, err := s.service.ListBuckets(input)
 	if err != nil {
 		err = handleS3Error(err)
-		return fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, s, err)
 	}
 
 	for _, v := range output.Buckets {
 		store, err := newStorage(s.service, *v.Name)
 		if err != nil {
-			return fmt.Errorf(errorMessage, err)
+			return fmt.Errorf(errorMessage, s, err)
 		}
 		if opt.HasStoragerFunc {
 			opt.StoragerFunc(store)
@@ -87,22 +87,22 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 
 // Get implements Servicer.Get
 func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	errorMessage := "get s3 storager: %w"
+	const errorMessage = "%s get [%s]: %w"
 
 	store, err := newStorage(s.service, name)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 	return store, nil
 }
 
 // Create implements Servicer.Create
 func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	errorMessage := "create s3 storager: %w"
+	const errorMessage = "%s Create [%s]: %w"
 
 	opt, err := parseServicePairCreate(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
 	input := &s3.CreateBucketInput{
@@ -114,23 +114,23 @@ func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, er
 
 	_, err = s.service.CreateBucket(input)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
 	store, err := newStorage(s.service, name)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 	return store, nil
 }
 
 // Delete implements Servicer.Delete
 func (s Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	errorMessage := "delete s3 storager: %w"
+	const errorMessage = "%s Delete [%s]: %w"
 
 	_, err = parseServicePairDelete(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, s, name, err)
 	}
 
 	input := &s3.DeleteBucketInput{
@@ -139,7 +139,7 @@ func (s Service) Delete(name string, pairs ...*types.Pair) (err error) {
 
 	_, err = s.service.DeleteBucket(input)
 	if err != nil {
-		return fmt.Errorf(errorMessage, err)
+		return fmt.Errorf(errorMessage, s, name, err)
 	}
 	return nil
 }
