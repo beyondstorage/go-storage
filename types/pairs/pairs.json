@@ -9,6 +9,7 @@
   "name": "string",
   "offset": "int64",
   "part_size": "int64",
+  "project": "string",
   "segment_func": "segment.Func",
   "size": "int64",
   "storage_class": "string",

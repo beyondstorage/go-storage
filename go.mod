@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	bou.ke/monkey v1.0.1
+	cloud.google.com/go/storage v1.4.0
 	github.com/aliyun/aliyun-oss-go-sdk v2.0.4+incompatible
 	github.com/aws/aws-sdk-go v1.26.7
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
@@ -15,4 +16,5 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/yunify/qingstor-sdk-go/v3 v3.1.2-0.20191015085047-089474e57bf8
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
+	google.golang.org/api v0.14.0
 )
