@@ -21,6 +21,7 @@ const (
 	Name         = "name"
 	Offset       = "offset"
 	PartSize     = "part_size"
+	Project      = "project"
 	SegmentFunc  = "segment_func"
 	Size         = "size"
 	StorageClass = "storage_class"
@@ -105,6 +106,14 @@ func WithOffset(v int64) *types.Pair {
 func WithPartSize(v int64) *types.Pair {
 	return &types.Pair{
 		Key:   PartSize,
+		Value: v,
+	}
+}
+
+// WithProject will apply project value to Options
+func WithProject(v string) *types.Pair {
+	return &types.Pair{
+		Key:   Project,
 		Value: v,
 	}
 }
