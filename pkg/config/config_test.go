@@ -46,22 +46,22 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"no endpoint, but with credential and options",
-			"qingstor://static:ak:sk/path",
+			"qingstor://hmac:ak:sk/path",
 			"qingstor",
 			"path",
 			[]*types.Pair{
-				pairs.WithCredential(credential.NewStatic("ak", "sk")),
+				pairs.WithCredential(credential.MustNewHmac("ak", "sk")),
 			},
 			nil,
 		},
 		{
 			"all elements available",
-			"qingstor://static:ak:sk@https:qingstor.com:443/path",
+			"qingstor://hmac:ak:sk@https:qingstor.com:443/path",
 			"qingstor",
 			"path",
 			[]*types.Pair{
 				pairs.WithEndpoint(endpoint.NewHTTPS("qingstor.com", 443)),
-				pairs.WithCredential(credential.NewStatic("ak", "sk")),
+				pairs.WithCredential(credential.MustNewHmac("ak", "sk")),
 			},
 			nil,
 		},

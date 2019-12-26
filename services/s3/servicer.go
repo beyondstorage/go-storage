@@ -3,6 +3,7 @@ package s3
 import (
 	"fmt"
 
+	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -20,21 +21,28 @@ type Service struct {
 
 // New will create a new s3 service.
 func New(pairs ...*types.Pair) (s *Service, err error) {
-	errorMessage := "init s3 service: %w"
+	const errorMessage = "%s New: %w"
 
 	opt, err := parseServicePairInit(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, err)
 	}
 
-	cred := opt.Credential.Value()
+	cfg := aws.NewConfig()
 
-	cfg := aws.NewConfig().
-		WithCredentials(credentials.NewStaticCredentials(cred.AccessKey, cred.SecretKey, ""))
+	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
+	switch credProtocol {
+	case credential.ProtocolHmac:
+		cfg = cfg.WithCredentials(credentials.NewStaticCredentials(cred[0], cred[1], ""))
+	case credential.ProtocolEnv:
+		cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
+	default:
+		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
+	}
 
 	sess, err := session.NewSession(cfg)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, fmt.Errorf(errorMessage, s, err)
 	}
 
 	srv := s3.New(sess)
@@ -45,7 +53,7 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 
 // String implements Servicer.String
 func (s *Service) String() string {
-	return fmt.Sprintf("s3 Service")
+	return fmt.Sprintf("Servicer s3")
 }
 
 // List implements Servicer.List

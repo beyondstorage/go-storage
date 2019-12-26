@@ -26,7 +26,7 @@ func TestService_String(t *testing.T) {
 	accessKey := uuid.New().String()
 	secretKey := uuid.New().String()
 
-	srv, err := New(pairs.WithCredential(credential.NewStatic(accessKey, secretKey)))
+	srv, err := New(pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestService_New(t *testing.T) {
 	host := uuid.New().String()
 	port := 1234
 	srv, err := New(
-		pairs.WithCredential(credential.NewStatic(accessKey, secretKey)),
+		pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)),
 		pairs.WithEndpoint(endpoint.NewHTTP(host, port)),
 	)
 	assert.NoError(t, err)
@@ -297,7 +297,7 @@ func TestService_List(t *testing.T) {
 func ExampleNew() {
 	_, err := New(
 		pairs.WithCredential(
-			credential.NewStatic("test_access_key", "test_secret_key"),
+			credential.MustNewHmac("test_access_key", "test_secret_key"),
 		),
 	)
 	if err != nil {
@@ -308,7 +308,7 @@ func ExampleNew() {
 func ExampleService_Get() {
 	srv, err := New(
 		pairs.WithCredential(
-			credential.NewStatic("test_access_key", "test_secret_key"),
+			credential.MustNewHmac("test_access_key", "test_secret_key"),
 		),
 	)
 	if err != nil {

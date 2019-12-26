@@ -21,7 +21,7 @@ The most common case to use a Storager service could be following:
 
 1. Init a service.
 
-    srv, store, err := coreutils.Open("qingstor://static:test_access_key:test_secret_key@https:qingstor.com:443/test_bucket_name")
+    srv, store, err := coreutils.Open("qingstor://hmac:test_access_key:test_secret_key@https:qingstor.com:443/test_bucket_name")
 	if err != nil {
 		log.Fatalf("service init failed: %v", err)
 	}

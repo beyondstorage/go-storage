@@ -3,6 +3,7 @@ package oss
 import (
 	"fmt"
 
+	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 
 	"github.com/Xuanwo/storage"
@@ -25,10 +26,13 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 		return nil, fmt.Errorf(errorMessage, s, err)
 	}
 
-	cred := opt.Credential.Value()
+	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
+	if credProtocol != credential.ProtocolHmac {
+		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
+	}
 	ep := opt.Endpoint.Value()
 
-	s.service, err = oss.New(ep.String(), cred.AccessKey, cred.SecretKey)
+	s.service, err = oss.New(ep.String(), cred[0], cred[1])
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, err)
 	}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/yunify/qingstor-sdk-go/v3/config"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
@@ -38,8 +39,11 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 		return nil, fmt.Errorf(errorMessage, s, err)
 	}
 
-	cred := opt.Credential.Value()
-	cfg, err := config.New(cred.AccessKey, cred.SecretKey)
+	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
+	if credProtocol != credential.ProtocolHmac {
+		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
+	}
+	cfg, err := config.New(cred[0], cred[1])
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, err)
 	}
