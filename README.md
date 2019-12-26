@@ -85,4 +85,4 @@ if err != nil {
 
 ### gcs
 
-`gcs://apikey:<api_key>/<bucket_name>/<prefix>`
+`gcs://apikey:<api_key>/<bucket_name>/<prefix>?project=<project_id>`
