@@ -57,9 +57,6 @@ func Parse(cfg string) (*Provider, error) {
 	errorMessage := "parse credential config [%s]: %w"
 
 	s := strings.Split(cfg, ":")
-	if len(s) < 2 {
-		return nil, fmt.Errorf(errorMessage, cfg, ErrInvalidConfig)
-	}
 
 	switch s[0] {
 	case ProtocolHmac:
@@ -139,9 +136,6 @@ func NewEnv(_ ...string) (*Provider, error) {
 
 // MustNewEnv make sure Provider must be created if no panic happened.
 func MustNewEnv(value ...string) *Provider {
-	p, err := NewEnv(value...)
-	if err != nil {
-		panic(err)
-	}
+	p, _ := NewEnv(value...)
 	return p
 }

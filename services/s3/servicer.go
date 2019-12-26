@@ -21,7 +21,7 @@ type Service struct {
 
 // New will create a new s3 service.
 func New(pairs ...*types.Pair) (s *Service, err error) {
-	errorMessage := "%s New: %w"
+	const errorMessage = "%s New: %w"
 
 	opt, err := parseServicePairInit(pairs...)
 	if err != nil {
