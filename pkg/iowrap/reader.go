@@ -4,13 +4,14 @@ import (
 	"io"
 )
 
+//go:generate mockgen -package iowrap -destination mock_test.go io Reader,Closer,ReaderAt,Seeker
+
 // LimitReadCloser will return a limited hasCall closer.
 func LimitReadCloser(r io.ReadCloser, n int64) *LimitedReadCloser {
 	return &LimitedReadCloser{r, io.LimitReader(r, n)}
 }
 
 // LimitedReadCloser hasCall from underlying r and provide Close as well.
-//go:generate mockgen -package iowrap -destination mock_test.go io Reader,Closer,ReaderAt
 type LimitedReadCloser struct {
 	r  io.ReadCloser
 	lr io.Reader
@@ -79,11 +80,7 @@ type ReaderSeekerCloser struct {
 //
 // Performs the same functionality as io.Reader Read
 func (r ReaderSeekerCloser) Read(p []byte) (int, error) {
-	switch t := r.r.(type) {
-	case io.Reader:
-		return t.Read(p)
-	}
-	return 0, nil
+	return r.r.Read(p)
 }
 
 // Seek sets the offset for the next Read to offset, interpreted according to
