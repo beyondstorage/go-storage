@@ -54,21 +54,23 @@ func (s *SectionedReadCloser) Close() error {
 	return s.r.Close()
 }
 
-// ReadSeekCloser wraps a io.Reader returning a ReaderSeekerCloser. Allows the
+// NewReadSeekCloser wraps a io.Reader returning a ReadSeekCloser. Allows the
 // SDK to accept an io.Reader that is not also an io.Seeker for unsigned
 // streaming payload API operations.
 //
-// A ReadSeekCloser wrapping an nonseekable io.Reader used in an API
+// A NewReadSeekCloser wrapping an nonseekable io.Reader used in an API
 // operation's input will prevent that operation being retried in the case of
 // network errors, and cause operation requests to fail if the operation
 // requires payload signing.
-func ReadSeekCloser(r io.Reader) ReaderSeekerCloser {
-	return ReaderSeekerCloser{r}
+//
+// NOTES: Idea borrows from AWS Go SDK.
+func NewReadSeekCloser(r io.Reader) ReadSeekCloser {
+	return ReadSeekCloser{r}
 }
 
-// ReaderSeekerCloser represents a reader that can also delegate io.Seeker and
+// ReadSeekCloser represents a reader that can also delegate io.Seeker and
 // io.Closer interfaces to the underlying object if they are available.
-type ReaderSeekerCloser struct {
+type ReadSeekCloser struct {
 	r io.Reader
 }
 
@@ -79,7 +81,7 @@ type ReaderSeekerCloser struct {
 // returned.
 //
 // Performs the same functionality as io.Reader Read
-func (r ReaderSeekerCloser) Read(p []byte) (int, error) {
+func (r ReadSeekCloser) Read(p []byte) (int, error) {
 	return r.r.Read(p)
 }
 
@@ -88,8 +90,8 @@ func (r ReaderSeekerCloser) Read(p []byte) (int, error) {
 // current offset, and 2 means relative to the end. Seek returns the new offset
 // and an error, if any.
 //
-// If the ReaderSeekerCloser is not an io.Seeker nothing will be done.
-func (r ReaderSeekerCloser) Seek(offset int64, whence int) (int64, error) {
+// If the ReadSeekCloser is not an io.Seeker nothing will be done.
+func (r ReadSeekCloser) Seek(offset int64, whence int) (int64, error) {
 	switch t := r.r.(type) {
 	case io.Seeker:
 		return t.Seek(offset, whence)
@@ -97,10 +99,10 @@ func (r ReaderSeekerCloser) Seek(offset int64, whence int) (int64, error) {
 	return int64(0), nil
 }
 
-// Close closes the ReaderSeekerCloser.
+// Close closes the ReadSeekCloser.
 //
-// If the ReaderSeekerCloser is not an io.Closer nothing will be done.
-func (r ReaderSeekerCloser) Close() error {
+// If the ReadSeekCloser is not an io.Closer nothing will be done.
+func (r ReadSeekCloser) Close() error {
 	switch t := r.r.(type) {
 	case io.Closer:
 		return t.Close()

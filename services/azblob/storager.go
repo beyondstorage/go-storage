@@ -137,7 +137,7 @@ func (s Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 	rp := s.getAbsPath(path)
 
 	// TODO: add checksum and storage class support.
-	_, err = s.bucket.NewBlockBlobURL(rp).Upload(context.TODO(), iowrap.ReadSeekCloser(r),
+	_, err = s.bucket.NewBlockBlobURL(rp).Upload(context.TODO(), iowrap.NewReadSeekCloser(r),
 		azblob.BlobHTTPHeaders{}, azblob.Metadata{}, azblob.BlobAccessConditions{})
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
