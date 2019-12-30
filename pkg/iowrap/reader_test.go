@@ -228,7 +228,7 @@ func TestReaderSeekerCloser_Seek(t *testing.T) {
 		seeker.EXPECT().Seek(gomock.Any(), gomock.Any()).Times(1)
 
 		x := ReadSeekCloser(r)
-		x.Seek(0, 0)
+		_, _ = x.Seek(0, 0)
 	})
 
 	t.Run("not a seeker", func(t *testing.T) {
@@ -259,7 +259,7 @@ func TestReaderCloseerCloser_Close(t *testing.T) {
 		Closeer.EXPECT().Close().Times(1)
 
 		x := ReadSeekCloser(r)
-		x.Close()
+		_ = x.Close()
 	})
 
 	t.Run("not a Closeer", func(t *testing.T) {
