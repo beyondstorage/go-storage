@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.5.0] - 2019-12-30
+
+### Added
+
+- services: Add support for s3 (#41)
+- services: Add basic oss support (#42)
+- services: Add basic gcs support (#48)
+- services: Add basic support for azblob (#50)
+
+### Changed
+
+- pkg/config: Allow emit host instead of credential
+- pkg/credential: Implement proposal 4-credential-refactor
+
+### Fixed
+
+- sercices/s3: Fix error message for servicer (#44)
+
 ## [v0.4.0] - 2019-12-23
 
 ### Added
@@ -92,7 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.5.0...HEAD
+[v0.5.0]: https://github.com/Xuanwo/storage/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/Xuanwo/storage/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/Xuanwo/storage/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/Xuanwo/storage/compare/v0.1.0...v0.2.0
