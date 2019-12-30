@@ -194,3 +194,79 @@ func TestSectionedReadCloser_Close(t *testing.T) {
 		})
 	}
 }
+
+func TestReadSeekCloser_Read(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	t.Run("real reader", func(t *testing.T) {
+		r := NewMockReader(ctrl)
+
+		r.EXPECT().Read(gomock.Any()).Times(1)
+
+		x := NewReadSeekCloser(r)
+		b := make([]byte, 100)
+		_, _ = x.Read(b)
+	})
+}
+
+func TestReadSeekCloser_Seek(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	t.Run("real seeker", func(t *testing.T) {
+		reader := NewMockReader(ctrl)
+		seeker := NewMockSeeker(ctrl)
+		r := struct {
+			io.Reader
+			io.Seeker
+		}{
+			reader,
+			seeker,
+		}
+
+		seeker.EXPECT().Seek(gomock.Any(), gomock.Any()).Times(1)
+
+		x := NewReadSeekCloser(r)
+		_, _ = x.Seek(0, 0)
+	})
+
+	t.Run("not a seeker", func(t *testing.T) {
+		reader := NewMockReader(ctrl)
+
+		x := NewReadSeekCloser(reader)
+		pos, err := x.Seek(100, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(0), pos)
+	})
+}
+
+func TestReadSeekCloser_Close(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	t.Run("real closer", func(t *testing.T) {
+		reader := NewMockReader(ctrl)
+		seeker := NewMockCloser(ctrl)
+		r := struct {
+			io.Reader
+			io.Closer
+		}{
+			reader,
+			seeker,
+		}
+
+		seeker.EXPECT().Close().Times(1)
+
+		x := NewReadSeekCloser(r)
+		_ = x.Close()
+	})
+
+	t.Run("not a Closeer", func(t *testing.T) {
+		reader := NewMockReader(ctrl)
+
+		x := NewReadSeekCloser(reader)
+		err := x.Close()
+		assert.NoError(t, err)
+	})
+}
