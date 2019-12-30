@@ -5,7 +5,6 @@ go 1.13
 require (
 	bou.ke/monkey v1.0.1
 	cloud.google.com/go/storage v1.4.0
-	github.com/Azure/azure-pipeline-go v0.2.1
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest/adal v0.8.1 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v2.0.4+incompatible
