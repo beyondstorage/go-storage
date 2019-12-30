@@ -58,7 +58,7 @@ if err != nil {
 
 | Service | Description | Status |
 | ------- | ----------- | ------ |
-/ [azblob](#azblob) / [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/) / alpha (-segments, -unittests) /
+| [azblob](#azblob) | [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/) | alpha (-segments, -unittests) |
 | [cos](#cos) | [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos) | planned |
 | [fs](#fs) | Local file system | stable (-segments)|
 | [gcs](#gcs) | [Google Cloud Storage](https://cloud.google.com/storage/) | alpha (-segments, -unittests) |
