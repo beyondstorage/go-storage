@@ -25,7 +25,7 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 	"init_segment": {
 		"part_size": struct{}{},
 	},
-	"list_dir": {
+	"list": {
 		"file_func": struct{}{},
 	},
 	"list_segments": {
@@ -110,20 +110,20 @@ func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, 
 	return result, nil
 }
 
-type pairStorageListDir struct {
+type pairStorageList struct {
 	HasFileFunc bool
 	FileFunc    types.ObjectFunc
 }
 
-func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
-	result := &pairStorageListDir{}
+func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
+	result := &pairStorageList{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["list_dir"]; !ok {
+		if _, ok := allowedStoragePairs["list"]; !ok {
 			continue
 		}
-		if _, ok := allowedStoragePairs["list_dir"][v.Key]; !ok {
+		if _, ok := allowedStoragePairs["list"][v.Key]; !ok {
 			continue
 		}
 		values[v.Key] = v.Value

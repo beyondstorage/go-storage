@@ -218,11 +218,11 @@ func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 	return r.HTTPRequest.URL.String(), nil
 }
 
-// ListDir implements Storager.ListDir
-func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s ListDir [%s]: %w"
+// List implements Storager.List
+func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s List [%s]: %w"
 
-	opt, _ := parseStoragePairListDir(pairs...)
+	opt, _ := parseStoragePairList(pairs...)
 
 	marker := ""
 	limit := 200

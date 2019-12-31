@@ -66,11 +66,11 @@ func (s Storage) Metadata() (m metadata.Storage, err error) {
 	return m, nil
 }
 
-// ListDir implements Storager.ListDir
-func (s Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s ListDir [%s]: %w"
+// List implements Storager.List
+func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s List [%s]: %w"
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}

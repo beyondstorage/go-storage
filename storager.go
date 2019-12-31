@@ -52,8 +52,8 @@ type Storager interface {
 	//   - Metadata SHOULD be cheap.
 	Metadata() (m metadata.Storage, err error)
 
-	// ListDir will return an ObjectIterator which can list all object under the Dir.
-	ListDir(path string, pairs ...*types.Pair) (err error)
+	// List will return list a specific path.
+	List(path string, pairs ...*types.Pair) (err error)
 	// Read will read the file's data.
 	//
 	// Caller:
