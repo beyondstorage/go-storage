@@ -16,7 +16,7 @@
     "init_segment": {
       "part_size": true
     },
-    "list_dir": {
+    "list": {
       "file_func": true
     },
     "list_segments": {

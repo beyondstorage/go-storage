@@ -514,7 +514,7 @@ func TestStorage_ListDir(t *testing.T) {
 
 			items := make([]*types.Object, 0)
 
-			err := client.ListDir(paths[k], pairs.WithDirFunc(func(object *types.Object) {
+			err := client.List(paths[k], pairs.WithDirFunc(func(object *types.Object) {
 				items = append(items, object)
 			}), pairs.WithFileFunc(func(object *types.Object) {
 				items = append(items, object)

@@ -31,7 +31,7 @@ The most common case to use a Storager service could be following:
 	ch := make(chan *types.Object, 1)
 	defer close(ch)
 
-	err := store.ListDir("prefix", pairs.WithFileFunc(func(*types.Object){
+	err := store.List("prefix", pairs.WithFileFunc(func(*types.Object){
 		ch <- o
 	}))
 	if err != nil {
