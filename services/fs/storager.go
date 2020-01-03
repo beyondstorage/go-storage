@@ -71,12 +71,9 @@ func (s *Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.Storage, err error) {
-	m = metadata.Storage{
-		Name:     "",
-		WorkDir:  s.workDir,
-		Metadata: nil,
-	}
+func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+	m = metadata.NewStorageMeta()
+	m.WorkDir = s.workDir
 	return m, nil
 }
 
@@ -86,11 +83,11 @@ func (s *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err
 
 	if path == "-" {
 		return &types.Object{
-			ID:       "-",
-			Name:     "-",
-			Type:     types.ObjectTypeStream,
-			Size:     0,
-			Metadata: make(metadata.Metadata),
+			ID:         "-",
+			Name:       "-",
+			Type:       types.ObjectTypeStream,
+			Size:       0,
+			ObjectMeta: metadata.NewObjectMeta(),
 		}, nil
 	}
 
@@ -102,11 +99,11 @@ func (s *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err
 	}
 
 	o = &types.Object{
-		ID:        rp,
-		Name:      rp,
-		Size:      fi.Size(),
-		UpdatedAt: fi.ModTime(),
-		Metadata:  make(metadata.Metadata),
+		ID:         rp,
+		Name:       rp,
+		Size:       fi.Size(),
+		UpdatedAt:  fi.ModTime(),
+		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
 	if fi.IsDir() {
@@ -209,11 +206,11 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 	for _, v := range fi {
 		o := &types.Object{
-			ID:        filepath.Join(rp, v.Name()),
-			Name:      filepath.Join(path, v.Name()),
-			Size:      v.Size(),
-			UpdatedAt: v.ModTime(),
-			Metadata:  make(metadata.Metadata),
+			ID:         filepath.Join(rp, v.Name()),
+			Name:       filepath.Join(path, v.Name()),
+			Size:       v.Size(),
+			UpdatedAt:  v.ModTime(),
+			ObjectMeta: metadata.NewObjectMeta(),
 		}
 
 		if v.IsDir() {

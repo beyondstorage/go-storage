@@ -50,7 +50,7 @@ type Storager interface {
 	//   - Metadata SHOULD only return static data without API call or with a cache.
 	// Caller:
 	//   - Metadata SHOULD be cheap.
-	Metadata() (m metadata.Storage, err error)
+	Metadata() (m metadata.StorageMeta, err error)
 
 	// List will return list a specific path.
 	List(path string, pairs ...*types.Pair) (err error)
@@ -118,7 +118,7 @@ type Statistician interface {
 	//   - Statistical SHOULD only return dynamic data like Size, Count.
 	// Caller:
 	//   - Statistical call COULD be expensive.
-	Statistical() (metadata.Metadata, error)
+	Statistical() (metadata.StorageStatistic, error)
 }
 
 // Segmenter is the interface for Segment.

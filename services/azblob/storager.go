@@ -58,12 +58,10 @@ func (s Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s Storage) Metadata() (m metadata.Storage, err error) {
-	m = metadata.Storage{
-		Name:     s.name,
-		WorkDir:  s.workDir,
-		Metadata: make(metadata.Metadata),
-	}
+func (s Storage) Metadata() (m metadata.StorageMeta, err error) {
+	m = metadata.NewStorageMeta()
+	m.Name = s.name
+	m.WorkDir = s.workDir
 	return m, nil
 }
 
@@ -90,16 +88,16 @@ func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Segment.BlobItems {
 			o := &types.Object{
-				ID:        v.Name,
-				Name:      s.getRelPath(v.Name),
-				Type:      types.ObjectTypeDir,
-				Size:      *v.Properties.ContentLength,
-				UpdatedAt: v.Properties.LastModified,
-				Metadata:  make(metadata.Metadata),
+				ID:         v.Name,
+				Name:       s.getRelPath(v.Name),
+				Type:       types.ObjectTypeDir,
+				Size:       *v.Properties.ContentLength,
+				UpdatedAt:  v.Properties.LastModified,
+				ObjectMeta: metadata.NewObjectMeta(),
 			}
-			o.SetType(*v.Properties.ContentType)
-			o.SetClass(string(v.Properties.AccessTier))
-			o.SetChecksum(string(v.Properties.ContentMD5))
+			o.SetContentType(*v.Properties.ContentType)
+			o.SetStorageClass(string(v.Properties.AccessTier))
+			o.SetContentMD5(string(v.Properties.ContentMD5))
 
 			opt.FileFunc(o)
 		}
@@ -158,12 +156,12 @@ func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 	}
 
 	o = &types.Object{
-		ID:        rp,
-		Name:      path,
-		Type:      types.ObjectTypeFile,
-		Size:      output.ContentLength(),
-		UpdatedAt: output.LastModified(),
-		Metadata:  make(metadata.Metadata),
+		ID:         rp,
+		Name:       path,
+		Type:       types.ObjectTypeFile,
+		Size:       output.ContentLength(),
+		UpdatedAt:  output.LastModified(),
+		ObjectMeta: metadata.NewObjectMeta(),
 	}
 	return o, nil
 }

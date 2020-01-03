@@ -69,27 +69,26 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.Storage, err error) {
-	m = metadata.Storage{
-		Name:     *s.properties.BucketName,
-		WorkDir:  s.workDir,
-		Metadata: make(metadata.Metadata),
-	}
+func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+	m = metadata.NewStorageMeta()
+	m.Name = *s.properties.BucketName
+	m.WorkDir = s.workDir
 	m.SetLocation(*s.properties.Zone)
 	return m, nil
 }
 
 // Statistical implements Storager.Statistical
-func (s *Storage) Statistical() (m metadata.Metadata, err error) {
+func (s *Storage) Statistical() (m metadata.StorageStatistic, err error) {
 	const errorMessage = "%s Statistical: %w"
+
+	m = metadata.NewStorageStatistic()
 
 	output, err := s.bucket.GetStatistics()
 	if err != nil {
 		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, s, err)
+		return m, fmt.Errorf(errorMessage, s, err)
 	}
 
-	m = make(metadata.Metadata)
 	if output.Size != nil {
 		m.SetSize(*output.Size)
 	}
@@ -116,22 +115,22 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	// TODO: Add dir support.
 
 	o = &types.Object{
-		ID:        rp,
-		Name:      path,
-		Type:      types.ObjectTypeFile,
-		Size:      service.Int64Value(output.ContentLength),
-		UpdatedAt: service.TimeValue(output.LastModified),
-		Metadata:  make(metadata.Metadata),
+		ID:         rp,
+		Name:       path,
+		Type:       types.ObjectTypeFile,
+		Size:       service.Int64Value(output.ContentLength),
+		UpdatedAt:  service.TimeValue(output.LastModified),
+		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
 	if output.ContentType != nil {
-		o.SetType(service.StringValue(output.ContentType))
+		o.SetContentType(service.StringValue(output.ContentType))
 	}
 	if output.ETag != nil {
-		o.SetChecksum(service.StringValue(output.ETag))
+		o.SetETag(service.StringValue(output.ETag))
 	}
 	if output.XQSStorageClass != nil {
-		o.SetClass(service.StringValue(output.XQSStorageClass))
+		o.SetStorageClass(service.StringValue(output.XQSStorageClass))
 	}
 	return o, nil
 }
@@ -244,10 +243,10 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
-				ID:       *v,
-				Name:     s.getRelPath(*v),
-				Type:     types.ObjectTypeDir,
-				Metadata: make(metadata.Metadata),
+				ID:         *v,
+				Name:       s.getRelPath(*v),
+				Type:       types.ObjectTypeDir,
+				ObjectMeta: metadata.NewObjectMeta(),
 			}
 
 			if opt.HasDirFunc {
@@ -257,25 +256,25 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Keys {
 			o := &types.Object{
-				ID:        *v.Key,
-				Name:      s.getRelPath(*v.Key),
-				Size:      service.Int64Value(v.Size),
-				UpdatedAt: convertUnixTimestampToTime(service.IntValue(v.Modified)),
-				Metadata:  make(metadata.Metadata),
+				ID:         *v.Key,
+				Name:       s.getRelPath(*v.Key),
+				Size:       service.Int64Value(v.Size),
+				UpdatedAt:  convertUnixTimestampToTime(service.IntValue(v.Modified)),
+				ObjectMeta: metadata.NewObjectMeta(),
 			}
 
 			if v.MimeType != nil {
-				o.SetType(service.StringValue(v.MimeType))
+				o.SetContentType(service.StringValue(v.MimeType))
 			}
 			if v.StorageClass != nil {
-				o.SetClass(service.StringValue(v.StorageClass))
+				o.SetStorageClass(service.StringValue(v.StorageClass))
 			}
 			if v.Etag != nil {
-				o.SetChecksum(service.StringValue(v.Etag))
+				o.SetETag(service.StringValue(v.Etag))
 			}
 
 			// If key's content type == DirectoryContentType,
-			// we should treat this key as a Dir Object.
+			// we should treat this key as a Dir ObjectMeta.
 			if service.StringValue(v.MimeType) == DirectoryContentType {
 				o.Type = types.ObjectTypeDir
 
