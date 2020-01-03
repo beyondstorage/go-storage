@@ -19,7 +19,9 @@ const (
 
 // Object may be a *File, *Dir or a *Stream.
 type Object struct {
-	// name must a complete path instead of basename in POSIX.
+	// ID is the unique key in service.
+	ID string
+	// name is the relative path towards service's WorkDir.
 	Name string
 	// type should be one of "file", "stream", "dir" or "invalid".
 	Type ObjectType
@@ -32,6 +34,17 @@ type Object struct {
 	UpdatedAt time.Time
 
 	// metadata is the metadata of the object.
+	//
+	// The difference between `struct value` and `metadata` is:
+	//
+	// - All value in `struct` are required, caller can use them safely.
+	// - All value in `metadata` are optional, caller need to check them before using.
+	//
+	// Two requirement must be satisfied in order to add struct value, or they need to be
+	// a Metadata.
+	//
+	// - All storage services can provide this value in same way.
+	// - User need to access this value.
 	metadata.Metadata
 }
 

@@ -1,6 +1,6 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: candidate
 updated_at: 2020-01-03
 ---
 
@@ -10,7 +10,7 @@ updated_at: 2020-01-03
 
 PR [services: Add dropbox basic support](https://github.com/Xuanwo/storage/pull/53) prompts a great problem: Should we have an ID metadata?
 
-The difference between `struct` and `metadata` is:
+The difference between `struct value` and `metadata` is:
 
 - All value in `struct` are required, caller can use them safely.
 - All value in `metadata` are optional, caller need to check them before using.
