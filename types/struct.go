@@ -26,11 +26,11 @@ type Object struct {
 	// type should be one of "file", "stream", "dir" or "invalid".
 	Type ObjectType
 
-	// Size is the size of this Object.
-	// If the Object do not have a Size, it will be 0.
+	// Size is the size of this ObjectMeta.
+	// If the ObjectMeta do not have a Size, it will be 0.
 	Size int64
-	// UpdatedAt is the update time of this Object.
-	// If the Object do not have a UpdatedAt, it will be time.Time{wall:0x0, ext:0, loc:(*time.Location)(nil)}
+	// UpdatedAt is the update time of this ObjectMeta.
+	// If the ObjectMeta do not have a UpdatedAt, it will be time.Time{wall:0x0, ext:0, loc:(*time.Location)(nil)}
 	UpdatedAt time.Time
 
 	// metadata is the metadata of the object.
@@ -45,10 +45,10 @@ type Object struct {
 	//
 	// - All storage services can provide this value in same way.
 	// - User need to access this value.
-	metadata.Metadata
+	metadata.ObjectMeta
 }
 
-// ObjectFunc will handle an Object.
+// ObjectFunc will handle an ObjectMeta.
 type ObjectFunc func(object *Object)
 
 // Pair will store option for storage service.
