@@ -365,7 +365,7 @@ func TestStorage_InitSegment(t *testing.T) {
 	}
 }
 
-func TestStorage_ListDir(t *testing.T) {
+func TestStorage_List(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -394,6 +394,7 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:       keys[0],
 					Name:     keys[0],
 					Type:     types.ObjectTypeFile,
 					Metadata: make(metadata.Metadata),
@@ -412,6 +413,7 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:       keys[2],
 					Name:     keys[2],
 					Type:     types.ObjectTypeDir,
 					Metadata: make(metadata.Metadata),
@@ -453,6 +455,7 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:        keys[5],
 					Name:      keys[5],
 					Type:      types.ObjectTypeFile,
 					Size:      1233,
@@ -479,6 +482,7 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:   keys[6],
 					Name: keys[6],
 					Type: types.ObjectTypeDir,
 					Metadata: metadata.Metadata{

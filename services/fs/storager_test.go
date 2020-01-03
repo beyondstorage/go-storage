@@ -116,6 +116,7 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
+				ID:        "regular file",
 				Name:      "regular file",
 				Type:      types.ObjectTypeFile,
 				Size:      1234,
@@ -133,6 +134,7 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
+				ID:        "dir",
 				Name:      "dir",
 				Type:      types.ObjectTypeDir,
 				UpdatedAt: nowTime,
@@ -149,6 +151,7 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
+				ID:        "stream",
 				Name:      "stream",
 				Type:      types.ObjectTypeStream,
 				UpdatedAt: nowTime,
@@ -160,6 +163,7 @@ func TestStorage_Stat(t *testing.T) {
 			nil,
 			fileInfo{},
 			&types.Object{
+				ID:       "-",
 				Name:     "-",
 				Type:     types.ObjectTypeStream,
 				Metadata: make(metadata.Metadata),
@@ -175,6 +179,7 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
+				ID:        "invalid",
 				Name:      "invalid",
 				Type:      types.ObjectTypeInvalid,
 				UpdatedAt: nowTime,
@@ -399,7 +404,7 @@ func TestStorage_Move(t *testing.T) {
 	})
 }
 
-func TestStorage_ListDir(t *testing.T) {
+func TestStorage_List(t *testing.T) {
 	paths := make([]string, 100)
 	for k := range paths {
 		paths[k] = uuid.New().String()
@@ -423,6 +428,7 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:        filepath.Join(paths[0], "test_file"),
 					Name:      filepath.Join(paths[0], "test_file"),
 					Type:      types.ObjectTypeFile,
 					Size:      1234,
@@ -444,6 +450,7 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:        filepath.Join(paths[1], "test_file"),
 					Name:      filepath.Join(paths[1], "test_file"),
 					Type:      types.ObjectTypeFile,
 					Size:      1234,
@@ -465,6 +472,7 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:        filepath.Join(paths[2], "test_dir"),
 					Name:      filepath.Join(paths[2], "test_dir"),
 					Type:      types.ObjectTypeDir,
 					Size:      0,
@@ -486,6 +494,7 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:        filepath.Join(paths[3], "test_dir"),
 					Name:      filepath.Join(paths[3], "test_dir"),
 					Type:      types.ObjectTypeDir,
 					Size:      0,

@@ -90,6 +90,7 @@ func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Segment.BlobItems {
 			o := &types.Object{
+				ID:        v.Name,
 				Name:      s.getRelPath(v.Name),
 				Type:      types.ObjectTypeDir,
 				Size:      *v.Properties.ContentLength,
@@ -157,6 +158,7 @@ func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 	}
 
 	o = &types.Object{
+		ID:        rp,
 		Name:      path,
 		Type:      types.ObjectTypeFile,
 		Size:      output.ContentLength(),

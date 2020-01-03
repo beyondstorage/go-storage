@@ -90,6 +90,7 @@ func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
 		}
 
 		o := &types.Object{
+			ID:        object.Name,
 			Name:      s.getRelPath(object.Name),
 			Type:      types.ObjectTypeDir,
 			Size:      object.Size,
@@ -160,6 +161,7 @@ func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 	}
 
 	o = &types.Object{
+		ID:        attr.Name,
 		Name:      path,
 		Type:      types.ObjectTypeFile,
 		Size:      attr.Size,

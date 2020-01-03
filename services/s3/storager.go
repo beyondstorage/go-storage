@@ -94,6 +94,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
+				ID:       *v.Prefix,
 				Name:     s.getRelPath(*v.Prefix),
 				Type:     types.ObjectTypeDir,
 				Metadata: make(metadata.Metadata),
@@ -106,6 +107,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Contents {
 			o := &types.Object{
+				ID:        *v.Key,
 				Type:      types.ObjectTypeFile,
 				Name:      s.getRelPath(*v.Key),
 				Size:      aws.Int64Value(v.Size),
@@ -202,6 +204,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	// TODO: Add dir support.
 
 	o = &types.Object{
+		ID:        rp,
 		Name:      path,
 		Type:      types.ObjectTypeFile,
 		Size:      aws.Int64Value(output.ContentLength),

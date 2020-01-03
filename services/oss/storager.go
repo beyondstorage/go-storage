@@ -93,7 +93,8 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
-				Name:     v,
+				ID:       v,
+				Name:     s.getRelPath(v),
 				Type:     types.ObjectTypeDir,
 				Metadata: make(metadata.Metadata),
 			}
@@ -105,6 +106,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Objects {
 			o := &types.Object{
+				ID:        v.Key,
 				Name:      s.getRelPath(v.Key),
 				Type:      types.ObjectTypeDir,
 				Size:      v.Size,
@@ -196,6 +198,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	// TODO: get object's checksum and storage class.
 	o = &types.Object{
+		ID:        rp,
 		Name:      path,
 		Type:      types.ObjectTypeFile,
 		Size:      size,
