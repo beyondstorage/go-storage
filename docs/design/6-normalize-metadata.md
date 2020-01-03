@@ -47,30 +47,20 @@ So I propose following changes:
 
 ### Split storage meta and object meta
 
-We have added a `metadata.Storage` before:
+- Use a `map[string]interface{}` to replace `Metadata`, and generate functions on `Storage` directly.
+- Rename `metadata.Storage` to `metadata.StorageMeta`
+- Add `metadata.ObjectMeta`
+- Add `metadata.StorageStatistic`
+- Split `metadata.json` into `object_meta.json`, `storage_meta.json` and `storage_statistic.json`
+- Refactor `metadata` code generator
+- Make `SetXXX` return itself, so we can call them like a chain:
 
-```go
-type Storage struct {
-	Name    string
-	WorkDir string
-
-	Metadata
-}
-```
-
-We should use a `map[string]interface{}` to replace `Metadata`, and generate functions on `Storage` directly.
-
-We should add a `metadata.Object` struct like:
-
-```go
-type Object struct {
-    map[string]interface{}
-}
-``` 
-
-We should split `metadata.json` into `storage.json` and `object.json`.
-
-We should refactor `metadata` code generator.
+    ```go
+    m := metadata.NewObjectMeta().
+        SetContentType("application/json").
+        SetStorageClass("cool").
+        SetETag("xxxxx")
+    ```
 
 ### Normalize metadata's name
 
