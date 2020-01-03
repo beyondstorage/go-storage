@@ -98,7 +98,8 @@ None.
 
 ## Compatibility
 
-Metadata's name and value could be changed.
+- Metadata's name and value could be changed.
+- Storage will return different metadata type.
 
 ## Implementation
 
