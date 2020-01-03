@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/Xuanwo/storage/branch/master/graph/badge.svg)](https://codecov.io/gh/Xuanwo/storage)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/Xuanwo/storage/blob/master/LICENSE)
 
-A unified storage layer for Golang.
+An application-oriented unified storage layer for Golang.
 
 ## Goal
 
