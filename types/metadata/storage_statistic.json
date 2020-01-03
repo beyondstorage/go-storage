@@ -1,0 +1,10 @@
+{
+  "count": {
+    "Name": "Count",
+    "Type": "int64"
+  },
+  "size": {
+    "Name": "Size",
+    "Type": "int64"
+  }
+}

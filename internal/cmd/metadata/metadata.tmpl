@@ -4,27 +4,28 @@ package metadata
 // All available metadata.
 const (
 {{- range $k, $v := .Data }}
-    {{ $k | camelCase }} = "{{ $k }}"
+    {{ $.Name | camelCase }}{{ $v.Name }} = "{{ $k }}"
 {{- end }}
 )
 
 {{- range $k, $v := .Data }}
-// Get{{ $k | camelCase }} will get {{ $k }} value from metadata.
-func (m Metadata) Get{{ $k | camelCase }}() ({{ $v }}, bool)  {
-    v, ok := m[{{ $k | camelCase }}]
+// Get{{ $v.Name }} will get {{ $k }} value from metadata.
+func (m {{ $.Name | camelCase }}) Get{{ $v.Name }}() ({{ $v.Type }}, bool)  {
+    v, ok := m.m[{{ $.Name | camelCase }}{{ $v.Name }}]
     if !ok {
-        return {{ $v | zeroValue }}, false
+        return {{ $v.Type | zeroValue }}, false
     }
-    return v.({{ $v }}), true
+    return v.({{ $v.Type }}), true
 }
 
-// MustGet{{ $k | camelCase }} will get {{ $k }} value from metadata.
-func (m Metadata) MustGet{{ $k | camelCase }}() {{ $v }}  {
-    return m[{{ $k | camelCase }}].({{ $v }})
+// MustGet{{ $v.Name }} will get {{ $k }} value from metadata.
+func (m {{ $.Name | camelCase }}) MustGet{{ $v.Name }}() {{ $v.Type }}  {
+    return m.m[{{ $.Name | camelCase }}{{ $v.Name }}].({{ $v.Type }})
 }
 
-// Set{{ $k | camelCase }} will set {{ $k }} value into metadata.
-func (m Metadata) Set{{ $k | camelCase }}(v {{ $v }})  {
-    m[{{ $k | camelCase }}] = v
+// Set{{ $v.Name }} will set {{ $k }} value into metadata.
+func (m {{ $.Name | camelCase }}) Set{{ $v.Name }}(v {{ $v.Type }}) {{ $.Name | camelCase }} {
+    m.m[{{ $.Name | camelCase }}{{ $v.Name }}] = v
+    return m
 }
 {{- end }}

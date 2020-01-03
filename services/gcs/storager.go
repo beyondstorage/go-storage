@@ -57,12 +57,10 @@ func (s Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s Storage) Metadata() (m metadata.Storage, err error) {
-	m = metadata.Storage{
-		Name:     s.name,
-		WorkDir:  s.workDir,
-		Metadata: make(metadata.Metadata),
-	}
+func (s Storage) Metadata() (m metadata.StorageMeta, err error) {
+	m = metadata.NewStorageMeta()
+	m.Name = s.name
+	m.WorkDir = s.workDir
 	return m, nil
 }
 
@@ -90,16 +88,16 @@ func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
 		}
 
 		o := &types.Object{
-			ID:        object.Name,
-			Name:      s.getRelPath(object.Name),
-			Type:      types.ObjectTypeDir,
-			Size:      object.Size,
-			UpdatedAt: object.Updated,
-			Metadata:  make(metadata.Metadata),
+			ID:         object.Name,
+			Name:       s.getRelPath(object.Name),
+			Type:       types.ObjectTypeDir,
+			Size:       object.Size,
+			UpdatedAt:  object.Updated,
+			ObjectMeta: metadata.NewObjectMeta(),
 		}
-		o.SetType(object.ContentType)
-		o.SetClass(object.StorageClass)
-		o.SetChecksum(string(object.MD5))
+		o.SetContentType(object.ContentType)
+		o.SetStorageClass(object.StorageClass)
+		o.SetContentMD5(string(object.MD5))
 
 		opt.FileFunc(o)
 	}
@@ -161,12 +159,12 @@ func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 	}
 
 	o = &types.Object{
-		ID:        attr.Name,
-		Name:      path,
-		Type:      types.ObjectTypeFile,
-		Size:      attr.Size,
-		UpdatedAt: attr.Updated,
-		Metadata:  make(metadata.Metadata),
+		ID:         attr.Name,
+		Name:       path,
+		Type:       types.ObjectTypeFile,
+		Size:       attr.Size,
+		UpdatedAt:  attr.Updated,
+		ObjectMeta: metadata.NewObjectMeta(),
 	}
 	return o, nil
 }
