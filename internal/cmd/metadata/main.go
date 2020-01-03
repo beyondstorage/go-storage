@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/Xuanwo/templateutils"
@@ -19,40 +20,61 @@ var (
 
 //go:generate go-bindata -nometadata -ignore ".*.go" .
 func main() {
-	metadataPath := "metadata.json"
-	content, err := ioutil.ReadFile(metadataPath)
+	fi, err := ioutil.ReadDir(".")
 	if err != nil {
-		log.Fatalf("read file failed: %v", err)
+		log.Fatalf("read dir failed: %v", err)
 	}
 
-	var metadata map[string]string
-	err = json.Unmarshal(content, &metadata)
-	if err != nil {
-		log.Fatalf("json unmarshal failed: %v", err)
-	}
+	for _, v := range fi {
+		if !strings.HasSuffix(v.Name(), "json") {
+			continue
+		}
 
-	// Format input meta.json
-	data, err := json.MarshalIndent(metadata, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = ioutil.WriteFile(metadataPath, data, 0664)
-	if err != nil {
-		log.Fatal(err)
-	}
+		metadataName := strings.TrimSuffix(v.Name(), ".json")
+		metadataPath := metadataName + ".json"
+		content, err := ioutil.ReadFile(metadataPath)
+		if err != nil {
+			log.Fatalf("read file failed: %v", err)
+		}
 
-	metadataFile, err := os.Create("metadata.go")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer metadataFile.Close()
+		var metadata map[string]struct {
+			Name string
+			Type string
+		}
+		err = json.Unmarshal(content, &metadata)
+		if err != nil {
+			log.Fatalf("json unmarshal failed: %v", err)
+		}
 
-	err = metadataT.Execute(metadataFile, struct {
-		Data map[string]string
-	}{
-		metadata,
-	})
-	if err != nil {
-		log.Fatal(err)
+		// Format input meta.json
+		data, err := json.MarshalIndent(metadata, "", "  ")
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = ioutil.WriteFile(metadataPath, data, 0664)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		metadataFile, err := os.Create(metadataName + ".go")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = metadataT.Execute(metadataFile, struct {
+			Name string
+			Data map[string]struct {
+				Name string
+				Type string
+			}
+		}{
+			metadataName,
+			metadata,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		metadataFile.Close()
 	}
 }
