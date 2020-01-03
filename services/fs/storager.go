@@ -86,6 +86,7 @@ func (s *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err
 
 	if path == "-" {
 		return &types.Object{
+			ID:       "-",
 			Name:     "-",
 			Type:     types.ObjectTypeStream,
 			Size:     0,
@@ -101,6 +102,7 @@ func (s *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err
 	}
 
 	o = &types.Object{
+		ID:        rp,
 		Name:      rp,
 		Size:      fi.Size(),
 		UpdatedAt: fi.ModTime(),
@@ -207,6 +209,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 	for _, v := range fi {
 		o := &types.Object{
+			ID:        filepath.Join(rp, v.Name()),
 			Name:      filepath.Join(path, v.Name()),
 			Size:      v.Size(),
 			UpdatedAt: v.ModTime(),

@@ -116,6 +116,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	// TODO: Add dir support.
 
 	o = &types.Object{
+		ID:        rp,
 		Name:      path,
 		Type:      types.ObjectTypeFile,
 		Size:      service.Int64Value(output.ContentLength),
@@ -243,6 +244,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
+				ID:       *v,
 				Name:     s.getRelPath(*v),
 				Type:     types.ObjectTypeDir,
 				Metadata: make(metadata.Metadata),
@@ -255,6 +257,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Keys {
 			o := &types.Object{
+				ID:        *v.Key,
 				Name:      s.getRelPath(*v.Key),
 				Size:      service.Int64Value(v.Size),
 				UpdatedAt: convertUnixTimestampToTime(service.IntValue(v.Modified)),
