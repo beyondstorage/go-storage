@@ -15,12 +15,10 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14
 	github.com/pkg/errors v0.8.1 // indirect
-	github.com/qiniu/api.v7 v7.2.5+incompatible
-	github.com/qiniu/x v7.0.8+incompatible // indirect
+	github.com/qiniu/api.v7/v7 v7.4.1
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/yunify/qingstor-sdk-go/v3 v3.1.2-0.20191015085047-089474e57bf8
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/api v0.14.0
-	qiniupkg.com/x v7.0.8+incompatible // indirect
 )

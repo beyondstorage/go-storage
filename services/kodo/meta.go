@@ -42,6 +42,9 @@ var allowedStoragePairs = map[string]map[string]struct{}{
 }
 
 var allowedServicePairs = map[string]map[string]struct{}{
+	"create": {
+		"location": struct{}{},
+	},
 	"list": {
 		"storager_func": struct{}{},
 	},
@@ -240,6 +243,37 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	if ok {
 		result.HasStorageClass = true
 		result.StorageClass = v.(string)
+	}
+	return result, nil
+}
+
+type pairServiceCreate struct {
+	HasLocation bool
+	Location    string
+}
+
+func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
+	result := &pairServiceCreate{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := allowedServicePairs["create"]; !ok {
+			continue
+		}
+		if _, ok := allowedServicePairs["create"][v.Key]; !ok {
+			continue
+		}
+		values[v.Key] = v.Value
+	}
+	var v interface{}
+	var ok bool
+	v, ok = values[pairs.Location]
+	if !ok {
+		return nil, types.NewErrPairRequired(pairs.Location)
+	}
+	if ok {
+		result.HasLocation = true
+		result.Location = v.(string)
 	}
 	return result, nil
 }

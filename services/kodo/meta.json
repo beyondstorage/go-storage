@@ -1,6 +1,9 @@
 {
   "name": "kodo",
   "service": {
+    "create": {
+      "location": true
+    },
     "list": {
       "storager_func": true
     },

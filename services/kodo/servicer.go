@@ -1,11 +1,10 @@
 package kodo
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/qiniu/api.v7/auth/qbox"
-	qs "github.com/qiniu/api.v7/storage"
+	"github.com/qiniu/api.v7/v7/auth/qbox"
+	qs "github.com/qiniu/api.v7/v7/storage"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
@@ -55,7 +54,10 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 
 	buckets, err := s.service.Buckets(false)
 	for _, v := range buckets {
-		store := newStorage(s.service, v)
+		store, err := newStorage(s.service, v)
+		if err != nil {
+			return fmt.Errorf(errorMessage, s, err)
+		}
 		opt.StoragerFunc(store)
 	}
 	return
@@ -63,9 +65,12 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 
 // Get implements Service.Get
 func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const _ = "%s Get [%s]: %w"
+	const errorMessage = "%s Get [%s]: %w"
 
-	c := newStorage(s.service, name)
+	c, err := newStorage(s.service, name)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
 	return c, nil
 }
 
@@ -73,14 +78,37 @@ func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error
 func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s Create [%s]: %w"
 
-	// It looks like kodo go sdk doesn't provide bucket create API.
-	return nil, fmt.Errorf(errorMessage, s, name, errors.New("not supported action"))
+	opt, err := parseServicePairCreate(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
+	// Check region ID.
+	_, ok := qs.GetRegionByID(qs.RegionID(opt.Location))
+	if !ok {
+		err = fmt.Errorf("region %s is invalid", opt.Location)
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
+	err = s.service.CreateBucket(name, qs.RegionID(opt.Location))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
+	c, err := newStorage(s.service, name)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+	return c, nil
 }
 
 // Delete implements Service.Delete
 func (s Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
-	// It looks like kodo go sdk doesn't provide bucket create API.
-	return fmt.Errorf(errorMessage, s, name, errors.New("not supported action"))
+	err = s.service.DropBucket(name)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, name, err)
+	}
+	return nil
 }
