@@ -67,7 +67,7 @@ if err != nil {
 | [oss](#oss) | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | alpha (-segments, -unittests) |
 | [qingstor](#qingstor) | [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/) | stable |
 | [s3](#s3) | [Amazon S3](https://aws.amazon.com/s3/) | alpha (-segments, -unittests) |
-| [uss](#uss) | [UPYUN Storage Service](https://www.upyun.com/products/file-storage) | planned |
+| [uss](#uss) | [UPYUN Storage Service](https://www.upyun.com/products/file-storage) | alpha (-segments, -unittests) |
 
 ### azblob
 
@@ -104,3 +104,7 @@ if err != nil {
 ### s3
 
 `s3://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+
+### uss
+
+`uss://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
