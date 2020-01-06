@@ -1,0 +1,6 @@
+{
+  "location": {
+    "Name": "Location",
+    "Type": "string"
+  }
+}

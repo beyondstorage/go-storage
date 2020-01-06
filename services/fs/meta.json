@@ -4,7 +4,7 @@
     "init": {
       "work_dir": true
     },
-    "list_dir": {
+    "list": {
       "dir_func": false,
       "file_func": false
     },

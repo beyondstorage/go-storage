@@ -1,21 +1,12 @@
 {
-  "name": "s3",
+  "name": "azblob",
   "service": {
-    "create": {
-      "location": true
-    },
-    "delete": {
-      "location": false
-    },
-    "get": {
-      "location": false
-    },
-    "init": {
-      "credential": true,
-      "endpoint": false
-    },
     "list": {
-      "storager_func": false
+      "storager_func": true
+    },
+    "new": {
+      "credential": true,
+      "endpoint": true
     }
   },
   "storage": {
@@ -26,11 +17,13 @@
       "part_size": true
     },
     "list": {
-      "dir_func": false,
-      "file_func": false
+      "file_func": true
     },
     "list_segments": {
       "segment_func": false
+    },
+    "reach": {
+      "expire": true
     },
     "write": {
       "checksum": false,

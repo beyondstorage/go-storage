@@ -25,11 +25,11 @@ File is the smallest unit in service, it will have content and metadata. Dir is 
 In prefix-based storage service, Dir is usually an empty key end with "/" or with special content type.
 For directory-based service, Dir will be corresponded to the real directory on file system.
 
-Every API call in storager is relative to it's workdir which set in Init().
+Every API call in storager is relative to it's work dir which set in Init().
 
 In the comments of every method, we will use following rules to standardize the Storager's behavior:
 
-  - The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY",
+  - The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
     and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
   - Implementer is the provider of the service, while you trying to implement Storager interface, you need to follow.
   - Caller is the user of the service, while you trying to use the Storager interface, you need to follow.
@@ -50,30 +50,23 @@ type Storager interface {
 	//   - Metadata SHOULD only return static data without API call or with a cache.
 	// Caller:
 	//   - Metadata SHOULD be cheap.
-	Metadata() (m metadata.Storage, err error)
+	Metadata() (m metadata.StorageMeta, err error)
 
-	// ListDir will return an ObjectIterator which can list all object under the Dir.
-	ListDir(path string, pairs ...*types.Pair) (err error)
+	// List will return list a specific path.
+	List(path string, pairs ...*types.Pair) (err error)
 	// Read will read the file's data.
 	//
 	// Caller:
 	//   - MUST close reader while error happened or all data read.
 	Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error)
-	// WriteFile will write data into file.
+	// Write will write data into a file.
 	//
 	// Caller:
 	//   - MUST close reader while error happened or all data written.
 	Write(path string, r io.Reader, pairs ...*types.Pair) (err error)
 	// Stat will stat a path to get info of an object.
-	//
-	// Implementer:
-	//   - MUST fill object's name and type.
 	Stat(path string, pairs ...*types.Pair) (o *types.Object, err error)
-	// Delete will delete an Object or multiple object from service.
-	// path could be File, Stream or Dir
-	//
-	// Implementer:
-	//   - MAY accept a recursive pair to support delete Dir recursively.
+	// Delete will delete an Object from service.
 	Delete(path string, pairs ...*types.Pair) (err error)
 }
 
@@ -99,18 +92,12 @@ type Servicer interface {
 // Copier is the interface for Copy.
 type Copier interface {
 	// Copy will copy an Object or multiple object in the service.
-	//
-	// Implementer:
-	//   - MAY accept a recursive pairs to support copy recursively.
 	Copy(src, dst string, pairs ...*types.Pair) (err error)
 }
 
 // Mover is the interface for Move.
 type Mover interface {
 	// Move will move an object or multiple object in the service.
-	//
-	// Implementer:
-	//   - MAY accept a recursive pairs to support move recursively.
 	Move(src, dst string, pairs ...*types.Pair) (err error)
 }
 
@@ -131,7 +118,7 @@ type Statistician interface {
 	//   - Statistical SHOULD only return dynamic data like Size, Count.
 	// Caller:
 	//   - Statistical call COULD be expensive.
-	Statistical() (metadata.Metadata, error)
+	Statistical() (metadata.StorageStatistic, error)
 }
 
 // Segmenter is the interface for Segment.

@@ -58,20 +58,18 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.Storage, err error) {
-	m = metadata.Storage{
-		Name:     s.name,
-		WorkDir:  s.workDir,
-		Metadata: make(metadata.Metadata),
-	}
+func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+	m = metadata.NewStorageMeta()
+	m.Name = s.name
+	m.WorkDir = s.workDir
 	return m, nil
 }
 
-// ListDir implements Storager.ListDir
-func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s ListDir [%s]: %w"
+// List implements Storager.List
+func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s List [%s]: %w"
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -94,9 +92,10 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
-				Name:     s.getRelPath(*v.Prefix),
-				Type:     types.ObjectTypeDir,
-				Metadata: make(metadata.Metadata),
+				ID:         *v.Prefix,
+				Name:       s.getRelPath(*v.Prefix),
+				Type:       types.ObjectTypeDir,
+				ObjectMeta: metadata.NewObjectMeta(),
 			}
 
 			if opt.HasDirFunc {
@@ -106,18 +105,19 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Contents {
 			o := &types.Object{
-				Type:      types.ObjectTypeFile,
-				Name:      s.getRelPath(*v.Key),
-				Size:      aws.Int64Value(v.Size),
-				UpdatedAt: aws.TimeValue(v.LastModified),
-				Metadata:  make(metadata.Metadata),
+				ID:         *v.Key,
+				Type:       types.ObjectTypeFile,
+				Name:       s.getRelPath(*v.Key),
+				Size:       aws.Int64Value(v.Size),
+				UpdatedAt:  aws.TimeValue(v.LastModified),
+				ObjectMeta: metadata.NewObjectMeta(),
 			}
 
 			if v.StorageClass != nil {
-				o.SetClass(*v.StorageClass)
+				o.SetStorageClass(*v.StorageClass)
 			}
 			if v.ETag != nil {
-				o.SetChecksum(*v.ETag)
+				o.SetETag(*v.ETag)
 			}
 
 			if opt.HasFileFunc {
@@ -202,21 +202,22 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	// TODO: Add dir support.
 
 	o = &types.Object{
-		Name:      path,
-		Type:      types.ObjectTypeFile,
-		Size:      aws.Int64Value(output.ContentLength),
-		UpdatedAt: aws.TimeValue(output.LastModified),
-		Metadata:  make(metadata.Metadata),
+		ID:         rp,
+		Name:       path,
+		Type:       types.ObjectTypeFile,
+		Size:       aws.Int64Value(output.ContentLength),
+		UpdatedAt:  aws.TimeValue(output.LastModified),
+		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
 	if output.ContentType != nil {
-		o.SetType(*output.ContentType)
+		o.SetContentType(*output.ContentType)
 	}
 	if output.ETag != nil {
-		o.SetChecksum(*output.ETag)
+		o.SetETag(*output.ETag)
 	}
 	if output.StorageClass != nil {
-		o.SetClass(*output.StorageClass)
+		o.SetStorageClass(*output.StorageClass)
 	}
 	return o, nil
 }

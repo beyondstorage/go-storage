@@ -6,6 +6,7 @@ import (
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/config"
+	"github.com/Xuanwo/storage/services/azblob"
 	"github.com/Xuanwo/storage/services/fs"
 	"github.com/Xuanwo/storage/services/oss"
 	"github.com/Xuanwo/storage/services/qingstor"
@@ -89,6 +90,28 @@ func Open(cfg string) (srv storage.Servicer, store storage.Storager, err error) 
 		return
 	case oss.Type:
 		srv, err = oss.New(opt...)
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		// FIXME: this util function should move to config package.
+		name, prefix := qingstor.ParseNamespace(namespace)
+		if name == "" {
+			return
+		}
+		store, err = srv.Get(name)
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		err = store.Init(pairs.WithWorkDir(prefix))
+		if err != nil {
+			err = fmt.Errorf(errorMessage, cfg, err)
+			return
+		}
+		return
+	case azblob.Type:
+		srv, err = azblob.New(opt...)
 		if err != nil {
 			err = fmt.Errorf(errorMessage, cfg, err)
 			return

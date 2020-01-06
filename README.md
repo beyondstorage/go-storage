@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/Xuanwo/storage/branch/master/graph/badge.svg)](https://codecov.io/gh/Xuanwo/storage)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/Xuanwo/storage/blob/master/LICENSE)
 
-A unified storage layer for Golang.
+An application-oriented unified storage layer for Golang.
 
 ## Goal
 
@@ -46,7 +46,7 @@ if err != nil {
 ch := make(chan *types.Object, 1)
 defer close(ch)
 
-err := store.ListDir("prefix", pairs.WithFileFunc(func(*types.Object){
+err := store.List("prefix", pairs.WithFileFunc(func(*types.Object){
     ch <- o
 }))
 if err != nil {
@@ -58,18 +58,31 @@ if err != nil {
 
 | Service | Description | Status |
 | ------- | ----------- | ------ |
-| fs | Local file system | stable (-segments)|
-| qingstor | [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/) | stable |
-| s3 | [Amazon S3](https://aws.amazon.com/s3/) | alpha (-segments, -unittests) |
-| oss | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | alpha (-segments, -unittests) |
-| gcs | [Google Cloud Storage](https://cloud.google.com/storage/) | alpha (-segments, -unittests) |
-| kodo | [qiniu kodo](https://www.qiniu.com/products/kodo) | planned |
-| uss | [UPYUN Storage Service](https://www.upyun.com/products/file-storage) | planned |
-| cos | [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos) | planned |
+| [azblob](#azblob) | [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/) | alpha (-segments, -unittests) |
+| [cos](#cos) | [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos) | planned |
+| [fs](#fs) | Local file system | stable (-segments)|
+| [gcs](#gcs) | [Google Cloud Storage](https://cloud.google.com/storage/) | alpha (-segments, -unittests) |
+| [kodo](#kodo) | [qiniu kodo](https://www.qiniu.com/products/kodo) | planned |
+| [oss](#oss) | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | alpha (-segments, -unittests) |
+| [qingstor](#qingstor) | [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/) | stable |
+| [s3](#s3) | [Amazon S3](https://aws.amazon.com/s3/) | alpha (-segments, -unittests) |
+| [uss](#uss) | [UPYUN Storage Service](https://www.upyun.com/products/file-storage) | planned |
+
+### azblob
+
+`azblob://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
 
 ### fs
 
 `fs:///path/to/dir`
+
+### gcs
+
+`gcs://apikey:<api_key>/<bucket_name>/<prefix>?project=<project_id>`
+
+### oss
+
+`oss://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
 
 ### qingstor
 
@@ -78,11 +91,3 @@ if err != nil {
 ### s3
 
 `s3://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
-
-### oss
-
-`oss://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
-
-### gcs
-
-`gcs://apikey:<api_key>/<bucket_name>/<prefix>?project=<project_id>`

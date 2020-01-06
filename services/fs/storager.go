@@ -71,12 +71,9 @@ func (s *Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.Storage, err error) {
-	m = metadata.Storage{
-		Name:     "",
-		WorkDir:  s.workDir,
-		Metadata: nil,
-	}
+func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+	m = metadata.NewStorageMeta()
+	m.WorkDir = s.workDir
 	return m, nil
 }
 
@@ -86,10 +83,11 @@ func (s *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err
 
 	if path == "-" {
 		return &types.Object{
-			Name:     "-",
-			Type:     types.ObjectTypeStream,
-			Size:     0,
-			Metadata: make(metadata.Metadata),
+			ID:         "-",
+			Name:       "-",
+			Type:       types.ObjectTypeStream,
+			Size:       0,
+			ObjectMeta: metadata.NewObjectMeta(),
 		}, nil
 	}
 
@@ -101,10 +99,11 @@ func (s *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err
 	}
 
 	o = &types.Object{
-		Name:      rp,
-		Size:      fi.Size(),
-		UpdatedAt: fi.ModTime(),
-		Metadata:  make(metadata.Metadata),
+		ID:         rp,
+		Name:       rp,
+		Size:       fi.Size(),
+		UpdatedAt:  fi.ModTime(),
+		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
 	if fi.IsDir() {
@@ -189,11 +188,11 @@ func (s *Storage) Move(src, dst string, option ...*types.Pair) (err error) {
 	return
 }
 
-// ListDir implements Storager.ListDir
-func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s ListDir [%s]: %w"
+// List implements Storager.List
+func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s List [%s]: %w"
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -207,10 +206,11 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 	for _, v := range fi {
 		o := &types.Object{
-			Name:      filepath.Join(path, v.Name()),
-			Size:      v.Size(),
-			UpdatedAt: v.ModTime(),
-			Metadata:  make(metadata.Metadata),
+			ID:         filepath.Join(rp, v.Name()),
+			Name:       filepath.Join(path, v.Name()),
+			Size:       v.Size(),
+			UpdatedAt:  v.ModTime(),
+			ObjectMeta: metadata.NewObjectMeta(),
 		}
 
 		if v.IsDir() {

@@ -365,7 +365,7 @@ func TestStorage_InitSegment(t *testing.T) {
 	}
 }
 
-func TestStorage_ListDir(t *testing.T) {
+func TestStorage_List(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -394,9 +394,10 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name:     keys[0],
-					Type:     types.ObjectTypeFile,
-					Metadata: make(metadata.Metadata),
+					ID:         keys[0],
+					Name:       keys[0],
+					Type:       types.ObjectTypeFile,
+					ObjectMeta: metadata.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -412,9 +413,10 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name:     keys[2],
-					Type:     types.ObjectTypeDir,
-					Metadata: make(metadata.Metadata),
+					ID:         keys[2],
+					Name:       keys[2],
+					Type:       types.ObjectTypeDir,
+					ObjectMeta: metadata.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -453,15 +455,15 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:        keys[5],
 					Name:      keys[5],
 					Type:      types.ObjectTypeFile,
 					Size:      1233,
 					UpdatedAt: time.Unix(1233, 0),
-					Metadata: metadata.Metadata{
-						metadata.Type:     "application/json",
-						metadata.Class:    "cool",
-						metadata.Checksum: "xxxxx",
-					},
+					ObjectMeta: metadata.NewObjectMeta().
+						SetContentType("application/json").
+						SetStorageClass("cool").
+						SetETag("xxxxx"),
 				},
 			},
 			nil,
@@ -479,11 +481,11 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
+					ID:   keys[6],
 					Name: keys[6],
 					Type: types.ObjectTypeDir,
-					Metadata: metadata.Metadata{
-						metadata.Type: DirectoryContentType,
-					},
+					ObjectMeta: metadata.NewObjectMeta().
+						SetContentType(DirectoryContentType),
 				},
 			},
 			nil,
@@ -506,7 +508,7 @@ func TestStorage_ListDir(t *testing.T) {
 
 			items := make([]*types.Object, 0)
 
-			err := client.ListDir(path, pairs.WithDirFunc(func(object *types.Object) {
+			err := client.List(path, pairs.WithDirFunc(func(object *types.Object) {
 				items = append(items, object)
 			}), pairs.WithFileFunc(func(object *types.Object) {
 				items = append(items, object)
@@ -652,13 +654,13 @@ func TestStorage_Stat(t *testing.T) {
 			assert.NotNil(t, o)
 			assert.Equal(t, types.ObjectTypeFile, o.Type)
 			assert.Equal(t, int64(100), o.Size)
-			contentType, ok := o.GetType()
+			contentType, ok := o.GetContentType()
 			assert.True(t, ok)
 			assert.Equal(t, "test_content_type", contentType)
-			checkSum, ok := o.GetChecksum()
+			checkSum, ok := o.GetETag()
 			assert.True(t, ok)
 			assert.Equal(t, "test_etag", checkSum)
-			storageClass, ok := o.GetClass()
+			storageClass, ok := o.GetStorageClass()
 			assert.True(t, ok)
 			assert.Equal(t, "test_storage_class", storageClass)
 		}

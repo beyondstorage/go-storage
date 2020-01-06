@@ -116,11 +116,12 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				Name:      "regular file",
-				Type:      types.ObjectTypeFile,
-				Size:      1234,
-				UpdatedAt: nowTime,
-				Metadata:  metadata.Metadata{},
+				ID:         "regular file",
+				Name:       "regular file",
+				Type:       types.ObjectTypeFile,
+				Size:       1234,
+				UpdatedAt:  nowTime,
+				ObjectMeta: metadata.NewObjectMeta(),
 			},
 		},
 		{
@@ -133,10 +134,11 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				Name:      "dir",
-				Type:      types.ObjectTypeDir,
-				UpdatedAt: nowTime,
-				Metadata:  make(metadata.Metadata),
+				ID:         "dir",
+				Name:       "dir",
+				Type:       types.ObjectTypeDir,
+				UpdatedAt:  nowTime,
+				ObjectMeta: metadata.NewObjectMeta(),
 			},
 		},
 		{
@@ -149,10 +151,11 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				Name:      "stream",
-				Type:      types.ObjectTypeStream,
-				UpdatedAt: nowTime,
-				Metadata:  make(metadata.Metadata),
+				ID:         "stream",
+				Name:       "stream",
+				Type:       types.ObjectTypeStream,
+				UpdatedAt:  nowTime,
+				ObjectMeta: metadata.NewObjectMeta(),
 			},
 		},
 		{
@@ -160,9 +163,10 @@ func TestStorage_Stat(t *testing.T) {
 			nil,
 			fileInfo{},
 			&types.Object{
-				Name:     "-",
-				Type:     types.ObjectTypeStream,
-				Metadata: make(metadata.Metadata),
+				ID:         "-",
+				Name:       "-",
+				Type:       types.ObjectTypeStream,
+				ObjectMeta: metadata.NewObjectMeta(),
 			},
 		},
 		{
@@ -175,10 +179,11 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				Name:      "invalid",
-				Type:      types.ObjectTypeInvalid,
-				UpdatedAt: nowTime,
-				Metadata:  make(metadata.Metadata),
+				ID:         "invalid",
+				Name:       "invalid",
+				Type:       types.ObjectTypeInvalid,
+				UpdatedAt:  nowTime,
+				ObjectMeta: metadata.NewObjectMeta(),
 			},
 		},
 		{
@@ -399,7 +404,7 @@ func TestStorage_Move(t *testing.T) {
 	})
 }
 
-func TestStorage_ListDir(t *testing.T) {
+func TestStorage_List(t *testing.T) {
 	paths := make([]string, 100)
 	for k := range paths {
 		paths[k] = uuid.New().String()
@@ -423,11 +428,12 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name:      filepath.Join(paths[0], "test_file"),
-					Type:      types.ObjectTypeFile,
-					Size:      1234,
-					UpdatedAt: time.Unix(1, 0),
-					Metadata:  metadata.Metadata{},
+					ID:         filepath.Join(paths[0], "test_file"),
+					Name:       filepath.Join(paths[0], "test_file"),
+					Type:       types.ObjectTypeFile,
+					Size:       1234,
+					UpdatedAt:  time.Unix(1, 0),
+					ObjectMeta: metadata.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -444,11 +450,12 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name:      filepath.Join(paths[1], "test_file"),
-					Type:      types.ObjectTypeFile,
-					Size:      1234,
-					UpdatedAt: time.Unix(1, 0),
-					Metadata:  metadata.Metadata{},
+					ID:         filepath.Join(paths[1], "test_file"),
+					Name:       filepath.Join(paths[1], "test_file"),
+					Type:       types.ObjectTypeFile,
+					Size:       1234,
+					UpdatedAt:  time.Unix(1, 0),
+					ObjectMeta: metadata.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -465,11 +472,12 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name:      filepath.Join(paths[2], "test_dir"),
-					Type:      types.ObjectTypeDir,
-					Size:      0,
-					UpdatedAt: time.Unix(1, 0),
-					Metadata:  metadata.Metadata{},
+					ID:         filepath.Join(paths[2], "test_dir"),
+					Name:       filepath.Join(paths[2], "test_dir"),
+					Type:       types.ObjectTypeDir,
+					Size:       0,
+					UpdatedAt:  time.Unix(1, 0),
+					ObjectMeta: metadata.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -486,11 +494,12 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					Name:      filepath.Join(paths[3], "test_dir"),
-					Type:      types.ObjectTypeDir,
-					Size:      0,
-					UpdatedAt: time.Unix(1, 0),
-					Metadata:  metadata.Metadata{},
+					ID:         filepath.Join(paths[3], "test_dir"),
+					Name:       filepath.Join(paths[3], "test_dir"),
+					Type:       types.ObjectTypeDir,
+					Size:       0,
+					UpdatedAt:  time.Unix(1, 0),
+					ObjectMeta: metadata.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -514,7 +523,7 @@ func TestStorage_ListDir(t *testing.T) {
 
 			items := make([]*types.Object, 0)
 
-			err := client.ListDir(paths[k], pairs.WithDirFunc(func(object *types.Object) {
+			err := client.List(paths[k], pairs.WithDirFunc(func(object *types.Object) {
 				items = append(items, object)
 			}), pairs.WithFileFunc(func(object *types.Object) {
 				items = append(items, object)

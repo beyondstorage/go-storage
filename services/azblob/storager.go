@@ -1,4 +1,4 @@
-package gcs
+package azblob
 
 import (
 	"context"
@@ -6,24 +6,25 @@ import (
 	"io"
 	"strings"
 
-	gs "cloud.google.com/go/storage"
+	"github.com/Azure/azure-storage-blob-go/azblob"
+
+	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
-	"google.golang.org/api/iterator"
 )
 
-// Storage is the gcs service client.
+// Storage is the azblob service client.
 //
 //go:generate ../../internal/bin/meta
 type Storage struct {
-	bucket *gs.BucketHandle
+	bucket azblob.ContainerURL
 
 	name    string
 	workDir string
 }
 
 // newStorage will create a new client.
-func newStorage(bucket *gs.BucketHandle, name string) *Storage {
+func newStorage(bucket azblob.ContainerURL, name string) *Storage {
 	c := &Storage{
 		bucket: bucket,
 		name:   name,
@@ -34,7 +35,7 @@ func newStorage(bucket *gs.BucketHandle, name string) *Storage {
 // String implements Storager.String
 func (s Storage) String() string {
 	return fmt.Sprintf(
-		"Storager gcs {Name: %s, WorkDir: %s}",
+		"Storager azblob {Name: %s, WorkDir: %s}",
 		s.name, "/"+s.workDir,
 	)
 }
@@ -75,32 +76,39 @@ func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 	rp := s.getAbsPath(path)
 
+	marker := azblob.Marker{}
+	var output *azblob.ListBlobsFlatSegmentResponse
 	for {
-		it := s.bucket.Objects(context.TODO(), &gs.Query{
+		output, err = s.bucket.ListBlobsFlatSegment(context.TODO(), marker, azblob.ListBlobsSegmentOptions{
 			Prefix: rp,
 		})
-		object, err := it.Next()
-		if err != nil && err == iterator.Done {
-			return nil
-		}
 		if err != nil {
 			return fmt.Errorf(errorMessage, s, path, err)
 		}
 
-		o := &types.Object{
-			ID:         object.Name,
-			Name:       s.getRelPath(object.Name),
-			Type:       types.ObjectTypeDir,
-			Size:       object.Size,
-			UpdatedAt:  object.Updated,
-			ObjectMeta: metadata.NewObjectMeta(),
-		}
-		o.SetContentType(object.ContentType)
-		o.SetStorageClass(object.StorageClass)
-		o.SetContentMD5(string(object.MD5))
+		for _, v := range output.Segment.BlobItems {
+			o := &types.Object{
+				ID:         v.Name,
+				Name:       s.getRelPath(v.Name),
+				Type:       types.ObjectTypeDir,
+				Size:       *v.Properties.ContentLength,
+				UpdatedAt:  v.Properties.LastModified,
+				ObjectMeta: metadata.NewObjectMeta(),
+			}
+			o.SetContentType(*v.Properties.ContentType)
+			o.SetStorageClass(string(v.Properties.AccessTier))
+			o.SetContentMD5(string(v.Properties.ContentMD5))
 
-		opt.FileFunc(o)
+			opt.FileFunc(o)
+		}
+
+		marker = output.NextMarker
+		if !marker.NotDone() {
+			break
+		}
 	}
+
+	return
 }
 
 // Read implements Storager.Read
@@ -109,40 +117,27 @@ func (s Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 
 	rp := s.getAbsPath(path)
 
-	object := s.bucket.Object(rp)
-	r, err = object.NewReader(context.TODO())
+	output, err := s.bucket.NewBlockBlobURL(rp).Download(context.TODO(), 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
-	return
+	return output.Body(azblob.RetryReaderOptions{}), nil
 }
 
 // Write implements Storager.Write
 func (s Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Write [%s]: %w"
 
-	opt, err := parseStoragePairWrite(pairs...)
+	_, err = parseStoragePairWrite(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 
 	rp := s.getAbsPath(path)
 
-	object := s.bucket.Object(rp)
-	w := object.NewWriter(context.TODO())
-	defer w.Close()
-
-	if opt.HasChecksum {
-		w.MD5 = []byte(opt.Checksum)
-	}
-	if opt.HasSize {
-		w.Size = opt.Size
-	}
-	if opt.HasStorageClass {
-		w.StorageClass = opt.StorageClass
-	}
-
-	_, err = io.Copy(w, r)
+	// TODO: add checksum and storage class support.
+	_, err = s.bucket.NewBlockBlobURL(rp).Upload(context.TODO(), iowrap.NewReadSeekCloser(r),
+		azblob.BlobHTTPHeaders{}, azblob.Metadata{}, azblob.BlobAccessConditions{})
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -155,17 +150,17 @@ func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 
 	rp := s.getAbsPath(path)
 
-	attr, err := s.bucket.Object(rp).Attrs(context.TODO())
+	output, err := s.bucket.NewBlockBlobURL(rp).GetProperties(context.TODO(), azblob.BlobAccessConditions{})
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
 
 	o = &types.Object{
-		ID:         attr.Name,
+		ID:         rp,
 		Name:       path,
 		Type:       types.ObjectTypeFile,
-		Size:       attr.Size,
-		UpdatedAt:  attr.Updated,
+		Size:       output.ContentLength(),
+		UpdatedAt:  output.LastModified(),
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 	return o, nil
@@ -177,7 +172,8 @@ func (s Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 
 	rp := s.getAbsPath(path)
 
-	err = s.bucket.Object(rp).Delete(context.TODO())
+	_, err = s.bucket.NewBlockBlobURL(rp).Delete(context.TODO(),
+		azblob.DeleteSnapshotsOptionNone, azblob.BlobAccessConditions{})
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}

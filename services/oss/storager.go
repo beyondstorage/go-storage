@@ -57,20 +57,18 @@ func (s *Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.Storage, err error) {
-	m = metadata.Storage{
-		Name:     s.bucket.BucketName,
-		WorkDir:  s.workDir,
-		Metadata: make(metadata.Metadata),
-	}
+func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+	m = metadata.NewStorageMeta()
+	m.Name = s.bucket.BucketName
+	m.WorkDir = s.workDir
 	return m, nil
 }
 
-// ListDir implements Storager.ListDir
-func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s ListDir [%s]: %w"
+// List implements Storager.List
+func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s List [%s]: %w"
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -93,9 +91,10 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.CommonPrefixes {
 			o := &types.Object{
-				Name:     v,
-				Type:     types.ObjectTypeDir,
-				Metadata: make(metadata.Metadata),
+				ID:         v,
+				Name:       s.getRelPath(v),
+				Type:       types.ObjectTypeDir,
+				ObjectMeta: metadata.NewObjectMeta(),
 			}
 
 			if opt.HasDirFunc {
@@ -105,16 +104,17 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Objects {
 			o := &types.Object{
-				Name:      s.getRelPath(v.Key),
-				Type:      types.ObjectTypeDir,
-				Size:      v.Size,
-				UpdatedAt: v.LastModified,
-				Metadata:  make(metadata.Metadata),
+				ID:         v.Key,
+				Name:       s.getRelPath(v.Key),
+				Type:       types.ObjectTypeDir,
+				Size:       v.Size,
+				UpdatedAt:  v.LastModified,
+				ObjectMeta: metadata.NewObjectMeta(),
 			}
 
-			o.SetType(v.Type)
-			o.SetClass(v.StorageClass)
-			o.SetChecksum(v.ETag)
+			o.SetContentType(v.Type)
+			o.SetStorageClass(v.StorageClass)
+			o.SetETag(v.ETag)
 
 			if opt.HasFileFunc {
 				opt.FileFunc(o)
@@ -196,11 +196,12 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	// TODO: get object's checksum and storage class.
 	o = &types.Object{
-		Name:      path,
-		Type:      types.ObjectTypeFile,
-		Size:      size,
-		UpdatedAt: lastModified,
-		Metadata:  make(metadata.Metadata),
+		ID:         rp,
+		Name:       path,
+		Type:       types.ObjectTypeFile,
+		Size:       size,
+		UpdatedAt:  lastModified,
+		ObjectMeta: metadata.NewObjectMeta(),
 	}
 	return o, nil
 }
