@@ -8,6 +8,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/config"
 	"github.com/Xuanwo/storage/pkg/namespace"
 	"github.com/Xuanwo/storage/services/azblob"
+	"github.com/Xuanwo/storage/services/cos"
 	"github.com/Xuanwo/storage/services/fs"
 	"github.com/Xuanwo/storage/services/gcs"
 	"github.com/Xuanwo/storage/services/kodo"
@@ -31,6 +32,7 @@ type openFunc func(ns string, opt ...*types.Pair) (srv storage.Servicer, store s
 
 var opener = map[string]openFunc{
 	azblob.Type:   openAzblob,
+	cos.Type:      openCOS,
 	fs.Type:       openFs,
 	gcs.Type:      openGCS,
 	kodo.Type:     openKodo,
@@ -110,6 +112,15 @@ func openObjectStorage(srv storage.Servicer, ns string) (store storage.Storager,
 
 func openAzblob(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error) {
 	srv, err = azblob.New(opt...)
+	if err != nil {
+		return
+	}
+	store, err = openObjectStorage(srv, ns)
+	return
+}
+
+func openCOS(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error) {
+	srv, err = cos.New(opt...)
 	if err != nil {
 		return
 	}
