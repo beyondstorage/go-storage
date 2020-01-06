@@ -60,6 +60,7 @@ if err != nil {
 | ------- | ----------- | ------ |
 | [azblob](#azblob) | [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/) | alpha (-segments, -unittests) |
 | [cos](#cos) | [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos) | alpha (-segments, -unittests) |
+| [dropbox](#dropbox) | [Dropbox](https://www.dropbox.com) | alpha (-unittests) |
 | [fs](#fs) | Local file system | stable (-segments)|
 | [gcs](#gcs) | [Google Cloud Storage](https://cloud.google.com/storage/) | alpha (-segments, -unittests) |
 | [kodo](#kodo) | [qiniu kodo](https://www.qiniu.com/products/kodo) | alpha (-segments, -unittests) |
@@ -75,6 +76,10 @@ if err != nil {
 ### cos
 
 `cos://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+
+### dropbox
+
+`dropbox://apikey:<api_key>/path/to/dir`
 
 ### fs
 
