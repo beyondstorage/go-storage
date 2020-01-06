@@ -130,6 +130,8 @@ func (s Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 
 	object := s.bucket.Object(rp)
 	w := object.NewWriter(context.TODO())
+	defer w.Close()
+
 	if opt.HasChecksum {
 		w.MD5 = []byte(opt.Checksum)
 	}
