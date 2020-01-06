@@ -16,6 +16,7 @@ import (
 	"github.com/Xuanwo/storage/services/oss"
 	"github.com/Xuanwo/storage/services/qingstor"
 	"github.com/Xuanwo/storage/services/s3"
+	"github.com/Xuanwo/storage/services/uss"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/pairs"
 )
@@ -41,6 +42,7 @@ var opener = map[string]openFunc{
 	oss.Type:      openOSS,
 	qingstor.Type: openQingStor,
 	s3.Type:       openS3,
+	uss.Type:      openUSS,
 }
 
 // Open will parse config string and return valid Servicer and Storager.
@@ -195,5 +197,18 @@ func openS3(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.
 		return
 	}
 	store, err = openObjectStorage(srv, ns)
+	return
+}
+
+func openUSS(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error) {
+	name, prefix := namespace.ParseObjectStorage(ns)
+	store, err = uss.New(name, opt...)
+	if err != nil {
+		return
+	}
+	err = store.Init(pairs.WithWorkDir(prefix))
+	if err != nil {
+		return
+	}
 	return
 }
