@@ -62,7 +62,7 @@ if err != nil {
 | [cos](#cos) | [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos) | planned |
 | [fs](#fs) | Local file system | stable (-segments)|
 | [gcs](#gcs) | [Google Cloud Storage](https://cloud.google.com/storage/) | alpha (-segments, -unittests) |
-| [kodo](#kodo) | [qiniu kodo](https://www.qiniu.com/products/kodo) | planned |
+| [kodo](#kodo) | [qiniu kodo](https://www.qiniu.com/products/kodo) | alpha (-segments, -unittests) |
 | [oss](#oss) | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | alpha (-segments, -unittests) |
 | [qingstor](#qingstor) | [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/) | stable |
 | [s3](#s3) | [Amazon S3](https://aws.amazon.com/s3/) | alpha (-segments, -unittests) |
@@ -79,6 +79,10 @@ if err != nil {
 ### gcs
 
 `gcs://apikey:<api_key>/<bucket_name>/<prefix>?project=<project_id>`
+
+### kodo
+
+`kodo://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
 
 ### oss
 
