@@ -119,7 +119,7 @@ func openAzblob(ns string, opt ...*types.Pair) (srv storage.Servicer, store stor
 
 func openFs(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error) {
 	store = fs.New()
-	path := fs.ParseNamespace(ns)
+	path := namespace.ParseLocalFS(ns)
 	err = store.Init(pairs.WithWorkDir(path))
 	if err != nil {
 		return
