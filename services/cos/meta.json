@@ -1,0 +1,33 @@
+{
+  "name": "cos",
+  "service": {
+    "create": {
+      "location": true
+    },
+    "delete": {
+      "location": true
+    },
+    "get": {
+      "location": true
+    },
+    "list": {
+      "storager_func": true
+    },
+    "new": {
+      "credential": true
+    }
+  },
+  "storage": {
+    "init": {
+      "work_dir": false
+    },
+    "list": {
+      "file_func": true
+    },
+    "write": {
+      "checksum": false,
+      "size": true,
+      "storage_class": false
+    }
+  }
+}
