@@ -1,0 +1,21 @@
+{
+  "name": "dropbox",
+  "storage": {
+    "init": {
+      "work_dir": false
+    },
+    "list": {
+      "dir_func": false,
+      "file_func": false
+    },
+    "new": {
+      "credential": true
+    },
+    "read": {
+      "size": false
+    },
+    "write": {
+      "size": false
+    }
+  }
+}
