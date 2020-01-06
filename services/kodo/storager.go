@@ -56,18 +56,16 @@ func (s Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s Storage) Metadata() (m metadata.Storage, err error) {
-	m = metadata.Storage{
-		Name:     s.name,
-		WorkDir:  s.workDir,
-		Metadata: make(metadata.Metadata),
-	}
+func (s Storage) Metadata() (m metadata.StorageMeta, err error) {
+	m = metadata.NewStorageMeta()
+	m.Name = s.name
+	m.WorkDir = s.workDir
 	return m, nil
 }
 
-// ListDir implements Storager.ListDir
-func (s Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s ListDir [%s]: %w"
+// List implements Storager.List
+func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s List [%s]: %w"
 
 	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
@@ -85,14 +83,14 @@ func (s Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range entries {
 			o := &types.Object{
-				Name:      s.getRelPath(v.Key),
-				Type:      types.ObjectTypeDir,
-				Size:      v.Fsize,
-				UpdatedAt: convertUnixTimestampToTime(v.PutTime),
-				Metadata:  make(metadata.Metadata),
+				Name:       s.getRelPath(v.Key),
+				Type:       types.ObjectTypeDir,
+				Size:       v.Fsize,
+				UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
+				ObjectMeta: metadata.NewObjectMeta(),
 			}
-			o.SetType(v.MimeType)
-			// kodo's object checksum is not md5, let's keep empty.
+			o.SetContentType(v.MimeType)
+			o.SetETag(v.Hash)
 
 			opt.FileFunc(o)
 		}
