@@ -16,6 +16,7 @@ import (
 // Storage is the gcs service client.
 //
 //go:generate ../../internal/bin/meta
+//go:generate ../../internal/bin/context
 type Storage struct {
 	bucket    *qs.BucketManager
 	domain    string
@@ -76,7 +77,7 @@ func (s *Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()
 	m.Name = s.name
 	m.WorkDir = s.workDir

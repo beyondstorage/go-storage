@@ -41,6 +41,7 @@ build_generator: go-bindata
 		&& go build -o ../bin/meta ./meta \
 		&& go build -o ../bin/pairs ./pairs \
 		&& go build -o ../bin/metadata ./metadata \
+		&& go build -o ../bin/context ./context \
 		&& popd
 	@echo "Done"
 

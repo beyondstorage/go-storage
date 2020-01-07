@@ -30,7 +30,7 @@ type pairServiceCreate struct {
 }
 
 func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
-	result := &pairStorageCreate{}
+	result := &pairServiceCreate{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -69,7 +69,7 @@ type pairServiceDelete struct {
 }
 
 func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
-	result := &pairStorageDelete{}
+	result := &pairServiceDelete{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -105,7 +105,7 @@ type pairServiceGet struct {
 }
 
 func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
-	result := &pairStorageGet{}
+	result := &pairServiceGet{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -143,7 +143,7 @@ type pairServiceInit struct {
 }
 
 func parseServicePairInit(opts ...*types.Pair) (*pairServiceInit, error) {
-	result := &pairStorageInit{}
+	result := &pairServiceInit{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -187,7 +187,7 @@ type pairServiceList struct {
 }
 
 func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
-	result := &pairStorageList{}
+	result := &pairServiceList{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {

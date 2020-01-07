@@ -17,6 +17,7 @@ import (
 // Storage is the cos object storage service.
 //
 //go:generate ../../internal/bin/meta
+//go:generate ../../internal/bin/context
 type Storage struct {
 	bucket *cos.BucketService
 	object *cos.ObjectService
@@ -40,7 +41,7 @@ func newStorage(bucketName, region string, client *http.Client) *Storage {
 }
 
 // String implements Storager.String
-func (s Storage) String() string {
+func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager cos {Name: %s, WorkDir: %s}",
 		s.name, "/"+s.workDir,
@@ -48,7 +49,7 @@ func (s Storage) String() string {
 }
 
 // Init implements Storager.Init
-func (s Storage) Init(pairs ...*types.Pair) (err error) {
+func (s *Storage) Init(pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Init: %w"
 
 	opt, err := parseStoragePairInit(pairs...)
@@ -65,7 +66,7 @@ func (s Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s Storage) Metadata() (m metadata.StorageMeta, err error) {
+func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()
 	m.Name = s.name
 	m.WorkDir = s.workDir
@@ -73,7 +74,7 @@ func (s Storage) Metadata() (m metadata.StorageMeta, err error) {
 }
 
 // List implements Storager.List
-func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s List [%s]: %w"
 
 	opt, err := parseStoragePairList(pairs...)
@@ -129,7 +130,7 @@ func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
 }
 
 // Read implements Storager.Read
-func (s Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
+func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	const errorMessage = "%s Read [%s]: %w"
 
 	rp := s.getAbsPath(path)
@@ -144,7 +145,7 @@ func (s Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 }
 
 // Write implements Storager.Write
-func (s Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Write [%s]: %w"
 
 	opt, err := parseStoragePairWrite(pairs...)
@@ -175,7 +176,7 @@ func (s Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 }
 
 // Stat implements Storager.Stat
-func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
+func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	const errorMessage = "%s Stat [%s]: %w"
 
 	rp := s.getAbsPath(path)
@@ -202,7 +203,7 @@ func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 }
 
 // Delete implements Storager.Delete
-func (s Storage) Delete(path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
 	rp := s.getAbsPath(path)

@@ -38,7 +38,7 @@ type pair{{ $cname }}{{ $ck }} struct {
 }
 
 func parse{{ $cname }}Pair{{ $ck }}(opts ...*types.Pair) (*pair{{ $cname }}{{ $ck }}, error) {
-    result := &pairStorage{{ $ck }}{}
+    result := &pair{{ $cname }}{{ $ck }}{}
 
     values := make(map[string]interface{})
     for _, v := range opts {
