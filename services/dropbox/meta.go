@@ -2,6 +2,8 @@
 package dropbox
 
 import (
+	"context"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
@@ -18,28 +20,11 @@ var _ storage.Storager
 // Type is the type for dropbox
 const Type = "dropbox"
 
-var allowedStoragePairs = map[string]map[string]struct{}{
-	"init": {
-		"work_dir": struct{}{},
-	},
-	"list": {
-		"dir_func":  struct{}{},
-		"file_func": struct{}{},
-	},
-	"new": {
-		"credential": struct{}{},
-	},
-	"read": {
-		"size": struct{}{},
-	},
-	"write": {
-		"size": struct{}{},
-	},
-}
-
-var allowedServicePairs = map[string]map[string]struct{}{}
-
 type pairStorageInit struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
 	HasWorkDir bool
 	WorkDir    string
 }
@@ -49,16 +34,20 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["init"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["init"][v.Key]; !ok {
-			continue
-		}
 		values[v.Key] = v.Value
 	}
 	var v interface{}
 	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
 	v, ok = values[pairs.WorkDir]
 	if ok {
 		result.HasWorkDir = true
@@ -68,6 +57,10 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 }
 
 type pairStorageList struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
 	HasDirFunc  bool
 	DirFunc     types.ObjectFunc
 	HasFileFunc bool
@@ -79,16 +72,20 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["list"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["list"][v.Key]; !ok {
-			continue
-		}
 		values[v.Key] = v.Value
 	}
 	var v interface{}
 	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
 	v, ok = values[pairs.DirFunc]
 	if ok {
 		result.HasDirFunc = true
@@ -103,6 +100,10 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 }
 
 type pairStorageNew struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
 	HasCredential bool
 	Credential    *credential.Provider
 }
@@ -112,16 +113,20 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["new"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["new"][v.Key]; !ok {
-			continue
-		}
 		values[v.Key] = v.Value
 	}
 	var v interface{}
 	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
 	v, ok = values[pairs.Credential]
 	if !ok {
 		return nil, types.NewErrPairRequired(pairs.Credential)
@@ -134,6 +139,10 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 }
 
 type pairStorageRead struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
 	HasSize bool
 	Size    int64
 }
@@ -143,16 +152,20 @@ func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["read"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["read"][v.Key]; !ok {
-			continue
-		}
 		values[v.Key] = v.Value
 	}
 	var v interface{}
 	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
 	v, ok = values[pairs.Size]
 	if ok {
 		result.HasSize = true
@@ -162,6 +175,10 @@ func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 }
 
 type pairStorageWrite struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
 	HasSize bool
 	Size    int64
 }
@@ -171,16 +188,20 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["write"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["write"][v.Key]; !ok {
-			continue
-		}
 		values[v.Key] = v.Value
 	}
 	var v interface{}
 	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
 	v, ok = values[pairs.Size]
 	if ok {
 		result.HasSize = true

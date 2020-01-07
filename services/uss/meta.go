@@ -2,6 +2,8 @@
 package uss
 
 import (
+	"context"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
@@ -18,21 +20,11 @@ var _ storage.Storager
 // Type is the type for uss
 const Type = "uss"
 
-var allowedStoragePairs = map[string]map[string]struct{}{
-	"init": {
-		"work_dir": struct{}{},
-	},
-	"list": {
-		"file_func": struct{}{},
-	},
-	"new": {
-		"credential": struct{}{},
-	},
-}
-
-var allowedServicePairs = map[string]map[string]struct{}{}
-
 type pairStorageInit struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
 	HasWorkDir bool
 	WorkDir    string
 }
@@ -42,16 +34,20 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["init"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["init"][v.Key]; !ok {
-			continue
-		}
 		values[v.Key] = v.Value
 	}
 	var v interface{}
 	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
 	v, ok = values[pairs.WorkDir]
 	if ok {
 		result.HasWorkDir = true
@@ -61,6 +57,10 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 }
 
 type pairStorageList struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
 	HasFileFunc bool
 	FileFunc    types.ObjectFunc
 }
@@ -70,16 +70,20 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["list"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["list"][v.Key]; !ok {
-			continue
-		}
 		values[v.Key] = v.Value
 	}
 	var v interface{}
 	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
 	v, ok = values[pairs.FileFunc]
 	if !ok {
 		return nil, types.NewErrPairRequired(pairs.FileFunc)
@@ -92,6 +96,10 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 }
 
 type pairStorageNew struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
 	HasCredential bool
 	Credential    *credential.Provider
 }
@@ -101,16 +109,20 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := allowedStoragePairs["new"]; !ok {
-			continue
-		}
-		if _, ok := allowedStoragePairs["new"][v.Key]; !ok {
-			continue
-		}
 		values[v.Key] = v.Value
 	}
 	var v interface{}
 	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
 	v, ok = values[pairs.Credential]
 	if !ok {
 		return nil, types.NewErrPairRequired(pairs.Credential)

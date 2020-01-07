@@ -2,6 +2,8 @@
 package pairs
 
 import (
+	"context"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
@@ -12,6 +14,7 @@ import (
 // All available pairs.
 const (
 	Checksum     = "checksum"
+	Context      = "context"
 	Credential   = "credential"
 	DirFunc      = "dir_func"
 	Endpoint     = "endpoint"
@@ -34,6 +37,14 @@ const (
 func WithChecksum(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Checksum,
+		Value: v,
+	}
+}
+
+// WithContext will apply context value to Options
+func WithContext(v context.Context) *types.Pair {
+	return &types.Pair{
+		Key:   Context,
 		Value: v,
 	}
 }
