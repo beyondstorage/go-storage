@@ -25,7 +25,6 @@ So I propose following changes:
 - Add `ReadWithContext` style method for every public API
 - `ReadWithContext` call `Read` with `Context` pair
 - `Read` use `Context` via parsed pair
-- Add context support for `ObjectFunc` and so on
 
 More detailed changes described as following:
 
@@ -109,10 +108,6 @@ it := s.bucket.Objects(opt.Context, &gs.Query{
     Prefix: rp,
 })
 ```
-
-### Add context support for `ObjectFunc` and so on
-
-`ObjectFunc` and other related funcs should also be updated to support context.
 
 ## Rationale
 
