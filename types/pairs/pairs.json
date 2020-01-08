@@ -1,5 +1,6 @@
 {
   "checksum": "string",
+  "context": "context.Context",
   "credential": "*credential.Provider",
   "dir_func": "types.ObjectFunc",
   "endpoint": "endpoint.Provider",

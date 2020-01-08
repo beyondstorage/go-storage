@@ -22,7 +22,8 @@ type metadata struct {
 	Service map[string]map[string]bool `json:"service,omitempty"`
 	Storage map[string]map[string]bool `json:"storage"`
 
-	TypeMap map[string]string `json:"-"`
+	TypeMap map[string]string                     `json:"-"`
+	Data    map[string]map[string]map[string]bool `json:"-"`
 }
 
 //go:generate go-bindata -nometadata -ignore ".*.go" .
@@ -49,6 +50,7 @@ func main() {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
 
+	// Handle TypeMap
 	pairsPath := "../../types/pairs/pairs.json"
 	content, err = ioutil.ReadFile(pairsPath)
 	if err != nil {
@@ -58,6 +60,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
+	// Handle Data
+	meta.Data = make(map[string]map[string]map[string]bool)
+	meta.Data["service"] = meta.Service
+	meta.Data["storage"] = meta.Storage
 
 	// Format input meta.json
 	data, err := json.MarshalIndent(meta, "", "  ")

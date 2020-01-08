@@ -1,7 +1,6 @@
 package cos
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -47,12 +46,12 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 }
 
 // String implements Servicer.String
-func (s Service) String() string {
+func (s *Service) String() string {
 	return fmt.Sprintf("Servicer cos")
 }
 
 // List implements Servicer.List
-func (s Service) List(pairs ...*types.Pair) (err error) {
+func (s *Service) List(pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s List: %w"
 
 	opt, err := parseServicePairList(pairs...)
@@ -60,7 +59,7 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, err)
 	}
 
-	output, _, err := s.service.Service.Get(context.TODO())
+	output, _, err := s.service.Service.Get(opt.Context)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, err)
 	}
@@ -72,7 +71,7 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 }
 
 // Get implements Servicer.Get
-func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
+func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s Get [%s]: %w"
 
 	opt, err := parseServicePairGet(pairs...)
@@ -85,7 +84,7 @@ func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error
 }
 
 // Create implements Servicer.Create
-func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
+func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s Create [%s]: %w"
 
 	opt, err := parseServicePairCreate(pairs...)
@@ -94,7 +93,7 @@ func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, er
 	}
 
 	store := newStorage(name, opt.Location, s.client)
-	_, err = store.bucket.Put(context.TODO(), nil)
+	_, err = store.bucket.Put(opt.Context, nil)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
@@ -102,7 +101,7 @@ func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, er
 }
 
 // Delete implements Servicer.Delete
-func (s Service) Delete(name string, pairs ...*types.Pair) (err error) {
+func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
 	opt, err := parseServicePairDelete(pairs...)
@@ -111,7 +110,7 @@ func (s Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	}
 
 	store := newStorage(name, opt.Location, s.client)
-	_, err = store.bucket.Delete(context.TODO())
+	_, err = store.bucket.Delete(opt.Context)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}

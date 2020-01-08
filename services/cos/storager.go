@@ -1,7 +1,6 @@
 package cos
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,6 +16,7 @@ import (
 // Storage is the cos object storage service.
 //
 //go:generate ../../internal/bin/meta
+//go:generate ../../internal/bin/context
 type Storage struct {
 	bucket *cos.BucketService
 	object *cos.ObjectService
@@ -40,7 +40,7 @@ func newStorage(bucketName, region string, client *http.Client) *Storage {
 }
 
 // String implements Storager.String
-func (s Storage) String() string {
+func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager cos {Name: %s, WorkDir: %s}",
 		s.name, "/"+s.workDir,
@@ -48,7 +48,7 @@ func (s Storage) String() string {
 }
 
 // Init implements Storager.Init
-func (s Storage) Init(pairs ...*types.Pair) (err error) {
+func (s *Storage) Init(pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Init: %w"
 
 	opt, err := parseStoragePairInit(pairs...)
@@ -65,7 +65,7 @@ func (s Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s Storage) Metadata() (m metadata.StorageMeta, err error) {
+func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()
 	m.Name = s.name
 	m.WorkDir = s.workDir
@@ -73,7 +73,7 @@ func (s Storage) Metadata() (m metadata.StorageMeta, err error) {
 }
 
 // List implements Storager.List
-func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s List [%s]: %w"
 
 	opt, err := parseStoragePairList(pairs...)
@@ -93,7 +93,7 @@ func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
 			Marker:  marker,
 		}
 
-		resp, _, err := s.bucket.Get(context.TODO(), req)
+		resp, _, err := s.bucket.Get(opt.Context, req)
 		if err != nil {
 			return fmt.Errorf(errorMessage, s, path, err)
 		}
@@ -129,12 +129,17 @@ func (s Storage) List(path string, pairs ...*types.Pair) (err error) {
 }
 
 // Read implements Storager.Read
-func (s Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
+func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	const errorMessage = "%s Read [%s]: %w"
+
+	opt, err := parseStoragePairRead(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
 
 	rp := s.getAbsPath(path)
 
-	resp, err := s.object.Get(context.TODO(), rp, nil)
+	resp, err := s.object.Get(opt.Context, rp, nil)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -144,7 +149,7 @@ func (s Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err e
 }
 
 // Write implements Storager.Write
-func (s Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Write [%s]: %w"
 
 	opt, err := parseStoragePairWrite(pairs...)
@@ -167,7 +172,7 @@ func (s Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 		putOptions.XCosStorageClass = opt.StorageClass
 	}
 
-	_, err = s.object.Put(context.TODO(), rp, r, putOptions)
+	_, err = s.object.Put(opt.Context, rp, r, putOptions)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -175,12 +180,17 @@ func (s Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err erro
 }
 
 // Stat implements Storager.Stat
-func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
+func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	const errorMessage = "%s Stat [%s]: %w"
+
+	opt, err := parseStoragePairStat(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
 
 	rp := s.getAbsPath(path)
 
-	output, err := s.object.Head(context.TODO(), rp, nil)
+	output, err := s.object.Head(opt.Context, rp, nil)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -202,12 +212,17 @@ func (s Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err e
 }
 
 // Delete implements Storager.Delete
-func (s Storage) Delete(path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
+
+	opt, err := parseStoragePairDelete(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, path, err)
+	}
 
 	rp := s.getAbsPath(path)
 
-	_, err = s.object.Delete(context.TODO(), rp)
+	_, err = s.object.Delete(opt.Context, rp)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}

@@ -18,6 +18,7 @@ import (
 // Storage is the dropbox client.
 //
 //go:generate ../../internal/bin/meta
+//go:generate ../../internal/bin/context
 type Storage struct {
 	client files.Client
 
@@ -76,7 +77,7 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()
 	m.WorkDir = s.workDir
 	m.Name = ""
@@ -208,7 +209,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 }
 
 // Stat implements Storager.Stat
-func (s *Storage) Stat(path string, _ ...*types.Pair) (o *types.Object, err error) {
+func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	const errorMessage = "%s Stat [%s]: %w"
 
 	rp := s.getAbsPath(path)
@@ -254,7 +255,7 @@ func (s *Storage) Stat(path string, _ ...*types.Pair) (o *types.Object, err erro
 }
 
 // Delete implements Storager.Delete
-func (s *Storage) Delete(path string, _ ...*types.Pair) (err error) {
+func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
 	rp := s.getAbsPath(path)

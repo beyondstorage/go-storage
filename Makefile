@@ -17,7 +17,7 @@ tools := mockgen golint go-bindata
 $(tools):
 	@command -v $@ >/dev/null 2>&1 || echo "$@ is not found, plese install it."
 
-check: format vet lint
+check: vet lint
 
 format:
 	@echo "go fmt"
@@ -41,12 +41,14 @@ build_generator: go-bindata
 		&& go build -o ../bin/meta ./meta \
 		&& go build -o ../bin/pairs ./pairs \
 		&& go build -o ../bin/metadata ./metadata \
+		&& go build -o ../bin/context ./context \
 		&& popd
 	@echo "Done"
 
 generate: build_generator mockgen
 	@echo "generate code"
 	@go generate ./...
+	@go fmt ./...
 	@echo "ok"
 
 build: generate tidy check

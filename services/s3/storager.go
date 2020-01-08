@@ -16,6 +16,7 @@ import (
 // Storage is the s3 object storage service.
 //
 //go:generate ../../internal/bin/meta
+//go:generate ../../internal/bin/context
 type Storage struct {
 	service s3iface.S3API
 
@@ -58,7 +59,7 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()
 	m.Name = s.name
 	m.WorkDir = s.workDir

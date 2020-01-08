@@ -2,12 +2,14 @@
 package {{ .Name }}
 
 import (
+    "context"
+
     "github.com/Xuanwo/storage"
-    "github.com/Xuanwo/storage/types"
-    "github.com/Xuanwo/storage/types/pairs"
     "github.com/Xuanwo/storage/pkg/segment"
     "github.com/Xuanwo/storage/pkg/endpoint"
     "github.com/Xuanwo/storage/pkg/credential"
+    "github.com/Xuanwo/storage/types"
+    "github.com/Xuanwo/storage/types/pairs"
 )
 
 var _ credential.Provider
@@ -20,53 +22,41 @@ const Type = "{{ .Name }}"
 
 {{ $Data := . }}
 
-var allowedStoragePairs = map[string]map[string]struct{}{
-{{- range $k, $v := .Storage }}
-    "{{ $k }}": {
-    {{- range $key, $_ := $v }}
-        "{{$key}}": struct{}{},
-    {{- end }}
-    },
-{{- end }}
-}
+{{- range $name, $data := .Data }}
+{{ $cname := $name | camelCase }}
+{{- range $k, $v := $data }}
+{{ $ck := $k | camelCase }}
+type pair{{ $cname }}{{ $ck }} struct {
+    // Pre-defined pairs
+    Context context.Context
 
-var allowedServicePairs = map[string]map[string]struct{}{
-{{- range $k, $v := .Service }}
-    "{{ $k }}": {
-        {{- range $key, $_ := $v }}
-        "{{$key}}": struct{}{},
-        {{- end }}
-    },
-{{- end }}
-}
-
-{{- range $k, $v := .Storage }}
-type pairStorage{{ $k | camelCase}} struct {
+    // Meta-defined pairs
     {{- range $key, $_ := $v }}
     Has{{ $key | camelCase}} bool
     {{ $key | camelCase}}    {{ index $Data.TypeMap $key }}
     {{- end }}
 }
 
-func parseStoragePair{{ $k | camelCase}}(opts ...*types.Pair) (*pairStorage{{ $k | camelCase}}, error) {
-    result := &pairStorage{{ $k | camelCase}}{}
+func parse{{ $cname }}Pair{{ $ck }}(opts ...*types.Pair) (*pair{{ $cname }}{{ $ck }}, error) {
+    result := &pair{{ $cname }}{{ $ck }}{}
 
     values := make(map[string]interface{})
     for _, v := range opts {
-        if _, ok := allowedStoragePairs["{{ $k }}"]; !ok {
-            continue
-        }
-        if _, ok := allowedStoragePairs["{{ $k }}"][v.Key]; !ok {
-            continue
-        }
         values[v.Key] = v.Value
     }
 
-    {{- if $v }}
     var v interface{}
     var ok bool
-    {{- end }}
 
+    // Parse pre-defined pairs
+    v, ok = values[pairs.Context]
+    if ok {
+        result.Context = v.(context.Context)
+    } else {
+        result.Context = context.Background()
+    }
+
+    // Parse meta-defined pairs
     {{- range $key, $required := $v }}
     v, ok = values[pairs.{{ $key | camelCase}}]
     {{- if $required }}
@@ -82,46 +72,4 @@ func parseStoragePair{{ $k | camelCase}}(opts ...*types.Pair) (*pairStorage{{ $k
     return result, nil
 }
 {{- end }}
-
-{{- range $k, $v := .Service }}
-type pairService{{ $k | camelCase}} struct {
-    {{- range $key, $_ := $v }}
-    Has{{ $key | camelCase}} bool
-    {{ $key | camelCase}}    {{ index $Data.TypeMap $key }}
-    {{- end }}
-}
-
-func parseServicePair{{ $k | camelCase}}(opts ...*types.Pair) (*pairService{{ $k | camelCase}}, error) {
-    result := &pairService{{ $k | camelCase}}{}
-
-    values := make(map[string]interface{})
-    for _, v := range opts {
-        if _, ok := allowedServicePairs["{{ $k }}"]; !ok {
-            continue
-        }
-        if _, ok := allowedServicePairs["{{ $k }}"][v.Key]; !ok {
-            continue
-        }
-        values[v.Key] = v.Value
-    }
-
-    {{- if $v }}
-    var v interface{}
-    var ok bool
-    {{- end }}
-
-    {{- range $key, $required := $v }}
-    v, ok = values[pairs.{{ $key | camelCase}}]
-    {{- if $required }}
-    if !ok {
-        return nil, types.NewErrPairRequired(pairs.{{ $key | camelCase}})
-    }
-    {{- end }}
-    if ok {
-        result.Has{{ $key | camelCase}} = true
-        result.{{ $key | camelCase}} = v.({{ index $Data.TypeMap $key }})
-    }
-    {{- end }}
-    return result, nil
-}
 {{- end }}

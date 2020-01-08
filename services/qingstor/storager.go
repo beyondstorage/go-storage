@@ -19,6 +19,7 @@ import (
 // Storage is the qingstor object storage client.
 //
 //go:generate ../../internal/bin/meta
+//go:generate ../../internal/bin/context
 //go:generate mockgen -package qingstor -destination mock_test.go github.com/yunify/qingstor-sdk-go/v3/interface Service,Bucket
 type Storage struct {
 	bucket     iface.Bucket
@@ -69,7 +70,7 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()
 	m.Name = *s.properties.BucketName
 	m.WorkDir = s.workDir
@@ -78,7 +79,7 @@ func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
 }
 
 // Statistical implements Storager.Statistical
-func (s *Storage) Statistical() (m metadata.StorageStatistic, err error) {
+func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic, err error) {
 	const errorMessage = "%s Statistical: %w"
 
 	m = metadata.NewStorageStatistic()

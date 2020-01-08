@@ -69,7 +69,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, err)
 	}
 
-	it := s.service.Buckets(context.TODO(), s.projectID)
+	it := s.service.Buckets(opt.Context, s.projectID)
 	for {
 		bucketAttr, err := it.Next()
 		// Next will return iterator.Done if there is no more items.
@@ -98,9 +98,14 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s Create [%s]: %w"
 
+	opt, err := parseServicePairCreate(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
 	bucket := s.service.Bucket(name)
 
-	err := bucket.Create(context.TODO(), s.projectID, nil)
+	err = bucket.Create(opt.Context, s.projectID, nil)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
@@ -112,9 +117,14 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
+	opt, err := parseServicePairDelete(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, name, err)
+	}
+
 	bucket := s.service.Bucket(name)
 
-	err = bucket.Delete(context.TODO())
+	err = bucket.Delete(opt.Context)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}

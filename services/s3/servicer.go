@@ -57,7 +57,7 @@ func (s *Service) String() string {
 }
 
 // List implements Servicer.List
-func (s Service) List(pairs ...*types.Pair) (err error) {
+func (s *Service) List(pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s List: %w"
 
 	opt, err := parseServicePairList(pairs...)
@@ -86,7 +86,7 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 }
 
 // Get implements Servicer.Get
-func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
+func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s get [%s]: %w"
 
 	store, err := newStorage(s.service, name)
@@ -97,7 +97,7 @@ func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error
 }
 
 // Create implements Servicer.Create
-func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
+func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s Create [%s]: %w"
 
 	opt, err := parseServicePairCreate(pairs...)
@@ -125,7 +125,7 @@ func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, er
 }
 
 // Delete implements Servicer.Delete
-func (s Service) Delete(name string, pairs ...*types.Pair) (err error) {
+func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
 	_, err = parseServicePairDelete(pairs...)

@@ -1,2 +1,3 @@
 ignore:
   - "services/**/meta.go"
+  - "services/**/context.go"

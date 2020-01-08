@@ -39,12 +39,12 @@ func New(pairs ...*types.Pair) (s *Service, err error) {
 }
 
 // String implements Service.String
-func (s Service) String() string {
+func (s *Service) String() string {
 	return fmt.Sprintf("Servicer kodo")
 }
 
 // List implements Service.List
-func (s Service) List(pairs ...*types.Pair) (err error) {
+func (s *Service) List(pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s List: %w"
 
 	opt, err := parseServicePairList(pairs...)
@@ -64,7 +64,7 @@ func (s Service) List(pairs ...*types.Pair) (err error) {
 }
 
 // Get implements Service.Get
-func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
+func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s Get [%s]: %w"
 
 	c, err := newStorage(s.service, name)
@@ -75,7 +75,7 @@ func (s Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error
 }
 
 // Create implements Service.Create
-func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
+func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s Create [%s]: %w"
 
 	opt, err := parseServicePairCreate(pairs...)
@@ -103,7 +103,7 @@ func (s Service) Create(name string, pairs ...*types.Pair) (storage.Storager, er
 }
 
 // Delete implements Service.Delete
-func (s Service) Delete(name string, pairs ...*types.Pair) (err error) {
+func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
 	err = s.service.DropBucket(name)

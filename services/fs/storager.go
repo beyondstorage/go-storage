@@ -18,6 +18,7 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 // Storage is the fs client.
 //
 //go:generate ../../internal/bin/meta
+//go:generate ../../internal/bin/context
 type Storage struct {
 	// options for this storager.
 	workDir string // workDir dir for all operation.
@@ -71,14 +72,14 @@ func (s *Storage) Init(pairs ...*types.Pair) (err error) {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata() (m metadata.StorageMeta, err error) {
+func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()
 	m.WorkDir = s.workDir
 	return m, nil
 }
 
 // Stat implements Storager.Stat
-func (s *Storage) Stat(path string, option ...*types.Pair) (o *types.Object, err error) {
+func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	const errorMessage = "%s Stat [%s]: %w"
 
 	if path == "-" {
@@ -137,7 +138,7 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 }
 
 // Copy implements Storager.Copy
-func (s *Storage) Copy(src, dst string, option ...*types.Pair) (err error) {
+func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Copy from [%s] to [%s]: %w"
 
 	rs := s.getAbsPath(src)
@@ -169,7 +170,7 @@ func (s *Storage) Copy(src, dst string, option ...*types.Pair) (err error) {
 }
 
 // Move implements Storager.Move
-func (s *Storage) Move(src, dst string, option ...*types.Pair) (err error) {
+func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Move from [%s] to [%s]: %w"
 
 	rs := s.getAbsPath(src)
