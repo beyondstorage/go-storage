@@ -36,6 +36,7 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -75,6 +76,7 @@ func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -114,6 +116,7 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -153,6 +156,7 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -192,6 +196,7 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -215,6 +220,36 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	return result, nil
 }
 
+type pairStorageDelete struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
+	result := &pairStorageDelete{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
 type pairStorageInit struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -231,6 +266,7 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -267,6 +303,7 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -290,6 +327,66 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	return result, nil
 }
 
+type pairStorageRead struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
+	result := &pairStorageRead{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
+type pairStorageStat struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseStoragePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
+	result := &pairStorageStat{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[pairs.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
 type pairStorageWrite struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -310,6 +407,7 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 

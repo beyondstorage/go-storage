@@ -1,7 +1,6 @@
 package cos
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -60,7 +59,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, err)
 	}
 
-	output, _, err := s.service.Service.Get(context.TODO())
+	output, _, err := s.service.Service.Get(opt.Context)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, err)
 	}
@@ -94,7 +93,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 	}
 
 	store := newStorage(name, opt.Location, s.client)
-	_, err = store.bucket.Put(context.TODO(), nil)
+	_, err = store.bucket.Put(opt.Context, nil)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
@@ -111,7 +110,7 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	}
 
 	store := newStorage(name, opt.Location, s.client)
-	_, err = store.bucket.Delete(context.TODO())
+	_, err = store.bucket.Delete(opt.Context)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}

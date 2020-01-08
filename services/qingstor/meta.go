@@ -36,6 +36,7 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -75,6 +76,7 @@ func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -111,6 +113,7 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -149,6 +152,7 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -192,6 +196,7 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -236,6 +241,7 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -272,6 +278,7 @@ func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, 
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -313,6 +320,7 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -354,6 +362,7 @@ func parseStoragePairListSegments(opts ...*types.Pair) (*pairStorageListSegments
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -390,6 +399,7 @@ func parseStoragePairReach(opts ...*types.Pair) (*pairStorageReach, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -433,6 +443,7 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 

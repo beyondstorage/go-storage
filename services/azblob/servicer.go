@@ -1,7 +1,6 @@
 package azblob
 
 import (
-	"context"
 	"fmt"
 	"net/url"
 
@@ -72,7 +71,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 	marker := azblob.Marker{}
 	var output *azblob.ListContainersSegmentResponse
 	for {
-		output, err = s.service.ListContainersSegment(context.TODO(),
+		output, err = s.service.ListContainersSegment(opt.Context,
 			marker, azblob.ListContainersSegmentOptions{})
 		if err != nil {
 			return fmt.Errorf(errorMessage, s, err)
@@ -103,8 +102,13 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s Create [%s]: %w"
 
+	opt, err := parseServicePairCreate(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
 	bucket := s.service.NewContainerURL(name)
-	_, err := bucket.Create(context.TODO(), azblob.Metadata{}, azblob.PublicAccessNone)
+	_, err = bucket.Create(opt.Context, azblob.Metadata{}, azblob.PublicAccessNone)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
@@ -115,8 +119,13 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
+	opt, err := parseServicePairDelete(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, name, err)
+	}
+
 	bucket := s.service.NewContainerURL(name)
-	_, err = bucket.Delete(context.TODO(), azblob.ContainerAccessConditions{})
+	_, err = bucket.Delete(opt.Context, azblob.ContainerAccessConditions{})
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}

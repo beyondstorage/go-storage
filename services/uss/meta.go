@@ -36,6 +36,7 @@ func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -72,6 +73,7 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 
@@ -111,6 +113,7 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
+
 	var v interface{}
 	var ok bool
 

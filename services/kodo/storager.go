@@ -1,7 +1,6 @@
 package kodo
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -153,7 +152,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 
 	uploader := qs.NewFormUploader(s.bucket.Cfg)
 	ret := qs.PutRet{}
-	err = uploader.Put(context.TODO(),
+	err = uploader.Put(opt.Context,
 		&ret, s.putPolicy.UploadToken(s.bucket.Mac), rp, r, opt.Size, nil)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)

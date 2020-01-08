@@ -1,7 +1,6 @@
 package azblob
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -80,7 +79,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	marker := azblob.Marker{}
 	var output *azblob.ListBlobsFlatSegmentResponse
 	for {
-		output, err = s.bucket.ListBlobsFlatSegment(context.TODO(), marker, azblob.ListBlobsSegmentOptions{
+		output, err = s.bucket.ListBlobsFlatSegment(opt.Context, marker, azblob.ListBlobsSegmentOptions{
 			Prefix: rp,
 		})
 		if err != nil {
@@ -116,9 +115,14 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	const errorMessage = "%s Read [%s]: %w"
 
+	opt, err := parseStoragePairRead(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+
 	rp := s.getAbsPath(path)
 
-	output, err := s.bucket.NewBlockBlobURL(rp).Download(context.TODO(), 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
+	output, err := s.bucket.NewBlockBlobURL(rp).Download(opt.Context, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -129,7 +133,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Write [%s]: %w"
 
-	_, err = parseStoragePairWrite(pairs...)
+	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -137,7 +141,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	rp := s.getAbsPath(path)
 
 	// TODO: add checksum and storage class support.
-	_, err = s.bucket.NewBlockBlobURL(rp).Upload(context.TODO(), iowrap.NewReadSeekCloser(r),
+	_, err = s.bucket.NewBlockBlobURL(rp).Upload(opt.Context, iowrap.NewReadSeekCloser(r),
 		azblob.BlobHTTPHeaders{}, azblob.Metadata{}, azblob.BlobAccessConditions{})
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
@@ -149,9 +153,14 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	const errorMessage = "%s Stat [%s]: %w"
 
+	opt, err := parseStoragePairStat(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+
 	rp := s.getAbsPath(path)
 
-	output, err := s.bucket.NewBlockBlobURL(rp).GetProperties(context.TODO(), azblob.BlobAccessConditions{})
+	output, err := s.bucket.NewBlockBlobURL(rp).GetProperties(opt.Context, azblob.BlobAccessConditions{})
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
@@ -171,9 +180,14 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s Delete [%s]: %w"
 
+	opt, err := parseStoragePairStat(pairs...)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, path, err)
+	}
+
 	rp := s.getAbsPath(path)
 
-	_, err = s.bucket.NewBlockBlobURL(rp).Delete(context.TODO(),
+	_, err = s.bucket.NewBlockBlobURL(rp).Delete(opt.Context,
 		azblob.DeleteSnapshotsOptionNone, azblob.BlobAccessConditions{})
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)

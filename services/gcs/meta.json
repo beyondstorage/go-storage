@@ -1,6 +1,8 @@
 {
   "name": "gcs",
   "service": {
+    "create": {},
+    "delete": {},
     "list": {
       "storager_func": true
     },
@@ -10,6 +12,7 @@
     }
   },
   "storage": {
+    "delete": {},
     "init": {
       "work_dir": false
     },
@@ -25,6 +28,8 @@
     "reach": {
       "expire": true
     },
+    "read": {},
+    "stat": {},
     "write": {
       "checksum": false,
       "size": true,
