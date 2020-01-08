@@ -3,6 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io/ioutil"
 	"log"
 	"os"
@@ -10,8 +13,6 @@ import (
 	"text/template"
 
 	"github.com/Xuanwo/templateutils"
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator"
 )
 
 var (
@@ -49,50 +50,50 @@ func main() {
 			log.Fatalf("read file failed: %v", err)
 		}
 
-		f, err := decorator.Parse(content)
+		f, err := parser.ParseFile(token.NewFileSet(), filename, string(content), 0)
 		if err != nil {
 			log.Fatalf("decorator parse failed: %v", err)
 		}
 
 		for _, fn := range f.Decls {
-			cloned, ok := dst.Clone(fn).(*dst.FuncDecl)
+			fndecl, ok := fn.(*ast.FuncDecl)
 			// Ignore Non-FuncDecl node.
 			if !ok {
 				continue
 			}
 			// Ignore functions.
-			if cloned.Recv == nil {
+			if fndecl.Recv == nil {
 				continue
 			}
 			// Ignore non-exported funcs.
-			if !cloned.Name.IsExported() {
+			if !fndecl.Name.IsExported() {
 				continue
 			}
 			// Ignore some not needed functions.
-			if cloned.Name.Name == "String" {
+			if fndecl.Name.Name == "String" {
 				continue
 			}
 
-			data[name][cloned.Name.Name] = &contextFunc{
-				Parent:   cloned.Name.Name,
-				Receiver: getReceiver(cloned),
-				Returns:  getReturns(cloned),
-				Caller:   getCaller(cloned),
+			data[name][fndecl.Name.Name] = &contextFunc{
+				Parent:   fndecl.Name.Name,
+				Receiver: getReceiver(fndecl),
+				Returns:  getReturns(fndecl),
+				Caller:   getCaller(fndecl),
 			}
 
 			// Add context
-			cloned.Type.Params.List = append([]*dst.Field{
+			fndecl.Type.Params.List = append([]*ast.Field{
 				{
-					Names: []*dst.Ident{
-						dst.NewIdent("ctx"),
+					Names: []*ast.Ident{
+						ast.NewIdent("ctx"),
 					},
-					Type: &dst.SelectorExpr{
-						X:   dst.NewIdent("context"),
-						Sel: dst.NewIdent("Context"),
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("context"),
+						Sel: ast.NewIdent("Context"),
 					},
 				},
-			}, cloned.Type.Params.List...)
-			data[name][cloned.Name.Name].Params = getParams(cloned)
+			}, fndecl.Type.Params.List...)
+			data[name][fndecl.Name.Name].Params = getParams(fndecl)
 		}
 	}
 
@@ -113,11 +114,11 @@ func main() {
 	}
 }
 
-func getReceiver(fn *dst.FuncDecl) string {
+func getReceiver(fn *ast.FuncDecl) string {
 	return fmt.Sprintf("s %s", formatExpr(fn.Recv.List[0].Type))
 }
 
-func getParams(fn *dst.FuncDecl) string {
+func getParams(fn *ast.FuncDecl) string {
 	parms := []string{}
 	for _, v := range fn.Type.Params.List {
 		parms = append(parms, formatField(v))
@@ -126,7 +127,7 @@ func getParams(fn *dst.FuncDecl) string {
 	return ans
 }
 
-func getReturns(fn *dst.FuncDecl) string {
+func getReturns(fn *ast.FuncDecl) string {
 	results := []string{}
 	for _, v := range fn.Type.Results.List {
 		results = append(results, formatField(v))
@@ -135,10 +136,10 @@ func getReturns(fn *dst.FuncDecl) string {
 	return ans
 }
 
-func getCaller(fn *dst.FuncDecl) string {
+func getCaller(fn *ast.FuncDecl) string {
 	parms := []string{}
 	for _, v := range fn.Type.Params.List {
-		if _, ok := v.Type.(*dst.Ellipsis); ok {
+		if _, ok := v.Type.(*ast.Ellipsis); ok {
 			parms = append(parms, v.Names[0].Name+"...")
 			continue
 		}
@@ -150,7 +151,7 @@ func getCaller(fn *dst.FuncDecl) string {
 	return ans
 }
 
-func formatField(f *dst.Field) string {
+func formatField(f *ast.Field) string {
 	s := []string{}
 	for _, name := range f.Names {
 		s = append(s, name.Name)
@@ -158,15 +159,15 @@ func formatField(f *dst.Field) string {
 	return strings.Join(s, ",") + " " + formatExpr(f.Type)
 }
 
-func formatExpr(t dst.Expr) string {
+func formatExpr(t ast.Expr) string {
 	switch v := t.(type) {
-	case *dst.SelectorExpr:
+	case *ast.SelectorExpr:
 		return fmt.Sprintf("%s.%s", formatExpr(v.X), v.Sel.Name)
-	case *dst.Ident:
+	case *ast.Ident:
 		return v.Name
-	case *dst.StarExpr:
+	case *ast.StarExpr:
 		return "*" + formatExpr(v.X)
-	case *dst.Ellipsis:
+	case *ast.Ellipsis:
 		return "..." + formatExpr(v.Elt)
 	default:
 		println(fmt.Sprintf("not handled type %+#v", v))
