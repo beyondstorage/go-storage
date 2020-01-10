@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- services,types: Implement proposal add-id-in-object (#56)
+- services, types/metadata: Implement proposal 6-normalize-metadata (#59)
+- services: Add basic kodo support (#49)
+- services: Add basic cos support (#65)
+- services: Add dropbox basic support (#53)
+- services: Add uss basic support (#67)
+- *: Implement proposal 7-support-context (#68)
+
+### Changed
+
+- storager: Rename ListDir to List (#52)
+
 ## [v0.5.0] - 2019-12-30
 
 ### Added
