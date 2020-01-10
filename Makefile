@@ -38,10 +38,9 @@ build_generator: go-bindata
 	@echo "build storage generator"
 	@pushd internal/cmd \
 		&& go generate ./... \
-		&& go build -o ../bin/meta ./meta \
+		&& go build -o ../bin/service ./service \
 		&& go build -o ../bin/pairs ./pairs \
 		&& go build -o ../bin/metadata ./metadata \
-		&& go build -o ../bin/context ./context \
 		&& popd
 	@echo "Done"
 

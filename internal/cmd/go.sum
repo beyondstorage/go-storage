@@ -1,4 +1,6 @@
-github.com/Xuanwo/templateutils v0.0.0-20191015092240-2492e6b39c36 h1:qWixev2seSIi+L+MyXuetCcLcXanmZQzQ+7o0Gar9dA=
-github.com/Xuanwo/templateutils v0.0.0-20191015092240-2492e6b39c36/go.mod h1:3AD+S7bRlUhIPKzXMzpRMNFwT8UujZpe54vQ3R+2jz0=
+github.com/Xuanwo/templateutils v0.0.0-20200110082718-83d41225ce84 h1:0U3V07K6vlv7+hx0xr7yXF1kxJpIDPG1bv1w3N1r85w=
+github.com/Xuanwo/templateutils v0.0.0-20200110082718-83d41225ce84/go.mod h1:3AD+S7bRlUhIPKzXMzpRMNFwT8UujZpe54vQ3R+2jz0=
 github.com/huandu/xstrings v1.2.0 h1:yPeWdRnmynF7p+lLYz0H2tthW9lqhMJrQV/U7yy4wX0=
 github.com/huandu/xstrings v1.2.0/go.mod h1:DvyZB1rfVYsBIigL8HwpZgxHwXozlTgGqn63UyNX5k4=
+github.com/huandu/xstrings v1.2.1 h1:v6IdmkCnDhJG/S0ivr58PeIfg+tyhqQYy4YsCsQ0Pdc=
+github.com/huandu/xstrings v1.2.1/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=

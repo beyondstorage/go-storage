@@ -1,0 +1,52 @@
+{{ $Data := . }}
+
+{{- range $name, $data := .Data }}
+{{ $cname := $name | camelCase }}
+{{- range $k, $_ := $data.Funcs }}
+type pair{{ $cname }}{{ $k }} struct {
+    // Pre-defined pairs
+    Context context.Context
+
+    // Meta-defined pairs
+    {{- range $key, $_ := index $data.Pairs ($k | snakeCase) }}
+    Has{{ $key | camelCase}} bool
+    {{ $key | camelCase}}    {{ index $Data.TypeMap $key }}
+    {{- end }}
+}
+
+func parse{{ $cname }}Pair{{ $k }}(opts ...*types.Pair) (*pair{{ $cname }}{{ $k }}, error) {
+    result := &pair{{ $cname }}{{ $k }}{}
+
+    values := make(map[string]interface{})
+    for _, v := range opts {
+        values[v.Key] = v.Value
+    }
+
+    var v interface{}
+    var ok bool
+
+    // Parse pre-defined pairs
+    v, ok = values[ps.Context]
+    if ok {
+        result.Context = v.(context.Context)
+    } else {
+        result.Context = context.Background()
+    }
+
+    // Parse meta-defined pairs
+    {{- range $key, $required := index $data.Pairs ($k | snakeCase) }}
+    v, ok = values[ps.{{ $key | camelCase}}]
+    {{- if $required }}
+    if !ok {
+        return nil, types.NewErrPairRequired(ps.{{ $key | camelCase}})
+    }
+    {{- end }}
+    if ok {
+        result.Has{{ $key | camelCase}} = true
+        result.{{ $key | camelCase}} = v.({{ index $Data.TypeMap $key }})
+    }
+    {{- end }}
+    return result, nil
+}
+{{- end }}
+{{- end }}

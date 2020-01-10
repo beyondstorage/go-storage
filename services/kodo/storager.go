@@ -14,8 +14,7 @@ import (
 
 // Storage is the gcs service client.
 //
-//go:generate ../../internal/bin/meta
-//go:generate ../../internal/bin/context
+//go:generate ../../internal/bin/service
 type Storage struct {
 	bucket    *qs.BucketManager
 	domain    string
@@ -87,7 +86,7 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	const errorMessage = "%s List [%s]: %w"
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}

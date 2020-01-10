@@ -15,8 +15,7 @@ import (
 
 // Storage is the aliyun object storage service.
 //
-//go:generate ../../internal/bin/meta
-//go:generate ../../internal/bin/context
+//go:generate ../../internal/bin/service
 type Storage struct {
 	bucket *oss.Bucket
 

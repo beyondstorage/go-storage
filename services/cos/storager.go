@@ -15,8 +15,7 @@ import (
 
 // Storage is the cos object storage service.
 //
-//go:generate ../../internal/bin/meta
-//go:generate ../../internal/bin/context
+//go:generate ../../internal/bin/service
 type Storage struct {
 	bucket *cos.BucketService
 	object *cos.ObjectService

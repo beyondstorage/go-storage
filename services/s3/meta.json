@@ -10,12 +10,12 @@
     "get": {
       "location": false
     },
-    "init": {
-      "credential": true,
-      "endpoint": false
-    },
     "list": {
       "storager_func": false
+    },
+    "new": {
+      "credential": true,
+      "endpoint": false
     }
   },
   "storage": {

@@ -23,7 +23,7 @@ type Service struct {
 func New(pairs ...*types.Pair) (s *Service, err error) {
 	const errorMessage = "%s New: %w"
 
-	opt, err := parseServicePairInit(pairs...)
+	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, err)
 	}

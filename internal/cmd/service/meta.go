@@ -5,16 +5,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"text/template"
-
-	"github.com/Xuanwo/templateutils"
 )
 
-var (
-	metaT = template.Must(
-		template.New("meta").
-			Funcs(templateutils.FuncMap()).
-			Parse(string(MustAsset("meta.tmpl"))))
+const (
+	metaPath  = "meta.json"
+	pairsPath = "../../types/pairs/pairs.json"
 )
 
 type metadata struct {
@@ -22,18 +17,16 @@ type metadata struct {
 	Service map[string]map[string]bool `json:"service,omitempty"`
 	Storage map[string]map[string]bool `json:"storage"`
 
-	TypeMap map[string]string                     `json:"-"`
-	Data    map[string]map[string]map[string]bool `json:"-"`
+	TypeMap map[string]string   `json:"-"`
+	Data    map[string]receiver `json:"-"`
 }
 
-//go:generate go-bindata -nometadata -ignore ".*.go" .
-func main() {
-	_, err := ioutil.ReadDir(".")
-	if err != nil {
-		log.Fatalf("read dir failed: %v", err)
-	}
+type receiver struct {
+	Pairs map[string]map[string]bool
+	Funcs map[string]*contextFunc
+}
 
-	metaPath := "meta.json"
+func parseMeta() metadata {
 	if _, err := os.Stat(metaPath); err != nil {
 		log.Fatalf("stat meta failed: %v", err)
 	}
@@ -60,10 +53,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
+
 	// Handle Data
-	meta.Data = make(map[string]map[string]map[string]bool)
-	meta.Data["service"] = meta.Service
-	meta.Data["storage"] = meta.Storage
+	meta.Data = make(map[string]receiver)
+	meta.Data["service"] = receiver{
+		Pairs: meta.Service,
+		Funcs: parseFunc("service"),
+	}
+	meta.Data["storage"] = receiver{
+		Pairs: meta.Storage,
+		Funcs: parseFunc("storage"),
+	}
 
 	// Format input meta.json
 	data, err := json.MarshalIndent(meta, "", "  ")
@@ -75,13 +75,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	filePath := "meta.go"
-	f, err := os.Create(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = metaT.Execute(f, meta)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return meta
 }
