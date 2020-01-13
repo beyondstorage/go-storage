@@ -1,7 +1,7 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: candidate
-updated_at: 2020-01-10
+updated_at: 2020-01-13
 ---
 
 # Proposal: Normalize metadata storage class
