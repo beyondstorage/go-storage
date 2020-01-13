@@ -18,15 +18,12 @@
     }
   },
   "storage": {
-    "delete": {},
     "init": {
       "work_dir": false
     },
     "list": {
       "file_func": true
     },
-    "read": {},
-    "stat": {},
     "write": {
       "checksum": false,
       "size": true,

@@ -1,8 +1,6 @@
 {
   "name": "azblob",
   "service": {
-    "create": {},
-    "delete": {},
     "list": {
       "storager_func": true
     },
@@ -12,24 +10,12 @@
     }
   },
   "storage": {
-    "delete": {},
     "init": {
       "work_dir": false
-    },
-    "init_segment": {
-      "part_size": true
     },
     "list": {
       "file_func": true
     },
-    "list_segments": {
-      "segment_func": false
-    },
-    "reach": {
-      "expire": true
-    },
-    "read": {},
-    "stat": {},
     "write": {
       "checksum": false,
       "size": true,

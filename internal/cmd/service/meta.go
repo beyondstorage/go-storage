@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/Xuanwo/templateutils"
 )
 
 const (
@@ -60,9 +62,29 @@ func parseMeta() metadata {
 		Pairs: meta.Service,
 		Funcs: parseFunc("service"),
 	}
+	for k := range meta.Service {
+		// If func not implemented, remove.
+		if _, ok := meta.Data["service"].Funcs[templateutils.ToPascal(k)]; !ok {
+			delete(meta.Service, k)
+		}
+		// If no paris, remove.
+		if len(meta.Service[k]) == 0 {
+			delete(meta.Service, k)
+		}
+	}
 	meta.Data["storage"] = receiver{
 		Pairs: meta.Storage,
 		Funcs: parseFunc("storage"),
+	}
+	for k := range meta.Storage {
+		// If func not implemented, remove.
+		if _, ok := meta.Data["storage"].Funcs[templateutils.ToPascal(k)]; !ok {
+			delete(meta.Storage, k)
+		}
+		// If no paris, remove.
+		if len(meta.Storage[k]) == 0 {
+			delete(meta.Storage, k)
+		}
 	}
 
 	// Format input meta.json

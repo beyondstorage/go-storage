@@ -15,17 +15,8 @@
     "init": {
       "work_dir": false
     },
-    "init_segment": {
-      "part_size": true
-    },
     "list": {
       "file_func": true
-    },
-    "list_segments": {
-      "segment_func": false
-    },
-    "reach": {
-      "expire": true
     },
     "write": {
       "checksum": false,

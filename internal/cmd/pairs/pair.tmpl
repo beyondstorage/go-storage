@@ -14,15 +14,16 @@ import (
 // All available pairs.
 const (
 {{- range $k, $v := .Data }}
-    {{ $k | camelCase }} = "{{ $k }}"
+    {{ $k | toPascal }} = "{{ $k }}"
 {{- end }}
 )
 
 {{- range $k, $v := .Data }}
-// With{{ $k | camelCase }} will apply {{ $k }} value to Options
-func With{{ $k | camelCase }}(v {{ $v }}) *types.Pair {
+{{- $pk := $k | toPascal }}
+// With{{ $pk }} will apply {{ $k }} value to Options
+func With{{ $pk }}(v {{ $v }}) *types.Pair {
     return &types.Pair{
-        Key: {{ $k | camelCase }},
+        Key: {{ $pk }},
         Value: v,
     }
 }

@@ -22,15 +22,9 @@
     "init": {
       "work_dir": false
     },
-    "init_segment": {
-      "part_size": true
-    },
     "list": {
       "dir_func": false,
       "file_func": false
-    },
-    "list_segments": {
-      "segment_func": false
     },
     "write": {
       "checksum": false,
