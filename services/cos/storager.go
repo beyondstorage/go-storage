@@ -217,7 +217,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
-	storageClass, err := formatStorageClass(output.Header.Get("x-cos-storage-class"))
+	storageClass, err := formatStorageClass(output.Header.Get(storageClassHeader))
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
