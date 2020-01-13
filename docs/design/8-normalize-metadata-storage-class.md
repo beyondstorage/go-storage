@@ -1,6 +1,6 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: candidate
 updated_at: 2020-01-10
 ---
 
@@ -102,9 +102,7 @@ For example:
 
 - Read storage class from pairs, service need to parse from global storage class
 - Write storage class to metadata, service need to format into global storage class
-- Meet unsupported storage class while parsing from global storage class
-  - Use `Hot` if service doesn't have other storage class
-  - Return `ErrStorageClassNotSupported` with service name and storage class name is services have more than one storage class
+- Meet unsupported storage class while parsing from global storage class, return `ErrStorageClassNotSupported` with service name and storage class name is services have more than one storage class
 - Meet unsupported storage class while formatting into global storage class, return `ErrStorageClassNotSupported` with service name and storage class name
 
 ## Rationale
