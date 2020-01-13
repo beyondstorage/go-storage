@@ -5,18 +5,16 @@ import (
 	"io"
 	"strings"
 
+	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
 )
 
 // Storage is the s3 object storage service.
 //
-//go:generate ../../internal/bin/meta
-//go:generate ../../internal/bin/context
+//go:generate ../../internal/bin/service
 type Storage struct {
 	service s3iface.S3API
 
@@ -115,7 +113,11 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 
 			if v.StorageClass != nil {
-				o.SetStorageClass(*v.StorageClass)
+				storageClass, err := formatStorageClass(*v.StorageClass)
+				if err != nil {
+					return fmt.Errorf(errorMessage, s, path, err)
+				}
+				o.SetStorageClass(storageClass)
 			}
 			if v.ETag != nil {
 				o.SetETag(*v.ETag)
@@ -173,7 +175,11 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		input.ContentMD5 = &opt.Checksum
 	}
 	if opt.HasStorageClass {
-		input.StorageClass = &opt.StorageClass
+		storageClass, err := parseStorageClass(opt.StorageClass)
+		if err != nil {
+			return fmt.Errorf(errorMessage, s, path, err)
+		}
+		input.StorageClass = &storageClass
 	}
 
 	_, err = s.service.PutObject(input)
@@ -218,7 +224,11 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetETag(*output.ETag)
 	}
 	if output.StorageClass != nil {
-		o.SetStorageClass(*output.StorageClass)
+		storageClass, err := formatStorageClass(*output.StorageClass)
+		if err != nil {
+			return nil, fmt.Errorf(errorMessage, s, path, err)
+		}
+		o.SetStorageClass(storageClass)
 	}
 	return o, nil
 }

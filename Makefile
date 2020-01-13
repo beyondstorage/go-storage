@@ -38,10 +38,9 @@ build_generator: go-bindata
 	@echo "build storage generator"
 	@pushd internal/cmd \
 		&& go generate ./... \
-		&& go build -o ../bin/meta ./meta \
+		&& go build -o ../bin/service ./service \
 		&& go build -o ../bin/pairs ./pairs \
 		&& go build -o ../bin/metadata ./metadata \
-		&& go build -o ../bin/context ./context \
 		&& popd
 	@echo "Done"
 
@@ -66,4 +65,9 @@ tidy:
 	@echo "Tidy and check the go mod files"
 	@go mod tidy && go mod verify
 	@pushd internal/cmd && go mod tidy && go mod verify && popd
+	@echo "Done"
+
+clean:
+	@echo "Clean generated files"
+	@rm services/*/generated.go
 	@echo "Done"

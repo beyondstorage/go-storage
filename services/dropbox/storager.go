@@ -17,8 +17,7 @@ import (
 
 // Storage is the dropbox client.
 //
-//go:generate ../../internal/bin/meta
-//go:generate ../../internal/bin/context
+//go:generate ../../internal/bin/service
 type Storage struct {
 	client files.Client
 

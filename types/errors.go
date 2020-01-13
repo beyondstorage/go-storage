@@ -12,10 +12,10 @@ var (
 	ErrPermissionDenied = errors.New("permission denied")
 
 	// caller handleable error
-	ErrPairRequired    = errors.New("pair required")
-	ErrObjectNotExist  = errors.New("object not exist")
-	ErrDirAlreadyExist = errors.New("dir already exist")
-	ErrDirNotEmpty     = errors.New("dir not empty")
+	ErrPairRequired             = errors.New("pair required")
+	ErrObjectNotExist           = errors.New("object not exist")
+	ErrStorageClassNotSupported = errors.New("storage class not supported")
+	ErrDirNotEmpty              = errors.New("dir not empty")
 
 	// unhandleable error
 	ErrUnhandledError = errors.New("unhandled error")

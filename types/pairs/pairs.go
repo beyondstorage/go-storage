@@ -8,6 +8,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/segment"
+	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
 )
 
@@ -146,7 +147,7 @@ func WithSize(v int64) *types.Pair {
 }
 
 // WithStorageClass will apply storage_class value to Options
-func WithStorageClass(v string) *types.Pair {
+func WithStorageClass(v storageclass.Type) *types.Pair {
 	return &types.Pair{
 		Key:   StorageClass,
 		Value: v,

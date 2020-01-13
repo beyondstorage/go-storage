@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/pairs"
 	"github.com/stretchr/testify/assert"
@@ -183,5 +184,51 @@ func TestHandleQingStorError(t *testing.T) {
 				assert.True(t, errors.Is(handleQingStorError(tt.input), tt.expected))
 			})
 		}
+	}
+}
+
+func TestParseStorageClass(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       storageclass.Type
+		expected    string
+		expectedErr error
+	}{
+		{"hot", storageclass.Hot, storageClassStandard, nil},
+		{"warm", storageclass.Warm, storageClassStandardIA, nil},
+		{"xxxxx", "xxxx", "", types.ErrStorageClassNotSupported},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseStorageClass(tt.input)
+			if tt.expectedErr != nil {
+				assert.True(t, errors.Is(err, tt.expectedErr))
+			}
+			assert.Equal(t, tt.expected, got)
+		})
+	}
+}
+
+func TestFormatStorageClass(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       string
+		expected    storageclass.Type
+		expectedErr error
+	}{
+		{"hot", storageClassStandard, storageclass.Hot, nil},
+		{"warm", storageClassStandardIA, storageclass.Warm, nil},
+		{"xxxxx", "xxxxx", "", types.ErrStorageClassNotSupported},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := formatStorageClass(tt.input)
+			if tt.expectedErr != nil {
+				assert.True(t, errors.Is(err, tt.expectedErr))
+			}
+			assert.Equal(t, tt.expected, got)
+		})
 	}
 }

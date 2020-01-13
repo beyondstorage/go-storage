@@ -5,16 +5,13 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"text/template"
 
 	"github.com/Xuanwo/templateutils"
 )
 
-var (
-	metaT = template.Must(
-		template.New("meta").
-			Funcs(templateutils.FuncMap()).
-			Parse(string(MustAsset("meta.tmpl"))))
+const (
+	metaPath  = "meta.json"
+	pairsPath = "../../types/pairs/pairs.json"
 )
 
 type metadata struct {
@@ -22,18 +19,16 @@ type metadata struct {
 	Service map[string]map[string]bool `json:"service,omitempty"`
 	Storage map[string]map[string]bool `json:"storage"`
 
-	TypeMap map[string]string                     `json:"-"`
-	Data    map[string]map[string]map[string]bool `json:"-"`
+	TypeMap map[string]string   `json:"-"`
+	Data    map[string]receiver `json:"-"`
 }
 
-//go:generate go-bindata -nometadata -ignore ".*.go" .
-func main() {
-	_, err := ioutil.ReadDir(".")
-	if err != nil {
-		log.Fatalf("read dir failed: %v", err)
-	}
+type receiver struct {
+	Pairs map[string]map[string]bool
+	Funcs map[string]*contextFunc
+}
 
-	metaPath := "meta.json"
+func parseMeta() metadata {
 	if _, err := os.Stat(metaPath); err != nil {
 		log.Fatalf("stat meta failed: %v", err)
 	}
@@ -51,7 +46,6 @@ func main() {
 	}
 
 	// Handle TypeMap
-	pairsPath := "../../types/pairs/pairs.json"
 	content, err = ioutil.ReadFile(pairsPath)
 	if err != nil {
 		log.Fatalf("read file failed: %v", err)
@@ -60,10 +54,37 @@ func main() {
 	if err != nil {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
+
 	// Handle Data
-	meta.Data = make(map[string]map[string]map[string]bool)
-	meta.Data["service"] = meta.Service
-	meta.Data["storage"] = meta.Storage
+	meta.Data = make(map[string]receiver)
+	meta.Data["service"] = receiver{
+		Pairs: meta.Service,
+		Funcs: parseFunc("service"),
+	}
+	for k := range meta.Service {
+		// If func not implemented, remove.
+		if _, ok := meta.Data["service"].Funcs[templateutils.ToPascal(k)]; !ok {
+			delete(meta.Service, k)
+		}
+		// If no paris, remove.
+		if len(meta.Service[k]) == 0 {
+			delete(meta.Service, k)
+		}
+	}
+	meta.Data["storage"] = receiver{
+		Pairs: meta.Storage,
+		Funcs: parseFunc("storage"),
+	}
+	for k := range meta.Storage {
+		// If func not implemented, remove.
+		if _, ok := meta.Data["storage"].Funcs[templateutils.ToPascal(k)]; !ok {
+			delete(meta.Storage, k)
+		}
+		// If no paris, remove.
+		if len(meta.Storage[k]) == 0 {
+			delete(meta.Storage, k)
+		}
+	}
 
 	// Format input meta.json
 	data, err := json.MarshalIndent(meta, "", "  ")
@@ -75,13 +96,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	filePath := "meta.go"
-	f, err := os.Create(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = metaT.Execute(f, meta)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return meta
 }

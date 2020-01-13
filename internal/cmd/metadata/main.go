@@ -38,8 +38,9 @@ func main() {
 		}
 
 		var metadata map[string]struct {
-			Name string
-			Type string
+			Name      string
+			Type      string
+			ZeroValue string `json:",omitempty"`
 		}
 		err = json.Unmarshal(content, &metadata)
 		if err != nil {
@@ -64,8 +65,9 @@ func main() {
 		err = metadataT.Execute(metadataFile, struct {
 			Name string
 			Data map[string]struct {
-				Name string
-				Type string
+				Name      string
+				Type      string
+				ZeroValue string `json:",omitempty"`
 			}
 		}{
 			metadataName,

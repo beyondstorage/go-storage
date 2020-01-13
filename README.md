@@ -14,6 +14,39 @@ An application-oriented unified storage layer for Golang.
 - High performance
 - Vendor lock free
 
+## Features
+
+### Servicer Level
+
+- Basic operations across implemented storage services with the same API
+  - List: list all Storager in service
+  - Get: get a Storager via name
+  - Create: create a Storager
+  - Delete: delete a Storager
+
+### Storager Level
+
+- Basic operations across all storage services with the same API
+  - Read: read file content
+  - Write: write content into file
+  - List: list files under a dir or prefix
+  - Stat: get file's metadata
+  - Delete: delete a file
+  - Metadata: get storage service's metadata
+- Advanced operations across implemented storage services with the same API
+  - Copy: copy a file
+  - Move: move a file
+  - Reach: generate a public accesible url
+  - Statistical: get storage service's statistics
+  - Segment: Full support for Segment, aka, Multipart
+
+### File Level
+
+- Metadata
+  - Content Length / Size: Full support via [RFC 2616](https://tools.ietf.org/html/rfc2616)
+  - Storage Class: Full support via [proposal](docs/design/8-normalize-metadata-storage-class.md)  
+  - Content MD5 / ETag: Partial support
+
 ## Current Status
 
 This lib is in heavy development, break changes could be introduced at any time. All public interface or functions expected to be stable at `v1.0.0`.

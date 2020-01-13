@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -446,7 +447,7 @@ func TestStorage_List(t *testing.T) {
 					{
 						Key:          service.String(keys[5]),
 						MimeType:     service.String("application/json"),
-						StorageClass: service.String("cool"),
+						StorageClass: service.String("STANDARD"),
 						Etag:         service.String("xxxxx"),
 						Size:         service.Int64(1233),
 						Modified:     service.Int(1233),
@@ -462,11 +463,29 @@ func TestStorage_List(t *testing.T) {
 					UpdatedAt: time.Unix(1233, 0),
 					ObjectMeta: metadata.NewObjectMeta().
 						SetContentType("application/json").
-						SetStorageClass("cool").
+						SetStorageClass(storageclass.Hot).
 						SetETag("xxxxx"),
 				},
 			},
 			nil,
+		},
+		{
+			"list with wrong storage class returned",
+			&service.ListObjectsOutput{
+				HasMore: service.Bool(false),
+				Keys: []*service.KeyType{
+					{
+						Key:          service.String(keys[5]),
+						MimeType:     service.String("application/json"),
+						StorageClass: service.String("xxxx"),
+						Etag:         service.String("xxxxx"),
+						Size:         service.Int64(1233),
+						Modified:     service.Int(1233),
+					},
+				},
+			},
+			[]*types.Object{},
+			types.ErrStorageClassNotSupported,
 		},
 		{
 			"list with return a dir MIME type",
@@ -622,7 +641,7 @@ func TestStorage_Stat(t *testing.T) {
 		wantErr  error
 	}{
 		{
-			"valid delete",
+			"valid file",
 			"test_src",
 			func(objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
 				assert.Equal(t, "test_src", objectKey)
@@ -631,10 +650,25 @@ func TestStorage_Stat(t *testing.T) {
 					ContentLength:   &length,
 					ContentType:     convert.String("test_content_type"),
 					ETag:            convert.String("test_etag"),
-					XQSStorageClass: convert.String("test_storage_class"),
+					XQSStorageClass: convert.String("STANDARD"),
 				}, nil
 			},
 			false, nil,
+		},
+		{
+			"invalid file with wrong storage class",
+			"test_src",
+			func(objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
+				assert.Equal(t, "test_src", objectKey)
+				length := int64(100)
+				return &service.HeadObjectOutput{
+					ContentLength:   &length,
+					ContentType:     convert.String("test_content_type"),
+					ETag:            convert.String("test_etag"),
+					XQSStorageClass: convert.String("xxxx"),
+				}, nil
+			},
+			true, types.ErrStorageClassNotSupported,
 		},
 	}
 
@@ -662,7 +696,7 @@ func TestStorage_Stat(t *testing.T) {
 			assert.Equal(t, "test_etag", checkSum)
 			storageClass, ok := o.GetStorageClass()
 			assert.True(t, ok)
-			assert.Equal(t, "test_storage_class", storageClass)
+			assert.Equal(t, storageclass.Hot, storageClass)
 		}
 	}
 }

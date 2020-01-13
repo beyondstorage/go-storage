@@ -13,6 +13,7 @@
   },
   "storage-class": {
     "Name": "StorageClass",
-    "Type": "string"
+    "Type": "storageclass.Type",
+    "ZeroValue": "\"\""
   }
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 )
@@ -66,4 +67,33 @@ func convertUnixTimestampToTime(v int) time.Time {
 		return time.Time{}
 	}
 	return time.Unix(int64(v), 0)
+}
+
+const (
+	storageClassStandard   = "STANDARD"
+	storageClassStandardIA = "STANDARD_IA"
+)
+
+// parseStorageClass will parse storageclass.Type into service independent storage class type.
+func parseStorageClass(in storageclass.Type) (string, error) {
+	switch in {
+	case storageclass.Hot:
+		return storageClassStandard, nil
+	case storageclass.Warm:
+		return storageClassStandardIA, nil
+	default:
+		return "", types.ErrStorageClassNotSupported
+	}
+}
+
+// formatStorageClass will format service independent storage class type into storageclass.Type.
+func formatStorageClass(in string) (storageclass.Type, error) {
+	switch in {
+	case storageClassStandard, "":
+		return storageclass.Hot, nil
+	case storageClassStandardIA:
+		return storageclass.Warm, nil
+	default:
+		return "", types.ErrStorageClassNotSupported
+	}
 }

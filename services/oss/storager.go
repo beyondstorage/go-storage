@@ -15,8 +15,7 @@ import (
 
 // Storage is the aliyun object storage service.
 //
-//go:generate ../../internal/bin/meta
-//go:generate ../../internal/bin/context
+//go:generate ../../internal/bin/service
 type Storage struct {
 	bucket *oss.Bucket
 
@@ -114,8 +113,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 
 			o.SetContentType(v.Type)
-			o.SetStorageClass(v.StorageClass)
 			o.SetETag(v.ETag)
+
+			storageClass, err := formatStorageClass(v.Type)
+			if err != nil {
+				return fmt.Errorf(errorMessage, s, path, err)
+			}
+			o.SetStorageClass(storageClass)
 
 			if opt.HasFileFunc {
 				opt.FileFunc(o)
@@ -204,6 +208,13 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		UpdatedAt:  lastModified,
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
+
+	storageClass, err := formatStorageClass(output.Get(storageClassHeader))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+	o.SetStorageClass(storageClass)
+
 	return o, nil
 }
 

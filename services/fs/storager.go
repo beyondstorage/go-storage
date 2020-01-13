@@ -17,8 +17,7 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 
 // Storage is the fs client.
 //
-//go:generate ../../internal/bin/meta
-//go:generate ../../internal/bin/context
+//go:generate ../../internal/bin/service
 type Storage struct {
 	// options for this storager.
 	workDir string // workDir dir for all operation.
