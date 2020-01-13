@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.6.0] - 2020-01-13
+
 ### Added
 
 - services,types: Implement proposal add-id-in-object (#56)
@@ -125,7 +127,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.6.0...HEAD
+[v0.6.0]: https://github.com/Xuanwo/storage/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/Xuanwo/storage/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/Xuanwo/storage/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/Xuanwo/storage/compare/v0.2.0...v0.3.0
