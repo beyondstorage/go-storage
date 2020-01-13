@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - services: Add dropbox basic support (#53)
 - services: Add uss basic support (#67)
 - *: Implement proposal 7-support-context (#68)
+- services, pkg/storageclass: Add and implement proposal 8-normalize-metadata-storage-class #71
 
 ### Changed
 
