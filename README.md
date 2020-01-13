@@ -44,7 +44,7 @@ An application-oriented unified storage layer for Golang.
 
 - Metadata
   - Content Length / Size: Full support via [RFC 2616](https://tools.ietf.org/html/rfc2616)
-  - Storage Class: Full support via [proposal](https://github.com/Xuanwo/storage/blob/master/docs/design/8-normalize-metadata-storage-class.md)  
+  - Storage Class: Full support via [proposal](docs/design/8-normalize-metadata-storage-class.md)  
   - Content MD5 / ETag: Partial support
 
 ## Current Status
