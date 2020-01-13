@@ -46,7 +46,6 @@ func parseMeta() metadata {
 	}
 
 	// Handle TypeMap
-	pairsPath := "../../types/pairs/pairs.json"
 	content, err = ioutil.ReadFile(pairsPath)
 	if err != nil {
 		log.Fatalf("read file failed: %v", err)
