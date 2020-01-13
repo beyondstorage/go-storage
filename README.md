@@ -14,6 +14,14 @@ An application-oriented unified storage layer for Golang.
 - High performance
 - Vendor lock free
 
+## Features
+
+- Read/Write/List/Stat/Delete across all storage services with the same API
+- File metadata Support
+  - Content Length / Size: Full support via [RFC 2616](https://tools.ietf.org/html/rfc2616)
+  - Storage Class: Full support via [proposal](https://github.com/Xuanwo/storage/blob/master/docs/design/8-normalize-metadata-storage-class.md)  
+  - Content MD5 / ETag: Partial support
+
 ## Current Status
 
 This lib is in heavy development, break changes could be introduced at any time. All public interface or functions expected to be stable at `v1.0.0`.
