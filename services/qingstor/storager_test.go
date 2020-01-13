@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -446,7 +447,7 @@ func TestStorage_List(t *testing.T) {
 					{
 						Key:          service.String(keys[5]),
 						MimeType:     service.String("application/json"),
-						StorageClass: service.String("cool"),
+						StorageClass: service.String("STANDARD"),
 						Etag:         service.String("xxxxx"),
 						Size:         service.Int64(1233),
 						Modified:     service.Int(1233),
@@ -462,7 +463,7 @@ func TestStorage_List(t *testing.T) {
 					UpdatedAt: time.Unix(1233, 0),
 					ObjectMeta: metadata.NewObjectMeta().
 						SetContentType("application/json").
-						SetStorageClass("cool").
+						SetStorageClass(storageclass.Hot).
 						SetETag("xxxxx"),
 				},
 			},
@@ -631,7 +632,7 @@ func TestStorage_Stat(t *testing.T) {
 					ContentLength:   &length,
 					ContentType:     convert.String("test_content_type"),
 					ETag:            convert.String("test_etag"),
-					XQSStorageClass: convert.String("test_storage_class"),
+					XQSStorageClass: convert.String("STANDARD"),
 				}, nil
 			},
 			false, nil,
@@ -662,7 +663,7 @@ func TestStorage_Stat(t *testing.T) {
 			assert.Equal(t, "test_etag", checkSum)
 			storageClass, ok := o.GetStorageClass()
 			assert.True(t, ok)
-			assert.Equal(t, "test_storage_class", storageClass)
+			assert.Equal(t, storageclass.Hot, storageClass)
 		}
 	}
 }
