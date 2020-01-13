@@ -11,6 +11,7 @@ import (
     "github.com/Xuanwo/storage/pkg/segment"
     "github.com/Xuanwo/storage/pkg/endpoint"
     "github.com/Xuanwo/storage/pkg/credential"
+    "github.com/Xuanwo/storage/pkg/storageclass"
     "github.com/Xuanwo/storage/types"
     ps "github.com/Xuanwo/storage/types/pairs"
     "github.com/Xuanwo/storage/types/metadata"
@@ -20,3 +21,4 @@ var _ credential.Provider
 var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
+var _ storageclass.Type

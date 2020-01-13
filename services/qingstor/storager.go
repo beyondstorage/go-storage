@@ -129,9 +129,13 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	if output.ETag != nil {
 		o.SetETag(service.StringValue(output.ETag))
 	}
-	if output.XQSStorageClass != nil {
-		o.SetStorageClass(service.StringValue(output.XQSStorageClass))
+
+	storageClass, err := formatStorageClass(service.StringValue(output.XQSStorageClass))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
+	o.SetStorageClass(storageClass)
+
 	return o, nil
 }
 
@@ -267,7 +271,11 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				o.SetContentType(service.StringValue(v.MimeType))
 			}
 			if v.StorageClass != nil {
-				o.SetStorageClass(service.StringValue(v.StorageClass))
+				storageClass, err := formatStorageClass(service.StringValue(v.StorageClass))
+				if err != nil {
+					return fmt.Errorf(errorMessage, s, path, err)
+				}
+				o.SetStorageClass(storageClass)
 			}
 			if v.Etag != nil {
 				o.SetETag(service.StringValue(v.Etag))
@@ -337,7 +345,11 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		input.ContentMD5 = &opt.Checksum
 	}
 	if opt.HasStorageClass {
-		input.XQSStorageClass = &opt.StorageClass
+		storageClass, err := parseStorageClass(opt.StorageClass)
+		if err != nil {
+			return fmt.Errorf(errorMessage, s, path, err)
+		}
+		input.XQSStorageClass = service.String(storageClass)
 	}
 
 	rp := s.getAbsPath(path)

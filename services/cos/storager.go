@@ -112,8 +112,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				UpdatedAt:  t,
 				ObjectMeta: metadata.NewObjectMeta(),
 			}
-			o.SetStorageClass(v.StorageClass)
 			o.SetETag(v.ETag)
+
+			storageClass, err := formatStorageClass(v.StorageClass)
+			if err != nil {
+				return fmt.Errorf(errorMessage, s, path, err)
+			}
+			o.SetStorageClass(storageClass)
 
 			opt.FileFunc(o)
 		}
@@ -168,7 +173,11 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		putOptions.ContentLength = int(opt.Size)
 	}
 	if opt.HasStorageClass {
-		putOptions.XCosStorageClass = opt.StorageClass
+		storageClass, err := parseStorageClass(opt.StorageClass)
+		if err != nil {
+			return fmt.Errorf(errorMessage, s, path, err)
+		}
+		putOptions.XCosStorageClass = storageClass
 	}
 
 	_, err = s.object.Put(opt.Context, rp, r, putOptions)
@@ -207,6 +216,13 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		UpdatedAt:  lastModified,
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
+
+	storageClass, err := formatStorageClass(output.Header.Get("x-cos-storage-class"))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+	o.SetStorageClass(storageClass)
+
 	return o, nil
 }
 

@@ -66,3 +66,8 @@ tidy:
 	@go mod tidy && go mod verify
 	@pushd internal/cmd && go mod tidy && go mod verify && popd
 	@echo "Done"
+
+clean:
+	@echo "Clean generated files"
+	@rm services/*/generated.go
+	@echo "Done"

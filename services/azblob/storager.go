@@ -95,8 +95,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				ObjectMeta: metadata.NewObjectMeta(),
 			}
 			o.SetContentType(*v.Properties.ContentType)
-			o.SetStorageClass(string(v.Properties.AccessTier))
 			o.SetContentMD5(string(v.Properties.ContentMD5))
+
+			storageClass, err := formatStorageClass(v.Properties.AccessTier)
+			if err != nil {
+				return fmt.Errorf(errorMessage, s, path, err)
+			}
+			o.SetStorageClass(storageClass)
 
 			opt.FileFunc(o)
 		}
@@ -172,6 +177,12 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		UpdatedAt:  output.LastModified(),
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
+
+	storageClass, err := formatStorageClass(azblob.AccessTierType(output.AccessTier()))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+	o.SetStorageClass(storageClass)
 	return o, nil
 }
 

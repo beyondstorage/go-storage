@@ -11,6 +11,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/segment"
+	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -20,6 +21,7 @@ var _ credential.Provider
 var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
+var _ storageclass.Type
 
 // Type is the type for qingstor
 const Type = "qingstor"
@@ -707,7 +709,7 @@ type pairStorageWrite struct {
 	HasSize         bool
 	Size            int64
 	HasStorageClass bool
-	StorageClass    string
+	StorageClass    storageclass.Type
 }
 
 func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
@@ -746,7 +748,7 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	v, ok = values[ps.StorageClass]
 	if ok {
 		result.HasStorageClass = true
-		result.StorageClass = v.(string)
+		result.StorageClass = v.(storageclass.Type)
 	}
 	return result, nil
 }

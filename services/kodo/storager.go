@@ -111,6 +111,12 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			o.SetContentType(v.MimeType)
 			o.SetETag(v.Hash)
 
+			storageClass, err := formatStorageClass(v.Type)
+			if err != nil {
+				return fmt.Errorf(errorMessage, s, path, err)
+			}
+			o.SetStorageClass(storageClass)
+
 			opt.FileFunc(o)
 		}
 
@@ -179,6 +185,12 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 	o.SetETag(fi.Hash)
+
+	storageClass, err := formatStorageClass(fi.Type)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+	o.SetStorageClass(storageClass)
 
 	return o, nil
 }

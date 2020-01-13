@@ -95,8 +95,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			ObjectMeta: metadata.NewObjectMeta(),
 		}
 		o.SetContentType(object.ContentType)
-		o.SetStorageClass(object.StorageClass)
 		o.SetContentMD5(string(object.MD5))
+
+		storageClass, err := formatStorageClass(object.StorageClass)
+		if err != nil {
+			return fmt.Errorf(errorMessage, s, path, err)
+		}
+		o.SetStorageClass(storageClass)
 
 		opt.FileFunc(o)
 	}
@@ -143,7 +148,11 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		w.Size = opt.Size
 	}
 	if opt.HasStorageClass {
-		w.StorageClass = opt.StorageClass
+		storageClass, err := parseStorageClass(opt.StorageClass)
+		if err != nil {
+			return fmt.Errorf(errorMessage, s, path, err)
+		}
+		w.StorageClass = storageClass
 	}
 
 	_, err = io.Copy(w, r)
@@ -177,6 +186,13 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		UpdatedAt:  attr.Updated,
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
+
+	storageClass, err := formatStorageClass(attr.StorageClass)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+	o.SetStorageClass(storageClass)
+
 	return o, nil
 }
 
