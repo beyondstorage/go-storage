@@ -116,7 +116,7 @@ if err != nil {
 
 ### fs
 
-`fs://?work_dir=/path/to/dir`
+`fs:///?work_dir=/path/to/dir`
 
 ### gcs
 

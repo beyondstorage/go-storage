@@ -61,9 +61,18 @@ test:
 	@go tool cover -html="coverage.txt" -o "coverage.html"
 	@echo "ok"
 
+
+integration_test:
+	@echo "run integration test"
+	@pushd tests \
+		&& go test -race -v ./... \
+		&& popd
+	@echo "ok"
+
 tidy:
 	@echo "Tidy and check the go mod files"
 	@go mod tidy && go mod verify
+	@pushd tests && go mod tidy && go mod verify && popd
 	@pushd internal/cmd && go mod tidy && go mod verify && popd
 	@echo "Done"
 

@@ -1,0 +1,1 @@
+STORAGE_TEST_SERVICE_FS: fs:///?work_dir=/path/to/test/dir
