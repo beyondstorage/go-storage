@@ -12,8 +12,6 @@ import (
 )
 
 // Storage is the uss service.
-//
-//go:generate ../../internal/bin/service
 type Storage struct {
 	bucket *upyun.UpYun
 

@@ -17,9 +17,6 @@ import (
 )
 
 // Storage is the qingstor object storage client.
-//
-//go:generate ../../internal/bin/service
-//go:generate mockgen -package qingstor -destination mock_test.go github.com/yunify/qingstor-sdk-go/v3/interface Service,Bucket
 type Storage struct {
 	bucket     iface.Bucket
 	config     *qsconfig.Config

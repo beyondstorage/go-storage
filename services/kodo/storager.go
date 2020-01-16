@@ -13,8 +13,6 @@ import (
 )
 
 // Storage is the gcs service client.
-//
-//go:generate ../../internal/bin/service
 type Storage struct {
 	bucket    *qs.BucketManager
 	domain    string

@@ -13,8 +13,6 @@ import (
 )
 
 // Storage is the s3 object storage service.
-//
-//go:generate ../../internal/bin/service
 type Storage struct {
 	service s3iface.S3API
 
