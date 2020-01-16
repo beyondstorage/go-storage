@@ -13,8 +13,6 @@ import (
 )
 
 // Storage is the azblob service client.
-//
-//go:generate ../../internal/bin/service
 type Storage struct {
 	bucket azblob.ContainerURL
 
