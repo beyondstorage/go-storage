@@ -58,7 +58,7 @@ if err != nil {
 
 It looks like we solve the init problem for Storager, but not really.  There are following problems.
 
--  `Init` is only used in `coreutils`
+- `Init` is only used in `coreutils`
 
 If an API only used in internal packages, why should we export it?
 
@@ -78,10 +78,8 @@ Users can change `WorkDir` during `List`, which is not allowed.
 
 So I propose following changes:
 
-- Merge `Init` and `newStorage` to `Storager.init()`
-- Rename `New` to `NewServicer` or `NewStorager` to be more clear
-  - `NewServicer(pairs ...*types.Pair)` should handle credential and endpoint pairs
-  - `NewStorager(pairs ...*types.Pair)` should use input `Servicer` pair or handle credential and endpoint pairs by self
+- Merge `Init` and `newStorage` to `Storager.init(pairs ...*types.Pair)`
+- Refactor `New` to `New(pairs ...*types.Pair) (srv *Service, store *Storage, err error)`
 - Add `Init` related pairs to `Servicer`'s `Get` and `New`
 
 ## Compatibility
