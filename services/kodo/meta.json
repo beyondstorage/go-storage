@@ -12,9 +12,6 @@
     }
   },
   "storage": {
-    "init": {
-      "work_dir": false
-    },
     "list": {
       "file_func": true
     },

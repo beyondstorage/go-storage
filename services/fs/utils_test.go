@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Xuanwo/storage/types/pairs"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
@@ -27,11 +26,7 @@ func TestGetAbsPath(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := Storage{}
-			err := client.Init(pairs.WithWorkDir(tt.base))
-			if err != nil {
-				t.Error(err)
-			}
+			client := Storage{workDir: tt.base}
 
 			gotPath := client.getAbsPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)

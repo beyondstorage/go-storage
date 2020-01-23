@@ -18,7 +18,6 @@ import (
 	"github.com/Xuanwo/storage/services/s3"
 	"github.com/Xuanwo/storage/services/uss"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/pairs"
 )
 
 var (
@@ -98,7 +97,7 @@ func OpenStorager(cfg string) (store storage.Storager, err error) {
 }
 
 func openObjectStorage(srv storage.Servicer, ns string) (store storage.Storager, err error) {
-	name, prefix := namespace.ParseObjectStorage(ns)
+	name, _ := namespace.ParseObjectStorage(ns)
 	// name == "" means no bucket name input, return nil directly.
 	if name == "" {
 		return
@@ -107,19 +106,14 @@ func openObjectStorage(srv storage.Servicer, ns string) (store storage.Storager,
 	if err != nil {
 		return
 	}
-	err = store.Init(pairs.WithWorkDir(prefix))
-	if err != nil {
-		return
-	}
 	return
 }
 
 func openAzblob(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error) {
-	srv, err = azblob.New(opt...)
+	srv, store, err = azblob.New(opt...)
 	if err != nil {
 		return
 	}
-	store, err = openObjectStorage(srv, ns)
 	return
 }
 
@@ -138,20 +132,14 @@ func openDropbox(ns string, opt ...*types.Pair) (srv storage.Servicer, store sto
 		return
 	}
 
-	err = store.Init(pairs.WithWorkDir(ns))
-	if err != nil {
-		return
-	}
 	return
 }
 
 func openFs(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error) {
 	store = fs.New()
-	path := namespace.ParseLocalFS(ns)
-	err = store.Init(pairs.WithWorkDir(path))
-	if err != nil {
-		return
-	}
+	// TODO: handle path
+	_ = namespace.ParseLocalFS(ns)
+
 	return
 }
 
@@ -201,12 +189,8 @@ func openS3(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.
 }
 
 func openUSS(ns string, opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error) {
-	name, prefix := namespace.ParseObjectStorage(ns)
+	name, _ := namespace.ParseObjectStorage(ns)
 	store, err = uss.New(name, opt...)
-	if err != nil {
-		return
-	}
-	err = store.Init(pairs.WithWorkDir(prefix))
 	if err != nil {
 		return
 	}

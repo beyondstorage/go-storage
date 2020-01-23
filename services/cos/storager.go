@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/Xuanwo/storage/types"
@@ -42,23 +41,6 @@ func (s *Storage) String() string {
 		"Storager cos {Name: %s, WorkDir: %s}",
 		s.name, "/"+s.workDir,
 	)
-}
-
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: we should validate workDir
-		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
-	}
-
-	return nil
 }
 
 // Metadata implements Storager.Metadata

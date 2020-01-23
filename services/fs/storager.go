@@ -52,22 +52,6 @@ func (s *Storage) String() string {
 	return fmt.Sprintf("Storager fs {WorkDir: %s}", s.workDir)
 }
 
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: validate workDir.
-		s.workDir = opt.WorkDir
-	}
-	return nil
-}
-
 // Metadata implements Storager.Metadata
 func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()

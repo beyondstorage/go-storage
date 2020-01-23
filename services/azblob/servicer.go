@@ -2,56 +2,16 @@ package azblob
 
 import (
 	"fmt"
-	"net/url"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 
 	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/types"
 )
 
 // Service is the azblob config.
 type Service struct {
 	service azblob.ServiceURL
-}
-
-// New will create a new azblob oss service.
-//
-// azblob use different URL to represent different sub services.
-// - ServiceURL's          methods perform operations on a storage account.
-//   - ContainerURL's     methods perform operations on an account's container.
-//      - BlockBlobURL's  methods perform operations on a container's block blob.
-//      - AppendBlobURL's methods perform operations on a container's append blob.
-//      - PageBlobURL's   methods perform operations on a container's page blob.
-//      - BlobURL's       methods perform operations on a container's blob regardless of the blob's type.
-//
-// Our Service will store a ServiceURL for operation.
-func New(pairs ...*types.Pair) (s *Service, err error) {
-	const errorMessage = "%s New: %w"
-
-	s = &Service{}
-
-	opt, err := parseServicePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	primaryURL, _ := url.Parse(opt.Endpoint.Value().String())
-
-	credProtocol, credValue := opt.Credential.Protocol(), opt.Credential.Value()
-	if credProtocol != credential.ProtocolHmac {
-		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-	}
-
-	cred, err := azblob.NewSharedKeyCredential(credValue[0], credValue[1])
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	p := azblob.NewPipeline(cred, azblob.PipelineOptions{})
-	s.service = azblob.NewServiceURL(*primaryURL, p)
-	return
 }
 
 // String implements Servicer.String
@@ -130,4 +90,8 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}
 	return nil
+}
+
+func (s *Service) get(name string) (bucket azblob.ContainerURL) {
+	return s.service.NewContainerURL(name)
 }

@@ -1,21 +1,24 @@
 {{ $Data := . }}
 
 {{- range $name, $data := .Data }}
-{{ $pn := $name | toPascal }}
-{{- range $k, $_ := $data.Funcs }}
-type pair{{ $pn }}{{ $k }} struct {
+{{- $pn := $name | toPascal }}
+{{- range $k, $v := $data }}
+{{- $pk := $k | toPascal }}
+type pair{{ $pn }}{{ $pk }} struct {
     // Pre-defined pairs
+    {{- if $v.Funcs }}
     Context context.Context
+    {{- end }}
 
     // Meta-defined pairs
-    {{- range $key, $_ := index $data.Pairs ($k | toSnake) }}
+    {{- range $key, $_ := $v.Pairs }}
     Has{{ $key | toPascal }} bool
     {{ $key | toPascal }}    {{ index $Data.TypeMap $key }}
     {{- end }}
 }
 
-func parse{{ $pn }}Pair{{ $k }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $k }}, error) {
-    result := &pair{{ $pn }}{{ $k }}{}
+func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, error) {
+    result := &pair{{ $pn }}{{ $pk }}{}
 
     values := make(map[string]interface{})
     for _, v := range opts {
@@ -26,15 +29,17 @@ func parse{{ $pn }}Pair{{ $k }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $k }}, er
     var ok bool
 
     // Parse pre-defined pairs
+    {{- if $v.Funcs }}
     v, ok = values[ps.Context]
     if ok {
         result.Context = v.(context.Context)
     } else {
         result.Context = context.Background()
     }
+    {{- end }}
 
     // Parse meta-defined pairs
-    {{- range $key, $required := index $data.Pairs ($k | toSnake) }}
+    {{- range $key, $required := $v.Pairs }}
     {{- $pkey := $key | toPascal }}
     v, ok = values[ps.{{ $pkey }}]
     {{- if $required }}

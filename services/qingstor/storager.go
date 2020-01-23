@@ -3,7 +3,6 @@ package qingstor
 import (
 	"fmt"
 	"io"
-	"strings"
 	"sync"
 
 	"github.com/pengsrc/go-shared/convert"
@@ -29,8 +28,8 @@ type Storage struct {
 	segmentLock sync.RWMutex
 }
 
-// newStorage will create a new client.
-func newStorage(bucket *service.Bucket) (*Storage, error) {
+// NewStorager will create a new client.
+func NewStorager(bucket *service.Bucket) (*Storage, error) {
 	c := &Storage{
 		bucket:     bucket,
 		config:     bucket.Config,
@@ -38,23 +37,6 @@ func newStorage(bucket *service.Bucket) (*Storage, error) {
 		segments:   make(map[string]*segment.Segment),
 	}
 	return c, nil
-}
-
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: we should validate workDir
-		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
-	}
-
-	return nil
 }
 
 // String implements Storager.String

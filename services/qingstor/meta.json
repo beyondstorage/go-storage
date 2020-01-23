@@ -20,9 +20,6 @@
     }
   },
   "storage": {
-    "init": {
-      "work_dir": false
-    },
     "init_segment": {
       "part_size": true
     },

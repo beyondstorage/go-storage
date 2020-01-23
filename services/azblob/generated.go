@@ -158,7 +158,6 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 
 type pairServiceNew struct {
 	// Pre-defined pairs
-	Context context.Context
 
 	// Meta-defined pairs
 	HasCredential bool
@@ -179,12 +178,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	var ok bool
 
 	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]
@@ -233,43 +226,6 @@ func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
 	}
 
 	// Parse meta-defined pairs
-	return result, nil
-}
-
-type pairStorageInit struct {
-	// Pre-defined pairs
-	Context context.Context
-
-	// Meta-defined pairs
-	HasWorkDir bool
-	WorkDir    string
-}
-
-func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
-	result := &pairStorageInit{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
-	// Parse meta-defined pairs
-	v, ok = values[ps.WorkDir]
-	if ok {
-		result.HasWorkDir = true
-		result.WorkDir = v.(string)
-	}
 	return result, nil
 }
 
@@ -340,6 +296,36 @@ func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error)
 	}
 
 	// Parse meta-defined pairs
+	return result, nil
+}
+
+type pairStorageNew struct {
+	// Pre-defined pairs
+
+	// Meta-defined pairs
+	HasWorkDir bool
+	WorkDir    string
+}
+
+func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
+	result := &pairStorageNew{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+
+	// Parse meta-defined pairs
+	v, ok = values[ps.WorkDir]
+	if ok {
+		result.HasWorkDir = true
+		result.WorkDir = v.(string)
+	}
 	return result, nil
 }
 
@@ -500,15 +486,6 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 
 	pairs = append(pairs, ps.WithContext(ctx))
 	return s.Delete(path, pairs...)
-}
-
-// InitWithContext adds context support for Init.
-func (s *Storage) InitWithContext(ctx context.Context, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.storage.Init")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Init(pairs...)
 }
 
 // ListWithContext adds context support for List.

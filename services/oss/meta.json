@@ -10,9 +10,6 @@
     }
   },
   "storage": {
-    "init": {
-      "work_dir": false
-    },
     "list": {
       "dir_func": false,
       "file_func": false
