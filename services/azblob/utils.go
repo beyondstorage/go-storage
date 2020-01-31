@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
@@ -22,10 +23,10 @@ import (
 //      - BlobURL's       methods perform operations on a container's blob regardless of the blob's type.
 //
 // Our Service will store a ServiceURL for operation.
-func New(pairs ...*types.Pair) (srv *Service, store *Storage, err error) {
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	const errorMessage = "azblob New: %w"
 
-	srv = &Service{}
+	srv := &Service{}
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
@@ -47,17 +48,11 @@ func New(pairs ...*types.Pair) (srv *Service, store *Storage, err error) {
 	p := azblob.NewPipeline(cred, azblob.PipelineOptions{})
 	srv.service = azblob.NewServiceURL(*primaryURL, p)
 
-	// TODO: we should init Storager
-	return
-}
-
-// newStorage will create a new client.
-func newStorage(bucket azblob.ContainerURL, name string, pairs ...*types.Pair) *Storage {
-	c := &Storage{
-		bucket: bucket,
-		name:   name,
+	store, err := srv.newStorage(pairs...)
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
 	}
-	return c
+	return srv, store, nil
 }
 
 func (s *Storage) getAbsPath(path string) string {

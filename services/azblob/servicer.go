@@ -7,6 +7,7 @@ import (
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 // Service is the azblob config.
@@ -38,8 +39,11 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range output.ContainerItems {
-			bucket := s.service.NewContainerURL(v.Name)
-			opt.StoragerFunc(newStorage(bucket, v.Name))
+			store, err := s.newStorage(ps.WithName(v.Name))
+			if err != nil {
+				return fmt.Errorf(errorMessage, s, err)
+			}
+			opt.StoragerFunc(store)
 		}
 
 		marker = output.NextMarker
@@ -52,10 +56,14 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 
 // Get implements Servicer.Get
 func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const _ = "%s Get [%s]: %w"
+	const errorMessage = "%s Get [%s]: %w"
 
-	bucket := s.service.NewContainerURL(name)
-	return newStorage(bucket, name), nil
+	store, err := s.newStorage(ps.WithName(name))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
+	return store, nil
 }
 
 // Create implements Servicer.Create
@@ -67,12 +75,15 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
-	bucket := s.service.NewContainerURL(name)
-	_, err = bucket.Create(opt.Context, azblob.Metadata{}, azblob.PublicAccessNone)
+	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
-	return newStorage(bucket, name), nil
+	_, err = store.bucket.Create(opt.Context, azblob.Metadata{}, azblob.PublicAccessNone)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+	return store, nil
 }
 
 // Delete implements Servicer.Delete
@@ -92,6 +103,22 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	return nil
 }
 
-func (s *Service) get(name string) (bucket azblob.ContainerURL) {
-	return s.service.NewContainerURL(name)
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
+	const errorMessage = "azblob new_storage: %w"
+
+	opt, err := parseStoragePairNew(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	bucket := s.service.NewContainerURL(opt.Name)
+
+	c := &Storage{
+		bucket: bucket,
+
+		name:    opt.Name,
+		workDir: opt.WorkDir,
+	}
+	return c, nil
 }

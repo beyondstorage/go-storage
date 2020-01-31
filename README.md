@@ -104,7 +104,7 @@ if err != nil {
 
 ### azblob
 
-`azblob://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`azblob://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 
 ### cos
 
@@ -116,7 +116,7 @@ if err != nil {
 
 ### fs
 
-`fs:///path/to/dir`
+`fs://?work_dir=/path/to/dir`
 
 ### gcs
 

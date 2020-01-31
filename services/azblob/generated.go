@@ -303,6 +303,8 @@ type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
+	HasName    bool
+	Name       string
 	HasWorkDir bool
 	WorkDir    string
 }
@@ -321,6 +323,14 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse pre-defined pairs
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.Name]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Name)
+	}
+	if ok {
+		result.HasName = true
+		result.Name = v.(string)
+	}
 	v, ok = values[ps.WorkDir]
 	if ok {
 		result.HasWorkDir = true

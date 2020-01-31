@@ -14,6 +14,7 @@
       "file_func": true
     },
     "new": {
+      "name": true,
       "work_dir": false
     },
     "write": {
