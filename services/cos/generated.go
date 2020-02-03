@@ -188,7 +188,6 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 
 type pairServiceNew struct {
 	// Pre-defined pairs
-	Context context.Context
 
 	// Meta-defined pairs
 	HasCredential bool
@@ -207,12 +206,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	var ok bool
 
 	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]
@@ -323,6 +316,56 @@ func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error)
 	}
 
 	// Parse meta-defined pairs
+	return result, nil
+}
+
+type pairStorageNew struct {
+	// Pre-defined pairs
+
+	// Meta-defined pairs
+	HasLocation bool
+	Location    string
+	HasName     bool
+	Name        string
+	HasWorkDir  bool
+	WorkDir     string
+}
+
+func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
+	result := &pairStorageNew{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+
+	// Parse meta-defined pairs
+	v, ok = values[ps.Location]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Location)
+	}
+	if ok {
+		result.HasLocation = true
+		result.Location = v.(string)
+	}
+	v, ok = values[ps.Name]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Name)
+	}
+	if ok {
+		result.HasName = true
+		result.Name = v.(string)
+	}
+	v, ok = values[ps.WorkDir]
+	if ok {
+		result.HasWorkDir = true
+		result.WorkDir = v.(string)
+	}
 	return result, nil
 }
 

@@ -3,10 +3,8 @@ package cos
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/types"
 
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -16,33 +14,6 @@ import (
 type Service struct {
 	service *cos.Client
 	client  *http.Client
-}
-
-// New will create a new Tencent oss service.
-func New(pairs ...*types.Pair) (s *Service, err error) {
-	const errorMessage = "%s New: %w"
-
-	s = &Service{}
-
-	opt, err := parseServicePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-	if credProtocol != credential.ProtocolHmac {
-		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-	}
-
-	s.client = &http.Client{
-		Transport: &cos.AuthorizationTransport{
-			SecretID:  cred[0],
-			SecretKey: cred[1],
-		},
-		Timeout: 100 * time.Second,
-	}
-	s.service = cos.NewClient(nil, s.client)
-	return
 }
 
 // String implements Servicer.String

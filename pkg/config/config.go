@@ -65,6 +65,7 @@ func Parse(cfg string) (t string, opt []*types.Pair, err error) {
 	ops := strings.Split(s[1], "&")
 	for _, v := range ops {
 		x := strings.SplitN(v, "=", 2)
+		// TODO: type support
 		opt = append(opt, &types.Pair{
 			Key:   x[0],
 			Value: x[1],

@@ -108,7 +108,7 @@ if err != nil {
 
 ### cos
 
-`cos://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`cos://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 
 ### dropbox
 
