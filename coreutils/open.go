@@ -36,7 +36,7 @@ var opener = map[string]openFunc{
 	dropbox.Type:  dropbox.New,
 	fs.Type:       fs.New,
 	gcs.Type:      gcs.New,
-	kodo.Type:     nil,
+	kodo.Type:     kodo.New,
 	oss.Type:      nil,
 	qingstor.Type: nil,
 	s3.Type:       nil,

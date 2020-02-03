@@ -298,6 +298,37 @@ func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error)
 	return result, nil
 }
 
+type pairStorageNew struct {
+	// Pre-defined pairs
+
+	// Meta-defined pairs
+	Name string
+}
+
+func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
+	result := &pairStorageNew{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+
+	// Parse meta-defined pairs
+	v, ok = values[ps.Name]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Name)
+	}
+	if ok {
+		result.Name = v.(string)
+	}
+	return result, nil
+}
+
 type pairStorageRead struct {
 	// Pre-defined pairs
 	Context context.Context
