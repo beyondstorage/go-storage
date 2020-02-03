@@ -561,9 +561,8 @@ type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
-	HasLocation bool
-	Location    string
-	Name        string
+	Location string
+	Name     string
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -581,8 +580,10 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Location]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Location)
+	}
 	if ok {
-		result.HasLocation = true
 		result.Location = v.(string)
 	}
 	v, ok = values[ps.Name]

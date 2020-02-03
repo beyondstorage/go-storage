@@ -31,7 +31,7 @@
       "segment_func": false
     },
     "new": {
-      "location": false,
+      "location": true,
       "name": true
     },
     "reach": {

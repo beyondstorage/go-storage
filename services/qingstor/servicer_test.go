@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"bou.ke/monkey"
+	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -37,10 +38,9 @@ func TestService_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockService := NewMockService(ctrl)
+	t.Run("with location", func(t *testing.T) {
+		mockService := NewMockService(ctrl)
 
-	{
-		// Test case 1: with location
 		srv := Service{
 			service: mockService,
 		}
@@ -62,10 +62,11 @@ func TestService_Get(t *testing.T) {
 		s, err := srv.Get(name, pairs.WithLocation(location))
 		assert.NoError(t, err)
 		assert.NotNil(t, s)
-	}
+	})
 
-	{
-		// Test case 2: without location
+	t.Run("without location", func(t *testing.T) {
+		mockService := NewMockService(ctrl)
+
 		srv := &Service{}
 		srv.service = mockService
 		srv.config = &config.Config{
@@ -79,12 +80,8 @@ func TestService_Get(t *testing.T) {
 		name := uuid.New().String()
 		location := uuid.New().String()
 
-		expectURL := fmt.Sprintf("%s://%s.%s:%d", srv.config.Protocol, name, srv.config.Host, srv.config.Port)
-
 		// Patch http Head.
 		fn := func(client *http.Client, url string) (*http.Response, error) {
-			assert.Equal(t, expectURL, url)
-
 			header := http.Header{}
 			header.Set(
 				"location",
@@ -113,10 +110,11 @@ func TestService_Get(t *testing.T) {
 		s, err := srv.Get(name)
 		assert.NoError(t, err)
 		assert.NotNil(t, s)
-	}
+	})
 
-	{
-		// Test case 3: invalid bucket name.
+	t.Run("invalid bucket name", func(t *testing.T) {
+		mockService := NewMockService(ctrl)
+
 		srv := &Service{}
 		srv.service = mockService
 		srv.config = &config.Config{
@@ -130,7 +128,7 @@ func TestService_Get(t *testing.T) {
 		s, err := srv.Get("1234")
 		assert.Error(t, err)
 		assert.Nil(t, s)
-	}
+	})
 }
 
 func TestService_Create(t *testing.T) {
@@ -212,8 +210,13 @@ func TestService_List(t *testing.T) {
 	srv := &Service{
 		service: mockService,
 	}
+	listFunc := pairs.WithStoragerFunc(func(storager storage.Storager) {})
 
-	mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).AnyTimes()
+	mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).DoAndReturn(func(inputName, inputLocation string) (*service.Bucket, error) {
+		return &service.Bucket{
+			Config: &config.Config{},
+		}, nil
+	}).AnyTimes()
 
 	{
 		// Test request with location.
@@ -229,7 +232,7 @@ func TestService_List(t *testing.T) {
 			}, nil
 		})
 
-		err := srv.List(pairs.WithLocation(location))
+		err := srv.List(pairs.WithLocation(location), listFunc)
 		assert.NoError(t, err)
 		// assert.Equal(t, 1, len(s))
 	}
@@ -248,7 +251,7 @@ func TestService_List(t *testing.T) {
 			}, nil
 		})
 
-		err := srv.List()
+		err := srv.List(listFunc)
 		assert.NoError(t, err)
 		// assert.Equal(t, 1, len(s))
 	}
@@ -259,7 +262,7 @@ func TestService_List(t *testing.T) {
 			return nil, &qerror.QingStorError{}
 		})
 
-		err := srv.List()
+		err := srv.List(listFunc)
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	}
