@@ -11,8 +11,10 @@ type pair{{ $pn }}{{ $pk }} struct {
     {{- end }}
 
     // Meta-defined pairs
-    {{- range $key, $_ := $v.Pairs }}
+    {{- range $key, $required := $v.Pairs }}
+    {{- if not $required }}
     Has{{ $key | toPascal }} bool
+    {{- end }}
     {{ $key | toPascal }}    {{ index $Data.TypeMap $key }}
     {{- end }}
 }
@@ -48,7 +50,9 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
     }
     {{- end }}
     if ok {
+        {{- if not $required }}
         result.Has{{ $pkey }} = true
+        {{- end }}
         result.{{ $pkey }} = v.({{ index $Data.TypeMap $key }})
     }
     {{- end }}

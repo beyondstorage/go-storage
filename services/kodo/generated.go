@@ -31,8 +31,7 @@ type pairServiceCreate struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasLocation bool
-	Location    string
+	Location string
 }
 
 func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
@@ -60,7 +59,6 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 		return nil, types.NewErrPairRequired(ps.Location)
 	}
 	if ok {
-		result.HasLocation = true
 		result.Location = v.(string)
 	}
 	return result, nil
@@ -131,8 +129,7 @@ type pairServiceList struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasStoragerFunc bool
-	StoragerFunc    storage.StoragerFunc
+	StoragerFunc storage.StoragerFunc
 }
 
 func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
@@ -160,7 +157,6 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 		return nil, types.NewErrPairRequired(ps.StoragerFunc)
 	}
 	if ok {
-		result.HasStoragerFunc = true
 		result.StoragerFunc = v.(storage.StoragerFunc)
 	}
 	return result, nil
@@ -171,8 +167,7 @@ type pairServiceNew struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasCredential bool
-	Credential    *credential.Provider
+	Credential *credential.Provider
 }
 
 func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
@@ -200,7 +195,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 		return nil, types.NewErrPairRequired(ps.Credential)
 	}
 	if ok {
-		result.HasCredential = true
 		result.Credential = v.(*credential.Provider)
 	}
 	return result, nil
@@ -241,8 +235,7 @@ type pairStorageList struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasFileFunc bool
-	FileFunc    types.ObjectFunc
+	FileFunc types.ObjectFunc
 }
 
 func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
@@ -270,7 +263,6 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 		return nil, types.NewErrPairRequired(ps.FileFunc)
 	}
 	if ok {
-		result.HasFileFunc = true
 		result.FileFunc = v.(types.ObjectFunc)
 	}
 	return result, nil
@@ -373,7 +365,6 @@ type pairStorageWrite struct {
 	// Meta-defined pairs
 	HasChecksum     bool
 	Checksum        string
-	HasSize         bool
 	Size            int64
 	HasStorageClass bool
 	StorageClass    storageclass.Type
@@ -409,7 +400,6 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 		return nil, types.NewErrPairRequired(ps.Size)
 	}
 	if ok {
-		result.HasSize = true
 		result.Size = v.(int64)
 	}
 	v, ok = values[ps.StorageClass]

@@ -61,8 +61,7 @@ type pairStorageList struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasFileFunc bool
-	FileFunc    types.ObjectFunc
+	FileFunc types.ObjectFunc
 }
 
 func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
@@ -90,7 +89,6 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 		return nil, types.NewErrPairRequired(ps.FileFunc)
 	}
 	if ok {
-		result.HasFileFunc = true
 		result.FileFunc = v.(types.ObjectFunc)
 	}
 	return result, nil
@@ -131,8 +129,7 @@ type pairStorageNew struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasCredential bool
-	Credential    *credential.Provider
+	Credential *credential.Provider
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -160,7 +157,6 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 		return nil, types.NewErrPairRequired(ps.Credential)
 	}
 	if ok {
-		result.HasCredential = true
 		result.Credential = v.(*credential.Provider)
 	}
 	return result, nil

@@ -158,10 +158,8 @@ type pairServiceNew struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasCredential bool
-	Credential    *credential.Provider
-	HasEndpoint   bool
-	Endpoint      endpoint.Provider
+	Credential *credential.Provider
+	Endpoint   endpoint.Provider
 }
 
 func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
@@ -189,7 +187,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 		return nil, types.NewErrPairRequired(ps.Credential)
 	}
 	if ok {
-		result.HasCredential = true
 		result.Credential = v.(*credential.Provider)
 	}
 	v, ok = values[ps.Endpoint]
@@ -197,7 +194,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 		return nil, types.NewErrPairRequired(ps.Endpoint)
 	}
 	if ok {
-		result.HasEndpoint = true
 		result.Endpoint = v.(endpoint.Provider)
 	}
 	return result, nil
@@ -374,7 +370,6 @@ type pairStorageWrite struct {
 	// Meta-defined pairs
 	HasChecksum     bool
 	Checksum        string
-	HasSize         bool
 	Size            int64
 	HasStorageClass bool
 	StorageClass    storageclass.Type
@@ -410,7 +405,6 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 		return nil, types.NewErrPairRequired(ps.Size)
 	}
 	if ok {
-		result.HasSize = true
 		result.Size = v.(int64)
 	}
 	v, ok = values[ps.StorageClass]

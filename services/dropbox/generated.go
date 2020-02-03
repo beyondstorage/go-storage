@@ -134,8 +134,7 @@ type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
-	HasCredential bool
-	Credential    *credential.Provider
+	Credential *credential.Provider
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -157,7 +156,6 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 		return nil, types.NewErrPairRequired(ps.Credential)
 	}
 	if ok {
-		result.HasCredential = true
 		result.Credential = v.(*credential.Provider)
 	}
 	return result, nil
