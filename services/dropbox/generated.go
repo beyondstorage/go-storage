@@ -132,7 +132,6 @@ func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error)
 
 type pairStorageNew struct {
 	// Pre-defined pairs
-	Context context.Context
 
 	// Meta-defined pairs
 	HasCredential bool
@@ -151,12 +150,6 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	var ok bool
 
 	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]

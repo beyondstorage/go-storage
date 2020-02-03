@@ -33,7 +33,7 @@ type openFunc func(opt ...*types.Pair) (srv storage.Servicer, store storage.Stor
 var opener = map[string]openFunc{
 	azblob.Type:   azblob.New,
 	cos.Type:      cos.New,
-	dropbox.Type:  nil,
+	dropbox.Type:  dropbox.New,
 	fs.Type:       nil,
 	gcs.Type:      nil,
 	kodo.Type:     nil,

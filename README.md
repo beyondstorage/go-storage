@@ -112,7 +112,7 @@ if err != nil {
 
 ### dropbox
 
-`dropbox://apikey:<api_key>/path/to/dir`
+`dropbox://apikey:<api_key>?work_dir=</path/to/work/dir>`
 
 ### fs
 

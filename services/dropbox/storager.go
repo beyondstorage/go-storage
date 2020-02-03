@@ -8,7 +8,6 @@ import (
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
 
-	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
@@ -19,32 +18,6 @@ type Storage struct {
 	client files.Client
 
 	workDir string
-}
-
-// New will create a new client.
-func New(pairs ...*types.Pair) (s *Storage, err error) {
-	const errorMessage = "%s New: %w"
-
-	opt, err := parseStoragePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	cfg := dropbox.Config{}
-
-	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-	switch credProtocol {
-	case credential.ProtocolAPIKey:
-		cfg.Token = cred[0]
-	default:
-		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-	}
-
-	c := &Storage{
-		client: files.New(cfg),
-	}
-
-	return c, nil
 }
 
 // String implements Storager.String
