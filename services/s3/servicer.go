@@ -3,10 +3,8 @@ package s3
 import (
 	"fmt"
 
-	"github.com/Xuanwo/storage/pkg/credential"
+	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 
@@ -17,38 +15,6 @@ import (
 // Service is the s3 service config.
 type Service struct {
 	service s3iface.S3API
-}
-
-// New will create a new s3 service.
-func New(pairs ...*types.Pair) (s *Service, err error) {
-	const errorMessage = "%s New: %w"
-
-	opt, err := parseServicePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	cfg := aws.NewConfig()
-
-	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-	switch credProtocol {
-	case credential.ProtocolHmac:
-		cfg = cfg.WithCredentials(credentials.NewStaticCredentials(cred[0], cred[1], ""))
-	case credential.ProtocolEnv:
-		cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
-	default:
-		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-	}
-
-	sess, err := session.NewSession(cfg)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	srv := s3.New(sess)
-
-	s = &Service{service: srv}
-	return s, nil
 }
 
 // String implements Servicer.String
@@ -74,13 +40,11 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 	}
 
 	for _, v := range output.Buckets {
-		store, err := newStorage(s.service, *v.Name)
+		store, err := s.newStorage(ps.WithName(*v.Name))
 		if err != nil {
 			return fmt.Errorf(errorMessage, s, err)
 		}
-		if opt.HasStoragerFunc {
-			opt.StoragerFunc(store)
-		}
+		opt.StoragerFunc(store)
 	}
 	return nil
 }
@@ -89,7 +53,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
 	const errorMessage = "%s get [%s]: %w"
 
-	store, err := newStorage(s.service, name)
+	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
@@ -105,6 +69,11 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
+	store, err := s.newStorage(ps.WithName(name))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
 	input := &s3.CreateBucketInput{
 		Bucket: aws.String(name),
 		CreateBucketConfiguration: &s3.CreateBucketConfiguration{
@@ -113,11 +82,6 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 	}
 
 	_, err = s.service.CreateBucket(input)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
-	}
-
-	store, err := newStorage(s.service, name)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
@@ -142,4 +106,20 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}
 	return nil
+}
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
+	const errorMessage = "s3 new_storage: %w"
+
+	opt, err := parseStoragePairNew(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	c := &Storage{
+		service: s.service,
+		name:    opt.Name,
+	}
+	return c, nil
 }

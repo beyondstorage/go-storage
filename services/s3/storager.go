@@ -3,6 +3,7 @@ package s3
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
@@ -17,15 +18,6 @@ type Storage struct {
 
 	name    string
 	workDir string
-}
-
-// newStorage will create a new client.
-func newStorage(service s3iface.S3API, bucketName string) (*Storage, error) {
-	c := &Storage{
-		service: service,
-		name:    bucketName,
-	}
-	return c, nil
 }
 
 // String implements Storager.String
@@ -230,4 +222,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

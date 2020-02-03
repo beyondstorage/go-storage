@@ -136,7 +136,7 @@ if err != nil {
 
 ### s3
 
-`s3://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`s3://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 
 ### uss
 

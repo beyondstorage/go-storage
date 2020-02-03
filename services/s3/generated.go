@@ -143,8 +143,7 @@ type pairServiceList struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasStoragerFunc bool
-	StoragerFunc    storage.StoragerFunc
+	StoragerFunc storage.StoragerFunc
 }
 
 func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
@@ -168,8 +167,10 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.StoragerFunc]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.StoragerFunc)
+	}
 	if ok {
-		result.HasStoragerFunc = true
 		result.StoragerFunc = v.(storage.StoragerFunc)
 	}
 	return result, nil
@@ -321,6 +322,37 @@ func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error)
 	}
 
 	// Parse meta-defined pairs
+	return result, nil
+}
+
+type pairStorageNew struct {
+	// Pre-defined pairs
+
+	// Meta-defined pairs
+	Name string
+}
+
+func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
+	result := &pairStorageNew{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+
+	// Parse meta-defined pairs
+	v, ok = values[ps.Name]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Name)
+	}
+	if ok {
+		result.Name = v.(string)
+	}
 	return result, nil
 }
 
