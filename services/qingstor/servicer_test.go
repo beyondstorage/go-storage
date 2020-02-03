@@ -10,7 +10,6 @@ import (
 
 	"bou.ke/monkey"
 	"github.com/Xuanwo/storage/pkg/credential"
-	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -26,40 +25,12 @@ func TestService_String(t *testing.T) {
 	accessKey := uuid.New().String()
 	secretKey := uuid.New().String()
 
-	srv, err := New(pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)))
+	srv, _, err := New(pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	assert.NotEmpty(t, srv.String())
-}
-
-func TestService_New(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	// Missing required pair
-	_, err := New()
-	assert.Error(t, err)
-	assert.True(t, errors.Is(err, types.ErrPairRequired))
-
-	// Valid case
-	accessKey := uuid.New().String()
-	secretKey := uuid.New().String()
-	host := uuid.New().String()
-	port := 1234
-	srv, err := New(
-		pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)),
-		pairs.WithEndpoint(endpoint.NewHTTP(host, port)),
-	)
-	assert.NoError(t, err)
-	assert.NotNil(t, srv.service)
-	assert.NotNil(t, srv.config)
-	assert.Equal(t, srv.config.AccessKeyID, accessKey)
-	assert.Equal(t, srv.config.SecretAccessKey, secretKey)
-	assert.Equal(t, srv.config.Host, host)
-	assert.Equal(t, srv.config.Port, port)
-	assert.Equal(t, srv.config.Protocol, "http")
 }
 
 func TestService_Get(t *testing.T) {
@@ -295,7 +266,7 @@ func TestService_List(t *testing.T) {
 }
 
 func ExampleNew() {
-	_, err := New(
+	_, _, err := New(
 		pairs.WithCredential(
 			credential.MustNewHmac("test_access_key", "test_secret_key"),
 		),
@@ -306,7 +277,7 @@ func ExampleNew() {
 }
 
 func ExampleService_Get() {
-	srv, err := New(
+	srv, _, err := New(
 		pairs.WithCredential(
 			credential.MustNewHmac("test_access_key", "test_secret_key"),
 		),
