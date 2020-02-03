@@ -13,7 +13,7 @@ import (
 
 // New will create a fs client.
 func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
-	const errorMessage = "azblob New: %w"
+	const errorMessage = "fs New: %w"
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
