@@ -2,6 +2,7 @@
 author: Xuanwo <github@xuanwo.io>
 status: draft
 updated_at: 2020-01-16
+updates: [3](./3-support-service-init-via-config-string.md)
 ---
 
 # Proposal: Remove Storager Init
@@ -81,6 +82,36 @@ So I propose following changes:
 - Merge `Init` and `newStorage` to `Storager.init(pairs ...*types.Pair)`
 - Refactor `New` to `New(pairs ...*types.Pair) (srv *Service, store *Storage, err error)`
 - Add `Init` related pairs to `Servicer`'s `Get` and `New`
+- Refactor config string option handles
+
+## Rationale
+
+### Refactor config string option handles
+
+Config string used to be like:
+
+`qingstor://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
+
+The original design expect to reach a balance between user input and config string parse. Let's take following two styles into consideration:
+
+- `fs://?work_dir=/path/to/dir` and `azblob://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
+- `fs:///path/to/dir` and `azblob://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+
+It's obvious the 2nd style has fewer user input, proposal [3-support-service-init-via-config-string](./3-support-service-init-via-config-string.md) has the same idea. However, this style introduces problem between different kinds of services.
+
+- `fs:///path/to/dir`
+- `azblob://hmac:<access_key>:<secret_key>`
+- `azblob://hmac:<access_key>:<secret_key>/<bucket_name>`
+- `azblob://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+
+We need service type in order to distinguish `/path/to/dir` and `/<bucket_name>/<prefix>`, this makes config string parser hard to implement, and we have to add concept like `namespace` so that we can defer this work in `coreutils`.
+
+Back to the first style, how about delegating this work to end users?
+
+- `fs://?work_dir=/path/to/dir`
+- `azblob://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
+
+Now, both `name` and `work_dir` can be parsed without service type.
 
 ## Compatibility
 
