@@ -19,11 +19,6 @@ import (
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
-func TestNewClient(t *testing.T) {
-	c := New()
-	assert.NotNil(t, c)
-}
-
 func TestStorage_String(t *testing.T) {
 	c := Storage{}
 	c.workDir = "/test"

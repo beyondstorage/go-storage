@@ -13,6 +13,13 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
+func TestNewClient(t *testing.T) {
+	srv, c, err := New()
+	assert.Nil(t, srv)
+	assert.NotNil(t, c)
+	assert.NoError(t, err)
+}
+
 func TestGetAbsPath(t *testing.T) {
 	cases := []struct {
 		name         string

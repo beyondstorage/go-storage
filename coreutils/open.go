@@ -34,7 +34,7 @@ var opener = map[string]openFunc{
 	azblob.Type:   azblob.New,
 	cos.Type:      cos.New,
 	dropbox.Type:  dropbox.New,
-	fs.Type:       nil,
+	fs.Type:       fs.New,
 	gcs.Type:      nil,
 	kodo.Type:     nil,
 	oss.Type:      nil,

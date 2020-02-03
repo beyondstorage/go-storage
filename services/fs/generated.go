@@ -192,9 +192,10 @@ func parseStoragePairMove(opts ...*types.Pair) (*pairStorageMove, error) {
 
 type pairStorageNew struct {
 	// Pre-defined pairs
-	Context context.Context
 
 	// Meta-defined pairs
+	HasWorkDir bool
+	WorkDir    string
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -209,14 +210,13 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	var ok bool
 
 	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.WorkDir]
+	if ok {
+		result.HasWorkDir = true
+		result.WorkDir = v.(string)
+	}
 	return result, nil
 }
 

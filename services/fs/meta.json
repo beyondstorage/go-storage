@@ -5,6 +5,9 @@
       "dir_func": false,
       "file_func": false
     },
+    "new": {
+      "work_dir": false
+    },
     "read": {
       "offset": false,
       "size": false

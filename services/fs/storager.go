@@ -3,7 +3,6 @@ package fs
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -30,21 +29,6 @@ type Storage struct {
 	osRemove      func(name string) error
 	osRename      func(oldpath, newpath string) error
 	osStat        func(name string) (os.FileInfo, error)
-}
-
-// New will create a fs client.
-func New() *Storage {
-	return &Storage{
-		ioCopyBuffer:  io.CopyBuffer,
-		ioCopyN:       io.CopyN,
-		ioutilReadDir: ioutil.ReadDir,
-		osCreate:      os.Create,
-		osMkdirAll:    os.MkdirAll,
-		osOpen:        os.Open,
-		osRemove:      os.Remove,
-		osRename:      os.Rename,
-		osStat:        os.Stat,
-	}
 }
 
 // String implements Storager.String
@@ -287,4 +271,31 @@ func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
 	}
 	return
+}
+
+func (s *Storage) createDir(path string) (err error) {
+	errorMessage := "posixfs createDir [%s]: %w"
+
+	rp := s.getDirPath(path)
+	// Don't need to create work dir.
+	if rp == s.workDir {
+		return
+	}
+
+	err = s.osMkdirAll(rp, 0755)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, handleOsError(err))
+	}
+	return
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return filepath.Join(s.workDir, path)
+}
+
+func (s *Storage) getDirPath(path string) string {
+	if path == "" {
+		return s.workDir
+	}
+	return filepath.Join(s.workDir, filepath.Dir(path))
 }
