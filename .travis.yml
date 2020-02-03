@@ -1,14 +1,20 @@
 language: go
+os:
+  - linux
+  - windows
+  - osx
 go:
   - "1.13"
 
 install:
   # code lint tools
   - go get -u golang.org/x/lint/golint
+  # Install make for windows
+  - if [ $TRAVIS_OS_NAME = windows ]; then choco install make; fi
 
 script:
   - make check
   - make test
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - if [ $TRAVIS_OS_NAME = linux ]; then bash <(curl -s https://codecov.io/bash); fi
