@@ -87,3 +87,23 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	}
 	return
 }
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
+	const errorMessage = "cos new_storage: %w"
+
+	opt, err := parseStoragePairNew(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	store := &Storage{}
+
+	url := cos.NewBucketURL(opt.Name, opt.Location, true)
+	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, s.client)
+	store.bucket = c.Bucket
+	store.object = c.Object
+	store.name = opt.Name
+	store.location = opt.Location
+	return store, nil
+}

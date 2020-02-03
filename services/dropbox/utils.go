@@ -2,7 +2,6 @@ package dropbox
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
@@ -36,8 +35,4 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	}
 
 	return nil, store, nil
-}
-
-func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
 }

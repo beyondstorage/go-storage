@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
@@ -222,4 +223,8 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	}
 
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
 }

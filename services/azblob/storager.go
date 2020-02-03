@@ -3,6 +3,7 @@ package azblob
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 
@@ -174,4 +175,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

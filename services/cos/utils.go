@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -48,34 +47,6 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 		return nil, nil, fmt.Errorf(errorMessage, err)
 	}
 	return srv, store, nil
-}
-
-// newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
-	const errorMessage = "cos new_storage: %w"
-
-	opt, err := parseStoragePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
-	}
-
-	store := &Storage{}
-
-	url := cos.NewBucketURL(opt.Name, opt.Location, true)
-	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, s.client)
-	store.bucket = c.Bucket
-	store.object = c.Object
-	store.name = opt.Name
-	store.location = opt.Location
-	return store, nil
-}
-
-func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
-}
-
-func (s *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, s.workDir+"/")
 }
 
 const (

@@ -102,3 +102,23 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	}
 	return nil
 }
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
+	const errorMessage = "azblob new_storage: %w"
+
+	opt, err := parseStoragePairNew(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	bucket := s.service.NewContainerURL(opt.Name)
+
+	c := &Storage{
+		bucket: bucket,
+
+		name:    opt.Name,
+		workDir: opt.WorkDir,
+	}
+	return c, nil
+}

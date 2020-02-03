@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Xuanwo/storage"
@@ -57,34 +56,6 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 		return nil, nil, fmt.Errorf(errorMessage, err)
 	}
 	return srv, store, nil
-}
-
-// newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
-	const errorMessage = "azblob new_storage: %w"
-
-	opt, err := parseStoragePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
-	}
-
-	bucket := s.service.NewContainerURL(opt.Name)
-
-	c := &Storage{
-		bucket: bucket,
-
-		name:    opt.Name,
-		workDir: opt.WorkDir,
-	}
-	return c, nil
-}
-
-func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
-}
-
-func (s *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, s.workDir+"/")
 }
 
 // parseStorageClass will parse storageclass.Type into service independent storage class type.

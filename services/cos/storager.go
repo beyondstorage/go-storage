@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Xuanwo/storage/types"
@@ -222,4 +223,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }
