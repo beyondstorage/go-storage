@@ -37,7 +37,7 @@ var opener = map[string]openFunc{
 	fs.Type:       fs.New,
 	gcs.Type:      gcs.New,
 	kodo.Type:     kodo.New,
-	oss.Type:      nil,
+	oss.Type:      oss.New,
 	qingstor.Type: nil,
 	s3.Type:       nil,
 	uss.Type:      nil,

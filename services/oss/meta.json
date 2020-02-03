@@ -2,7 +2,7 @@
   "name": "oss",
   "service": {
     "list": {
-      "storager_func": false
+      "storager_func": true
     },
     "new": {
       "credential": true,
@@ -13,6 +13,9 @@
     "list": {
       "dir_func": false,
       "file_func": false
+    },
+    "new": {
+      "name": true
     },
     "write": {
       "checksum": false,

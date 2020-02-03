@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
@@ -20,14 +21,6 @@ type Storage struct {
 
 	name    string
 	workDir string
-}
-
-// newStorage will create a new client.
-func newStorage(bucket *oss.Bucket) *Storage {
-	c := &Storage{
-		bucket: bucket,
-	}
-	return c
 }
 
 // String implements Storager.String
@@ -209,4 +202,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }
