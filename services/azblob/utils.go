@@ -1,6 +1,7 @@
 package azblob
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -49,10 +50,33 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	srv.service = azblob.NewServiceURL(*primaryURL, p)
 
 	store, err := srv.newStorage(pairs...)
+	if err != nil && errors.Is(err, types.ErrPairRequired) {
+		return srv, nil, nil
+	}
 	if err != nil {
 		return nil, nil, fmt.Errorf(errorMessage, err)
 	}
 	return srv, store, nil
+}
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
+	const errorMessage = "azblob new_storage: %w"
+
+	opt, err := parseStoragePairNew(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	bucket := s.service.NewContainerURL(opt.Name)
+
+	c := &Storage{
+		bucket: bucket,
+
+		name:    opt.Name,
+		workDir: opt.WorkDir,
+	}
+	return c, nil
 }
 
 func (s *Storage) getAbsPath(path string) string {
