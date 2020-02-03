@@ -145,13 +145,12 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	rp := s.getAbsPath(path)
 
 	putOptions := &cos.ObjectPutOptions{
-		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{},
+		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
+			ContentLength: int(opt.Size),
+		},
 	}
 	if opt.HasChecksum {
 		putOptions.ContentMD5 = opt.Checksum
-	}
-	if opt.HasSize {
-		putOptions.ContentLength = int(opt.Size)
 	}
 	if opt.HasStorageClass {
 		storageClass, err := parseStorageClass(opt.StorageClass)

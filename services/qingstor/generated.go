@@ -138,6 +138,36 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 	return result, nil
 }
 
+type pairServiceIsBucketNameValid struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseServicePairIsBucketNameValid(opts ...*types.Pair) (*pairServiceIsBucketNameValid, error) {
+	result := &pairServiceIsBucketNameValid{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
 type pairServiceList struct {
 	// Pre-defined pairs
 	Context context.Context

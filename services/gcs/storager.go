@@ -3,6 +3,7 @@ package gcs
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	gs "cloud.google.com/go/storage"
 	"github.com/Xuanwo/storage/types"
@@ -16,15 +17,6 @@ type Storage struct {
 
 	name    string
 	workDir string
-}
-
-// newStorage will create a new client.
-func newStorage(bucket *gs.BucketHandle, name string) *Storage {
-	c := &Storage{
-		bucket: bucket,
-		name:   name,
-	}
-	return c
 }
 
 // String implements Storager.String
@@ -121,11 +113,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	w := object.NewWriter(opt.Context)
 	defer w.Close()
 
+	w.Size = opt.Size
 	if opt.HasChecksum {
 		w.MD5 = []byte(opt.Checksum)
-	}
-	if opt.HasSize {
-		w.Size = opt.Size
 	}
 	if opt.HasStorageClass {
 		storageClass, err := parseStorageClass(opt.StorageClass)
@@ -192,4 +182,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

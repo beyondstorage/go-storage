@@ -156,6 +156,7 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 
 type pairServiceNew struct {
 	// Pre-defined pairs
+	Context context.Context
 
 	// Meta-defined pairs
 	Credential *credential.Provider
@@ -174,6 +175,12 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	var ok bool
 
 	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]

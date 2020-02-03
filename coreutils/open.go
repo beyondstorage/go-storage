@@ -35,7 +35,7 @@ var opener = map[string]openFunc{
 	cos.Type:      cos.New,
 	dropbox.Type:  dropbox.New,
 	fs.Type:       fs.New,
-	gcs.Type:      nil,
+	gcs.Type:      gcs.New,
 	kodo.Type:     nil,
 	oss.Type:      nil,
 	qingstor.Type: nil,

@@ -57,7 +57,7 @@ func parseMeta() metadata {
 
 	// Handle Data
 	meta.Data = make(map[string]map[string]*fn)
-	meta.Data["service"] = mergeFn(meta.Service, parseFunc("servicer"))
+	meta.Data["service"] = mergeFn(meta.Service, parseFunc("servicer"), parseFunc("utils"))
 	meta.Data["storage"] = mergeFn(meta.Storage, parseFunc("storager"))
 
 	// Format input meta.json
@@ -73,14 +73,16 @@ func parseMeta() metadata {
 	return meta
 }
 
-func mergeFn(mp map[string]map[string]bool, mfn map[string]*contextFunc) map[string]*fn {
+func mergeFn(mp map[string]map[string]bool, mfn ...map[string]*contextFunc) map[string]*fn {
 	m := make(map[string]*fn)
-	for k, v := range mfn {
-		v := v
-		k = templateutils.ToKebab(k)
+	for _, mp := range mfn {
+		for k, v := range mp {
+			v := v
+			k = templateutils.ToKebab(k)
 
-		m[k] = &fn{
-			Funcs: v,
+			m[k] = &fn{
+				Funcs: v,
+			}
 		}
 	}
 	for k, v := range mp {

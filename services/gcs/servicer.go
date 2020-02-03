@@ -1,58 +1,19 @@
 package gcs
 
 import (
-	"context"
 	"fmt"
 
 	gs "cloud.google.com/go/storage"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
-
 	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
+	"google.golang.org/api/iterator"
 )
 
 // Service is the gcs config.
 type Service struct {
 	service   *gs.Client
 	projectID string
-}
-
-// New will create a new aliyun oss service.
-func New(pairs ...*types.Pair) (s *Service, err error) {
-	const errorMessage = "%s New: %w"
-
-	s = &Service{}
-
-	opt, err := parseServicePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	ctx := context.Background()
-
-	options := make([]option.ClientOption, 0)
-
-	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-	switch credProtocol {
-	case credential.ProtocolAPIKey:
-		options = append(options, option.WithAPIKey(cred[0]))
-	case credential.ProtocolFile:
-		options = append(options, option.WithCredentialsFile(cred[0]))
-	default:
-		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-	}
-
-	client, err := gs.NewClient(ctx, options...)
-
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	s.service = client
-	s.projectID = opt.Project
-	return
 }
 
 // String implements Servicer.String
@@ -79,19 +40,23 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		if err != nil {
 			return fmt.Errorf(errorMessage, s, err)
 		}
-		bucket := s.service.Bucket(bucketAttr.Name)
-		c := newStorage(bucket, bucketAttr.Name)
-		opt.StoragerFunc(c)
+		store, err := s.newStorage(ps.WithName(bucketAttr.Name))
+		if err != nil {
+			return fmt.Errorf(errorMessage, s, err)
+		}
+		opt.StoragerFunc(store)
 	}
 }
 
 // Get implements Servicer.Get
 func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const _ = "%s Get [%s]: %w"
+	const errorMessage = "%s Get [%s]: %w"
 
-	bucket := s.service.Bucket(name)
-	c := newStorage(bucket, name)
-	return c, nil
+	store, err := s.newStorage(ps.WithName(name))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+	return store, nil
 }
 
 // Create implements Servicer.Create
@@ -103,14 +68,15 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
-	bucket := s.service.Bucket(name)
-
-	err = bucket.Create(opt.Context, s.projectID, nil)
+	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
-	c := newStorage(bucket, name)
-	return c, nil
+	err = store.bucket.Create(opt.Context, s.projectID, nil)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+	return store, nil
 }
 
 // Delete implements Servicer.Delete
@@ -122,11 +88,31 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}
 
-	bucket := s.service.Bucket(name)
-
-	err = bucket.Delete(opt.Context)
+	store, err := s.newStorage(ps.WithName(name))
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, name, err)
+	}
+	err = store.bucket.Delete(opt.Context)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}
 	return nil
+}
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
+	const errorMessage = "gcs new_storage: %w"
+
+	opt, err := parseStoragePairNew(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	bucket := s.service.Bucket(opt.Name)
+
+	store := &Storage{
+		bucket: bucket,
+		name:   opt.Name,
+	}
+	return store, nil
 }

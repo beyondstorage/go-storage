@@ -26,6 +26,36 @@ var _ storageclass.Type
 // Type is the type for fs
 const Type = "fs"
 
+type pairServiceNew struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
+	result := &pairServiceNew{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
 type pairStorageCopy struct {
 	// Pre-defined pairs
 	Context context.Context

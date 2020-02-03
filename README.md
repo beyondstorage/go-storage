@@ -120,7 +120,7 @@ if err != nil {
 
 ### gcs
 
-`gcs://apikey:<api_key>/<bucket_name>/<prefix>?project=<project_id>`
+`gcs://apikey:<api_key>?name=<bucket_name>&work_dir=<prefix>&project=<project_id>`
 
 ### kodo
 

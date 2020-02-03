@@ -139,11 +139,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	}
 
 	options := make([]oss.Option, 0)
+	options = append(options, oss.ContentLength(opt.Size))
 	if opt.HasChecksum {
 		options = append(options, oss.ContentMD5(opt.Checksum))
-	}
-	if opt.HasSize {
-		options = append(options, oss.ContentLength(opt.Size))
 	}
 	if opt.HasStorageClass {
 		// TODO: we need to handle different storage class name between services.

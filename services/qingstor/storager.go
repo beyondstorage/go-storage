@@ -190,10 +190,7 @@ func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 		return "", fmt.Errorf(errorMessage, s, path, err)
 	}
 
-	expire := 3600
-	if opt.HasExpire {
-		expire = opt.Expire
-	}
+	expire := opt.Expire
 	if err = r.SignQuery(expire); err != nil {
 		err = handleQingStorError(err)
 		return "", fmt.Errorf(errorMessage, s, path, err)
