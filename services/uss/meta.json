@@ -5,7 +5,8 @@
       "file_func": true
     },
     "new": {
-      "credential": true
+      "credential": true,
+      "name": true
     }
   }
 }

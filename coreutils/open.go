@@ -40,7 +40,7 @@ var opener = map[string]openFunc{
 	oss.Type:      oss.New,
 	qingstor.Type: qingstor.New,
 	s3.Type:       s3.New,
-	uss.Type:      nil,
+	uss.Type:      uss.New,
 }
 
 // Open will parse config string and return valid Servicer and Storager.

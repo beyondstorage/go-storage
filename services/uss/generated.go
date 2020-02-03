@@ -26,6 +26,36 @@ var _ storageclass.Type
 // Type is the type for uss
 const Type = "uss"
 
+type pairServiceNew struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
+	result := &pairServiceNew{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
 type pairStorageDelete struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -126,10 +156,10 @@ func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error)
 
 type pairStorageNew struct {
 	// Pre-defined pairs
-	Context context.Context
 
 	// Meta-defined pairs
 	Credential *credential.Provider
+	Name       string
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -144,12 +174,6 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	var ok bool
 
 	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]
@@ -158,6 +182,13 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	}
 	if ok {
 		result.Credential = v.(*credential.Provider)
+	}
+	v, ok = values[ps.Name]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Name)
+	}
+	if ok {
+		result.Name = v.(string)
 	}
 	return result, nil
 }
