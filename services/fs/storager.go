@@ -3,7 +3,6 @@ package fs
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -32,40 +31,9 @@ type Storage struct {
 	osStat        func(name string) (os.FileInfo, error)
 }
 
-// New will create a fs client.
-func New() *Storage {
-	return &Storage{
-		ioCopyBuffer:  io.CopyBuffer,
-		ioCopyN:       io.CopyN,
-		ioutilReadDir: ioutil.ReadDir,
-		osCreate:      os.Create,
-		osMkdirAll:    os.MkdirAll,
-		osOpen:        os.Open,
-		osRemove:      os.Remove,
-		osRename:      os.Rename,
-		osStat:        os.Stat,
-	}
-}
-
 // String implements Storager.String
 func (s *Storage) String() string {
 	return fmt.Sprintf("Storager fs {WorkDir: %s}", s.workDir)
-}
-
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: validate workDir.
-		s.workDir = opt.WorkDir
-	}
-	return nil
 }
 
 // Metadata implements Storager.Metadata
@@ -73,117 +41,6 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	m = metadata.NewStorageMeta()
 	m.WorkDir = s.workDir
 	return m, nil
-}
-
-// Stat implements Storager.Stat
-func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	const errorMessage = "%s Stat [%s]: %w"
-
-	if path == "-" {
-		return &types.Object{
-			ID:         "-",
-			Name:       "-",
-			Type:       types.ObjectTypeStream,
-			Size:       0,
-			ObjectMeta: metadata.NewObjectMeta(),
-		}, nil
-	}
-
-	rp := s.getAbsPath(path)
-
-	fi, err := s.osStat(rp)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
-	}
-
-	o = &types.Object{
-		ID:         rp,
-		Name:       rp,
-		Size:       fi.Size(),
-		UpdatedAt:  fi.ModTime(),
-		ObjectMeta: metadata.NewObjectMeta(),
-	}
-
-	if fi.IsDir() {
-		o.Type = types.ObjectTypeDir
-		return
-	}
-	if fi.Mode().IsRegular() {
-		o.Type = types.ObjectTypeFile
-		return
-	}
-	if fi.Mode()&StreamModeType != 0 {
-		o.Type = types.ObjectTypeStream
-		return
-	}
-
-	o.Type = types.ObjectTypeInvalid
-	return o, nil
-}
-
-// Delete implements Storager.Delete
-func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
-
-	rp := s.getAbsPath(path)
-
-	err = s.osRemove(rp)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
-	}
-	return nil
-}
-
-// Copy implements Storager.Copy
-func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Copy from [%s] to [%s]: %w"
-
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	// Create dir for dst.
-	err = s.createDir(dst)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, err)
-	}
-
-	srcFile, err := s.osOpen(rs)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
-	}
-	defer srcFile.Close()
-
-	dstFile, err := s.osCreate(rd)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
-	}
-	defer dstFile.Close()
-
-	_, err = s.ioCopyBuffer(dstFile, srcFile, make([]byte, 1024*1024))
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
-	}
-	return
-}
-
-// Move implements Storager.Move
-func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Move from [%s] to [%s]: %w"
-
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	// Create dir for dst path.
-	err = s.createDir(dst)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, err)
-	}
-
-	err = s.osRename(rs, rd)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
-	}
-	return
 }
 
 // List implements Storager.List
@@ -303,4 +160,142 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
 	}
 	return
+}
+
+// Stat implements Storager.Stat
+func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
+	const errorMessage = "%s Stat [%s]: %w"
+
+	if path == "-" {
+		return &types.Object{
+			ID:         "-",
+			Name:       "-",
+			Type:       types.ObjectTypeStream,
+			Size:       0,
+			ObjectMeta: metadata.NewObjectMeta(),
+		}, nil
+	}
+
+	rp := s.getAbsPath(path)
+
+	fi, err := s.osStat(rp)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
+	}
+
+	o = &types.Object{
+		ID:         rp,
+		Name:       rp,
+		Size:       fi.Size(),
+		UpdatedAt:  fi.ModTime(),
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	if fi.IsDir() {
+		o.Type = types.ObjectTypeDir
+		return
+	}
+	if fi.Mode().IsRegular() {
+		o.Type = types.ObjectTypeFile
+		return
+	}
+	if fi.Mode()&StreamModeType != 0 {
+		o.Type = types.ObjectTypeStream
+		return
+	}
+
+	o.Type = types.ObjectTypeInvalid
+	return o, nil
+}
+
+// Delete implements Storager.Delete
+func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Delete [%s]: %w"
+
+	rp := s.getAbsPath(path)
+
+	err = s.osRemove(rp)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
+	}
+	return nil
+}
+
+// Copy implements Storager.Copy
+func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Copy from [%s] to [%s]: %w"
+
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	// Create dir for dst.
+	err = s.createDir(dst)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, src, dst, err)
+	}
+
+	srcFile, err := s.osOpen(rs)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
+	}
+	defer srcFile.Close()
+
+	dstFile, err := s.osCreate(rd)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
+	}
+	defer dstFile.Close()
+
+	_, err = s.ioCopyBuffer(dstFile, srcFile, make([]byte, 1024*1024))
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
+	}
+	return
+}
+
+// Move implements Storager.Move
+func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Move from [%s] to [%s]: %w"
+
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	// Create dir for dst path.
+	err = s.createDir(dst)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, src, dst, err)
+	}
+
+	err = s.osRename(rs, rd)
+	if err != nil {
+		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
+	}
+	return
+}
+
+func (s *Storage) createDir(path string) (err error) {
+	errorMessage := "posixfs createDir [%s]: %w"
+
+	rp := s.getDirPath(path)
+	// Don't need to create work dir.
+	if rp == s.workDir {
+		return
+	}
+
+	err = s.osMkdirAll(rp, 0755)
+	if err != nil {
+		return fmt.Errorf(errorMessage, path, handleOsError(err))
+	}
+	return
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return filepath.Join(s.workDir, path)
+}
+
+func (s *Storage) getDirPath(path string) string {
+	if path == "" {
+		return s.workDir
+	}
+	return filepath.Join(s.workDir, filepath.Dir(path))
 }

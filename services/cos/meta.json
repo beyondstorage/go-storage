@@ -18,11 +18,13 @@
     }
   },
   "storage": {
-    "init": {
-      "work_dir": false
-    },
     "list": {
       "file_func": true
+    },
+    "new": {
+      "location": true,
+      "name": true,
+      "work_dir": false
     },
     "write": {
       "checksum": false,

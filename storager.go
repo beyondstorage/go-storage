@@ -39,14 +39,6 @@ type Storager interface {
 	// String will implement Stringer.
 	String() string
 
-	// Init will init storager itself.
-	//
-	// Caller:
-	//   - Init MUST be called after created.
-	Init(pairs ...*types.Pair) (err error)
-	// InitWithContext will init storager itself.
-	InitWithContext(ctx context.Context, pairs ...*types.Pair) (err error)
-
 	// Metadata will return current storager's metadata.
 	//
 	// Implementer:

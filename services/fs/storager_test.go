@@ -19,35 +19,11 @@ import (
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
-func TestNewClient(t *testing.T) {
-	c := New()
-	assert.NotNil(t, c)
-}
-
 func TestStorage_String(t *testing.T) {
 	c := Storage{}
-	err := c.Init(pairs.WithWorkDir("/test"))
-	if err != nil {
-		t.Error(err)
-	}
+	c.workDir = "/test"
 
 	assert.Equal(t, "Storager fs {WorkDir: /test}", c.String())
-}
-
-func TestStorage_Init(t *testing.T) {
-	t.Run("without options", func(t *testing.T) {
-		client := Storage{}
-		err := client.Init()
-		assert.Error(t, err)
-		assert.Equal(t, "", client.workDir)
-	})
-
-	t.Run("with workDir", func(t *testing.T) {
-		client := Storage{}
-		err := client.Init(pairs.WithWorkDir("test"))
-		assert.NoError(t, err)
-		assert.Equal(t, "test", client.workDir)
-	})
 }
 
 func TestStorage_Metadata(t *testing.T) {

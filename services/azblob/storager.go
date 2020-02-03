@@ -20,38 +20,12 @@ type Storage struct {
 	workDir string
 }
 
-// newStorage will create a new client.
-func newStorage(bucket azblob.ContainerURL, name string) *Storage {
-	c := &Storage{
-		bucket: bucket,
-		name:   name,
-	}
-	return c
-}
-
 // String implements Storager.String
 func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager azblob {Name: %s, WorkDir: %s}",
 		s.name, "/"+s.workDir,
 	)
-}
-
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: we should validate workDir
-		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
-	}
-
-	return nil
 }
 
 // Metadata implements Storager.Metadata
@@ -201,4 +175,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

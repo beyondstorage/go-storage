@@ -5,7 +5,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/upyun/go-sdk/upyun"
@@ -19,53 +18,10 @@ type Storage struct {
 	workDir string
 }
 
-// New will create a new uss service.
-func New(name string, pairs ...*types.Pair) (s *Storage, err error) {
-	const errorMessage = "%s New: %w"
-
-	s = &Storage{}
-
-	opt, err := parseStoragePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-	if credProtocol != credential.ProtocolHmac {
-		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-	}
-
-	cfg := &upyun.UpYunConfig{
-		Bucket:   name,
-		Operator: cred[0],
-		Password: cred[1],
-	}
-	s.bucket = upyun.NewUpYun(cfg)
-	s.name = name
-	return
-}
-
 // String implements Storager.String
 func (s *Storage) String() string {
 	return fmt.Sprintf("Storager uss {Name: %s, WorkDir: %s}",
 		s.name, "/"+s.workDir)
-}
-
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: we should validate workDir
-		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
-	}
-
-	return nil
 }
 
 // Metadata implements Storager.Metadata
@@ -187,4 +143,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

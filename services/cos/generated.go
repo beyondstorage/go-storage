@@ -31,8 +31,7 @@ type pairServiceCreate struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasLocation bool
-	Location    string
+	Location string
 }
 
 func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
@@ -60,7 +59,6 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 		return nil, types.NewErrPairRequired(ps.Location)
 	}
 	if ok {
-		result.HasLocation = true
 		result.Location = v.(string)
 	}
 	return result, nil
@@ -71,8 +69,7 @@ type pairServiceDelete struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasLocation bool
-	Location    string
+	Location string
 }
 
 func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
@@ -100,7 +97,6 @@ func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
 		return nil, types.NewErrPairRequired(ps.Location)
 	}
 	if ok {
-		result.HasLocation = true
 		result.Location = v.(string)
 	}
 	return result, nil
@@ -111,8 +107,7 @@ type pairServiceGet struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasLocation bool
-	Location    string
+	Location string
 }
 
 func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
@@ -140,7 +135,6 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 		return nil, types.NewErrPairRequired(ps.Location)
 	}
 	if ok {
-		result.HasLocation = true
 		result.Location = v.(string)
 	}
 	return result, nil
@@ -151,8 +145,7 @@ type pairServiceList struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasStoragerFunc bool
-	StoragerFunc    storage.StoragerFunc
+	StoragerFunc storage.StoragerFunc
 }
 
 func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
@@ -180,7 +173,6 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 		return nil, types.NewErrPairRequired(ps.StoragerFunc)
 	}
 	if ok {
-		result.HasStoragerFunc = true
 		result.StoragerFunc = v.(storage.StoragerFunc)
 	}
 	return result, nil
@@ -191,8 +183,7 @@ type pairServiceNew struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasCredential bool
-	Credential    *credential.Provider
+	Credential *credential.Provider
 }
 
 func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
@@ -220,7 +211,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 		return nil, types.NewErrPairRequired(ps.Credential)
 	}
 	if ok {
-		result.HasCredential = true
 		result.Credential = v.(*credential.Provider)
 	}
 	return result, nil
@@ -256,50 +246,12 @@ func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
 	return result, nil
 }
 
-type pairStorageInit struct {
-	// Pre-defined pairs
-	Context context.Context
-
-	// Meta-defined pairs
-	HasWorkDir bool
-	WorkDir    string
-}
-
-func parseStoragePairInit(opts ...*types.Pair) (*pairStorageInit, error) {
-	result := &pairStorageInit{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
-	// Parse meta-defined pairs
-	v, ok = values[ps.WorkDir]
-	if ok {
-		result.HasWorkDir = true
-		result.WorkDir = v.(string)
-	}
-	return result, nil
-}
-
 type pairStorageList struct {
 	// Pre-defined pairs
 	Context context.Context
 
 	// Meta-defined pairs
-	HasFileFunc bool
-	FileFunc    types.ObjectFunc
+	FileFunc types.ObjectFunc
 }
 
 func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
@@ -327,7 +279,6 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 		return nil, types.NewErrPairRequired(ps.FileFunc)
 	}
 	if ok {
-		result.HasFileFunc = true
 		result.FileFunc = v.(types.ObjectFunc)
 	}
 	return result, nil
@@ -360,6 +311,52 @@ func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error)
 	}
 
 	// Parse meta-defined pairs
+	return result, nil
+}
+
+type pairStorageNew struct {
+	// Pre-defined pairs
+
+	// Meta-defined pairs
+	Location   string
+	Name       string
+	HasWorkDir bool
+	WorkDir    string
+}
+
+func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
+	result := &pairStorageNew{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+
+	// Parse meta-defined pairs
+	v, ok = values[ps.Location]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Location)
+	}
+	if ok {
+		result.Location = v.(string)
+	}
+	v, ok = values[ps.Name]
+	if !ok {
+		return nil, types.NewErrPairRequired(ps.Name)
+	}
+	if ok {
+		result.Name = v.(string)
+	}
+	v, ok = values[ps.WorkDir]
+	if ok {
+		result.HasWorkDir = true
+		result.WorkDir = v.(string)
+	}
 	return result, nil
 }
 
@@ -430,7 +427,6 @@ type pairStorageWrite struct {
 	// Meta-defined pairs
 	HasChecksum     bool
 	Checksum        string
-	HasSize         bool
 	Size            int64
 	HasStorageClass bool
 	StorageClass    storageclass.Type
@@ -466,7 +462,6 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 		return nil, types.NewErrPairRequired(ps.Size)
 	}
 	if ok {
-		result.HasSize = true
 		result.Size = v.(int64)
 	}
 	v, ok = values[ps.StorageClass]
@@ -520,15 +515,6 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 
 	pairs = append(pairs, ps.WithContext(ctx))
 	return s.Delete(path, pairs...)
-}
-
-// InitWithContext adds context support for Init.
-func (s *Storage) InitWithContext(ctx context.Context, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/cos.storage.Init")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Init(pairs...)
 }
 
 // ListWithContext adds context support for List.

@@ -2,56 +2,17 @@ package azblob
 
 import (
 	"fmt"
-	"net/url"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 
 	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 // Service is the azblob config.
 type Service struct {
 	service azblob.ServiceURL
-}
-
-// New will create a new azblob oss service.
-//
-// azblob use different URL to represent different sub services.
-// - ServiceURL's          methods perform operations on a storage account.
-//   - ContainerURL's     methods perform operations on an account's container.
-//      - BlockBlobURL's  methods perform operations on a container's block blob.
-//      - AppendBlobURL's methods perform operations on a container's append blob.
-//      - PageBlobURL's   methods perform operations on a container's page blob.
-//      - BlobURL's       methods perform operations on a container's blob regardless of the blob's type.
-//
-// Our Service will store a ServiceURL for operation.
-func New(pairs ...*types.Pair) (s *Service, err error) {
-	const errorMessage = "%s New: %w"
-
-	s = &Service{}
-
-	opt, err := parseServicePairNew(pairs...)
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	primaryURL, _ := url.Parse(opt.Endpoint.Value().String())
-
-	credProtocol, credValue := opt.Credential.Protocol(), opt.Credential.Value()
-	if credProtocol != credential.ProtocolHmac {
-		return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-	}
-
-	cred, err := azblob.NewSharedKeyCredential(credValue[0], credValue[1])
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, err)
-	}
-
-	p := azblob.NewPipeline(cred, azblob.PipelineOptions{})
-	s.service = azblob.NewServiceURL(*primaryURL, p)
-	return
 }
 
 // String implements Servicer.String
@@ -78,8 +39,11 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range output.ContainerItems {
-			bucket := s.service.NewContainerURL(v.Name)
-			opt.StoragerFunc(newStorage(bucket, v.Name))
+			store, err := s.newStorage(ps.WithName(v.Name))
+			if err != nil {
+				return fmt.Errorf(errorMessage, s, err)
+			}
+			opt.StoragerFunc(store)
 		}
 
 		marker = output.NextMarker
@@ -92,10 +56,14 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 
 // Get implements Servicer.Get
 func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const _ = "%s Get [%s]: %w"
+	const errorMessage = "%s Get [%s]: %w"
 
-	bucket := s.service.NewContainerURL(name)
-	return newStorage(bucket, name), nil
+	store, err := s.newStorage(ps.WithName(name))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+
+	return store, nil
 }
 
 // Create implements Servicer.Create
@@ -107,12 +75,15 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, e
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
 
-	bucket := s.service.NewContainerURL(name)
-	_, err = bucket.Create(opt.Context, azblob.Metadata{}, azblob.PublicAccessNone)
+	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, name, err)
 	}
-	return newStorage(bucket, name), nil
+	_, err = store.bucket.Create(opt.Context, azblob.Metadata{}, azblob.PublicAccessNone)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, name, err)
+	}
+	return store, nil
 }
 
 // Delete implements Servicer.Delete
@@ -130,4 +101,24 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, name, err)
 	}
 	return nil
+}
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
+	const errorMessage = "azblob new_storage: %w"
+
+	opt, err := parseStoragePairNew(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	bucket := s.service.NewContainerURL(opt.Name)
+
+	c := &Storage{
+		bucket: bucket,
+
+		name:    opt.Name,
+		workDir: opt.WorkDir,
+	}
+	return c, nil
 }

@@ -12,7 +12,7 @@
     },
     "list": {
       "location": false,
-      "storager_func": false
+      "storager_func": true
     },
     "new": {
       "credential": true,
@@ -20,9 +20,6 @@
     }
   },
   "storage": {
-    "init": {
-      "work_dir": false
-    },
     "init_segment": {
       "part_size": true
     },
@@ -32,6 +29,10 @@
     },
     "list_segments": {
       "segment_func": false
+    },
+    "new": {
+      "location": true,
+      "name": true
     },
     "reach": {
       "expire": true

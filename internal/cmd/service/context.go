@@ -12,16 +12,17 @@ import (
 )
 
 type contextFunc struct {
-	Parent   string // Old method name: "AbortSegment"
-	Receiver string // Receiver's name: "s *Storage"
-	Params   string // Method's Params: "ctx context.Context, id string, pairs ...*types.Pair"
-	Returns  string // Method's returns: "err error"
-	Caller   string // How to call Parent method: "id, pairs..."
+	Parent     string // Old method name: "AbortSegment"
+	Receiver   string // Receiver's name: "s *Storage"
+	Params     string // Method's Params: "ctx context.Context, id string, pairs ...*types.Pair"
+	Returns    string // Method's returns: "err error"
+	Caller     string // How to call Parent method: "id, pairs..."
+	HasContext bool
 }
 
 func parseFunc(name string) map[string]*contextFunc {
 	data := make(map[string]*contextFunc)
-	filename := name + "r.go"
+	filename := name + ".go"
 
 	content, err := ioutil.ReadFile(filename)
 	if os.IsNotExist(err) {
@@ -76,6 +77,7 @@ func parseFunc(name string) map[string]*contextFunc {
 			},
 		}, fndecl.Type.Params.List...)
 		data[fndecl.Name.Name].Params = getParams(fndecl)
+		data[fndecl.Name.Name].HasContext = true
 	}
 	return data
 }

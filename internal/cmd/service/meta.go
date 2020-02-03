@@ -19,13 +19,13 @@ type metadata struct {
 	Service map[string]map[string]bool `json:"service,omitempty"`
 	Storage map[string]map[string]bool `json:"storage"`
 
-	TypeMap map[string]string   `json:"-"`
-	Data    map[string]receiver `json:"-"`
+	TypeMap map[string]string         `json:"-"`
+	Data    map[string]map[string]*fn `json:"-"`
 }
 
-type receiver struct {
-	Pairs map[string]map[string]bool
-	Funcs map[string]*contextFunc
+type fn struct {
+	Pairs map[string]bool
+	Funcs *contextFunc
 }
 
 func parseMeta() metadata {
@@ -56,35 +56,9 @@ func parseMeta() metadata {
 	}
 
 	// Handle Data
-	meta.Data = make(map[string]receiver)
-	meta.Data["service"] = receiver{
-		Pairs: meta.Service,
-		Funcs: parseFunc("service"),
-	}
-	for k := range meta.Service {
-		// If func not implemented, remove.
-		if _, ok := meta.Data["service"].Funcs[templateutils.ToPascal(k)]; !ok {
-			delete(meta.Service, k)
-		}
-		// If no paris, remove.
-		if len(meta.Service[k]) == 0 {
-			delete(meta.Service, k)
-		}
-	}
-	meta.Data["storage"] = receiver{
-		Pairs: meta.Storage,
-		Funcs: parseFunc("storage"),
-	}
-	for k := range meta.Storage {
-		// If func not implemented, remove.
-		if _, ok := meta.Data["storage"].Funcs[templateutils.ToPascal(k)]; !ok {
-			delete(meta.Storage, k)
-		}
-		// If no paris, remove.
-		if len(meta.Storage[k]) == 0 {
-			delete(meta.Storage, k)
-		}
-	}
+	meta.Data = make(map[string]map[string]*fn)
+	meta.Data["service"] = mergeFn(meta.Service, parseFunc("servicer"), parseFunc("utils"))
+	meta.Data["storage"] = mergeFn(meta.Storage, parseFunc("storager"))
 
 	// Format input meta.json
 	data, err := json.MarshalIndent(meta, "", "  ")
@@ -97,4 +71,28 @@ func parseMeta() metadata {
 	}
 
 	return meta
+}
+
+func mergeFn(mp map[string]map[string]bool, mfn ...map[string]*contextFunc) map[string]*fn {
+	m := make(map[string]*fn)
+	for _, mp := range mfn {
+		for k, v := range mp {
+			v := v
+			k = templateutils.ToKebab(k)
+
+			m[k] = &fn{
+				Funcs: v,
+			}
+		}
+	}
+	for k, v := range mp {
+		v := v
+		k = templateutils.ToKebab(k)
+
+		if _, ok := m[k]; !ok {
+			m[k] = &fn{}
+		}
+		m[k].Pairs = v
+	}
+	return m
 }

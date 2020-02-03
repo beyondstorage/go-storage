@@ -2,6 +2,7 @@
 author: Xuanwo <github@xuanwo.io>
 status: finished
 updated_at: 2019-12-26
+updates: [3](./3-support-service-init-via-config-string.md)
 ---
 
 # Proposal: Credential refactor

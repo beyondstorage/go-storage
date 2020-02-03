@@ -23,37 +23,12 @@ type Storage struct {
 	workDir string
 }
 
-// newStorage will create a new client.
-func newStorage(bucket *oss.Bucket) *Storage {
-	c := &Storage{
-		bucket: bucket,
-	}
-	return c
-}
-
 // String implements Storager.String
 func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager oss {Name: %s, WorkDir: %s}",
 		s.bucket.BucketName, "/"+s.workDir,
 	)
-}
-
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: we should validate workDir
-		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
-	}
-
-	return nil
 }
 
 // Metadata implements Storager.Metadata
@@ -157,11 +132,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	}
 
 	options := make([]oss.Option, 0)
+	options = append(options, oss.ContentLength(opt.Size))
 	if opt.HasChecksum {
 		options = append(options, oss.ContentMD5(opt.Checksum))
-	}
-	if opt.HasSize {
-		options = append(options, oss.ContentLength(opt.Size))
 	}
 	if opt.HasStorageClass {
 		// TODO: we need to handle different storage class name between services.
@@ -229,4 +202,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

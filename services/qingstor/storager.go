@@ -29,34 +29,6 @@ type Storage struct {
 	segmentLock sync.RWMutex
 }
 
-// newStorage will create a new client.
-func newStorage(bucket *service.Bucket) (*Storage, error) {
-	c := &Storage{
-		bucket:     bucket,
-		config:     bucket.Config,
-		properties: bucket.Properties,
-		segments:   make(map[string]*segment.Segment),
-	}
-	return c, nil
-}
-
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: we should validate workDir
-		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
-	}
-
-	return nil
-}
-
 // String implements Storager.String
 func (s *Storage) String() string {
 	return fmt.Sprintf(
@@ -72,151 +44,6 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	m.WorkDir = s.workDir
 	m.SetLocation(*s.properties.Zone)
 	return m, nil
-}
-
-// Statistical implements Storager.Statistical
-func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic, err error) {
-	const errorMessage = "%s Statistical: %w"
-
-	m = metadata.NewStorageStatistic()
-
-	output, err := s.bucket.GetStatistics()
-	if err != nil {
-		err = handleQingStorError(err)
-		return m, fmt.Errorf(errorMessage, s, err)
-	}
-
-	if output.Size != nil {
-		m.SetSize(*output.Size)
-	}
-	if output.Count != nil {
-		m.SetCount(*output.Count)
-	}
-	return m, nil
-}
-
-// Stat implements Storager.Stat
-func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	const errorMessage = "%s Stat [%s]: %w"
-
-	input := &service.HeadObjectInput{}
-
-	rp := s.getAbsPath(path)
-
-	output, err := s.bucket.HeadObject(rp, input)
-	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, s, path, err)
-	}
-
-	// TODO: Add dir support.
-
-	o = &types.Object{
-		ID:         rp,
-		Name:       path,
-		Type:       types.ObjectTypeFile,
-		Size:       service.Int64Value(output.ContentLength),
-		UpdatedAt:  service.TimeValue(output.LastModified),
-		ObjectMeta: metadata.NewObjectMeta(),
-	}
-
-	if output.ContentType != nil {
-		o.SetContentType(service.StringValue(output.ContentType))
-	}
-	if output.ETag != nil {
-		o.SetETag(service.StringValue(output.ETag))
-	}
-
-	storageClass, err := formatStorageClass(service.StringValue(output.XQSStorageClass))
-	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
-	}
-	o.SetStorageClass(storageClass)
-
-	return o, nil
-}
-
-// Delete implements Storager.Delete
-func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
-
-	rp := s.getAbsPath(path)
-
-	_, err = s.bucket.DeleteObject(rp)
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, path, err)
-	}
-	return nil
-}
-
-// Copy implements Storager.Copy
-func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Copy from [%s] to [%s]: %w"
-
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
-		XQSCopySource: &rs,
-	})
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, src, dst, err)
-	}
-	return nil
-}
-
-// Move implements Storager.Move
-func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Move from [%s] to [%s]: %w"
-
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
-		XQSMoveSource: &rs,
-	})
-	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, src, dst, err)
-	}
-	return nil
-}
-
-// Reach implements Storager.Reach
-func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
-	const errorMessage = "%s Reach [%s]: %w"
-
-	opt, err := parseStoragePairReach(pairs...)
-	if err != nil {
-		return "", fmt.Errorf(errorMessage, s, path, err)
-	}
-
-	// FIXME: sdk should export GetObjectRequest as interface too?
-	bucket := s.bucket.(*service.Bucket)
-
-	rp := s.getAbsPath(path)
-
-	r, _, err := bucket.GetObjectRequest(rp, nil)
-	if err != nil {
-		err = handleQingStorError(err)
-		return "", fmt.Errorf(errorMessage, s, path, err)
-	}
-	if err = r.Build(); err != nil {
-		err = handleQingStorError(err)
-		return "", fmt.Errorf(errorMessage, s, path, err)
-	}
-
-	expire := 3600
-	if opt.HasExpire {
-		expire = opt.Expire
-	}
-	if err = r.SignQuery(expire); err != nil {
-		err = handleQingStorError(err)
-		return "", fmt.Errorf(errorMessage, s, path, err)
-	}
-	return r.HTTPRequest.URL.String(), nil
 }
 
 // List implements Storager.List
@@ -357,6 +184,148 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+// Stat implements Storager.Stat
+func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
+	const errorMessage = "%s Stat [%s]: %w"
+
+	input := &service.HeadObjectInput{}
+
+	rp := s.getAbsPath(path)
+
+	output, err := s.bucket.HeadObject(rp, input)
+	if err != nil {
+		err = handleQingStorError(err)
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+
+	// TODO: Add dir support.
+
+	o = &types.Object{
+		ID:         rp,
+		Name:       path,
+		Type:       types.ObjectTypeFile,
+		Size:       service.Int64Value(output.ContentLength),
+		UpdatedAt:  service.TimeValue(output.LastModified),
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	if output.ContentType != nil {
+		o.SetContentType(service.StringValue(output.ContentType))
+	}
+	if output.ETag != nil {
+		o.SetETag(service.StringValue(output.ETag))
+	}
+
+	storageClass, err := formatStorageClass(service.StringValue(output.XQSStorageClass))
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+	o.SetStorageClass(storageClass)
+
+	return o, nil
+}
+
+// Delete implements Storager.Delete
+func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Delete [%s]: %w"
+
+	rp := s.getAbsPath(path)
+
+	_, err = s.bucket.DeleteObject(rp)
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, s, path, err)
+	}
+	return nil
+}
+
+// Copy implements Storager.Copy
+func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Copy from [%s] to [%s]: %w"
+
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
+		XQSCopySource: &rs,
+	})
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, s, src, dst, err)
+	}
+	return nil
+}
+
+// Move implements Storager.Move
+func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
+	const errorMessage = "%s Move from [%s] to [%s]: %w"
+
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
+		XQSMoveSource: &rs,
+	})
+	if err != nil {
+		err = handleQingStorError(err)
+		return fmt.Errorf(errorMessage, s, src, dst, err)
+	}
+	return nil
+}
+
+// Reach implements Storager.Reach
+func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
+	const errorMessage = "%s Reach [%s]: %w"
+
+	opt, err := parseStoragePairReach(pairs...)
+	if err != nil {
+		return "", fmt.Errorf(errorMessage, s, path, err)
+	}
+
+	// FIXME: sdk should export GetObjectRequest as interface too?
+	bucket := s.bucket.(*service.Bucket)
+
+	rp := s.getAbsPath(path)
+
+	r, _, err := bucket.GetObjectRequest(rp, nil)
+	if err != nil {
+		err = handleQingStorError(err)
+		return "", fmt.Errorf(errorMessage, s, path, err)
+	}
+	if err = r.Build(); err != nil {
+		err = handleQingStorError(err)
+		return "", fmt.Errorf(errorMessage, s, path, err)
+	}
+
+	expire := opt.Expire
+	if err = r.SignQuery(expire); err != nil {
+		err = handleQingStorError(err)
+		return "", fmt.Errorf(errorMessage, s, path, err)
+	}
+	return r.HTTPRequest.URL.String(), nil
+}
+
+// Statistical implements Storager.Statistical
+func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic, err error) {
+	const errorMessage = "%s Statistical: %w"
+
+	m = metadata.NewStorageStatistic()
+
+	output, err := s.bucket.GetStatistics()
+	if err != nil {
+		err = handleQingStorError(err)
+		return m, fmt.Errorf(errorMessage, s, err)
+	}
+
+	if output.Size != nil {
+		m.SetSize(*output.Size)
+	}
+	if output.Count != nil {
+		m.SetCount(*output.Count)
+	}
+	return m, nil
 }
 
 // ListSegments implements Storager.ListSegments
@@ -538,4 +507,12 @@ func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 	delete(s.segments, id)
 	s.segmentLock.Unlock()
 	return
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

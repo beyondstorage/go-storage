@@ -4,12 +4,38 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/pairs"
+	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 )
+
+func Test_New(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Missing required pair
+	_, _, err := New()
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, types.ErrPairRequired))
+
+	// Valid case
+	accessKey := uuid.New().String()
+	secretKey := uuid.New().String()
+	host := uuid.New().String()
+	port := 1234
+	srv, _, err := New(
+		pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)),
+		pairs.WithEndpoint(endpoint.NewHTTP(host, port)),
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, srv)
+}
 
 func TestIsBucketNameValid(t *testing.T) {
 	tests := []struct {
@@ -47,8 +73,7 @@ func TestGetAbsPath(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := Storage{}
-			_ = client.Init(pairs.WithWorkDir(tt.base))
+			client := Storage{workDir: tt.base[1:]}
 
 			gotPath := client.getAbsPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)
@@ -69,8 +94,7 @@ func TestGetRelPath(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := &Storage{}
-			_ = client.Init(pairs.WithWorkDir(tt.base))
+			client := &Storage{workDir: tt.base[1:]}
 
 			gotPath := client.getRelPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)

@@ -1,15 +1,15 @@
 package kodo
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 
+	qs "github.com/qiniu/api.v7/v7/storage"
+
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
-	qs "github.com/qiniu/api.v7/v7/storage"
 )
 
 // Storage is the gcs service client.
@@ -22,54 +22,12 @@ type Storage struct {
 	workDir string
 }
 
-// newStorage will create a new client.
-func newStorage(bucket *qs.BucketManager, name string) (s *Storage, err error) {
-	// Get bucket's domain.
-	domains, err := bucket.ListBucketDomains(name)
-	if err != nil {
-		return nil, err
-	}
-	// TODO: we need to choose user's production domain.
-	if len(domains) == 0 {
-		return nil, errors.New("no available domains")
-	}
-
-	c := &Storage{
-		bucket: bucket,
-		domain: domains[0].Domain,
-		putPolicy: qs.PutPolicy{
-			Scope: name,
-		},
-
-		name: name,
-	}
-
-	return c, nil
-}
-
 // String implements Storager.String
 func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager kodo {Name: %s, WorkDir: %s}",
 		s.name, "/"+s.workDir,
 	)
-}
-
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: we should validate workDir
-		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
-	}
-
-	return nil
 }
 
 // Metadata implements Storager.Metadata
@@ -204,4 +162,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

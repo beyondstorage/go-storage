@@ -3,37 +3,37 @@ package fs
 import (
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
-	"path/filepath"
 
+	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/types"
 )
 
-func (s *Storage) createDir(path string) (err error) {
-	errorMessage := "posixfs createDir [%s]: %w"
+// New will create a fs client.
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+	const errorMessage = "fs New: %w"
 
-	rp := s.getDirPath(path)
-	// Don't need to create work dir.
-	if rp == s.workDir {
-		return
-	}
-
-	err = s.osMkdirAll(rp, 0755)
+	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, handleOsError(err))
+		return nil, nil, fmt.Errorf(errorMessage, err)
 	}
-	return
-}
 
-func (s *Storage) getAbsPath(path string) string {
-	return filepath.Join(s.workDir, path)
-}
+	store := &Storage{
+		ioCopyBuffer:  io.CopyBuffer,
+		ioCopyN:       io.CopyN,
+		ioutilReadDir: ioutil.ReadDir,
+		osCreate:      os.Create,
+		osMkdirAll:    os.MkdirAll,
+		osOpen:        os.Open,
+		osRemove:      os.Remove,
+		osRename:      os.Rename,
+		osStat:        os.Stat,
 
-func (s *Storage) getDirPath(path string) string {
-	if path == "" {
-		return s.workDir
+		workDir: opt.WorkDir,
 	}
-	return filepath.Join(s.workDir, filepath.Dir(path))
+	return nil, store, nil
 }
 
 func handleOsError(err error) error {

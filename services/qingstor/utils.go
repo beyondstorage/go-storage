@@ -1,15 +1,65 @@
 package qingstor
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"regexp"
-	"strings"
 	"time"
 
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
+	"github.com/yunify/qingstor-sdk-go/v3/config"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
+	"github.com/yunify/qingstor-sdk-go/v3/service"
 )
+
+// New will create a new qingstor service.
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+	const errorMessage = "qingstor New: %w"
+
+	srv := &Service{
+		noRedirectClient: &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		},
+	}
+
+	opt, err := parseServicePairNew(pairs...)
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
+	if credProtocol != credential.ProtocolHmac {
+		return nil, nil, fmt.Errorf(errorMessage, credential.ErrUnsupportedProtocol)
+	}
+	cfg, err := config.New(cred[0], cred[1])
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+	if opt.HasEndpoint {
+		ep := opt.Endpoint.Value()
+		cfg.Host = ep.Host
+		cfg.Port = ep.Port
+		cfg.Protocol = ep.Protocol
+	}
+
+	srv.config = cfg
+	srv.service, _ = service.Init(cfg)
+
+	store, err := srv.newStorage(pairs...)
+	if err != nil && errors.Is(err, types.ErrPairRequired) {
+		return srv, nil, nil
+	}
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+	return srv, store, nil
+}
 
 // bucketNameRegexp is the bucket name regexp, which indicates:
 // 1. length: 6-63;
@@ -20,14 +70,6 @@ var bucketNameRegexp = regexp.MustCompile(`^[a-z\d][a-z-\d]{4,61}[a-z\d]$`)
 // IsBucketNameValid will check whether given string is a valid bucket name.
 func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
-}
-
-func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
-}
-
-func (s *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, s.workDir+"/")
 }
 
 func handleQingStorError(err error) error {

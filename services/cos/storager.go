@@ -44,23 +44,6 @@ func (s *Storage) String() string {
 	)
 }
 
-// Init implements Storager.Init
-func (s *Storage) Init(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Init: %w"
-
-	opt, err := parseStoragePairInit(pairs...)
-	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
-	}
-
-	if opt.HasWorkDir {
-		// TODO: we should validate workDir
-		s.workDir = strings.TrimLeft(opt.WorkDir, "/")
-	}
-
-	return nil
-}
-
 // Metadata implements Storager.Metadata
 func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
 	m = metadata.NewStorageMeta()
@@ -162,13 +145,12 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	rp := s.getAbsPath(path)
 
 	putOptions := &cos.ObjectPutOptions{
-		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{},
+		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
+			ContentLength: int(opt.Size),
+		},
 	}
 	if opt.HasChecksum {
 		putOptions.ContentMD5 = opt.Checksum
-	}
-	if opt.HasSize {
-		putOptions.ContentLength = int(opt.Size)
 	}
 	if opt.HasStorageClass {
 		storageClass, err := parseStorageClass(opt.StorageClass)
@@ -240,4 +222,12 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 	return nil
+}
+
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) getRelPath(path string) string {
+	return strings.TrimPrefix(path, s.workDir+"/")
 }

@@ -1,19 +1,47 @@
 package kodo
 
 import (
-	"strings"
+	"errors"
+	"fmt"
 	"time"
 
+	"github.com/qiniu/api.v7/v7/auth/qbox"
+	qs "github.com/qiniu/api.v7/v7/storage"
+
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
 )
 
-func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
-}
+// New will create a new kodo service.
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+	const errorMessage = "kodo New: %w"
 
-func (s *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, s.workDir+"/")
+	srv := &Service{}
+
+	opt, err := parseServicePairNew(pairs...)
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
+	if credProtocol != credential.ProtocolHmac {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	mac := qbox.NewMac(cred[0], cred[1])
+	cfg := &qs.Config{}
+	srv.service = qs.NewBucketManager(mac, cfg)
+
+	store, err := srv.newStorage(pairs...)
+	if err != nil && errors.Is(err, types.ErrPairRequired) {
+		return srv, nil, nil
+	}
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+	return srv, store, nil
 }
 
 func convertUnixTimestampToTime(v int64) time.Time {

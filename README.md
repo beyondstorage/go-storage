@@ -104,40 +104,40 @@ if err != nil {
 
 ### azblob
 
-`azblob://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`azblob://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 
 ### cos
 
-`cos://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`cos://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 
 ### dropbox
 
-`dropbox://apikey:<api_key>/path/to/dir`
+`dropbox://apikey:<api_key>?work_dir=</path/to/work/dir>`
 
 ### fs
 
-`fs:///path/to/dir`
+`fs://?work_dir=/path/to/dir`
 
 ### gcs
 
-`gcs://apikey:<api_key>/<bucket_name>/<prefix>?project=<project_id>`
+`gcs://apikey:<api_key>?name=<bucket_name>&work_dir=<prefix>&project=<project_id>`
 
 ### kodo
 
-`kodo://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`kodo://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 
 ### oss
 
-`oss://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
+`oss://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>?name=<bucket_name>&work_dir=<prefix>`
 
 ### qingstor
 
-`qingstor://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
+`qingstor://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>?name=<bucket_name>&work_dir=<prefix>`
 
 ### s3
 
-`s3://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`s3://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 
 ### uss
 
-`uss://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
+`uss://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`

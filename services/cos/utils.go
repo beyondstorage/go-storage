@@ -1,18 +1,52 @@
 package cos
 
 import (
-	"strings"
+	"errors"
+	"fmt"
+	"net/http"
+	"time"
 
+	"github.com/tencentyun/cos-go-sdk-v5"
+
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
 )
 
-func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
-}
+// New will create a new Tencent oss service.
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+	const errorMessage = "cos New: %w"
 
-func (s *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, s.workDir+"/")
+	srv := &Service{}
+
+	opt, err := parseServicePairNew(pairs...)
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
+	if credProtocol != credential.ProtocolHmac {
+		return nil, nil, fmt.Errorf(errorMessage, credential.ErrUnsupportedProtocol)
+	}
+
+	srv.client = &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  cred[0],
+			SecretKey: cred[1],
+		},
+		Timeout: 100 * time.Second,
+	}
+	srv.service = cos.NewClient(nil, srv.client)
+
+	store, err := srv.newStorage(pairs...)
+	if err != nil && errors.Is(err, types.ErrPairRequired) {
+		return srv, nil, nil
+	}
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+	return srv, store, nil
 }
 
 const (

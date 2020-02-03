@@ -10,11 +10,11 @@
     }
   },
   "storage": {
-    "init": {
-      "work_dir": false
-    },
     "list": {
       "file_func": true
+    },
+    "new": {
+      "name": true
     },
     "write": {
       "checksum": false,

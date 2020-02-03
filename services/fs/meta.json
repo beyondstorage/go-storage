@@ -1,12 +1,12 @@
 {
   "name": "fs",
   "storage": {
-    "init": {
-      "work_dir": true
-    },
     "list": {
       "dir_func": false,
       "file_func": false
+    },
+    "new": {
+      "work_dir": false
     },
     "read": {
       "offset": false,

@@ -1,18 +1,57 @@
 package gcs
 
 import (
-	"strings"
+	"errors"
+	"fmt"
 
+	gs "cloud.google.com/go/storage"
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
+	"google.golang.org/api/option"
 )
 
-func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
-}
+// New will create a new aliyun oss service.
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+	const errorMessage = "gcs New: %w"
 
-func (s *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, s.workDir+"/")
+	srv := &Service{}
+
+	opt, err := parseServicePairNew(pairs...)
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	options := make([]option.ClientOption, 0)
+
+	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
+	switch credProtocol {
+	case credential.ProtocolAPIKey:
+		options = append(options, option.WithAPIKey(cred[0]))
+	case credential.ProtocolFile:
+		options = append(options, option.WithCredentialsFile(cred[0]))
+	default:
+		return nil, nil, fmt.Errorf(errorMessage, credential.ErrUnsupportedProtocol)
+	}
+
+	client, err := gs.NewClient(opt.Context, options...)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	srv.service = client
+	srv.projectID = opt.Project
+
+	store, err := srv.newStorage(pairs...)
+	if err != nil && errors.Is(err, types.ErrPairRequired) {
+		return srv, nil, nil
+	}
+	if err != nil {
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+	return srv, store, nil
 }
 
 const (
