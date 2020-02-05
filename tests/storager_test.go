@@ -1,16 +1,21 @@
 package tests
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 	"gopkg.in/yaml.v2"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/coreutils"
+	"github.com/Xuanwo/storage/pkg/randbytes"
+	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 const TestPrefix = "STORAGE_TEST_SERVICE_"
@@ -77,6 +82,61 @@ func testStorager(t *testing.T, config string) {
 
 			Convey("The metadata should not be empty", func() {
 				So(m, ShouldNotBeEmpty)
+			})
+		})
+
+		Convey("When List an empty dir", func() {
+			called := false
+			fn := types.ObjectFunc(func(_ *types.Object) {
+				called = true
+			})
+			err := store.List("", ps.WithFileFunc(fn))
+
+			Convey("The file func should not be called", func() {
+				So(called, ShouldBeFalse)
+			})
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+		})
+
+		Convey("When List a dir within files", func() {
+			size := int64(4 * 1024 * 1024) // 4MB
+			r := io.LimitReader(randbytes.NewRand(), size)
+			path := uuid.New().String()
+			err := store.Write(path, r, ps.WithSize(size))
+			if err != nil {
+				t.Error(err)
+			}
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			called := false
+			var obj *types.Object
+			fn := types.ObjectFunc(func(o *types.Object) {
+				called = true
+				obj = o
+
+			})
+			err = store.List("", ps.WithFileFunc(fn))
+
+			Convey("The file func should be called", func() {
+				So(called, ShouldBeTrue)
+			})
+
+			Convey("The name and size should be match", func() {
+				So(obj, ShouldNotBeNil)
+				So(obj.Name, ShouldEqual, path)
+				So(obj.Size, ShouldEqual, size)
+			})
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
 			})
 		})
 	})
