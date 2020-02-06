@@ -1,13 +1,14 @@
 SHELL := /bin/bash
 
-.PHONY: all check format vet lint build test generate tidy
+.PHONY: all check format vet lint build test generate tidy integration_test
 
 help:
 	@echo "Please use \`make <target>\` where <target> is one of"
-	@echo "  check      to format, vet and lint "
-	@echo "  build      to create bin directory and build"
-	@echo "  generate   to generate code"
-	@echo "  test       to run test"
+	@echo "  check               to do static check"
+	@echo "  build               to create bin directory and build"
+	@echo "  generate            to generate code"
+	@echo "  test                to run test"
+	@echo "  integration_test    to run integration test"
 
 # mockgen: go get github.com/golang/mock/mockgen
 # golint: go get -u golang.org/x/lint/golint
@@ -61,9 +62,18 @@ test:
 	@go tool cover -html="coverage.txt" -o "coverage.html"
 	@echo "ok"
 
+
+integration_test:
+	@echo "run integration test"
+	@pushd tests \
+		&& go test -race -v ./... \
+		&& popd
+	@echo "ok"
+
 tidy:
 	@echo "Tidy and check the go mod files"
 	@go mod tidy && go mod verify
+	@pushd tests && go mod tidy && go mod verify && popd
 	@pushd internal/cmd && go mod tidy && go mod verify && popd
 	@echo "Done"
 
