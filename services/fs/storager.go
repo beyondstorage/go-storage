@@ -185,7 +185,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	o = &types.Object{
 		ID:         rp,
-		Name:       rp,
+		Name:       path,
 		Size:       fi.Size(),
 		UpdatedAt:  fi.ModTime(),
 		ObjectMeta: metadata.NewObjectMeta(),

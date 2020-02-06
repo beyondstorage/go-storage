@@ -1,8 +1,11 @@
 package tests
 
 import (
+	"bytes"
+	"errors"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"strings"
 	"testing"
@@ -90,19 +93,21 @@ func testStorager(t *testing.T, config string) {
 			fn := types.ObjectFunc(func(_ *types.Object) {
 				called = true
 			})
+
 			err := store.List("", ps.WithFileFunc(fn))
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
 
 			Convey("The file func should not be called", func() {
 				So(called, ShouldBeFalse)
 			})
 
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
 		})
 
 		Convey("When List a dir within files", func() {
-			size := int64(4 * 1024 * 1024) // 4MB
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			r := io.LimitReader(randbytes.NewRand(), size)
 			path := uuid.New().String()
 			err := store.Write(path, r, ps.WithSize(size))
@@ -125,6 +130,10 @@ func testStorager(t *testing.T, config string) {
 			})
 			err = store.List("", ps.WithFileFunc(fn))
 
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
 			Convey("The file func should be called", func() {
 				So(called, ShouldBeTrue)
 			})
@@ -134,9 +143,147 @@ func testStorager(t *testing.T, config string) {
 				So(obj.Name, ShouldEqual, path)
 				So(obj.Size, ShouldEqual, size)
 			})
+		})
+
+		Convey("When Read a file", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			if err != nil {
+				t.Error(err)
+			}
+
+			path := uuid.New().String()
+			err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			if err != nil {
+				t.Error(err)
+			}
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			r, err := store.Read(path)
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
+			})
+
+			Convey("The content should be match", func() {
+				So(r, ShouldNotBeNil)
+
+				readContent, err := ioutil.ReadAll(r)
+				if err != nil {
+					t.Error(err)
+				}
+				So(readContent, ShouldResemble, content)
+			})
+
+		})
+
+		Convey("When Write a file", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), size)
+			path := uuid.New().String()
+
+			err := store.Write(path, r, ps.WithSize(size))
+
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Stat should get Object without error", func() {
+				o, err := store.Stat(path)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The name and size should be match", func() {
+					So(o, ShouldNotBeNil)
+					So(o.Name, ShouldEqual, path)
+					So(o.Size, ShouldEqual, size)
+				})
+			})
+
+			Convey("Read should get Object data without error", func() {
+				r, err := store.Read(path)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The reader should not be nil", func() {
+					So(r, ShouldNotBeNil)
+				})
+			})
+
+		})
+
+		Convey("When Stat a file", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			if err != nil {
+				t.Error(err)
+			}
+
+			path := uuid.New().String()
+			err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			if err != nil {
+				t.Error(err)
+			}
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			o, err := store.Stat(path)
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The Object name and size should be match", func() {
+				So(o, ShouldNotBeNil)
+				So(o.Name, ShouldEqual, path)
+				So(o.Size, ShouldEqual, size)
+			})
+		})
+
+		Convey("When Delete a file", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			if err != nil {
+				t.Error(err)
+			}
+
+			path := uuid.New().String()
+			err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			if err != nil {
+				t.Error(err)
+			}
+
+			err = store.Delete(path)
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Stat should get nil Object and ObjectNotFound error", func() {
+				o, err := store.Stat(path)
+
+				So(errors.Is(err, types.ErrObjectNotExist), ShouldBeTrue)
+				So(o, ShouldBeNil)
 			})
 		})
 	})
