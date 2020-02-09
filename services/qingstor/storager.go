@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/yunify/qingstor-sdk-go/v3/config"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
@@ -140,6 +141,11 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	const errorMessage = "%s Read [%s]: %w"
 
+	opt, err := parseStoragePairRead(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+
 	input := &service.GetObjectInput{}
 
 	rp := s.getAbsPath(path)
@@ -149,7 +155,12 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = handleQingStorError(err)
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
-	return output.Body, nil
+
+	r = output.Body
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+	}
+	return
 }
 
 // WriteFile implements Storager.WriteFile
@@ -174,6 +185,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 			return fmt.Errorf(errorMessage, s, path, err)
 		}
 		input.XQSStorageClass = service.String(storageClass)
+	}
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	rp := s.getAbsPath(path)

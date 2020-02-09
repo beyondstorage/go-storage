@@ -154,6 +154,10 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		}
 	}
 
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
+	}
+
 	if opt.HasSize {
 		_, err = s.ioCopyN(f, r, opt.Size)
 	} else {

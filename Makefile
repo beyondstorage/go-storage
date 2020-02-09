@@ -75,6 +75,6 @@ tidy:
 	@./internal/bin/gomod
 
 clean:
-	@echo "Clean generated files"
+	@echo "clean generated files"
 	@rm services/*/generated.go
 	@echo "Done"

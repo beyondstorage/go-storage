@@ -102,7 +102,12 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
-	return output.Body(azblob.RetryReaderOptions{}), nil
+
+	r = output.Body(azblob.RetryReaderOptions{})
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+	}
+	return r, nil
 }
 
 // Write implements Storager.Write
@@ -115,6 +120,10 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	}
 
 	rp := s.getAbsPath(path)
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
+	}
 
 	// TODO: add checksum and storage class support.
 	_, err = s.bucket.NewBlockBlobURL(rp).Upload(opt.Context, iowrap.ReadSeekCloser(r),

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 
 	"github.com/Xuanwo/storage/types"
@@ -113,12 +114,22 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	const errorMessage = "%s Read [%s]: %w"
 
+	opt, err := parseStoragePairWrite(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+
 	rp := s.getAbsPath(path)
 
 	output, err := s.bucket.GetObject(rp)
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
+
+	if opt.HasReadCallbackFunc {
+		output = iowrap.CallbackReadCloser(output, opt.ReadCallbackFunc)
+	}
+
 	return output, nil
 }
 
@@ -139,6 +150,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	if opt.HasStorageClass {
 		// TODO: we need to handle different storage class name between services.
 		options = append(options, oss.StorageClass(oss.StorageClassType(opt.StorageClass)))
+	}
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	rp := s.getAbsPath(path)

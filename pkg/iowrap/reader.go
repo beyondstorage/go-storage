@@ -110,6 +110,7 @@ func (r SeekCloseableReader) Close() error {
 	return nil
 }
 
+// CallbackReader will create a new CallbackifyReader.
 func CallbackReader(r io.Reader, fn func([]byte)) *CallbackifyReader {
 	return &CallbackifyReader{
 		r:  r,
@@ -117,17 +118,20 @@ func CallbackReader(r io.Reader, fn func([]byte)) *CallbackifyReader {
 	}
 }
 
+// CallbackifyReader will execute callback func in Read.
 type CallbackifyReader struct {
 	r  io.Reader
 	fn func([]byte)
 }
 
+// Read will read from underlying Reader.
 func (r CallbackifyReader) Read(p []byte) (int, error) {
 	n, err := r.r.Read(p)
 	r.fn(p[:n])
 	return n, err
 }
 
+// CallbackReadCloser will create a new CallbackifyReadCloser.
 func CallbackReadCloser(r io.ReadCloser, fn func([]byte)) *CallbackifyReadCloser {
 	return &CallbackifyReadCloser{
 		r:  r,
@@ -135,17 +139,20 @@ func CallbackReadCloser(r io.ReadCloser, fn func([]byte)) *CallbackifyReadCloser
 	}
 }
 
+// CallbackifyReadCloser will execute callback func in Read.
 type CallbackifyReadCloser struct {
 	r  io.ReadCloser
 	fn func([]byte)
 }
 
+// Read will read from underlying Reader.
 func (r CallbackifyReadCloser) Read(p []byte) (int, error) {
 	n, err := r.r.Read(p)
 	r.fn(p[:n])
 	return n, err
 }
 
+// Close will close underlying Reader.
 func (r CallbackifyReadCloser) Close() error {
 	return r.r.Close()
 }

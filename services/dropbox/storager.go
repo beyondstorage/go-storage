@@ -123,7 +123,11 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	}
 
 	if opt.HasSize {
-		return iowrap.LimitReadCloser(r, opt.Size), nil
+		r = iowrap.LimitReadCloser(r, opt.Size)
+	}
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
 	}
 
 	return
@@ -142,6 +146,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 
 	if opt.HasSize {
 		r = io.LimitReader(r, opt.Size)
+	}
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	input := &files.CommitInfo{

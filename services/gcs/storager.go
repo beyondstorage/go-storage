@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	gs "cloud.google.com/go/storage"
+	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 	"google.golang.org/api/iterator"
@@ -95,6 +96,10 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	if err != nil {
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+	}
 	return
 }
 
@@ -123,6 +128,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 			return fmt.Errorf(errorMessage, s, path, err)
 		}
 		w.StorageClass = storageClass
+	}
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	_, err = io.Copy(w, r)
