@@ -160,7 +160,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
 	}
-	return
+	return r, nil
 }
 
 // WriteFile implements Storager.WriteFile
@@ -170,6 +170,10 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
+	}
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	input := &service.PutObjectInput{
@@ -185,9 +189,6 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 			return fmt.Errorf(errorMessage, s, path, err)
 		}
 		input.XQSStorageClass = service.String(storageClass)
-	}
-	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	rp := s.getAbsPath(path)

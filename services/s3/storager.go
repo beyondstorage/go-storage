@@ -147,6 +147,10 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		return fmt.Errorf(errorMessage, s, path, err)
 	}
 
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
+	}
+
 	rp := s.getAbsPath(path)
 
 	input := &s3.PutObjectInput{
@@ -163,9 +167,6 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 			return fmt.Errorf(errorMessage, s, path, err)
 		}
 		input.StorageClass = &storageClass
-	}
-	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	_, err = s.service.PutObject(input)
