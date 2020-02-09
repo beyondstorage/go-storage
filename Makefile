@@ -71,13 +71,10 @@ integration_test:
 	@echo "ok"
 
 tidy:
-	@echo "Tidy and check the go mod files"
-	@go mod tidy && go mod verify
-	@pushd tests && go mod tidy && go mod verify && popd
-	@pushd internal/cmd && go mod tidy && go mod verify && popd
-	@echo "Done"
+	@pushd internal/cmd && go build -o ../bin/gomod ./gomod && popd
+	@./internal/bin/gomod
 
 clean:
-	@echo "Clean generated files"
+	@echo "clean generated files"
 	@rm services/*/generated.go
 	@echo "Done"

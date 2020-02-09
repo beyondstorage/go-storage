@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Xuanwo/storage/pkg/iowrap"
 	qs "github.com/qiniu/api.v7/v7/storage"
 
 	"github.com/Xuanwo/storage/types"
@@ -87,6 +88,11 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	const errorMessage = "%s Read [%s]: %w"
 
+	opt, err := parseStoragePairRead(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+
 	rp := s.getAbsPath(path)
 
 	url := qs.MakePrivateURL(s.bucket.Mac, s.domain, rp, 3600)
@@ -97,6 +103,10 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	}
 
 	r = resp.Body
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+	}
 	return
 }
 
@@ -107,6 +117,10 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
+	}
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	rp := s.getAbsPath(path)

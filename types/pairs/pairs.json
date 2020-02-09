@@ -11,6 +11,7 @@
   "offset": "int64",
   "part_size": "int64",
   "project": "string",
+  "read_callback_func": "func([]byte)",
   "segment_func": "segment.Func",
   "size": "int64",
   "storage_class": "storageclass.Type",

@@ -120,6 +120,9 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 			return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
 		}
 	}
+	if opt.HasReadCallbackFunc {
+		return iowrap.CallbackReadCloser(f, opt.ReadCallbackFunc), nil
+	}
 	return f, nil
 }
 
@@ -149,6 +152,10 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		if err != nil {
 			return fmt.Errorf(errorMessage, s, path, handleOsError(err))
 		}
+	}
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	if opt.HasSize {

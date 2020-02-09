@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 
@@ -130,6 +131,10 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	}
 
 	r = resp.Body
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+	}
 	return
 }
 
@@ -158,6 +163,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 			return fmt.Errorf(errorMessage, s, path, err)
 		}
 		putOptions.XCosStorageClass = storageClass
+	}
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	_, err = s.object.Put(opt.Context, rp, r, putOptions)

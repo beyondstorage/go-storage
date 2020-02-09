@@ -14,24 +14,25 @@ import (
 
 // All available pairs.
 const (
-	Checksum     = "checksum"
-	Context      = "context"
-	Credential   = "credential"
-	DirFunc      = "dir_func"
-	Endpoint     = "endpoint"
-	Expire       = "expire"
-	FileFunc     = "file_func"
-	Location     = "location"
-	Name         = "name"
-	Offset       = "offset"
-	PartSize     = "part_size"
-	Project      = "project"
-	SegmentFunc  = "segment_func"
-	Size         = "size"
-	StorageClass = "storage_class"
-	StoragerFunc = "storager_func"
-	Type         = "type"
-	WorkDir      = "work_dir"
+	Checksum         = "checksum"
+	Context          = "context"
+	Credential       = "credential"
+	DirFunc          = "dir_func"
+	Endpoint         = "endpoint"
+	Expire           = "expire"
+	FileFunc         = "file_func"
+	Location         = "location"
+	Name             = "name"
+	Offset           = "offset"
+	PartSize         = "part_size"
+	Project          = "project"
+	ReadCallbackFunc = "read_callback_func"
+	SegmentFunc      = "segment_func"
+	Size             = "size"
+	StorageClass     = "storage_class"
+	StoragerFunc     = "storager_func"
+	Type             = "type"
+	WorkDir          = "work_dir"
 )
 
 // WithChecksum will apply checksum value to Options
@@ -126,6 +127,14 @@ func WithPartSize(v int64) *types.Pair {
 func WithProject(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Project,
+		Value: v,
+	}
+}
+
+// WithReadCallbackFunc will apply read_callback_func value to Options
+func WithReadCallbackFunc(v func([]byte)) *types.Pair {
+	return &types.Pair{
+		Key:   ReadCallbackFunc,
 		Value: v,
 	}
 }

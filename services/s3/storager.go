@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/aws/aws-sdk-go/aws"
@@ -112,6 +113,11 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	const errorMessage = "%s Read [%s]: %w"
 
+	opt, err := parseStoragePairWrite(pairs...)
+	if err != nil {
+		return nil, fmt.Errorf(errorMessage, s, path, err)
+	}
+
 	rp := s.getAbsPath(path)
 
 	input := &s3.GetObjectInput{
@@ -124,7 +130,12 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = handleS3Error(err)
 		return nil, fmt.Errorf(errorMessage, s, path, err)
 	}
-	return output.Body, nil
+
+	r = output.Body
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+	}
+	return r, nil
 }
 
 // Write implements Storager.Write
@@ -134,6 +145,10 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
 		return fmt.Errorf(errorMessage, s, path, err)
+	}
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	rp := s.getAbsPath(path)

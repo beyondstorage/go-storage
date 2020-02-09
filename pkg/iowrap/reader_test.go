@@ -2,6 +2,7 @@ package iowrap
 
 import (
 	"io"
+	"io/ioutil"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -204,7 +205,7 @@ func TestReadSeekCloser_Read(t *testing.T) {
 
 		r.EXPECT().Read(gomock.Any()).Times(1)
 
-		x := NewReadSeekCloser(r)
+		x := ReadSeekCloser(r)
 		b := make([]byte, 100)
 		_, _ = x.Read(b)
 	})
@@ -227,14 +228,14 @@ func TestReadSeekCloser_Seek(t *testing.T) {
 
 		seeker.EXPECT().Seek(gomock.Any(), gomock.Any()).Times(1)
 
-		x := NewReadSeekCloser(r)
+		x := ReadSeekCloser(r)
 		_, _ = x.Seek(0, 0)
 	})
 
 	t.Run("not a seeker", func(t *testing.T) {
 		reader := NewMockReader(ctrl)
 
-		x := NewReadSeekCloser(reader)
+		x := ReadSeekCloser(reader)
 		pos, err := x.Seek(100, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), pos)
@@ -258,15 +259,83 @@ func TestReadSeekCloser_Close(t *testing.T) {
 
 		seeker.EXPECT().Close().Times(1)
 
-		x := NewReadSeekCloser(r)
+		x := ReadSeekCloser(r)
 		_ = x.Close()
 	})
 
-	t.Run("not a Closeer", func(t *testing.T) {
+	t.Run("not a Closer", func(t *testing.T) {
 		reader := NewMockReader(ctrl)
 
-		x := NewReadSeekCloser(reader)
+		x := ReadSeekCloser(reader)
 		err := x.Close()
 		assert.NoError(t, err)
 	})
+}
+
+func TestCallbackifyReader_Read(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	reader := NewMockReader(ctrl)
+
+	reader.EXPECT().Read(gomock.Any()).DoAndReturn(func(p []byte) (int, error) {
+		return 10, io.EOF
+	}).AnyTimes()
+
+	called := false
+	x := CallbackReader(reader, func(bytes []byte) {
+		called = true
+	})
+
+	_, _ = ioutil.ReadAll(x)
+
+	assert.True(t, called)
+}
+
+func TestCallbackifyReadCloser_Read(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	reader := NewMockReader(ctrl)
+	closer := NewMockCloser(ctrl)
+	r := struct {
+		io.Reader
+		io.Closer
+	}{
+		reader,
+		closer,
+	}
+
+	reader.EXPECT().Read(gomock.Any()).DoAndReturn(func(p []byte) (int, error) {
+		return 10, io.EOF
+	}).AnyTimes()
+
+	called := false
+	x := CallbackReadCloser(r, func(bytes []byte) {
+		called = true
+	})
+
+	_, _ = ioutil.ReadAll(x)
+
+	assert.True(t, called)
+}
+
+func TestCallbackifyReadCloser_Close(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	reader := NewMockReader(ctrl)
+	closer := NewMockCloser(ctrl)
+	r := struct {
+		io.Reader
+		io.Closer
+	}{
+		reader,
+		closer,
+	}
+
+	closer.EXPECT().Close().Times(1)
+
+	x := CallbackReadCloser(r, func(bytes []byte) {})
+	_ = x.Close()
 }

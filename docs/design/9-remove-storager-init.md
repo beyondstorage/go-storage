@@ -1,6 +1,6 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: candidate
 updated_at: 2020-01-16
 updates: [3](./3-support-service-init-via-config-string.md)
 ---
