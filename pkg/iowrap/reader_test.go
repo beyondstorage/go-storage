@@ -336,8 +336,6 @@ func TestCallbackifyReadCloser_Close(t *testing.T) {
 
 	closer.EXPECT().Close().Times(1)
 
-	x := CallbackReadCloser(r, func(bytes []byte) {
-		return
-	})
+	x := CallbackReadCloser(r, func(bytes []byte) {})
 	_ = x.Close()
 }
