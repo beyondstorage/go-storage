@@ -65,12 +65,11 @@ Import
 import "github.com/Xuanwo/storage"
 ```
 
-## Quickstart
-
+## Quick Start
 
 ```go
 // Init a service.
-srv, store, err := coreutils.Open("qingstor://hmac:test_access_key:test_secret_key@https:qingstor.com:443/test_bucket_name")
+srv, store, err := coreutils.Open("fs:///?work_dir=/path/to/dir")
 if err != nil {
     log.Fatalf("service init failed: %v", err)
 }
@@ -104,15 +103,15 @@ if err != nil {
 
 ### azblob
 
-`azblob://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
+`azblob://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
 
 ### cos
 
-`cos://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
+`cos://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
 
 ### dropbox
 
-`dropbox://apikey:<api_key>?work_dir=</path/to/work/dir>`
+`dropbox://apikey:<api_key>/?work_dir=</path/to/work/dir>`
 
 ### fs
 
@@ -120,24 +119,24 @@ if err != nil {
 
 ### gcs
 
-`gcs://apikey:<api_key>?name=<bucket_name>&work_dir=<prefix>&project=<project_id>`
+`gcs://apikey:<api_key>/?name=<bucket_name>&work_dir=<prefix>&project=<project_id>`
 
 ### kodo
 
-`kodo://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
+`kodo://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
 
 ### oss
 
-`oss://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>?name=<bucket_name>&work_dir=<prefix>`
+`oss://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/?name=<bucket_name>&work_dir=<prefix>`
 
 ### qingstor
 
-`qingstor://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>?name=<bucket_name>&work_dir=<prefix>`
+`qingstor://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/?name=<bucket_name>&work_dir=<prefix>`
 
 ### s3
 
-`s3://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
+`s3://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
 
 ### uss
 
-`uss://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
+`uss://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
