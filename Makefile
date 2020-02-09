@@ -70,13 +70,6 @@ integration_test:
 		&& popd
 	@echo "ok"
 
-modules := . tests internal/cmd
-
-$(modules):
-	@echo "Tidy and check the go mod files in $@"
-	@pushd $@ && go mod tidy && go mod verify && popd
-	@echo "Done"
-
 tidy:
 	@pushd internal/cmd && go build -o ../bin/gomod ./gomod && popd
 	@./internal/bin/gomod
