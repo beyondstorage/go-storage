@@ -45,6 +45,16 @@ func parseMeta() metadata {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
 
+	// Format input meta.json
+	data, err := json.MarshalIndent(meta, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = ioutil.WriteFile(metaPath, data, 0664)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Handle TypeMap
 	content, err = ioutil.ReadFile(pairsPath)
 	if err != nil {
@@ -55,20 +65,21 @@ func parseMeta() metadata {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
 
+	// Inject ReadCallbackFunc in all operations who have a Reader.
+	if _, ok := meta.Storage["read"]; !ok {
+		meta.Storage["read"] = make(map[string]bool)
+	}
+	meta.Storage["read"]["read_callback_func"] = false
+	if _, ok := meta.Storage["write"]; !ok {
+		meta.Storage["write"] = make(map[string]bool)
+	}
+	meta.Storage["write"]["read_callback_func"] = false
+	// TODO: WriteSegment should also be supported.
+
 	// Handle Data
 	meta.Data = make(map[string]map[string]*fn)
 	meta.Data["service"] = mergeFn(meta.Service, parseFunc("servicer"), parseFunc("utils"))
 	meta.Data["storage"] = mergeFn(meta.Storage, parseFunc("storager"))
-
-	// Format input meta.json
-	data, err := json.MarshalIndent(meta, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = ioutil.WriteFile(metaPath, data, 0664)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	return meta
 }

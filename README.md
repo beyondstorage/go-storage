@@ -36,7 +36,7 @@ An application-oriented unified storage layer for Golang.
 - Advanced operations across implemented storage services with the same API
   - Copy: copy a file
   - Move: move a file
-  - Reach: generate a public accesible url
+  - Reach: generate a public accessible url
   - Statistical: get storage service's statistics
   - Segment: Full support for Segment, aka, Multipart
 

@@ -255,10 +255,12 @@ type pairStorageRead struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasOffset bool
-	Offset    int64
-	HasSize   bool
-	Size      int64
+	HasOffset           bool
+	Offset              int64
+	HasReadCallbackFunc bool
+	ReadCallbackFunc    func([]byte)
+	HasSize             bool
+	Size                int64
 }
 
 func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
@@ -285,6 +287,11 @@ func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	if ok {
 		result.HasOffset = true
 		result.Offset = v.(int64)
+	}
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
 	}
 	v, ok = values[ps.Size]
 	if ok {
@@ -329,8 +336,10 @@ type pairStorageWrite struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasSize bool
-	Size    int64
+	HasReadCallbackFunc bool
+	ReadCallbackFunc    func([]byte)
+	HasSize             bool
+	Size                int64
 }
 
 func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
@@ -353,6 +362,11 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
+	}
 	v, ok = values[ps.Size]
 	if ok {
 		result.HasSize = true

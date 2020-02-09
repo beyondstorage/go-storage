@@ -198,6 +198,8 @@ type pairStorageRead struct {
 	Context context.Context
 
 	// Meta-defined pairs
+	HasReadCallbackFunc bool
+	ReadCallbackFunc    func([]byte)
 }
 
 func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
@@ -220,6 +222,11 @@ func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
+	}
 	return result, nil
 }
 
@@ -258,6 +265,8 @@ type pairStorageWrite struct {
 	Context context.Context
 
 	// Meta-defined pairs
+	HasReadCallbackFunc bool
+	ReadCallbackFunc    func([]byte)
 }
 
 func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
@@ -280,6 +289,11 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
+	}
 	return result, nil
 }
 

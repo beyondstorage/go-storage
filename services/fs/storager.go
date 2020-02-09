@@ -120,6 +120,9 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 			return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
 		}
 	}
+	if opt.HasReadCallbackFunc {
+		return iowrap.CallbackReadCloser(f, opt.ReadCallbackFunc), nil
+	}
 	return f, nil
 }
 
