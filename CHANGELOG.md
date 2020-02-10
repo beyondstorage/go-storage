@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.7.0] - 2020-02-10
+
+### Added
+
+- tests: Add bdd test for integration test (#81)
+- docs/design, pkg/iowrap: Add and implement proposal 10-callback-reader (#88)
+
+### Removed
+
+- docs/design, services: Add and implement proposal 9-remove-storager-init (#79)-
+
 ## [v0.6.0] - 2020-01-13
 
 ### Added
@@ -127,7 +138,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.7.0...HEAD
+[v0.7.0]: https://github.com/Xuanwo/storage/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/Xuanwo/storage/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/Xuanwo/storage/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/Xuanwo/storage/compare/v0.3.0...v0.4.0
