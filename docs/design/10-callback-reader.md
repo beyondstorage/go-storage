@@ -1,6 +1,6 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: candidate
+status: finished
 updated_at: 2020-02-09
 ---
 

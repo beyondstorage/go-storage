@@ -82,7 +82,7 @@ err := store.List("prefix", pairs.WithFileFunc(func(*types.Object){
     ch <- o
 }))
 if err != nil {
-    log.Printf("storager listdir failed: %v", err)
+    log.Printf("storager list failed: %v", err)
 }
 ```
 
