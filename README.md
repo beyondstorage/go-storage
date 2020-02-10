@@ -88,55 +88,13 @@ if err != nil {
 
 ## Services
 
-| Service | Description | Status |
-| ------- | ----------- | ------ |
-| [azblob](#azblob) | [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/) | alpha (-segments, -unittests) |
-| [cos](#cos) | [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos) | alpha (-segments, -unittests) |
-| [dropbox](#dropbox) | [Dropbox](https://www.dropbox.com) | alpha (-unittests) |
-| [fs](#fs) | Local file system | stable (-segments)|
-| [gcs](#gcs) | [Google Cloud Storage](https://cloud.google.com/storage/) | alpha (-segments, -unittests) |
-| [kodo](#kodo) | [qiniu kodo](https://www.qiniu.com/products/kodo) | alpha (-segments, -unittests) |
-| [oss](#oss) | [Aliyun Object Storage](https://www.aliyun.com/product/oss) | alpha (-segments, -unittests) |
-| [qingstor](#qingstor) | [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/) | stable |
-| [s3](#s3) | [Amazon S3](https://aws.amazon.com/s3/) | alpha (-segments, -unittests) |
-| [uss](#uss) | [UPYUN Storage Service](https://www.upyun.com/products/file-storage) | alpha (-segments, -unittests) |
-
-### azblob
-
-`azblob://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
-
-### cos
-
-`cos://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
-
-### dropbox
-
-`dropbox://apikey:<api_key>/?work_dir=</path/to/work/dir>`
-
-### fs
-
-`fs:///?work_dir=/path/to/dir`
-
-### gcs
-
-`gcs://apikey:<api_key>/?name=<bucket_name>&work_dir=<prefix>&project=<project_id>`
-
-### kodo
-
-`kodo://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
-
-### oss
-
-`oss://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/?name=<bucket_name>&work_dir=<prefix>`
-
-### qingstor
-
-`qingstor://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/?name=<bucket_name>&work_dir=<prefix>`
-
-### s3
-
-`s3://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
-
-### uss
-
-`uss://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
+- [azblob](docs/services/azblob.md): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [cos](docs/services/cos.md): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
+- [dropbox](docs/services/dropbox.md): [Dropbox](https://www.dropbox.com)
+- [fs](docs/services/fs.md): Local file system
+- [gcs](docs/services/gcs.md): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [kodo](docs/services/kodo.md): [qiniu kodo](https://www.qiniu.com/products/kodo)
+- [oss](docs/services/oss.md): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
+- [qingstor](docs/services/qingstor.md): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
+- [s3](docs/services/s3.md): [Amazon S3](https://aws.amazon.com/s3/)
+- [uss](docs/services/uss.md): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)

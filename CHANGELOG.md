@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Removed
 
-- docs/design, services: Add and implement proposal 9-remove-storager-init (#79)-
+- docs/design, services: Add and implement proposal 9-remove-storager-init (#79)
 
 ## [v0.6.0] - 2020-01-13
 
