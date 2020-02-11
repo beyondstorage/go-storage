@@ -12,7 +12,7 @@ require (
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dropbox/dropbox-sdk-go-unofficial v5.4.0+incompatible
-	github.com/golang/mock v1.3.1
+	github.com/golang/mock v1.4.0
 	github.com/google/uuid v1.1.1
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14
