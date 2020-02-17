@@ -1,7 +1,7 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: draft
-updated_at: 2020-02-16
+updated_at: 2020-02-17
 added_by:
   - design/11-error-handling.md
 ---
@@ -49,10 +49,18 @@ Those errors could be changed or disappeared while dependence upgraded and no ch
 
 This section will describe error handling on package implementer side.
 
-- Expected error should always be formatted into a struct which carries contextual error information
+- Expected error SHOULD always be formatted into a struct which carries contextual error information
+- Expected error belongs to the package who declared, only this package CAN return this error
+- Implementers CAN panic while they make sure this operation can't move on or this operation will affect or destroy data and SHOULD NOT recover
+- Unexpected error SHOULD return as is or with [error warp]
 
 ## Caller
 
 This section will describe error handling on package caller side.
 
+- Caller SHOULD only check package's expected error and don't check errors returned by package's imported libs
+- [storage]'s package CAN panic while operations can't move on, caller SHOULD recover them byself
+
+
 [storage]: https://github.com/Xuanwo/storage
+[error warp]: https://blog.golang.org/go1.13-errors
