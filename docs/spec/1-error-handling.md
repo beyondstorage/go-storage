@@ -59,8 +59,7 @@ This section will describe error handling on package implementer side.
 This section will describe error handling on package caller side.
 
 - Caller SHOULD only check package's expected error and don't check errors returned by package's imported libs
-- [storage]'s package CAN panic while operations can't move on, caller SHOULD recover them byself
-
+- [storage]'s package CAN panic while operations can't move on, caller SHOULD recover them by self
 
 [storage]: https://github.com/Xuanwo/storage
 [error warp]: https://blog.golang.org/go1.13-errors
