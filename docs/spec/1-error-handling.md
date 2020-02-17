@@ -50,6 +50,8 @@ Those errors could be changed or disappeared while dependence upgraded and no ch
 This section will describe error handling on package implementer side.
 
 - Expected error SHOULD always be formatted into a struct which carries contextual error information
+  - The struct SHOULD implement `Error() string` which returns error related info in string
+  - The struct SHOULD implement `Unwrap() error` which returns related error
 - Expected error belongs to the package who declared, only this package CAN return this error
 - Implementers CAN panic while they make sure this operation can't move on or this operation will affect or destroy data and SHOULD NOT recover
 - Unexpected error SHOULD return as is or with [error warp]
