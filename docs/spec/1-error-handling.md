@@ -2,7 +2,8 @@
 author: Xuanwo <github@xuanwo.io>
 status: draft
 updated_at: 2020-02-16
-added_by: [11](../design/11-error-handling.md)
+added_by:
+  - design/11-error-handling.md
 ---
 
 # Spec: Error Handling

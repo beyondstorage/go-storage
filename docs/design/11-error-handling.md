@@ -2,6 +2,8 @@
 author: Xuanwo <github@xuanwo.io>
 status: draft
 updated_at: 2020-02-14
+adds:
+  - spec/1-error-handling.md
 ---
 
 # Proposal: Error Handling
