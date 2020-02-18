@@ -1,16 +1,7 @@
 package credential
 
 import (
-	"errors"
-	"fmt"
 	"strings"
-)
-
-var (
-	// ErrInvalidConfig will return if config string invalid.
-	ErrInvalidConfig = errors.New("invalid config")
-	// ErrUnsupportedProtocol will return if protocol is unsupported.
-	ErrUnsupportedProtocol = errors.New("unsupported protocol")
 )
 
 const (
@@ -54,8 +45,6 @@ func (p *Provider) Value() []string {
 
 // Parse will parse config string to create a credential Provider.
 func Parse(cfg string) (*Provider, error) {
-	errorMessage := "parse credential config [%s]: %w"
-
 	s := strings.Split(cfg, ":")
 
 	switch s[0] {
@@ -68,16 +57,14 @@ func Parse(cfg string) (*Provider, error) {
 	case ProtocolEnv:
 		return NewEnv()
 	default:
-		return nil, fmt.Errorf(errorMessage, cfg, ErrUnsupportedProtocol)
+		return nil, &Error{"parse", ErrUnsupportedProtocol, s[0], nil}
 	}
 }
 
 // NewHmac create a hmac provider.
 func NewHmac(value ...string) (*Provider, error) {
-	errorMessage := "parse hmac credential [%s]: %w"
-
 	if len(value) != 2 {
-		return nil, fmt.Errorf(errorMessage, value, ErrInvalidConfig)
+		return nil, &Error{"new", ErrInvalidValue, ProtocolHmac, value}
 	}
 	return &Provider{ProtocolHmac, []string{value[0], value[1]}}, nil
 }
@@ -93,10 +80,8 @@ func MustNewHmac(value ...string) *Provider {
 
 // NewAPIKey create a api key provider.
 func NewAPIKey(value ...string) (*Provider, error) {
-	errorMessage := "parse apikey credential [%s]: %w"
-
 	if len(value) != 1 {
-		return nil, fmt.Errorf(errorMessage, value, ErrInvalidConfig)
+		return nil, &Error{"new", ErrInvalidValue, ProtocolAPIKey, value}
 	}
 	return &Provider{ProtocolAPIKey, []string{value[0]}}, nil
 }
@@ -112,10 +97,8 @@ func MustNewAPIKey(value ...string) *Provider {
 
 // NewFile create a file provider.
 func NewFile(value ...string) (*Provider, error) {
-	errorMessage := "parse file credential [%s]: %w"
-
 	if len(value) != 1 {
-		return nil, fmt.Errorf(errorMessage, value, ErrInvalidConfig)
+		return nil, &Error{"new", ErrInvalidValue, ProtocolFile, value}
 	}
 	return &Provider{ProtocolFile, []string{value[0]}}, nil
 }

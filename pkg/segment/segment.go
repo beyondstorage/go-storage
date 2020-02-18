@@ -1,19 +1,9 @@
 package segment
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"sync"
-)
-
-// All errors that segment could return.
-var (
-	ErrPartSizeInvalid     = errors.New("part size invalid")
-	ErrPartIntersected     = errors.New("part intersected")
-	ErrSegmentNotInitiated = errors.New("segment not initiated")
-	ErrSegmentPartsEmpty   = errors.New("segment Parts are empty")
-	ErrSegmentNotFulfilled = errors.New("segment not fulfilled")
 )
 
 // Part is a part of segment.
@@ -62,10 +52,10 @@ func (s *Segment) String() string {
 // Index will start from 0.
 func (s *Segment) InsertPart(offset, size int64) (p *Part, err error) {
 	if size == 0 {
-		panic(ErrPartSizeInvalid)
+		panic(&Error{"insert part", ErrPartSizeInvalid, s, nil})
 	}
 	if s.PartSize == 0 {
-		panic(ErrPartSizeInvalid)
+		panic(&Error{"insert part", ErrPartSizeInvalid, s, nil})
 	}
 
 	s.l.Lock()
@@ -97,21 +87,19 @@ func (s *Segment) SortedParts() []*Part {
 
 // ValidateParts will validate a segment's Parts.
 func (s *Segment) ValidateParts() (err error) {
-	errorMessage := "%s validate Parts failed: %w"
-
 	s.l.RLock()
 	defer s.l.RUnlock()
 
 	// Zero Parts are not allowed, cause they can't be completed.
 	if len(s.Parts) == 0 {
-		return fmt.Errorf(errorMessage, s, ErrSegmentPartsEmpty)
+		return &Error{"validate parts", ErrSegmentPartsEmpty, s, nil}
 	}
 
 	p := s.SortedParts()
 
 	// First part offset must be 0
 	if p[0].Offset != 0 {
-		return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
+		return &Error{"validate parts", ErrSegmentNotFulfilled, s, p[0]}
 	}
 
 	for idx := 1; idx < len(s.Parts); idx++ {
@@ -121,9 +109,9 @@ func (s *Segment) ValidateParts() (err error) {
 			continue
 		}
 		if last.Offset+last.Size > cur.Offset {
-			return fmt.Errorf(errorMessage, s, ErrPartIntersected)
+			return &Error{"validate parts", ErrPartIntersected, s, cur}
 		}
-		return fmt.Errorf(errorMessage, s, ErrSegmentNotFulfilled)
+		return &Error{"validate parts", ErrSegmentNotFulfilled, s, cur}
 	}
 
 	return nil

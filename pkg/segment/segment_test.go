@@ -7,12 +7,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPart_String(t *testing.T) {
+	p := Part{
+		Offset: 10,
+		Size:   20,
+		Index:  30,
+	}
+	assert.Equal(t, "Part {Offset: 10, Size: 20, Index: 30}", p.String())
+}
+
 func TestNewSegment(t *testing.T) {
 	s := NewSegment("test", "xxxx", 10)
 	assert.Equal(t, "test", s.Path)
 	assert.Equal(t, "xxxx", s.ID)
 	assert.Equal(t, int64(10), s.PartSize)
 	assert.NotNil(t, s.Parts)
+}
+
+func TestSegment_String(t *testing.T) {
+	s := NewSegment("test", "xxxx", 10)
+	assert.Equal(t, "Segment {ID: xxxx, Path: test, PartSize: 10}", s.String())
 }
 
 func TestSegment_InsertPart(t *testing.T) {
@@ -123,10 +137,6 @@ func TestSegment_ValidateParts(t *testing.T) {
 }
 
 func TestSegment_SortedParts(t *testing.T) {
-	type fields struct {
-		ID    string
-		Parts map[int64]*Part
-	}
 	tests := []struct {
 		name          string
 		parts         map[int64]*Part

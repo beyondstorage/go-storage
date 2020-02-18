@@ -1,17 +1,9 @@
 package endpoint
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-)
-
-var (
-	// ErrInvalidConfig will return if config string invalid.
-	ErrInvalidConfig = errors.New("invalid config")
-	// ErrUnsupportedProtocol will return if protocol is unsupported.
-	ErrUnsupportedProtocol = errors.New("unsupported protocol")
 )
 
 // Provider will return all info needed to connect a service.
@@ -33,27 +25,23 @@ func (v Value) String() string {
 
 // Parse will parse config string to create a endpoint Provider.
 func Parse(cfg string) (Provider, error) {
-	errorMessage := "parse credential config [%s]: <%w>"
-
 	s := strings.Split(cfg, ":")
-	if len(s) < 2 {
-		return nil, fmt.Errorf(errorMessage, cfg, ErrInvalidConfig)
-	}
+	// TODO: port could be emitted in https/http
 
 	switch s[0] {
 	case ProtocolHTTPS:
 		port, err := strconv.ParseInt(s[2], 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf(errorMessage, cfg, err)
+			return nil, &Error{"parse", err, ProtocolHTTPS, s[1:]}
 		}
 		return NewHTTPS(s[1], int(port)), nil
 	case ProtocolHTTP:
 		port, err := strconv.ParseInt(s[2], 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf(errorMessage, cfg, err)
+			return nil, &Error{"parse", err, ProtocolHTTP, s[1:]}
 		}
 		return NewHTTP(s[1], int(port)), nil
 	default:
-		return nil, fmt.Errorf(errorMessage, cfg, ErrUnsupportedProtocol)
+		return nil, &Error{"parse", ErrUnsupportedProtocol, s[0], nil}
 	}
 }
