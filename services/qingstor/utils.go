@@ -72,35 +72,25 @@ func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
 }
 
-func handleQingStorError(err error) error {
-	if err == nil {
-		panic("error must not be nil")
-	}
-
-	var e *qserror.QingStorError
-	e, ok := err.(*qserror.QingStorError)
-	if !ok {
-		return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
-	}
-
+func formatQingStorError(e *qserror.QingStorError) error {
 	if e.Code == "" {
 		switch e.StatusCode {
 		case 404:
-			return fmt.Errorf("%w: %v", types.ErrObjectNotExist, err)
+			return fmt.Errorf("%w: %v", types.ErrObjectNotExist, e)
 		default:
-			return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
+			return fmt.Errorf("%w: %v", types.ErrUnhandledError, e)
 		}
 	}
 
 	switch e.Code {
 	case "permission_denied":
-		return fmt.Errorf("%w: %v", types.ErrPermissionDenied, err)
+		return fmt.Errorf("%w: %v", types.ErrPermissionDenied, e)
 	case "object_not_exists":
-		return fmt.Errorf("%w: %v", types.ErrObjectNotExist, err)
+		return fmt.Errorf("%w: %v", types.ErrObjectNotExist, e)
 	case "invalid_access_key_id":
-		return fmt.Errorf("%w: %v", types.ErrConfigIncorrect, err)
+		return fmt.Errorf("%w: %v", types.ErrConfigIncorrect, e)
 	default:
-		return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
+		return fmt.Errorf("%w: %v", types.ErrUnhandledError, e)
 	}
 }
 

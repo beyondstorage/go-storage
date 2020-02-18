@@ -263,6 +263,7 @@ func TestService_List(t *testing.T) {
 		})
 
 		err := srv.List(listFunc)
+		t.Log(err)
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	}

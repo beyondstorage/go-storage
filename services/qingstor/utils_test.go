@@ -105,13 +105,8 @@ func TestGetRelPath(t *testing.T) {
 func TestHandleQingStorError(t *testing.T) {
 	t.Run("nil error will panic", func(t *testing.T) {
 		assert.Panics(t, func() {
-			_ = handleQingStorError(nil)
+			_ = formatQingStorError(nil)
 		})
-	})
-
-	t.Run("non-qingstor error will return a ErrUnhandledError", func(t *testing.T) {
-		err := handleQingStorError(errors.New("test"))
-		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	})
 
 	{
@@ -146,7 +141,7 @@ func TestHandleQingStorError(t *testing.T) {
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				assert.True(t, errors.Is(handleQingStorError(tt.input), tt.expected))
+				assert.True(t, errors.Is(formatQingStorError(tt.input), tt.expected))
 			})
 		}
 	}
@@ -205,7 +200,7 @@ func TestHandleQingStorError(t *testing.T) {
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				assert.True(t, errors.Is(handleQingStorError(tt.input), tt.expected))
+				assert.True(t, errors.Is(formatQingStorError(tt.input), tt.expected))
 			})
 		}
 	}

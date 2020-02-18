@@ -1,15 +1,18 @@
 package qingstor
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 	"sync"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
+	"github.com/Xuanwo/storage/services"
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/yunify/qingstor-sdk-go/v3/config"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
+	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/segment"
@@ -49,7 +52,9 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 
 // List implements Storager.List
 func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List [%s]: %w"
+	defer func() {
+		err = s.formatError("list", err, path)
+	}()
 
 	opt, _ := parseStoragePairList(pairs...)
 
@@ -66,8 +71,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			Prefix: &rp,
 		})
 		if err != nil {
-			err = handleQingStorError(err)
-			return fmt.Errorf(errorMessage, s, path, err)
+			return
 		}
 
 		for _, v := range output.CommonPrefixes {
@@ -98,7 +102,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			if v.StorageClass != nil {
 				storageClass, err := formatStorageClass(service.StringValue(v.StorageClass))
 				if err != nil {
-					return fmt.Errorf(errorMessage, s, path, err)
+					return err
 				}
 				o.SetStorageClass(storageClass)
 			}
@@ -139,11 +143,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 // Read implements Storager.Read
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	const errorMessage = "%s Read [%s]: %w"
+	defer func() {
+		err = s.formatError("read", err, path)
+	}()
 
 	opt, err := parseStoragePairRead(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	input := &service.GetObjectInput{}
@@ -152,8 +158,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 	output, err := s.bucket.GetObject(rp, input)
 	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	r = output.Body
@@ -165,11 +170,13 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 // WriteFile implements Storager.WriteFile
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Write [%s]: %w"
+	defer func() {
+		err = s.formatError("write", err, path)
+	}()
 
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	if opt.HasReadCallbackFunc {
@@ -186,7 +193,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	if opt.HasStorageClass {
 		storageClass, err := parseStorageClass(opt.StorageClass)
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, path, err)
+			return err
 		}
 		input.XQSStorageClass = service.String(storageClass)
 	}
@@ -195,15 +202,16 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 
 	_, err = s.bucket.PutObject(rp, input)
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 	return nil
 }
 
 // Stat implements Storager.Stat
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	const errorMessage = "%s Stat [%s]: %w"
+	defer func() {
+		err = s.formatError("stat", err, path)
+	}()
 
 	input := &service.HeadObjectInput{}
 
@@ -211,8 +219,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	output, err := s.bucket.HeadObject(rp, input)
 	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	// TODO: Add dir support.
@@ -235,7 +242,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	storageClass, err := formatStorageClass(service.StringValue(output.XQSStorageClass))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 	o.SetStorageClass(storageClass)
 
@@ -244,21 +251,24 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 // Delete implements Storager.Delete
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, path)
+	}()
 
 	rp := s.getAbsPath(path)
 
 	_, err = s.bucket.DeleteObject(rp)
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 	return nil
 }
 
 // Copy implements Storager.Copy
 func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Copy from [%s] to [%s]: %w"
+	defer func() {
+		err = s.formatError("copy", err, src, dst)
+	}()
 
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
@@ -267,16 +277,16 @@ func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 		XQSCopySource: &rs,
 	})
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, src, dst, err)
+		return
 	}
 	return nil
 }
 
 // Move implements Storager.Move
 func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Move from [%s] to [%s]: %w"
-
+	defer func() {
+		err = s.formatError("move", err, src, dst)
+	}()
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
@@ -284,19 +294,20 @@ func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 		XQSMoveSource: &rs,
 	})
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, src, dst, err)
+		return
 	}
 	return nil
 }
 
 // Reach implements Storager.Reach
 func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
-	const errorMessage = "%s Reach [%s]: %w"
+	defer func() {
+		err = s.formatError("reach", err, path)
+	}()
 
 	opt, err := parseStoragePairReach(pairs...)
 	if err != nil {
-		return "", fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	// FIXME: sdk should export GetObjectRequest as interface too?
@@ -306,32 +317,30 @@ func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 
 	r, _, err := bucket.GetObjectRequest(rp, nil)
 	if err != nil {
-		err = handleQingStorError(err)
-		return "", fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 	if err = r.Build(); err != nil {
-		err = handleQingStorError(err)
-		return "", fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	expire := opt.Expire
 	if err = r.SignQuery(expire); err != nil {
-		err = handleQingStorError(err)
-		return "", fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 	return r.HTTPRequest.URL.String(), nil
 }
 
 // Statistical implements Storager.Statistical
 func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic, err error) {
-	const errorMessage = "%s Statistical: %w"
+	defer func() {
+		err = s.formatError("statistical", err)
+	}()
 
 	m = metadata.NewStorageStatistic()
 
 	output, err := s.bucket.GetStatistics()
 	if err != nil {
-		err = handleQingStorError(err)
-		return m, fmt.Errorf(errorMessage, s, err)
+		return
 	}
 
 	if output.Size != nil {
@@ -345,11 +354,13 @@ func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic
 
 // ListSegments implements Storager.ListSegments
 func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s ListSegments [%s]: %w"
+	defer func() {
+		err = s.formatError("list segments", err, path)
+	}()
 
 	opt, err := parseStoragePairListSegments(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	keyMarker := ""
@@ -367,8 +378,7 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 			UploadIDMarker: &uploadIDMarker,
 		})
 		if err != nil {
-			err = handleQingStorError(err)
-			return fmt.Errorf(errorMessage, s, path, err)
+			return
 		}
 
 		for _, v := range output.Uploads {
@@ -398,11 +408,13 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 
 // InitSegment implements Storager.InitSegment
 func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err error) {
-	const errorMessage = "%s InitSegment [%s]: %w"
+	defer func() {
+		err = s.formatError("init segments", err, path)
+	}()
 
 	opt, err := parseStoragePairInitSegment(pairs...)
 	if err != nil {
-		return "", fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	input := &service.InitiateMultipartUploadInput{}
@@ -411,8 +423,7 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err
 
 	output, err := s.bucket.InitiateMultipartUpload(rp, input)
 	if err != nil {
-		err = handleQingStorError(err)
-		return "", fmt.Errorf(errorMessage, s, path, err)
+		return
 	}
 
 	id = *output.UploadID
@@ -425,18 +436,21 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err
 
 // WriteSegment implements Storager.WriteSegment
 func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s WriteSegment [%s]: %w"
+	defer func() {
+		err = s.formatError("write segment", err, id)
+	}()
 
 	s.segmentLock.RLock()
 	seg, ok := s.segments[id]
 	if !ok {
-		return fmt.Errorf(errorMessage, s, id, segment.ErrSegmentNotInitiated)
+		err = segment.ErrSegmentNotInitiated
+		return
 	}
 	s.segmentLock.RUnlock()
 
 	p, err := seg.InsertPart(offset, size)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, id, err)
+		return
 	}
 
 	rp := s.getAbsPath(seg.Path)
@@ -448,26 +462,28 @@ func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs
 		Body:          r,
 	})
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, id, err)
+		return
 	}
 	return
 }
 
 // CompleteSegment implements Storager.CompleteSegment
 func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s CompleteSegment [%s]: %w"
+	defer func() {
+		err = s.formatError("complete segment", err, id)
+	}()
 
 	s.segmentLock.RLock()
 	seg, ok := s.segments[id]
 	if !ok {
-		return fmt.Errorf(errorMessage, s, id, segment.ErrSegmentNotInitiated)
+		err = segment.ErrSegmentNotInitiated
+		return
 	}
 	s.segmentLock.RUnlock()
 
 	err = seg.ValidateParts()
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, id, err)
+		return
 	}
 
 	parts := seg.SortedParts()
@@ -487,8 +503,7 @@ func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		ObjectParts: objectParts,
 	})
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, id, err)
+		return
 	}
 
 	s.segmentLock.Lock()
@@ -499,12 +514,15 @@ func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 
 // AbortSegment implements Storager.AbortSegment
 func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s AbortSegment [%s]: %w"
+	defer func() {
+		err = s.formatError("abort segment", err, id)
+	}()
 
 	s.segmentLock.RLock()
 	seg, ok := s.segments[id]
 	if !ok {
-		return fmt.Errorf(errorMessage, s, id, segment.ErrSegmentNotInitiated)
+		err = segment.ErrSegmentNotInitiated
+		return
 	}
 	s.segmentLock.RUnlock()
 
@@ -514,8 +532,7 @@ func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 		UploadID: &seg.ID,
 	})
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, id, err)
+		return
 	}
 
 	s.segmentLock.Lock()
@@ -530,4 +547,23 @@ func (s *Storage) getAbsPath(path string) string {
 
 func (s *Storage) getRelPath(path string) string {
 	return strings.TrimPrefix(path, s.workDir+"/")
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	// Handle errors returned by qingstor.
+	var e qserror.QingStorError
+	if errors.As(err, &e) {
+		err = formatQingStorError(&e)
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      err,
+		Storager: s,
+		Path:     path,
+	}
 }

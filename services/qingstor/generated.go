@@ -821,7 +821,7 @@ func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment
 }
 
 // CreateWithContext adds context support for Create.
-func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*types.Pair) (storage.Storager, error) {
+func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*types.Pair) (store storage.Storager, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.service.Create")
 	defer span.Finish()
 
@@ -839,7 +839,7 @@ func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...*
 }
 
 // GetWithContext adds context support for Get.
-func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*types.Pair) (storage.Storager, error) {
+func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*types.Pair) (store storage.Storager, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.service.Get")
 	defer span.Finish()
 
