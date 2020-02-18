@@ -29,7 +29,7 @@ func TestParse(t *testing.T) {
 			"invalid string",
 			"abcx",
 			nil,
-			ErrInvalidConfig,
+			ErrUnsupportedProtocol,
 		},
 		{
 			"normal http",
@@ -76,6 +76,8 @@ func TestParse(t *testing.T) {
 				} else {
 					assert.True(t, errors.Is(err, tt.err))
 				}
+				// FIXME: strconv.NumError doesn't implement Unwrap for now, waiting for go1.14
+				// assert.True(t, errors.Is(err, tt.err))
 			}
 			assert.EqualValues(t, tt.value, p)
 		})
