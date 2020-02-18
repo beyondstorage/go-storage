@@ -57,14 +57,14 @@ func Parse(cfg string) (*Provider, error) {
 	case ProtocolEnv:
 		return NewEnv()
 	default:
-		return nil, &Error{"parse", s[0], nil, ErrUnsupportedProtocol}
+		return nil, &Error{"parse", ErrUnsupportedProtocol, s[0], nil}
 	}
 }
 
 // NewHmac create a hmac provider.
 func NewHmac(value ...string) (*Provider, error) {
 	if len(value) != 2 {
-		return nil, &Error{"new", ProtocolHmac, value, ErrInvalidValue}
+		return nil, &Error{"new", ErrInvalidValue, ProtocolHmac, value}
 	}
 	return &Provider{ProtocolHmac, []string{value[0], value[1]}}, nil
 }
@@ -81,7 +81,7 @@ func MustNewHmac(value ...string) *Provider {
 // NewAPIKey create a api key provider.
 func NewAPIKey(value ...string) (*Provider, error) {
 	if len(value) != 1 {
-		return nil, &Error{"new", ProtocolAPIKey, value, ErrInvalidValue}
+		return nil, &Error{"new", ErrInvalidValue, ProtocolAPIKey, value}
 	}
 	return &Provider{ProtocolAPIKey, []string{value[0]}}, nil
 }
@@ -98,7 +98,7 @@ func MustNewAPIKey(value ...string) *Provider {
 // NewFile create a file provider.
 func NewFile(value ...string) (*Provider, error) {
 	if len(value) != 1 {
-		return nil, &Error{"new", ProtocolFile, value, ErrInvalidValue}
+		return nil, &Error{"new", ErrInvalidValue, ProtocolFile, value}
 	}
 	return &Provider{ProtocolFile, []string{value[0]}}, nil
 }

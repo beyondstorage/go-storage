@@ -1,7 +1,7 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: draft
-updated_at: 2020-02-17
+updated_at: 2020-02-18
 adds:
   - spec/1-error-handling.md
 ---
@@ -31,26 +31,18 @@ Take package `segment` as example, as described in [spec: error handling], we wi
 
 ```go
 type SegError struct {
-	Err error
     Op  string
+	Err error
 
 	Seg *Segment
 }
 
 func (e *SegError) Error() string {
-	return fmt.Sprintf("%v %v: %s", e.Seg, e.Op, e.Err)
+	return fmt.Sprintf("%s: %v: %s", e.Op, e.Seg, e.Err)
 }
 
 func (e *SegError) Unwrap() error {
 	return e.Err
-}
-
-func newSegmentError(err error, op string, seg *Segment) *SegError {
-	return &SegError{
-		Err: err,
-        Op: op,
-		Seg: seg,
-	}
 }
 ```
 
@@ -62,7 +54,7 @@ func (s *Segment) ValidateParts() (err error) {
 
 	// Zero Parts are not allowed, cause they can't be completed.
 	if len(s.Parts) == 0 {
-        return newSegmentError(ErrSegmentPartsEmpty, OpValidateParts, s)
+        return &SegError{"validate parts", ErrSegmentPartsEmpty, s}
 	}
 
     ...

@@ -32,16 +32,16 @@ func Parse(cfg string) (Provider, error) {
 	case ProtocolHTTPS:
 		port, err := strconv.ParseInt(s[2], 10, 64)
 		if err != nil {
-			return nil, &Error{"parse", ProtocolHTTPS, s[1:], err}
+			return nil, &Error{"parse", err, ProtocolHTTPS, s[1:]}
 		}
 		return NewHTTPS(s[1], int(port)), nil
 	case ProtocolHTTP:
 		port, err := strconv.ParseInt(s[2], 10, 64)
 		if err != nil {
-			return nil, &Error{"parse", ProtocolHTTP, s[1:], err}
+			return nil, &Error{"parse", err, ProtocolHTTP, s[1:]}
 		}
 		return NewHTTP(s[1], int(port)), nil
 	default:
-		return nil, &Error{"parse", s[0], nil, ErrUnsupportedProtocol}
+		return nil, &Error{"parse", ErrUnsupportedProtocol, s[0], nil}
 	}
 }

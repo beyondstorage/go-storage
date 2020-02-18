@@ -11,14 +11,14 @@ var (
 
 // Error is the error returned by config
 type Error struct {
-	Op     string
-	Config string
-
+	Op  string
 	Err error
+
+	Config string
 }
 
 func (e *Error) Error() string {
-	return e.Op + " " + e.Config + ": " + e.Err.Error()
+	return e.Op + ": " + e.Config + ": " + e.Err.Error()
 }
 
 // Unwrap implements xerrors.Wrapper

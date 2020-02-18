@@ -14,7 +14,7 @@ func Parse(cfg string) (t string, opt []*types.Pair, err error) {
 	// Parse type from: "<type>://<config>"
 	s := strings.Split(cfg, "://")
 	if len(s) != 2 || s[0] == "" || s[1] == "" {
-		err = &Error{"parse", cfg, ErrInvalidConfig}
+		err = &Error{"parse", ErrInvalidConfig, cfg}
 		return
 	}
 	t = s[0]
@@ -27,20 +27,20 @@ func Parse(cfg string) (t string, opt []*types.Pair, err error) {
 		// Split <credential>@<endpoint> into tow parts.
 		ce := strings.Split(s[0], "@")
 		if len(ce) == 0 || len(ce) > 2 {
-			return "", nil, &Error{"parse", cfg, ErrInvalidConfig}
+			return "", nil, &Error{"parse", ErrInvalidConfig, cfg}
 		}
 
 		// We always have credential part
 		cred, err := credential.Parse(ce[0])
 		if err != nil {
-			return "", nil, &Error{"parse", cfg, err}
+			return "", nil, &Error{"parse", err, cfg}
 		}
 		opt = append(opt, pairs.WithCredential(cred))
 
 		if len(ce) == 2 {
 			end, err := endpoint.Parse(ce[1])
 			if err != nil {
-				return "", nil, &Error{"parse", cfg, err}
+				return "", nil, &Error{"parse", err, cfg}
 			}
 			opt = append(opt, pairs.WithEndpoint(end))
 		}
