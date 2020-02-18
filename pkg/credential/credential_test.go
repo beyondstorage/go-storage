@@ -87,7 +87,7 @@ func TestNewHmac(t *testing.T) {
 			"invalid",
 			[]string{"ak", "sk", "xxxx"},
 			nil,
-			ErrInvalidConfig,
+			ErrInvalidValue,
 		},
 	}
 
@@ -154,7 +154,7 @@ func TestNewAPIKey(t *testing.T) {
 			"invalid",
 			[]string{"ak", "sk", "xxxx"},
 			nil,
-			ErrInvalidConfig,
+			ErrInvalidValue,
 		},
 	}
 
@@ -221,7 +221,7 @@ func TestNewFile(t *testing.T) {
 			"invalid",
 			[]string{"ak", "sk", "xxxx"},
 			nil,
-			ErrInvalidConfig,
+			ErrInvalidValue,
 		},
 	}
 
