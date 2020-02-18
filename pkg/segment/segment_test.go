@@ -123,10 +123,6 @@ func TestSegment_ValidateParts(t *testing.T) {
 }
 
 func TestSegment_SortedParts(t *testing.T) {
-	type fields struct {
-		ID    string
-		Parts map[int64]*Part
-	}
 	tests := []struct {
 		name          string
 		parts         map[int64]*Part
