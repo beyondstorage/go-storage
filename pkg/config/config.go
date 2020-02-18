@@ -2,7 +2,6 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/Xuanwo/storage/pkg/credential"
@@ -16,16 +15,29 @@ var (
 	ErrInvalidConfig = errors.New("invalid config")
 )
 
-// Parse will parse config string and return service type and namespace.
-//
-// TODO: Options didn't support for now.
-func Parse(cfg string) (t string, opt []*types.Pair, err error) {
-	errorMessage := "parse config [%s]: <%w>"
+// Error is the error returned by config
+type Error struct {
+	Op     string
+	Config string
 
+	Err error
+}
+
+func (e *Error) Error() string {
+	return e.Op + " " + e.Config + ": " + e.Err.Error()
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *Error) Unwrap() error {
+	return e.Err
+}
+
+// Parse will parse config string and return service type and namespace.
+func Parse(cfg string) (t string, opt []*types.Pair, err error) {
 	// Parse type from: "<type>://<config>"
 	s := strings.Split(cfg, "://")
 	if len(s) != 2 || s[0] == "" || s[1] == "" {
-		err = fmt.Errorf(errorMessage, cfg, ErrInvalidConfig)
+		err = &Error{"parse", cfg, ErrInvalidConfig}
 		return
 	}
 	t = s[0]
@@ -38,20 +50,20 @@ func Parse(cfg string) (t string, opt []*types.Pair, err error) {
 		// Split <credential>@<endpoint> into tow parts.
 		ce := strings.Split(s[0], "@")
 		if len(ce) == 0 || len(ce) > 2 {
-			return "", nil, fmt.Errorf(errorMessage, cfg, ErrInvalidConfig)
+			return "", nil, &Error{"parse", cfg, ErrInvalidConfig}
 		}
 
 		// We always have credential part
 		cred, err := credential.Parse(ce[0])
 		if err != nil {
-			return "", nil, fmt.Errorf(errorMessage, cfg, err)
+			return "", nil, &Error{"parse", cfg, err}
 		}
 		opt = append(opt, pairs.WithCredential(cred))
 
 		if len(ce) == 2 {
 			end, err := endpoint.Parse(ce[1])
 			if err != nil {
-				return "", nil, fmt.Errorf(errorMessage, cfg, err)
+				return "", nil, &Error{"parse", cfg, err}
 			}
 			opt = append(opt, pairs.WithEndpoint(end))
 		}
