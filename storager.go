@@ -14,19 +14,17 @@ type StoragerFunc func(Storager)
 /*
 Storager is the interface for storage service.
 
-Currently, we support two different type storage services: prefix based and directory based. Prefix based storage
-service is usually a object storage service, such as AWS; And directory based service is often a POSIX file system.
+Currently, we support two different types of storage services: prefix based and directory based. Prefix based storage
+service is usually an object storage service, such as AWS; And directory based service is often a POSIX file system.
 We used to treat them as different abstract level services, but in this project, we will unify both of them to make a
 production ready high performance vendor lock free storage layer.
 
 Every storager will implement the same interface but with different capability and operation pairs set.
 
-Everything in a storager is an Object with three types: File, Dir.
+Everything in a storager is an Object with two types: File, Dir.
 File is the smallest unit in service, it will have content and metadata. Dir is a container for File and Dir.
 In prefix-based storage service, Dir is usually an empty key end with "/" or with special content type.
 For directory-based service, Dir will be corresponded to the real directory on file system.
-
-Every API call in storager is relative to it's work dir which set in Init().
 
 In the comments of every method, we will use following rules to standardize the Storager's behavior:
 
