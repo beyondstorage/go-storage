@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Xuanwo/storage/pkg/storageclass"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -99,7 +100,6 @@ func TestStorage_Statistical(t *testing.T) {
 		})
 		_, err := client.Statistical()
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	}
 }
 
@@ -485,7 +485,7 @@ func TestStorage_List(t *testing.T) {
 				},
 			},
 			[]*types.Object{},
-			types.ErrStorageClassNotSupported,
+			services.ErrStorageClassNotSupported,
 		},
 		{
 			"list with return a dir MIME type",
@@ -668,7 +668,7 @@ func TestStorage_Stat(t *testing.T) {
 					XQSStorageClass: convert.String("xxxx"),
 				}, nil
 			},
-			true, types.ErrStorageClassNotSupported,
+			true, services.ErrStorageClassNotSupported,
 		},
 	}
 

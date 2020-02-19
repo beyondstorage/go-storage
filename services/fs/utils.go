@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 )
 
@@ -43,8 +44,8 @@ func handleOsError(err error) error {
 
 	// Add two conditions in case of os.IsNotExist not work with fmt.Errorf
 	if errors.Is(err, os.ErrNotExist) || os.IsNotExist(err) {
-		return fmt.Errorf("%w: %v", types.ErrObjectNotExist, err)
+		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	}
 	// TODO: handle other osError here.
-	return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
+	return err
 }

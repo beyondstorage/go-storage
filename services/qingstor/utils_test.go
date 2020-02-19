@@ -7,7 +7,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/storageclass"
-	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types/pairs"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -22,7 +22,7 @@ func Test_New(t *testing.T) {
 	// Missing required pair
 	_, _, err := New()
 	assert.Error(t, err)
-	assert.True(t, errors.Is(err, types.ErrPairRequired))
+	assert.True(t, errors.Is(err, services.ErrPairRequired))
 
 	// Valid case
 	accessKey := uuid.New().String()
@@ -124,18 +124,7 @@ func TestHandleQingStorError(t *testing.T) {
 					RequestID:    "",
 					ReferenceURL: "",
 				},
-				types.ErrObjectNotExist,
-			},
-			{
-				"invalid status code",
-				&qserror.QingStorError{
-					StatusCode:   444,
-					Code:         "",
-					Message:      "",
-					RequestID:    "",
-					ReferenceURL: "",
-				},
-				types.ErrUnhandledError,
+				services.ErrObjectNotExist,
 			},
 		}
 
@@ -161,7 +150,7 @@ func TestHandleQingStorError(t *testing.T) {
 					RequestID:    "",
 					ReferenceURL: "",
 				},
-				types.ErrPermissionDenied,
+				services.ErrPermissionDenied,
 			},
 			{
 				"object_not_exists",
@@ -172,29 +161,7 @@ func TestHandleQingStorError(t *testing.T) {
 					RequestID:    "",
 					ReferenceURL: "",
 				},
-				types.ErrObjectNotExist,
-			},
-			{
-				"invalid_access_key_id",
-				&qserror.QingStorError{
-					StatusCode:   400,
-					Code:         "invalid_access_key_id",
-					Message:      "",
-					RequestID:    "",
-					ReferenceURL: "",
-				},
-				types.ErrConfigIncorrect,
-			},
-			{
-				"not handled",
-				&qserror.QingStorError{
-					StatusCode:   400,
-					Code:         "xxxxxx",
-					Message:      "",
-					RequestID:    "",
-					ReferenceURL: "",
-				},
-				types.ErrUnhandledError,
+				services.ErrObjectNotExist,
 			},
 		}
 
@@ -215,7 +182,7 @@ func TestParseStorageClass(t *testing.T) {
 	}{
 		{"hot", storageclass.Hot, storageClassStandard, nil},
 		{"warm", storageclass.Warm, storageClassStandardIA, nil},
-		{"xxxxx", "xxxx", "", types.ErrStorageClassNotSupported},
+		{"xxxxx", "xxxx", "", services.ErrStorageClassNotSupported},
 	}
 
 	for _, tt := range tests {
@@ -238,7 +205,7 @@ func TestFormatStorageClass(t *testing.T) {
 	}{
 		{"hot", storageClassStandard, storageclass.Hot, nil},
 		{"warm", storageClassStandardIA, storageclass.Warm, nil},
-		{"xxxxx", "xxxxx", "", types.ErrStorageClassNotSupported},
+		{"xxxxx", "xxxxx", "", services.ErrStorageClassNotSupported},
 	}
 
 	for _, tt := range tests {

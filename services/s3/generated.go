@@ -12,6 +12,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/pkg/storageclass"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -22,6 +23,7 @@ var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
 var _ storageclass.Type
+var _ services.ServiceError
 
 // Type is the type for s3
 const Type = "s3"
@@ -56,7 +58,12 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Location]
 	if !ok {
-		return nil, types.NewErrPairRequired(ps.Location)
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairRequired,
+			Key:   ps.Location,
+			Value: nil,
+		}
 	}
 	if ok {
 		result.Location = v.(string)
@@ -168,7 +175,12 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.StoragerFunc]
 	if !ok {
-		return nil, types.NewErrPairRequired(ps.StoragerFunc)
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairRequired,
+			Key:   ps.StoragerFunc,
+			Value: nil,
+		}
 	}
 	if ok {
 		result.StoragerFunc = v.(storage.StoragerFunc)
@@ -208,7 +220,12 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]
 	if !ok {
-		return nil, types.NewErrPairRequired(ps.Credential)
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairRequired,
+			Key:   ps.Credential,
+			Value: nil,
+		}
 	}
 	if ok {
 		result.Credential = v.(*credential.Provider)
@@ -348,7 +365,12 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Name]
 	if !ok {
-		return nil, types.NewErrPairRequired(ps.Name)
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairRequired,
+			Key:   ps.Name,
+			Value: nil,
+		}
 	}
 	if ok {
 		result.Name = v.(string)
@@ -469,7 +491,12 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	}
 	v, ok = values[ps.Size]
 	if !ok {
-		return nil, types.NewErrPairRequired(ps.Size)
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairRequired,
+			Key:   ps.Size,
+			Value: nil,
+		}
 	}
 	if ok {
 		result.Size = v.(int64)

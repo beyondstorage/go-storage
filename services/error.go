@@ -8,8 +8,43 @@ import (
 )
 
 var (
+	// Errors related to service capability and restriction.
+
+	// ErrCredentialProtocolNotSupported means this service doesn't support this credential protocol
+	ErrCredentialProtocolNotSupported = errors.New("credential protocol not supported")
+	// ErrPairRequired means this operation missing required pairs.
+	ErrPairRequired = errors.New("pair required")
+	// ErrStorageClassNotSupported means this service doesn't support this storage class
+	ErrStorageClassNotSupported = errors.New("storage class not supported")
+
+	// Errors related to service business logic.
+
+	// ErrObjectNotExist means the object to be operated is not exist.
+	ErrObjectNotExist = errors.New("object not exist")
+	// ErrPermissionDenied means this operation doesn't have enough permission.
 	ErrPermissionDenied = errors.New("permission denied")
 )
+
+// PairError represent errors related to pair.
+type PairError struct {
+	Op  string
+	Err error
+
+	Key   string
+	Value interface{}
+}
+
+func (e *PairError) Error() string {
+	if e.Value == nil {
+		return fmt.Sprintf("%s: %s: %s", e.Op, e.Key, e.Err.Error())
+	}
+	return fmt.Sprintf("%s: %s, %s: %s", e.Op, e.Key, e.Value, e.Err.Error())
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *PairError) Unwrap() error {
+	return e.Err
+}
 
 // ServiceError represent errors related to service.
 type ServiceError struct {

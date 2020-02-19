@@ -7,7 +7,9 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
 
@@ -34,7 +36,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	}
 
 	store, err := srv.newStorage(pairs...)
-	if err != nil && errors.Is(err, types.ErrPairRequired) {
+	if err != nil && errors.Is(err, services.ErrPairRequired) {
 		return srv, nil, nil
 	}
 	if err != nil {
@@ -63,7 +65,12 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 	case storageclass.Cold:
 		return storageClassArchive, nil
 	default:
-		return "", types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "parse storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }
 
@@ -77,6 +84,11 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 	case storageClassArchive:
 		return storageclass.Cold, nil
 	default:
-		return "", types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "format storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }

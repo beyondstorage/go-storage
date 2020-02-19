@@ -11,6 +11,7 @@ import (
 	"bou.ke/monkey"
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/services"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,6 @@ import (
 	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
-	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
@@ -145,7 +145,7 @@ func TestService_Create(t *testing.T) {
 	path := uuid.New().String()
 	_, err := srv.Create(path)
 	assert.Error(t, err)
-	assert.True(t, errors.Is(err, types.ErrPairRequired))
+	assert.True(t, errors.Is(err, services.ErrPairRequired))
 
 	// Test case2: with valid location.
 	path = uuid.New().String()
@@ -265,7 +265,6 @@ func TestService_List(t *testing.T) {
 		err := srv.List(listFunc)
 		t.Log(err)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, types.ErrUnhandledError))
 	}
 }
 
