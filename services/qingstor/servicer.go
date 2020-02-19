@@ -1,16 +1,19 @@
 package qingstor
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/segment"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/yunify/qingstor-sdk-go/v3/config"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
+	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 )
 
@@ -27,16 +30,18 @@ func (s *Service) String() string {
 	if s.config == nil {
 		return fmt.Sprintf("Servicer qingstor")
 	}
-	return fmt.Sprintf("Servicer qingstor {Host: %s, Port: %d, Protocol: %s, AccessKey: %s}", s.config.Host, s.config.Port, s.config.Protocol, s.config.AccessKeyID)
+	return fmt.Sprintf("Servicer qingstor {AccessKey: %s}", s.config.AccessKeyID)
 }
 
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List: %w"
+	defer func() {
+		err = s.formatError("list", err, "")
+	}()
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
+		return
 	}
 
 	input := &service.ListBucketsInput{}
@@ -47,14 +52,13 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 	// FIXME: List buckets could be incomplete.
 	output, err := s.service.ListBuckets(input)
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, err)
+		return
 	}
 
 	for _, v := range output.Buckets {
 		store, err := s.newStorage(ps.WithName(*v.Name), ps.WithLocation(*v.Location))
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, err)
+			return err
 		}
 		opt.StoragerFunc(store)
 	}
@@ -62,105 +66,107 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 }
 
 // Get implements Servicer.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Get [%s]: %w"
+func (s *Service) Get(name string, pairs ...*types.Pair) (store storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("get", err, name)
+	}()
 
 	opt, err := parseServicePairGet(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return
 	}
 
 	location := opt.Location
 	if !opt.HasLocation {
 		location, err = s.detectLocation(name)
 		if err != nil {
-			return nil, fmt.Errorf(errorMessage, s, name, err)
+			return
 		}
 	}
 	pairs = append(pairs, ps.WithName(name), ps.WithLocation(location))
 
-	store, err := s.newStorage(append(pairs, ps.WithName(name))...)
+	store, err = s.newStorage(append(pairs, ps.WithName(name))...)
 	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return
 	}
-	return store, nil
+	return
 }
 
 // Create implements Servicer.Create
-func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Create [%s]: %w"
+func (s *Service) Create(name string, pairs ...*types.Pair) (store storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("create", err, name)
+	}()
 
-	_, err := parseServicePairCreate(pairs...)
+	_, err = parseServicePairCreate(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return
 	}
 
 	// ServicePairCreate requires location, so we don't need to add location into pairs
 	pairs = append(pairs, ps.WithName(name))
 
-	store, err := s.newStorage(pairs...)
+	st, err := s.newStorage(pairs...)
 	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return
 	}
 
-	_, err = store.bucket.Put()
+	_, err = st.bucket.Put()
 	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return
 	}
-	return store, nil
+	return st, nil
 }
 
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("create", err, name)
+	}()
 
 	opt, err := parseServicePairDelete(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return
 	}
 
 	location := opt.Location
 	if !opt.HasLocation {
 		location, err = s.detectLocation(name)
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, name, err)
+			return
 		}
 	}
 	pairs = append(pairs, ps.WithName(name), ps.WithLocation(location))
 
 	store, err := s.newStorage(pairs...)
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, name, err)
+		return
 	}
 	_, err = store.bucket.Delete()
 	if err != nil {
-		err = handleQingStorError(err)
-		return fmt.Errorf(errorMessage, s, name, err)
+		return
 	}
 	return nil
 }
 
-func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
-	const errorMessage = "qingstor new_storage: %w"
+func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
+	defer func() {
+		err = s.formatError("new storage", err, "")
+	}()
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return
 	}
 
 	if !IsBucketNameValid(opt.Name) {
-		err := handleQingStorError(ErrInvalidBucketName)
-		return nil, fmt.Errorf(errorMessage, err)
+		err = ErrInvalidBucketName
+		return
 	}
 
 	bucket, err := s.service.Bucket(opt.Name, opt.Location)
 	if err != nil {
-		err = handleQingStorError(err)
-		return nil, fmt.Errorf(errorMessage, err)
+		return
 	}
 	return &Storage{
 		bucket:     bucket,
@@ -170,22 +176,42 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 	}, nil
 }
 
-func (s *Service) detectLocation(name string) (string, error) {
-	const errorMessage = "qingstor detect_location: %w"
+func (s *Service) detectLocation(name string) (location string, err error) {
+	defer func() {
+		err = s.formatError("detect location", err, "")
+	}()
 
 	url := fmt.Sprintf("%s://%s.%s:%d", s.config.Protocol, name, s.config.Host, s.config.Port)
 
 	r, err := s.noRedirectClient.Head(url)
 	if err != nil {
-		err = handleQingStorError(err)
-		return "", fmt.Errorf(errorMessage, err)
+		return
 	}
 	if r.StatusCode != http.StatusTemporaryRedirect {
 		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
-		return "", fmt.Errorf(errorMessage, handleQingStorError(err))
+		return
 	}
 
 	// Example URL: https://bucket.zone.qingstor.com
-	location := strings.Split(r.Header.Get("Location"), ".")[1]
-	return location, nil
+	location = strings.Split(r.Header.Get("Location"), ".")[1]
+	return
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	// Handle errors returned by qingstor.
+	var e qserror.QingStorError
+	if errors.As(err, &e) {
+		err = formatQingStorError(&e)
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      err,
+		Servicer: s,
+		Name:     name,
+	}
 }

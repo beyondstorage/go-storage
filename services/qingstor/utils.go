@@ -10,7 +10,9 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/yunify/qingstor-sdk-go/v3/config"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
@@ -18,8 +20,6 @@ import (
 
 // New will create a new qingstor service.
 func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
-	const errorMessage = "qingstor New: %w"
-
 	srv := &Service{
 		noRedirectClient: &http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -30,16 +30,21 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, fmt.Errorf(errorMessage, credential.ErrUnsupportedProtocol)
+		return nil, nil, &services.PairError{
+			Op:    "new",
+			Err:   services.ErrCredentialProtocolNotSupported,
+			Key:   credProtocol,
+			Value: cred,
+		}
 	}
 	cfg, err := config.New(cred[0], cred[1])
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 	if opt.HasEndpoint {
 		ep := opt.Endpoint.Value()
@@ -52,11 +57,11 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	srv.service, _ = service.Init(cfg)
 
 	store, err := srv.newStorage(pairs...)
-	if err != nil && errors.Is(err, types.ErrPairRequired) {
+	if err != nil && errors.Is(err, services.ErrPairRequired) {
 		return srv, nil, nil
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 	return srv, store, nil
 }
@@ -72,35 +77,23 @@ func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
 }
 
-func handleQingStorError(err error) error {
-	if err == nil {
-		panic("error must not be nil")
-	}
-
-	var e *qserror.QingStorError
-	e, ok := err.(*qserror.QingStorError)
-	if !ok {
-		return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
-	}
-
+func formatQingStorError(e *qserror.QingStorError) error {
 	if e.Code == "" {
 		switch e.StatusCode {
 		case 404:
-			return fmt.Errorf("%w: %v", types.ErrObjectNotExist, err)
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, e)
 		default:
-			return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
+			return e
 		}
 	}
 
 	switch e.Code {
 	case "permission_denied":
-		return fmt.Errorf("%w: %v", types.ErrPermissionDenied, err)
+		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, e)
 	case "object_not_exists":
-		return fmt.Errorf("%w: %v", types.ErrObjectNotExist, err)
-	case "invalid_access_key_id":
-		return fmt.Errorf("%w: %v", types.ErrConfigIncorrect, err)
+		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, e)
 	default:
-		return fmt.Errorf("%w: %v", types.ErrUnhandledError, err)
+		return e
 	}
 }
 
@@ -124,7 +117,12 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 	case storageclass.Warm:
 		return storageClassStandardIA, nil
 	default:
-		return "", types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "parse storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }
 
@@ -136,6 +134,11 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 	case storageClassStandardIA:
 		return storageclass.Warm, nil
 	default:
-		return "", types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "format storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }

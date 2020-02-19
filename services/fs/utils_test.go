@@ -7,10 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Xuanwo/storage/services"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/Xuanwo/storage/types"
 )
 
 func TestNewClient(t *testing.T) {
@@ -71,17 +70,12 @@ func TestHandleOsError(t *testing.T) {
 			{
 				"not found",
 				os.ErrNotExist,
-				types.ErrObjectNotExist,
+				services.ErrObjectNotExist,
 			},
 			{
 				"wrapped not found",
 				fmt.Errorf("%w: some other infos", os.ErrNotExist),
-				types.ErrObjectNotExist,
-			},
-			{
-				"other errors",
-				errors.New("expect unhandled error"),
-				types.ErrUnhandledError,
+				services.ErrObjectNotExist,
 			},
 		}
 

@@ -9,7 +9,9 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 // New will create a new azblob oss service.
@@ -49,7 +51,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	srv.service = azblob.NewServiceURL(*primaryURL, p)
 
 	store, err := srv.newStorage(pairs...)
-	if err != nil && errors.Is(err, types.ErrPairRequired) {
+	if err != nil && errors.Is(err, services.ErrPairRequired) {
 		return srv, nil, nil
 	}
 	if err != nil {
@@ -68,7 +70,12 @@ func parseStorageClass(in storageclass.Type) (azblob.AccessTierType, error) {
 	case storageclass.Warm:
 		return azblob.AccessTierCool, nil
 	default:
-		return azblob.AccessTierType(""), types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "parse storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }
 
@@ -82,6 +89,11 @@ func formatStorageClass(in azblob.AccessTierType) (storageclass.Type, error) {
 	case azblob.AccessTierHot:
 		return storageclass.Hot, nil
 	default:
-		return "", types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "format storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }

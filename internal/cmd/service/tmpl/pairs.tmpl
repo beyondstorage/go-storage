@@ -46,7 +46,12 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
     v, ok = values[ps.{{ $pkey }}]
     {{- if $required }}
     if !ok {
-        return nil, types.NewErrPairRequired(ps.{{ $pkey }})
+        return nil, &services.PairError{
+            Op: "parse",
+            Err: services.ErrPairRequired,
+            Key: ps.{{ $pkey }},
+            Value: nil,
+        }
     }
     {{- end }}
     if ok {

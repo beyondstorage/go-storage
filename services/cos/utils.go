@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Xuanwo/storage/services"
+	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/tencentyun/cos-go-sdk-v5"
 
 	"github.com/Xuanwo/storage"
@@ -40,7 +42,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	srv.service = cos.NewClient(nil, srv.client)
 
 	store, err := srv.newStorage(pairs...)
-	if err != nil && errors.Is(err, types.ErrPairRequired) {
+	if err != nil && errors.Is(err, services.ErrPairRequired) {
 		return srv, nil, nil
 	}
 	if err != nil {
@@ -68,7 +70,12 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 	case storageclass.Warm:
 		return storageClassStandardIA, nil
 	default:
-		return "", types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "parse storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }
 
@@ -83,6 +90,11 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 	case storageClassStandard, "":
 		return storageclass.Hot, nil
 	default:
-		return "", types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "format storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }

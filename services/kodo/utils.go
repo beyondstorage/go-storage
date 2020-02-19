@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Xuanwo/storage/services"
+	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	qs "github.com/qiniu/api.v7/v7/storage"
 
@@ -35,7 +37,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	srv.service = qs.NewBucketManager(mac, cfg)
 
 	store, err := srv.newStorage(pairs...)
-	if err != nil && errors.Is(err, types.ErrPairRequired) {
+	if err != nil && errors.Is(err, services.ErrPairRequired) {
 		return srv, nil, nil
 	}
 	if err != nil {
@@ -68,7 +70,12 @@ func parseStorageClass(in storageclass.Type) (int, error) {
 	case storageclass.Cold:
 		return storageClassArchive, nil
 	default:
-		return 0, types.ErrStorageClassNotSupported
+		return 0, &services.PairError{
+			Op:    "parse storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }
 
@@ -82,6 +89,11 @@ func formatStorageClass(in int) (storageclass.Type, error) {
 	case 2:
 		return storageclass.Cold, nil
 	default:
-		return "", types.ErrStorageClassNotSupported
+		return "", &services.PairError{
+			Op:    "format storage class",
+			Err:   services.ErrStorageClassNotSupported,
+			Key:   ps.StorageClass,
+			Value: in,
+		}
 	}
 }
