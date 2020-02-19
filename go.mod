@@ -19,7 +19,7 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/qiniu/api.v7/v7 v7.4.1
 	github.com/satori/go.uuid v1.2.0 // indirect
-	github.com/stretchr/testify v1.5.0
+	github.com/stretchr/testify v1.5.1
 	github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20191221060900-c807d39e9045
 	github.com/upyun/go-sdk v2.1.0+incompatible
 	github.com/yunify/qingstor-sdk-go/v3 v3.1.2-0.20191015085047-089474e57bf8
