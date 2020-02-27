@@ -891,3 +891,85 @@ func TestStorage_ListSegments(t *testing.T) {
 		})
 	}
 }
+
+func TestStorage_formatError(t *testing.T) {
+	s := &Storage{}
+	errCasual := errors.New("casual error")
+	cases := []struct {
+		name      string
+		op        string
+		err       error
+		path      string
+		targetErr error
+		targetEq  bool
+	}{
+		{
+			name: "nil error",
+			err:  nil,
+		},
+		{
+			name:      "casual error",
+			op:        "stat",
+			err:       errCasual,
+			targetErr: errCasual,
+			targetEq:  true,
+		},
+		{
+			name: "not found with blank code",
+			op:   "stat",
+			err: &qerror.QingStorError{
+				StatusCode: 404,
+				Code:       "",
+				Message:    "msg",
+			},
+			targetErr: services.ErrObjectNotExist,
+			targetEq:  true,
+		},
+		{
+			name: "not found by code",
+			op:   "stat",
+			err: &qerror.QingStorError{
+				StatusCode: 404,
+				Code:       "object_not_exists",
+				Message:    "msg",
+			},
+			targetErr: services.ErrObjectNotExist,
+			targetEq:  true,
+		},
+		{
+			name: "permission denied by code",
+			op:   "stat",
+			err: &qerror.QingStorError{
+				StatusCode: 403,
+				Code:       "permission_denied",
+				Message:    "msg",
+			},
+			targetErr: services.ErrPermissionDenied,
+			targetEq:  true,
+		},
+		{
+			name: "not found by code error not eq",
+			op:   "stat",
+			err: qerror.QingStorError{
+				StatusCode: 404,
+				Code:       "object_not_exists",
+				Message:    "msg",
+			},
+			targetErr: services.ErrObjectNotExist,
+			targetEq:  false,
+		},
+	}
+	for _, tt := range cases {
+		err := s.formatError(tt.op, tt.err, tt.path)
+		if tt.err == nil {
+			assert.Nil(t, err, tt.name)
+			continue
+		}
+
+		e, ok := err.(*services.StorageError)
+		assert.True(t, ok, tt.name)
+		assert.Equal(t, tt.op, e.Op, tt.name)
+
+		assert.Equal(t, tt.targetEq, errors.Is(err, tt.targetErr), tt.name)
+	}
+}
