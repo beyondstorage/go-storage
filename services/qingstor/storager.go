@@ -555,9 +555,9 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 	}
 
 	// Handle errors returned by qingstor.
-	var e qserror.QingStorError
+	var e *qserror.QingStorError
 	if errors.As(err, &e) {
-		err = formatQingStorError(&e)
+		err = formatQingStorError(e)
 	}
 
 	return &services.StorageError{
