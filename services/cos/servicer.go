@@ -105,5 +105,6 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 	store.object = c.Object
 	store.name = opt.Name
 	store.location = opt.Location
+	store.workDir = opt.WorkDir
 	return store, nil
 }

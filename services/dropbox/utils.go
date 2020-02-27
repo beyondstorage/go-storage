@@ -32,6 +32,8 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 
 	store := &Storage{
 		client: files.New(cfg),
+
+		workDir: opt.WorkDir,
 	}
 
 	return nil, store, nil

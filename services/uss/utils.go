@@ -33,5 +33,6 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	}
 	store.bucket = upyun.NewUpYun(cfg)
 	store.name = opt.Name
+	store.workDir = opt.WorkDir
 	return nil, store, nil
 }

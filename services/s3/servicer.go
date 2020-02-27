@@ -120,6 +120,7 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 	c := &Storage{
 		service: s.service,
 		name:    opt.Name,
+		workDir: opt.WorkDir,
 	}
 	return c, nil
 }

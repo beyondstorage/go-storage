@@ -173,6 +173,8 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		config:     bucket.Config,
 		properties: bucket.Properties,
 		segments:   make(map[string]*segment.Segment),
+
+		workDir: opt.WorkDir,
 	}, nil
 }
 
