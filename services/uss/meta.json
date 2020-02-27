@@ -6,7 +6,8 @@
     },
     "new": {
       "credential": true,
-      "name": true
+      "name": true,
+      "work_dir": false
     }
   }
 }

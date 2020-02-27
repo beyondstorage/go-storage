@@ -113,6 +113,8 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 	store := &Storage{
 		bucket: bucket,
 		name:   opt.Name,
+
+		workDir: opt.WorkDir,
 	}
 	return store, nil
 }

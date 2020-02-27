@@ -24,7 +24,8 @@
       "file_func": false
     },
     "new": {
-      "name": true
+      "name": true,
+      "work_dir": false
     },
     "write": {
       "checksum": false,

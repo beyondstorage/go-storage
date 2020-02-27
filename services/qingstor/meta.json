@@ -32,7 +32,8 @@
     },
     "new": {
       "location": true,
-      "name": true
+      "name": true,
+      "work_dir": false
     },
     "reach": {
       "expire": true

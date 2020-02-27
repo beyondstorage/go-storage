@@ -117,7 +117,8 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 			Scope: opt.Name,
 		},
 
-		name: opt.Name,
+		name:    opt.Name,
+		workDir: opt.WorkDir,
 	}
 	return store, nil
 }

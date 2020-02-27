@@ -6,7 +6,8 @@
       "file_func": false
     },
     "new": {
-      "credential": true
+      "credential": true,
+      "work_dir": false
     },
     "read": {
       "size": false
