@@ -7,9 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xuanwo/storage/pkg/storageclass"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/pengsrc/go-shared/convert"
@@ -18,7 +15,10 @@ import (
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/segment"
+	"github.com/Xuanwo/storage/pkg/storageclass"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
