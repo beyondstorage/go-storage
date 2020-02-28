@@ -966,9 +966,9 @@ func TestStorage_formatError(t *testing.T) {
 			continue
 		}
 
-		e, ok := err.(*services.StorageError)
-		assert.True(t, ok, tt.name)
-		assert.Equal(t, tt.op, e.Op, tt.name)
+		var storageErr *services.StorageError
+		assert.True(t, errors.As(err, &storageErr), tt.name)
+		assert.Equal(t, tt.op, storageErr.Op, tt.name)
 
 		assert.Equal(t, tt.targetEq, errors.Is(err, tt.targetErr), tt.name)
 	}
