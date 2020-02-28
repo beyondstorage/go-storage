@@ -14,12 +14,11 @@ import (
 	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
+	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types/metadata"
-
-	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/Xuanwo/storage/types/pairs"
 )
 

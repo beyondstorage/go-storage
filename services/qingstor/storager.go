@@ -14,9 +14,8 @@ import (
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/services"
-
 	"github.com/Xuanwo/storage/pkg/segment"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 )
@@ -544,13 +543,13 @@ func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 }
 
 func (s *Storage) getAbsPath(path string) string {
-	qsPrefix := strings.TrimPrefix(s.workDir, "/") // qsPrefix should not start with "/"
-	return qsPrefix + path                         // qs abs path is the qsPrefix add path (path is not start with "/")
+	prefix := strings.TrimPrefix(s.workDir, "/") // qsPrefix should not start with "/"
+	return prefix + path                         // qs abs path is the qsPrefix add path (path is not start with "/")
 }
 
 func (s *Storage) getRelPath(path string) string {
-	qsPrefix := strings.TrimPrefix(s.workDir, "/") // qsPrefix should not start with "/"
-	return strings.TrimPrefix(path, qsPrefix)      // qs rel path is the path trimmed qsPrefix
+	prefix := strings.TrimPrefix(s.workDir, "/") // qsPrefix should not start with "/"
+	return strings.TrimPrefix(path, prefix)      // qs rel path is the path trimmed qsPrefix
 }
 
 func (s *Storage) formatError(op string, err error, path ...string) error {

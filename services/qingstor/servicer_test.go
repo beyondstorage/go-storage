@@ -20,7 +20,6 @@ import (
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
