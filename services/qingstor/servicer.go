@@ -6,15 +6,16 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/yunify/qingstor-sdk-go/v3/config"
+	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
+	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
+	"github.com/yunify/qingstor-sdk-go/v3/service"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
-	"github.com/yunify/qingstor-sdk-go/v3/config"
-	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
-	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
-	"github.com/yunify/qingstor-sdk-go/v3/service"
 )
 
 // Service is the qingstor service config.
@@ -159,6 +160,16 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		return
 	}
 
+	// WorkDir should be an abs path, start and ends with "/"
+	if opt.HasWorkDir && !isWorkDirValid(opt.WorkDir) {
+		err = ErrInvalidWorkDir
+		return
+	}
+	// set work dir into root path if no work dir passed
+	if !opt.HasWorkDir {
+		opt.WorkDir = "/"
+	}
+
 	if !IsBucketNameValid(opt.Name) {
 		err = ErrInvalidBucketName
 		return
@@ -216,4 +227,14 @@ func (s *Service) formatError(op string, err error, name string) error {
 		Servicer: s,
 		Name:     name,
 	}
+}
+
+// isWorkDirValid check qingstor work dir
+// work dir must start with only one "/" (abs path), and end with only one "/" (a dir).
+// If work dir is the root path, set it to "/".
+func isWorkDirValid(wd string) bool {
+	return strings.HasPrefix(wd, "/") && // must start with "/"
+		strings.HasSuffix(wd, "/") && // must end with "/"
+		!strings.HasPrefix(wd, "//") && // not start with more than one "/"
+		!strings.HasSuffix(wd, "//") // not end with more than one "/"
 }

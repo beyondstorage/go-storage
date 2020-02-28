@@ -9,15 +9,17 @@ import (
 	"testing"
 
 	"bou.ke/monkey"
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
-	"github.com/Xuanwo/storage/services"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/yunify/qingstor-sdk-go/v3/config"
 	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
+
+	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/services"
+	"github.com/Xuanwo/storage/types"
 
 	"github.com/Xuanwo/storage/types/pairs"
 )
@@ -294,4 +296,155 @@ func ExampleService_Get() {
 		log.Printf("service get bucket failed: %v", err)
 	}
 	log.Printf("%v", store)
+}
+
+func Test_isWorkDirValid(t *testing.T) {
+	type args struct {
+		wd string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "not a dir",
+			args: args{wd: "/path/to/file"},
+			want: false,
+		},
+		{
+			name: "not a abs dir",
+			args: args{wd: "path/to/file/"},
+			want: false,
+		},
+		{
+			name: "start with multi-slash",
+			args: args{wd: "///multi-slash/to/file/"},
+			want: false,
+		},
+		{
+			name: "end with multi-slash",
+			args: args{wd: "/path/to/multi-slash///"},
+			want: false,
+		},
+		{
+			name: "root path",
+			args: args{wd: "/"},
+			want: true,
+		},
+		{
+			name: "normal abs dir",
+			args: args{wd: "/path/to/dir/"},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isWorkDirValid(tt.args.wd)
+			if got != tt.want {
+				t.Errorf("isWorkDirValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestService_newStorage(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	blankBucket := service.Bucket{
+		Config: &config.Config{},
+	}
+	validWorkDir, invalidWorkDir := "/valid/dir/", "invalid/dir"
+	var targetAsErr *services.ServiceError
+	type args struct {
+		pairs []*types.Pair
+	}
+	tests := []struct {
+		name       string
+		wd         string
+		args       args
+		wantBucket *service.Bucket
+		targetErr  error
+		wantErr    bool
+	}{
+		{
+			name: "normal case",
+			wd:   validWorkDir,
+			args: args{[]*types.Pair{
+				{Key: pairs.Location, Value: uuid.New().String()},
+				{Key: pairs.Name, Value: uuid.New().String()},
+				{Key: pairs.WorkDir, Value: validWorkDir},
+			}},
+			wantBucket: &blankBucket,
+			targetErr:  nil,
+			wantErr:    false,
+		},
+		{
+			name: "invalid work dir",
+			wd:   invalidWorkDir,
+			args: args{[]*types.Pair{
+				{Key: pairs.Location, Value: uuid.New().String()},
+				{Key: pairs.Name, Value: uuid.New().String()},
+				{Key: pairs.WorkDir, Value: invalidWorkDir},
+			}},
+			wantBucket: nil,
+			targetErr:  ErrInvalidWorkDir,
+			wantErr:    true,
+		},
+		{
+			name: "blank work dir",
+			wd:   "/",
+			args: args{[]*types.Pair{
+				{Key: pairs.Location, Value: uuid.New().String()},
+				{Key: pairs.Name, Value: uuid.New().String()},
+			}},
+			wantBucket: &blankBucket,
+			targetErr:  nil,
+			wantErr:    false,
+		},
+		{
+			name: "invalid bucket name",
+			wd:   validWorkDir,
+			args: args{[]*types.Pair{
+				{Key: pairs.Location, Value: uuid.New().String()},
+				{Key: pairs.Name, Value: "invalid bucket name"},
+				{Key: pairs.WorkDir, Value: validWorkDir},
+			}},
+			wantBucket: nil,
+			targetErr:  ErrInvalidBucketName,
+			wantErr:    true,
+		},
+		{
+			name:       "no pairs, fail when parse",
+			args:       args{},
+			wantBucket: nil,
+			targetErr:  services.ErrPairRequired,
+			wantErr:    true,
+		},
+	}
+
+	mockService := NewMockService(ctrl)
+	mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).DoAndReturn(func(inputName, inputLocation string) (*service.Bucket, error) {
+		return &blankBucket, nil
+	}).AnyTimes()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{service: mockService}
+			gotStore, err := s.newStorage(tt.args.pairs...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("newStorage() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr || err != nil {
+				assert.Nil(t, gotStore, tt.name)
+				assert.True(t, errors.Is(err, tt.targetErr), tt.name)
+				assert.True(t, errors.As(err, &targetAsErr), tt.name)
+			} else {
+				assert.Equal(t, tt.wantBucket, gotStore.bucket, tt.name)
+				assert.Equal(t, tt.wd, gotStore.workDir, tt.name)
+			}
+		})
+	}
 }

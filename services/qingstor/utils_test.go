@@ -68,7 +68,7 @@ func TestGetAbsPath(t *testing.T) {
 		expectedPath string
 	}{
 		{"under root", "/", "abc", "abc"},
-		{"under sub dir", "/root", "abc", "root/abc"},
+		{"under sub dir", "/root/", "abc", "root/abc"},
 	}
 
 	for _, tt := range cases {
@@ -89,7 +89,7 @@ func TestGetRelPath(t *testing.T) {
 		expectedPath string
 	}{
 		{"under root", "/", "abc", "abc"},
-		{"under sub dir", "/root", "root/abc", "abc"},
+		{"under sub dir", "/root/", "root/abc", "abc"},
 	}
 
 	for _, tt := range cases {

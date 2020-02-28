@@ -7,13 +7,14 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/services"
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/yunify/qingstor-sdk-go/v3/config"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
+
+	"github.com/Xuanwo/storage/pkg/iowrap"
+	"github.com/Xuanwo/storage/services"
 
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
@@ -35,9 +36,10 @@ type Storage struct {
 
 // String implements Storager.String
 func (s *Storage) String() string {
+	// qingstor work dir should start and end with "/"
 	return fmt.Sprintf(
 		"Storager qingstor {Name: %s, Location: %s, WorkDir: %s}",
-		*s.properties.BucketName, *s.properties.Zone, "/"+s.workDir,
+		*s.properties.BucketName, *s.properties.Zone, s.workDir,
 	)
 }
 
@@ -542,11 +544,13 @@ func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 }
 
 func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+	qsPrefix := strings.TrimPrefix(s.workDir, "/") // qsPrefix should not start with "/"
+	return qsPrefix + path                         // qs abs path is the qsPrefix add path (path is not start with "/")
 }
 
 func (s *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, s.workDir+"/")
+	qsPrefix := strings.TrimPrefix(s.workDir, "/") // qsPrefix should not start with "/"
+	return strings.TrimPrefix(path, qsPrefix)      // qs rel path is the path trimmed qsPrefix
 }
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
