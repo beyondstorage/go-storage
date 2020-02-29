@@ -122,7 +122,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (store storage.Stora
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("create", err, name)
+		err = s.formatError("delete", err, name)
 	}()
 
 	opt, err := parseServicePairDelete(pairs...)

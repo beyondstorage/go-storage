@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
-
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
@@ -22,11 +22,13 @@ func (s *Service) String() string {
 
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List: %w"
+	defer func() {
+		err = s.formatError("list", err, "")
+	}()
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
+		return err
 	}
 
 	marker := azblob.Marker{}
@@ -35,13 +37,13 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		output, err = s.service.ListContainersSegment(opt.Context,
 			marker, azblob.ListContainersSegmentOptions{})
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, err)
+			return err
 		}
 
 		for _, v := range output.ContainerItems {
 			store, err := s.newStorage(ps.WithName(v.Name))
 			if err != nil {
-				return fmt.Errorf(errorMessage, s, err)
+				return err
 			}
 			opt.StoragerFunc(store)
 		}
@@ -55,61 +57,69 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 }
 
 // Get implements Servicer.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Get [%s]: %w"
+func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("get", err, name)
+	}()
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 
 	return store, nil
 }
 
 // Create implements Servicer.Create
-func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Create [%s]: %w"
+func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("create", err, name)
+	}()
 
 	opt, err := parseServicePairCreate(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	_, err = store.bucket.Create(opt.Context, azblob.Metadata{}, azblob.PublicAccessNone)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	return store, nil
 }
 
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, name)
+	}()
 
 	opt, err := parseServicePairDelete(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 
 	bucket := s.service.NewContainerURL(name)
 	_, err = bucket.Delete(opt.Context, azblob.ContainerAccessConditions{})
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 	return nil
 }
 
 // newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
-	const errorMessage = "azblob new_storage: %w"
+func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
+	defer func() {
+		err = s.formatError("new storage", err, "")
+	}()
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, err
 	}
 
 	bucket := s.service.NewContainerURL(opt.Name)
@@ -121,4 +131,23 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 		workDir: opt.WorkDir,
 	}
 	return c, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	// Handle errors returned by azblob.
+	e, ok := err.(azblob.StorageError)
+	if ok {
+		err = formatAzblobError(e)
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      err,
+		Servicer: s,
+		Name:     name,
+	}
 }
