@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.7.1] - 2020-02-29
+
+### Added
+
+- docs/{design,spec}: Add proposal for error handling (#106)
+- pkg/*: Implement proposal 11-error-handling (#109)
+- services/qingstor: Implment proposal 11-error-handling (#117)
+- services/fs: Implement proposal 11-error-handling (#141)
+
+### Changed
+
+- services/qingstor: Refactor work dir handler with unit tests (#139)
+
+### Fixed
+
+- services: Fix WorkDir support missing in some services (#131)
+- services/qingstor: Fix error not handled as intended (#135)
+- services/qingstor: Fix service qingstor error not handled correctly
+
+
 ## [v0.7.0] - 2020-02-10
 
 ### Added
@@ -138,7 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.7.1...HEAD
+[v0.7.1]: https://github.com/Xuanwo/storage/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/Xuanwo/storage/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/Xuanwo/storage/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/Xuanwo/storage/compare/v0.4.0...v0.5.0
