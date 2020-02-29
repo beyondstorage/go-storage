@@ -288,6 +288,7 @@ func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError("move", err, src, dst)
 	}()
+
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 

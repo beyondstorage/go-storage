@@ -2,7 +2,6 @@ package fs
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -54,35 +53,29 @@ func TestClient_CreateDir(t *testing.T) {
 	}
 }
 
-func TestHandleOsError(t *testing.T) {
-	t.Run("nil error will panic", func(t *testing.T) {
-		assert.Panics(t, func() {
-			_ = handleOsError(nil)
+func TestFormatOsError(t *testing.T) {
+	testErr := errors.New("test error")
+	tests := []struct {
+		name     string
+		input    error
+		expected error
+	}{
+		{
+			"not found",
+			os.ErrNotExist,
+			services.ErrObjectNotExist,
+		},
+		{
+			"not supported error",
+			testErr,
+			testErr,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := formatOsError(tt.input)
+			assert.True(t, errors.Is(err, tt.expected))
 		})
-	})
-
-	{
-		tests := []struct {
-			name     string
-			input    error
-			expected error
-		}{
-			{
-				"not found",
-				os.ErrNotExist,
-				services.ErrObjectNotExist,
-			},
-			{
-				"wrapped not found",
-				fmt.Errorf("%w: some other infos", os.ErrNotExist),
-				services.ErrObjectNotExist,
-			},
-		}
-
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				assert.True(t, errors.Is(handleOsError(tt.input), tt.expected))
-			})
-		}
 	}
 }

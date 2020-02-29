@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 )
@@ -45,18 +46,20 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 
 // List implements Storager.List
 func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List [%s]: %w"
+	defer func() {
+		err = s.formatError("list", err, path)
+	}()
 
 	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	rp := s.getAbsPath(path)
 
 	fi, err := s.ioutilReadDir(rp)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
+		return err
 	}
 
 	for _, v := range fi {
@@ -86,11 +89,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 // Read implements Storager.Read
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	const errorMessage = "%s Read [%s]: %w"
+	defer func() {
+		err = s.formatError("read", err, path)
+	}()
 
 	opt, err := parseStoragePairRead(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	// If path is "-", return stdin directly.
@@ -106,7 +111,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 	f, err := s.osOpen(rp)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
+		return nil, err
 	}
 	if opt.HasSize && opt.HasOffset {
 		return iowrap.SectionReadCloser(f, opt.Offset, opt.Size), nil
@@ -117,7 +122,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	if opt.HasOffset {
 		_, err = f.Seek(opt.Offset, 0)
 		if err != nil {
-			return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
+			return nil, err
 		}
 	}
 	if opt.HasReadCallbackFunc {
@@ -128,11 +133,13 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 // WriteFile implements Storager.WriteFile
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Write [%s]: %w"
+	defer func() {
+		err = s.formatError("write", err, path)
+	}()
 
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	var f io.WriteCloser
@@ -143,14 +150,14 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		// Create dir for path.
 		err = s.createDir(path)
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, path, err)
+			return err
 		}
 
 		rp := s.getAbsPath(path)
 
 		f, err = s.osCreate(rp)
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, path, handleOsError(err))
+			return err
 		}
 	}
 
@@ -164,14 +171,16 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		_, err = s.ioCopyBuffer(f, r, make([]byte, 1024*1024))
 	}
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
+		return err
 	}
 	return
 }
 
 // Stat implements Storager.Stat
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	const errorMessage = "%s Stat [%s]: %w"
+	defer func() {
+		err = s.formatError("stat", err, path)
+	}()
 
 	if path == "-" {
 		return &types.Object{
@@ -187,7 +196,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	fi, err := s.osStat(rp)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, handleOsError(err))
+		return nil, err
 	}
 
 	o = &types.Object{
@@ -217,20 +226,24 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 // Delete implements Storager.Delete
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, path)
+	}()
 
 	rp := s.getAbsPath(path)
 
 	err = s.osRemove(rp)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, handleOsError(err))
+		return err
 	}
 	return nil
 }
 
 // Copy implements Storager.Copy
 func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Copy from [%s] to [%s]: %w"
+	defer func() {
+		err = s.formatError("copy", err, src, dst)
+	}()
 
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
@@ -238,31 +251,33 @@ func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 	// Create dir for dst.
 	err = s.createDir(dst)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, err)
+		return err
 	}
 
 	srcFile, err := s.osOpen(rs)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
+		return err
 	}
 	defer srcFile.Close()
 
 	dstFile, err := s.osCreate(rd)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
+		return err
 	}
 	defer dstFile.Close()
 
 	_, err = s.ioCopyBuffer(dstFile, srcFile, make([]byte, 1024*1024))
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
+		return err
 	}
 	return
 }
 
 // Move implements Storager.Move
 func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Move from [%s] to [%s]: %w"
+	defer func() {
+		err = s.formatError("move", err, src, dst)
+	}()
 
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
@@ -270,18 +285,20 @@ func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 	// Create dir for dst path.
 	err = s.createDir(dst)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, err)
+		return err
 	}
 
 	err = s.osRename(rs, rd)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, src, dst, handleOsError(err))
+		return err
 	}
 	return
 }
 
 func (s *Storage) createDir(path string) (err error) {
-	errorMessage := "posixfs createDir [%s]: %w"
+	defer func() {
+		err = s.formatError("create dir", err, path)
+	}()
 
 	rp := s.getDirPath(path)
 	// Don't need to create work dir.
@@ -291,7 +308,7 @@ func (s *Storage) createDir(path string) (err error) {
 
 	err = s.osMkdirAll(rp, 0755)
 	if err != nil {
-		return fmt.Errorf(errorMessage, path, handleOsError(err))
+		return err
 	}
 	return
 }
@@ -305,4 +322,23 @@ func (s *Storage) getDirPath(path string) string {
 		return s.workDir
 	}
 	return filepath.Join(s.workDir, filepath.Dir(path))
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	// Handle error returned by os package.
+	switch e := err.(type) {
+	case *os.PathError, *os.SyscallError, *os.LinkError:
+		err = formatOsError(e)
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      err,
+		Storager: s,
+		Path:     path,
+	}
 }
