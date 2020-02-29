@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -37,15 +36,13 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	return nil, store, nil
 }
 
-func handleOsError(err error) error {
-	if err == nil {
-		panic("error must not be nil")
-	}
-
-	// Add two conditions in case of os.IsNotExist not work with fmt.Errorf
-	if errors.Is(err, os.ErrNotExist) || os.IsNotExist(err) {
+func formatOsError(err error) error {
+	switch {
+	case os.IsNotExist(err):
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+	case os.IsPermission(err):
+		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+	default:
+		return err
 	}
-	// TODO: handle other osError here.
-	return err
 }
