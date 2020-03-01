@@ -3,6 +3,7 @@ package oss
 import (
 	"fmt"
 
+	"github.com/Xuanwo/storage/services"
 	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 
@@ -25,11 +26,13 @@ func (s *Service) String() string {
 
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List: %w"
+	defer func() {
+		err = s.formatError("list", err, "")
+	}()
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
+		return err
 	}
 
 	marker := ""
@@ -40,13 +43,13 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 			oss.MaxKeys(1000),
 		)
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, err)
+			return err
 		}
 
 		for _, v := range output.Buckets {
 			store, err := s.newStorage(ps.WithName(v.Name))
 			if err != nil {
-				return fmt.Errorf(errorMessage, s, err)
+				return err
 			}
 			opt.StoragerFunc(store)
 		}
@@ -60,54 +63,62 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 }
 
 // Get implements Servicer.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Get [%s]: %w"
+func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("get", err, name)
+	}()
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	return store, nil
 }
 
 // Create implements Servicer.Create
-func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Create [%s]: %w"
+func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("create", err, name)
+	}()
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	err = s.service.CreateBucket(name)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	return store, nil
 }
 
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, name)
+	}()
 
 	err = s.service.DeleteBucket(name)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 	return nil
 }
 
 // newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
-	const errorMessage = "oss new_storage: %w"
+func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
+	defer func() {
+		err = s.formatError("new storage", err, "")
+	}()
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, err
 	}
 
 	bucket, err := s.service.Bucket(opt.Name)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, err
 	}
 
 	store := &Storage{
@@ -116,4 +127,17 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 		workDir: opt.WorkDir,
 	}
 	return store, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      formatError(err),
+		Servicer: s,
+		Name:     name,
+	}
 }
