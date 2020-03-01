@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	gs "cloud.google.com/go/storage"
-	"google.golang.org/api/googleapi"
 	"google.golang.org/api/iterator"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
@@ -218,15 +217,9 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	// Handle errors returned by gcs.
-	e, ok := err.(*googleapi.Error)
-	if ok {
-		err = formatGcsError(e)
-	}
-
 	return &services.StorageError{
 		Op:       op,
-		Err:      err,
+		Err:      formatGcsError(err),
 		Storager: s,
 		Path:     path,
 	}

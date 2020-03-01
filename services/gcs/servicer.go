@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	gs "cloud.google.com/go/storage"
-	"google.golang.org/api/googleapi"
 	"google.golang.org/api/iterator"
 
 	"github.com/Xuanwo/storage"
@@ -137,14 +136,9 @@ func (s *Service) formatError(op string, err error, name string) error {
 		return nil
 	}
 
-	// Handle errors returned by gcs.
-	e, ok := err.(*googleapi.Error)
-	if ok {
-		err = formatGcsError(e)
-	}
 	return &services.ServiceError{
 		Op:       op,
-		Err:      err,
+		Err:      formatGcsError(err),
 		Servicer: s,
 		Name:     name,
 	}
