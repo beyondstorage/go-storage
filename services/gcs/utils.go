@@ -3,15 +3,18 @@ package gcs
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	gs "cloud.google.com/go/storage"
+	"google.golang.org/api/googleapi"
+	"google.golang.org/api/option"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
-	"google.golang.org/api/option"
 )
 
 // New will create a new aliyun oss service.
@@ -97,5 +100,17 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 			Key:   ps.StorageClass,
 			Value: in,
 		}
+	}
+}
+
+// ref: https://cloud.google.com/storage/docs/json_api/v1/status-codes
+func formatGcsError(err *googleapi.Error) error {
+	switch err.Code {
+	case http.StatusNotFound:
+		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+	case http.StatusForbidden:
+		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+	default:
+		return err
 	}
 }

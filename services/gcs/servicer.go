@@ -4,10 +4,13 @@ import (
 	"fmt"
 
 	gs "cloud.google.com/go/storage"
+	"google.golang.org/api/googleapi"
+	"google.golang.org/api/iterator"
+
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
-	"google.golang.org/api/iterator"
 )
 
 // Service is the gcs config.
@@ -23,11 +26,13 @@ func (s *Service) String() string {
 
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List: %w"
+	defer func() {
+		err = s.formatError("list", err, "")
+	}()
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
+		return err
 	}
 
 	it := s.service.Buckets(opt.Context, s.projectID)
@@ -38,74 +43,82 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 			return nil
 		}
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, err)
+			return err
 		}
 		store, err := s.newStorage(ps.WithName(bucketAttr.Name))
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, err)
+			return err
 		}
 		opt.StoragerFunc(store)
 	}
 }
 
 // Get implements Servicer.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Get [%s]: %w"
+func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("get", err, name)
+	}()
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	return store, nil
 }
 
 // Create implements Servicer.Create
-func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Create [%s]: %w"
+func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("create", err, name)
+	}()
 
 	opt, err := parseServicePairCreate(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	err = store.bucket.Create(opt.Context, s.projectID, nil)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	return store, nil
 }
 
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, name)
+	}()
 
 	opt, err := parseServicePairDelete(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 	err = store.bucket.Delete(opt.Context)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 	return nil
 }
 
 // newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
-	const errorMessage = "gcs new_storage: %w"
+func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
+	defer func() {
+		err = s.formatError("new storage", err, "")
+	}()
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, err
 	}
 
 	bucket := s.service.Bucket(opt.Name)
@@ -117,4 +130,22 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 		workDir: opt.WorkDir,
 	}
 	return store, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	// Handle errors returned by gcs.
+	e, ok := err.(*googleapi.Error)
+	if ok {
+		err = formatGcsError(e)
+	}
+	return &services.ServiceError{
+		Op:       op,
+		Err:      err,
+		Servicer: s,
+		Name:     name,
+	}
 }
