@@ -7,9 +7,11 @@ import (
 	"strings"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
+	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/auth"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 )
@@ -40,11 +42,13 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 
 // List implements Storager.List
 func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List [%s]: %w"
+	defer func() {
+		err = s.formatError("list", err, path)
+	}()
 
 	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	rp := s.getAbsPath(path)
@@ -53,7 +57,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 		Path: rp,
 	})
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	for {
@@ -85,7 +89,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 					opt.DirFunc(o)
 				}
 			default:
-				return fmt.Errorf(errorMessage, s, path, ErrUnexpectedEntry)
+				return ErrUnexpectedEntry
 			}
 		}
 		if !result.HasMore {
@@ -96,7 +100,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			Cursor: result.Cursor,
 		})
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, path, err)
+			return err
 		}
 	}
 	return
@@ -104,11 +108,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 // Read implements Storager.Read
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	const errorMessage = "%s Read [%s]: %w"
+	defer func() {
+		err = s.formatError("read", err, path)
+	}()
 
 	opt, err := parseStoragePairRead(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	rp := s.getAbsPath(path)
@@ -119,7 +125,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 	_, r, err = s.client.Download(input)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	if opt.HasSize {
@@ -135,11 +141,13 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 // Write implements Storager.Write
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Write [%s]: %w"
+	defer func() {
+		err = s.formatError("write", err, path)
+	}()
 
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	rp := s.getAbsPath(path)
@@ -162,7 +170,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 
 	_, err = s.client.Upload(input, r)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	return nil
@@ -170,7 +178,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 
 // Stat implements Storager.Stat
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	const errorMessage = "%s Stat [%s]: %w"
+	defer func() {
+		err = s.formatError("stat", err, path)
+	}()
 
 	rp := s.getAbsPath(path)
 
@@ -180,7 +190,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	output, err := s.client.GetMetadata(input)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	switch meta := output.(type) {
@@ -216,7 +226,9 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 // Delete implements Storager.Delete
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, path)
+	}()
 
 	rp := s.getAbsPath(path)
 
@@ -226,7 +238,7 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 
 	_, err = s.client.DeleteV2(input)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	return nil
@@ -234,4 +246,33 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 
 func (s *Storage) getAbsPath(path string) string {
 	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+// ref: https://www.dropbox.com/developers/documentation/http/documentation
+//
+// FIXME: I don't know how to handle dropbox's API error correctly, please give me some help.
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	fn := func(errorSummary, s string) bool {
+		return strings.HasPrefix(errorSummary, s)
+	}
+
+	switch e := err.(type) {
+	case files.DownloadAPIError:
+		if fn(e.ErrorSummary, "not_found") {
+			err = fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		}
+	case auth.AccessAPIError:
+		err = fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      err,
+		Storager: s,
+		Path:     path,
+	}
 }
