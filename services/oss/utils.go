@@ -92,3 +92,24 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 		}
 	}
 }
+
+func formatError(err error) error {
+	switch e := err.(type) {
+	case oss.ServiceError:
+		switch e.Code {
+		case "NoSuchKey":
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		case "AccessDenied":
+			return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+		}
+	case oss.UnexpectedStatusCodeError:
+		switch e.Got() {
+		case 404:
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		case 403:
+			return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+		}
+	}
+
+	return err
+}
