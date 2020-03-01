@@ -7,6 +7,7 @@ import (
 	qs "github.com/qiniu/api.v7/v7/storage"
 
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
@@ -23,18 +24,20 @@ func (s *Service) String() string {
 
 // List implements Service.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List: %w"
+	defer func() {
+		err = s.formatError("list", err, "")
+	}()
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
+		return err
 	}
 
 	buckets, err := s.service.Buckets(false)
 	for _, v := range buckets {
 		store, err := s.newStorage(ps.WithName(v))
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, err)
+			return err
 		}
 		opt.StoragerFunc(store)
 	}
@@ -42,62 +45,70 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 }
 
 // Get implements Service.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Get [%s]: %w"
+func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("get", err, name)
+	}()
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	return store, nil
 }
 
 // Create implements Service.Create
-func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Create [%s]: %w"
+func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("create", err, name)
+	}()
 
 	opt, err := parseServicePairCreate(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 
 	// Check region ID.
 	_, ok := qs.GetRegionByID(qs.RegionID(opt.Location))
 	if !ok {
 		err = fmt.Errorf("region %s is invalid", opt.Location)
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 
 	err = s.service.CreateBucket(name, qs.RegionID(opt.Location))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 
 	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	return store, nil
 }
 
 // Delete implements Service.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, name)
+	}()
 
 	err = s.service.DropBucket(name)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 	return nil
 }
 
 // newStorage will create a new client.
 func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
-	const errorMessage = "kodo new_storage: %w"
+	defer func() {
+		err = s.formatError("new storage", err, "")
+	}()
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, err
 	}
 
 	// Get bucket's domain.
@@ -121,4 +132,17 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		workDir: opt.WorkDir,
 	}
 	return store, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      formatError(err),
+		Servicer: s,
+		Name:     name,
+	}
 }
