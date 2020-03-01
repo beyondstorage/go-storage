@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Xuanwo/storage/services"
-	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	qs "github.com/qiniu/api.v7/v7/storage"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 // New will create a new kodo service.
@@ -95,5 +95,24 @@ func formatStorageClass(in int) (storageclass.Type, error) {
 			Key:   ps.StorageClass,
 			Value: in,
 		}
+	}
+}
+
+// ref: https://developer.qiniu.com/kodo/api/3928/error-responses
+func formatError(err error) error {
+	e, ok := err.(*qs.ErrorInfo)
+	if !ok {
+		return err
+	}
+
+	// error code returned by kodo looks like http status code, but it's not.
+	// kodo could return 6xx or 7xx for their costumed errors, so we use untyped int directly.
+	switch e.Code {
+	case 404:
+		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+	case 403:
+		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+	default:
+		return err
 	}
 }
