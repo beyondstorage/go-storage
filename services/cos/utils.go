@@ -98,3 +98,15 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 		}
 	}
 }
+
+// ref: https://www.qcloud.com/document/product/436/7730
+func formatCosError(err *cos.ErrorResponse) error {
+	switch err.Code {
+	case "NoSuchKey":
+		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+	case "AccessDenied":
+		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+	default:
+		return err
+	}
+}

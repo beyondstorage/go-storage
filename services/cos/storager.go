@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 
@@ -55,11 +56,13 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 
 // List implements Storager.List
 func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List [%s]: %w"
+	defer func() {
+		err = s.formatError("list", err, path)
+	}()
 
 	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	marker := ""
@@ -76,14 +79,14 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		resp, _, err := s.bucket.Get(opt.Context, req)
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, path, err)
+			return err
 		}
 
 		for _, v := range resp.Contents {
 			// COS use ISO8601 format: 2019-05-27T11:26:14.000Z
 			t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
 			if err != nil {
-				return fmt.Errorf(errorMessage, s, path, err)
+				return err
 			}
 
 			o := &types.Object{
@@ -98,7 +101,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 			storageClass, err := formatStorageClass(v.StorageClass)
 			if err != nil {
-				return fmt.Errorf(errorMessage, s, path, err)
+				return err
 			}
 			o.SetStorageClass(storageClass)
 
@@ -116,18 +119,20 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 // Read implements Storager.Read
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	const errorMessage = "%s Read [%s]: %w"
+	defer func() {
+		err = s.formatError("read", err, path)
+	}()
 
 	opt, err := parseStoragePairRead(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	rp := s.getAbsPath(path)
 
 	resp, err := s.object.Get(opt.Context, rp, nil)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	r = resp.Body
@@ -140,11 +145,13 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 // Write implements Storager.Write
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Write [%s]: %w"
+	defer func() {
+		err = s.formatError("write", err, path)
+	}()
 
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	rp := s.getAbsPath(path)
@@ -160,7 +167,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	if opt.HasStorageClass {
 		storageClass, err := parseStorageClass(opt.StorageClass)
 		if err != nil {
-			return fmt.Errorf(errorMessage, s, path, err)
+			return err
 		}
 		putOptions.XCosStorageClass = storageClass
 	}
@@ -170,30 +177,32 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 
 	_, err = s.object.Put(opt.Context, rp, r, putOptions)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 	return
 }
 
 // Stat implements Storager.Stat
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	const errorMessage = "%s Stat [%s]: %w"
+	defer func() {
+		err = s.formatError("stat", err, path)
+	}()
 
 	opt, err := parseStoragePairStat(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	rp := s.getAbsPath(path)
 
 	output, err := s.object.Head(opt.Context, rp, nil)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	lastModified, err := time.Parse(time.RFC822, output.Header.Get("Last-Modified"))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	o = &types.Object{
@@ -207,7 +216,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	storageClass, err := formatStorageClass(output.Header.Get(storageClassHeader))
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 	o.SetStorageClass(storageClass)
 
@@ -216,18 +225,20 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 // Delete implements Storager.Delete
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, path)
+	}()
 
 	opt, err := parseStoragePairDelete(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	rp := s.getAbsPath(path)
 
 	_, err = s.object.Delete(opt.Context, rp)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 	return nil
 }
@@ -238,4 +249,23 @@ func (s *Storage) getAbsPath(path string) string {
 
 func (s *Storage) getRelPath(path string) string {
 	return strings.TrimPrefix(path, s.workDir+"/")
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	// Handle errors returned by cos.
+	e, ok := err.(*cos.ErrorResponse)
+	if ok {
+		err = formatCosError(e)
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      err,
+		Storager: s,
+		Path:     path,
+	}
 }
