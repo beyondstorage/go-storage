@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -23,16 +24,18 @@ func (s *Service) String() string {
 
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List: %w"
+	defer func() {
+		err = s.formatError("list", err, "")
+	}()
 
 	opt, err := parseServicePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
+		return err
 	}
 
 	output, _, err := s.service.Service.Get(opt.Context)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, err)
+		return err
 	}
 	for _, v := range output.Buckets {
 		store := newStorage(v.Name, v.Region, s.client)
@@ -42,12 +45,14 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 }
 
 // Get implements Servicer.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Get [%s]: %w"
+func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("get", err, name)
+	}()
 
 	opt, err := parseServicePairGet(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 
 	store := newStorage(name, opt.Location, s.client)
@@ -55,35 +60,39 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (storage.Storager, erro
 }
 
 // Create implements Servicer.Create
-func (s *Service) Create(name string, pairs ...*types.Pair) (storage.Storager, error) {
-	const errorMessage = "%s Create [%s]: %w"
+func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	defer func() {
+		err = s.formatError("create", err, name)
+	}()
 
 	opt, err := parseServicePairCreate(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 
 	store := newStorage(name, opt.Location, s.client)
 	_, err = store.bucket.Put(opt.Context, nil)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, name, err)
+		return nil, err
 	}
 	return store, nil
 }
 
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, name)
+	}()
 
 	opt, err := parseServicePairDelete(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 
 	store := newStorage(name, opt.Location, s.client)
 	_, err = store.bucket.Delete(opt.Context)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, name, err)
+		return err
 	}
 	return
 }
@@ -107,4 +116,23 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 	store.location = opt.Location
 	store.workDir = opt.WorkDir
 	return store, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	// Handle errors returned by cos.
+	e, ok := err.(*cos.ErrorResponse)
+	if ok {
+		err = formatCosError(e)
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      err,
+		Servicer: s,
+		Name:     name,
+	}
 }
