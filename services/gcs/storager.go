@@ -87,6 +87,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 
 			opt.DirFunc(o)
+			continue
 		}
 
 		o := &types.Object{
