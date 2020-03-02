@@ -63,6 +63,8 @@ github.com/aliyun/aliyun-oss-go-sdk v2.0.5+incompatible h1:A3oZlWPD/Poa19FvNbw+Z
 github.com/aliyun/aliyun-oss-go-sdk v2.0.5+incompatible/go.mod h1:T/Aws4fEfogEE9v+HPhhw+CntffsBHJ8nXQCwKr0/g8=
 github.com/aws/aws-sdk-go v1.29.13 h1:Y77U33nj5ic5hVxE6Th4LhZaw2rSwl3mXIm9OdmIs+k=
 github.com/aws/aws-sdk-go v1.29.13/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
+github.com/aws/aws-sdk-go v1.29.15 h1:0ms/213murpsujhsnxnNKNeVouW60aJqSd992Ks3mxs=
+github.com/aws/aws-sdk-go v1.29.15/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
 github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f h1:ZNv7On9kyUzm7fvRZumSyy/IUiSC7AzL0I1jKKtwooA=
 github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f/go.mod h1:AuiFmCCPBSrqvVMvuqFuk0qogytodnVFVSN5CeJB8Gc=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
