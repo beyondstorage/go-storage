@@ -25,7 +25,8 @@
     },
     "list": {
       "dir_func": false,
-      "file_func": false
+      "file_func": false,
+      "object_func": false
     },
     "list_segments": {
       "segment_func": false

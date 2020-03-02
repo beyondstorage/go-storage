@@ -487,28 +487,6 @@ func TestStorage_List(t *testing.T) {
 			[]*types.Object{},
 			services.ErrStorageClassNotSupported,
 		},
-		{
-			"list with return a dir MIME type",
-			&service.ListObjectsOutput{
-				HasMore: service.Bool(false),
-				Keys: []*service.KeyType{
-					{
-						Key:      service.String(keys[6]),
-						MimeType: convert.String(DirectoryContentType),
-					},
-				},
-			},
-			[]*types.Object{
-				{
-					ID:   keys[6],
-					Name: keys[6],
-					Type: types.ObjectTypeDir,
-					ObjectMeta: metadata.NewObjectMeta().
-						SetContentType(DirectoryContentType),
-				},
-			},
-			nil,
-		},
 	}
 
 	for _, v := range tests {
