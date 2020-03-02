@@ -1,6 +1,6 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: candidate
 updated_at: 2020-03-02
 updates:
   - design/2-use-callback-in-list-operations.md
@@ -34,6 +34,8 @@ Storager's behavior will keep following rules:
 - `ObjectFunc` can't be passed with `DirFunc`
 - `directory based list support` is required
 - `prefix based list support` is optional
+
+And we will do validate in `internal/cmd/service`, so that implementers don't need to check them.
 
 ## Rationale
 
