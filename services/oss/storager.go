@@ -53,7 +53,12 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	}
 
 	marker := ""
+	delimiter := ""
 	limit := 200
+
+	if !opt.HasObjectFunc {
+		delimiter = "/"
+	}
 
 	rp := s.getAbsPath(path)
 
@@ -63,45 +68,51 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			oss.Marker(marker),
 			oss.MaxKeys(limit),
 			oss.Prefix(rp),
+			oss.Delimiter(delimiter),
 		)
 		if err != nil {
 			return err
 		}
 
-		for _, v := range output.CommonPrefixes {
-			o := &types.Object{
-				ID:         v,
-				Name:       s.getRelPath(v),
-				Type:       types.ObjectTypeDir,
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
+		if opt.HasDirFunc {
+			for _, v := range output.CommonPrefixes {
+				o := &types.Object{
+					ID:         v,
+					Name:       s.getRelPath(v),
+					Type:       types.ObjectTypeDir,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
 
-			if opt.HasDirFunc {
 				opt.DirFunc(o)
 			}
 		}
 
-		for _, v := range output.Objects {
-			o := &types.Object{
-				ID:         v.Key,
-				Name:       s.getRelPath(v.Key),
-				Type:       types.ObjectTypeDir,
-				Size:       v.Size,
-				UpdatedAt:  v.LastModified,
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
+		if opt.HasObjectFunc || opt.HasFileFunc {
+			for _, v := range output.Objects {
+				o := &types.Object{
+					ID:         v.Key,
+					Name:       s.getRelPath(v.Key),
+					Type:       types.ObjectTypeDir,
+					Size:       v.Size,
+					UpdatedAt:  v.LastModified,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
 
-			o.SetContentType(v.Type)
-			o.SetETag(v.ETag)
+				o.SetContentType(v.Type)
+				o.SetETag(v.ETag)
 
-			storageClass, err := formatStorageClass(v.Type)
-			if err != nil {
-				return err
-			}
-			o.SetStorageClass(storageClass)
+				storageClass, err := formatStorageClass(v.Type)
+				if err != nil {
+					return err
+				}
+				o.SetStorageClass(storageClass)
 
-			if opt.HasFileFunc {
-				opt.FileFunc(o)
+				if opt.HasObjectFunc {
+					opt.ObjectFunc(o)
+				}
+				if opt.HasFileFunc {
+					opt.FileFunc(o)
+				}
 			}
 		}
 
