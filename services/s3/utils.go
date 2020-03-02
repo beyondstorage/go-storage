@@ -4,17 +4,18 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 // New will create a new s3 service.
@@ -55,23 +56,6 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	return srv, store, nil
 }
 
-func handleS3Error(err error) error {
-	if err == nil {
-		panic("error must not be nil")
-	}
-
-	var e awserr.Error
-	e, ok := err.(awserr.Error)
-	if !ok {
-		return err
-	}
-
-	switch e.Code() {
-	default:
-		return err
-	}
-}
-
 // parseStorageClass will parse storageclass.Type into service independent storage class type.
 func parseStorageClass(in storageclass.Type) (string, error) {
 	switch in {
@@ -109,4 +93,20 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 		}
 	}
 
+}
+
+func formatError(err error) error {
+	e, ok := err.(awserr.Error)
+	if !ok {
+		return err
+	}
+
+	switch e.Code() {
+	case "NoSuchKey":
+		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+	case "AccessDenied":
+		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+	}
+
+	return err
 }
