@@ -295,6 +295,31 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 		result.HasObjectFunc = true
 		result.ObjectFunc = v.(types.ObjectFunc)
 	}
+	// Validate for ObjectFunc
+	if result.HasObjectFunc && result.HasFileFunc {
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairConflict,
+			Key:   ps.ObjectFunc,
+			Value: nil,
+		}
+	}
+	if result.HasObjectFunc && result.HasDirFunc {
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairConflict,
+			Key:   ps.ObjectFunc,
+			Value: nil,
+		}
+	}
+	if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairRequired,
+			Key:   ps.FileFunc,
+			Value: nil,
+		}
+	}
 	return result, nil
 }
 

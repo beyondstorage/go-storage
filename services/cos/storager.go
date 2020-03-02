@@ -66,15 +66,21 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	}
 
 	marker := ""
+	delimiter := ""
 	limit := 200
 
 	rp := s.getAbsPath(path)
 
+	if !opt.HasObjectFunc {
+		delimiter = "/"
+	}
+
 	for {
 		req := &cos.BucketGetOptions{
-			Prefix:  rp,
-			MaxKeys: limit,
-			Marker:  marker,
+			Prefix:    rp,
+			MaxKeys:   limit,
+			Marker:    marker,
+			Delimiter: delimiter,
 		}
 
 		resp, _, err := s.bucket.Get(opt.Context, req)
@@ -82,30 +88,50 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			return err
 		}
 
-		for _, v := range resp.Contents {
-			// COS use ISO8601 format: 2019-05-27T11:26:14.000Z
-			t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
-			if err != nil {
-				return err
-			}
+		if opt.HasObjectFunc || opt.HasFileFunc {
+			for _, v := range resp.Contents {
+				// COS use ISO8601 format: 2019-05-27T11:26:14.000Z
+				t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
+				if err != nil {
+					return err
+				}
 
-			o := &types.Object{
-				ID:         v.Key,
-				Name:       s.getRelPath(v.Key),
-				Type:       types.ObjectTypeFile,
-				Size:       int64(v.Size),
-				UpdatedAt:  t,
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-			o.SetETag(v.ETag)
+				o := &types.Object{
+					ID:         v.Key,
+					Name:       s.getRelPath(v.Key),
+					Type:       types.ObjectTypeFile,
+					Size:       int64(v.Size),
+					UpdatedAt:  t,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
+				o.SetETag(v.ETag)
 
-			storageClass, err := formatStorageClass(v.StorageClass)
-			if err != nil {
-				return err
-			}
-			o.SetStorageClass(storageClass)
+				storageClass, err := formatStorageClass(v.StorageClass)
+				if err != nil {
+					return err
+				}
+				o.SetStorageClass(storageClass)
 
-			opt.FileFunc(o)
+				if opt.HasObjectFunc {
+					opt.ObjectFunc(o)
+				}
+				if opt.HasFileFunc {
+					opt.FileFunc(o)
+				}
+			}
+		}
+
+		if opt.HasDirFunc {
+			for _, v := range resp.CommonPrefixes {
+				o := &types.Object{
+					ID:         v,
+					Name:       s.getRelPath(v),
+					Type:       types.ObjectTypeDir,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
+
+				opt.DirFunc(o)
+			}
 		}
 
 		marker = resp.NextMarker
