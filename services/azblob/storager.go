@@ -132,7 +132,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				}
 				o.SetStorageClass(storageClass)
 
-				opt.ObjectFunc(o)
+				opt.FileFunc(o)
 			}
 		}
 
