@@ -21,7 +21,8 @@
   "storage": {
     "list": {
       "dir_func": false,
-      "file_func": false
+      "file_func": false,
+      "object_func": false
     },
     "new": {
       "name": true,

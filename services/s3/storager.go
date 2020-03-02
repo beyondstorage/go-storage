@@ -51,7 +51,12 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	}
 
 	marker := ""
+	delimiter := ""
 	rp := s.getAbsPath(path)
+
+	if !opt.HasObjectFunc {
+		delimiter = "/"
+	}
 
 	var output *s3.ListObjectsV2Output
 	for {
@@ -60,47 +65,53 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			Prefix:     aws.String(rp),
 			MaxKeys:    aws.Int64(1000),
 			StartAfter: aws.String(marker),
+			Delimiter:  aws.String(delimiter),
 		})
 		if err != nil {
 			return err
 		}
 
-		for _, v := range output.CommonPrefixes {
-			o := &types.Object{
-				ID:         *v.Prefix,
-				Name:       s.getRelPath(*v.Prefix),
-				Type:       types.ObjectTypeDir,
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
+		if opt.HasDirFunc {
+			for _, v := range output.CommonPrefixes {
+				o := &types.Object{
+					ID:         *v.Prefix,
+					Name:       s.getRelPath(*v.Prefix),
+					Type:       types.ObjectTypeDir,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
 
-			if opt.HasDirFunc {
 				opt.DirFunc(o)
 			}
 		}
 
-		for _, v := range output.Contents {
-			o := &types.Object{
-				ID:         *v.Key,
-				Type:       types.ObjectTypeFile,
-				Name:       s.getRelPath(*v.Key),
-				Size:       aws.Int64Value(v.Size),
-				UpdatedAt:  aws.TimeValue(v.LastModified),
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-
-			if v.StorageClass != nil {
-				storageClass, err := formatStorageClass(*v.StorageClass)
-				if err != nil {
-					return err
+		if opt.HasObjectFunc || opt.HasFileFunc {
+			for _, v := range output.Contents {
+				o := &types.Object{
+					ID:         *v.Key,
+					Type:       types.ObjectTypeFile,
+					Name:       s.getRelPath(*v.Key),
+					Size:       aws.Int64Value(v.Size),
+					UpdatedAt:  aws.TimeValue(v.LastModified),
+					ObjectMeta: metadata.NewObjectMeta(),
 				}
-				o.SetStorageClass(storageClass)
-			}
-			if v.ETag != nil {
-				o.SetETag(*v.ETag)
-			}
 
-			if opt.HasFileFunc {
-				opt.FileFunc(o)
+				if v.StorageClass != nil {
+					storageClass, err := formatStorageClass(*v.StorageClass)
+					if err != nil {
+						return err
+					}
+					o.SetStorageClass(storageClass)
+				}
+				if v.ETag != nil {
+					o.SetETag(*v.ETag)
+				}
+
+				if opt.HasObjectFunc {
+					opt.ObjectFunc(o)
+				}
+				if opt.HasFileFunc {
+					opt.FileFunc(o)
+				}
 			}
 		}
 
