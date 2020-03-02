@@ -14,6 +14,8 @@ var (
 	ErrCredentialProtocolNotSupported = errors.New("credential protocol not supported")
 	// ErrPairRequired means this operation missing required pairs.
 	ErrPairRequired = errors.New("pair required")
+	// ErrPairConflict means this operation has conflict pairs.
+	ErrPairConflict = errors.New("pair conflict")
 	// ErrStorageClassNotSupported means this service doesn't support this storage class
 	ErrStorageClassNotSupported = errors.New("storage class not supported")
 
