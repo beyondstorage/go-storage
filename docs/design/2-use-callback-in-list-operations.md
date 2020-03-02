@@ -2,6 +2,8 @@
 author: Xuanwo <github@xuanwo.io>
 status: finished
 updated_at: 2019-11-18
+updated_by:
+  - design/12-support-both-directory-and-prefix-based-list.md
 ---
 
 # Proposal: Use callback in List operations
