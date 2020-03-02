@@ -13,7 +13,9 @@
   },
   "storage": {
     "list": {
-      "file_func": true
+      "dir_func": false,
+      "file_func": false,
+      "object_func": false
     },
     "new": {
       "name": true,
