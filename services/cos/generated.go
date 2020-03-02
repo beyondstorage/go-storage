@@ -278,7 +278,12 @@ type pairStorageList struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	FileFunc types.ObjectFunc
+	HasDirFunc    bool
+	DirFunc       types.ObjectFunc
+	HasFileFunc   bool
+	FileFunc      types.ObjectFunc
+	HasObjectFunc bool
+	ObjectFunc    types.ObjectFunc
 }
 
 func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
@@ -301,17 +306,45 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.DirFunc]
+	if ok {
+		result.HasDirFunc = true
+		result.DirFunc = v.(types.ObjectFunc)
+	}
 	v, ok = values[ps.FileFunc]
-	if !ok {
+	if ok {
+		result.HasFileFunc = true
+		result.FileFunc = v.(types.ObjectFunc)
+	}
+	v, ok = values[ps.ObjectFunc]
+	if ok {
+		result.HasObjectFunc = true
+		result.ObjectFunc = v.(types.ObjectFunc)
+	}
+	// Validate for ObjectFunc
+	if result.HasObjectFunc && result.HasFileFunc {
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairConflict,
+			Key:   ps.ObjectFunc,
+			Value: nil,
+		}
+	}
+	if result.HasObjectFunc && result.HasDirFunc {
+		return nil, &services.PairError{
+			Op:    "parse",
+			Err:   services.ErrPairConflict,
+			Key:   ps.ObjectFunc,
+			Value: nil,
+		}
+	}
+	if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
 		return nil, &services.PairError{
 			Op:    "parse",
 			Err:   services.ErrPairRequired,
 			Key:   ps.FileFunc,
 			Value: nil,
 		}
-	}
-	if ok {
-		result.FileFunc = v.(types.ObjectFunc)
 	}
 	return result, nil
 }

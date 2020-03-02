@@ -8,6 +8,7 @@
   "file_func": "types.ObjectFunc",
   "location": "string",
   "name": "string",
+  "object_func": "types.ObjectFunc",
   "offset": "int64",
   "part_size": "int64",
   "project": "string",

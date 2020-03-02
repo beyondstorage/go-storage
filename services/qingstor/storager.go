@@ -60,71 +60,71 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	opt, _ := parseStoragePairList(pairs...)
 
 	marker := ""
+	delimiter := ""
 	limit := 200
 
 	rp := s.getAbsPath(path)
 
+	if !opt.HasObjectFunc {
+		delimiter = "/"
+	}
+
 	var output *service.ListObjectsOutput
 	for {
 		output, err = s.bucket.ListObjects(&service.ListObjectsInput{
-			Limit:  &limit,
-			Marker: &marker,
-			Prefix: &rp,
+			Limit:     &limit,
+			Marker:    &marker,
+			Prefix:    &rp,
+			Delimiter: &delimiter,
 		})
 		if err != nil {
 			return
 		}
 
-		for _, v := range output.CommonPrefixes {
-			o := &types.Object{
-				ID:         *v,
-				Name:       s.getRelPath(*v),
-				Type:       types.ObjectTypeDir,
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
+		if opt.HasDirFunc {
+			for _, v := range output.CommonPrefixes {
+				o := &types.Object{
+					ID:         *v,
+					Name:       s.getRelPath(*v),
+					Type:       types.ObjectTypeDir,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
 
-			if opt.HasDirFunc {
 				opt.DirFunc(o)
 			}
 		}
 
-		for _, v := range output.Keys {
-			o := &types.Object{
-				ID:         *v.Key,
-				Name:       s.getRelPath(*v.Key),
-				Size:       service.Int64Value(v.Size),
-				UpdatedAt:  convertUnixTimestampToTime(service.IntValue(v.Modified)),
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-
-			if v.MimeType != nil {
-				o.SetContentType(service.StringValue(v.MimeType))
-			}
-			if v.StorageClass != nil {
-				storageClass, err := formatStorageClass(service.StringValue(v.StorageClass))
-				if err != nil {
-					return err
+		if opt.HasObjectFunc || opt.HasFileFunc {
+			for _, v := range output.Keys {
+				o := &types.Object{
+					ID:         *v.Key,
+					Name:       s.getRelPath(*v.Key),
+					Type:       types.ObjectTypeFile,
+					Size:       service.Int64Value(v.Size),
+					UpdatedAt:  convertUnixTimestampToTime(service.IntValue(v.Modified)),
+					ObjectMeta: metadata.NewObjectMeta(),
 				}
-				o.SetStorageClass(storageClass)
-			}
-			if v.Etag != nil {
-				o.SetETag(service.StringValue(v.Etag))
-			}
 
-			// If key's content type == DirectoryContentType,
-			// we should treat this key as a Dir ObjectMeta.
-			if service.StringValue(v.MimeType) == DirectoryContentType {
-				o.Type = types.ObjectTypeDir
-
-				if opt.HasDirFunc {
-					opt.DirFunc(o)
+				if v.MimeType != nil {
+					o.SetContentType(service.StringValue(v.MimeType))
 				}
-				continue
-			}
+				if v.StorageClass != nil {
+					storageClass, err := formatStorageClass(service.StringValue(v.StorageClass))
+					if err != nil {
+						return err
+					}
+					o.SetStorageClass(storageClass)
+				}
+				if v.Etag != nil {
+					o.SetETag(service.StringValue(v.Etag))
+				}
 
-			o.Type = types.ObjectTypeFile
-			if opt.HasFileFunc {
-				opt.FileFunc(o)
+				if opt.HasObjectFunc {
+					opt.ObjectFunc(o)
+				}
+				if opt.HasFileFunc {
+					opt.FileFunc(o)
+				}
 			}
 		}
 

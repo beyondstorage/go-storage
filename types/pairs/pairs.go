@@ -23,6 +23,7 @@ const (
 	FileFunc         = "file_func"
 	Location         = "location"
 	Name             = "name"
+	ObjectFunc       = "object_func"
 	Offset           = "offset"
 	PartSize         = "part_size"
 	Project          = "project"
@@ -103,6 +104,14 @@ func WithLocation(v string) *types.Pair {
 func WithName(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Name,
+		Value: v,
+	}
+}
+
+// WithObjectFunc will apply object_func value to Options
+func WithObjectFunc(v types.ObjectFunc) *types.Pair {
+	return &types.Pair{
+		Key:   ObjectFunc,
 		Value: v,
 	}
 }

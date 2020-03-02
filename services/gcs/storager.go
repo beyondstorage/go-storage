@@ -49,11 +49,18 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 		return err
 	}
 
+	delimiter := ""
+
 	rp := s.getAbsPath(path)
+
+	if !opt.HasObjectFunc {
+		delimiter = "/"
+	}
 
 	for {
 		it := s.bucket.Objects(opt.Context, &gs.Query{
-			Prefix: rp,
+			Prefix:    rp,
+			Delimiter: delimiter,
 		})
 		object, err := it.Next()
 		if err != nil && err == iterator.Done {
@@ -61,6 +68,26 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 		}
 		if err != nil {
 			return err
+		}
+
+		// Prefix is set only for ObjectAttrs which represent synthetic "directory
+		// entries" when iterating over buckets using Query.Delimiter. See
+		// ObjectIterator.Next. When set, no other fields in ObjectAttrs will be
+		// populated.
+		if object.Prefix == "" {
+			if !opt.HasDirFunc {
+				continue
+			}
+
+			o := &types.Object{
+				ID:         object.Prefix,
+				Name:       s.getRelPath(object.Prefix),
+				Type:       types.ObjectTypeDir,
+				ObjectMeta: metadata.NewObjectMeta(),
+			}
+
+			opt.DirFunc(o)
+			continue
 		}
 
 		o := &types.Object{
@@ -80,7 +107,12 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 		}
 		o.SetStorageClass(storageClass)
 
-		opt.FileFunc(o)
+		if opt.HasFileFunc {
+			opt.FileFunc(o)
+		}
+		if opt.HasObjectFunc {
+			opt.ObjectFunc(o)
+		}
 	}
 }
 

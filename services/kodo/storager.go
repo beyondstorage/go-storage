@@ -52,32 +52,57 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	}
 
 	marker := ""
+	delimiter := ""
 	rp := s.getAbsPath(path)
 
+	if !opt.HasObjectFunc {
+		delimiter = "/"
+	}
+
 	for {
-		entries, _, nextMarker, _, err := s.bucket.ListFiles(s.name, rp, "", marker, 1000)
+		entries, commonPrefix, nextMarker, _, err := s.bucket.ListFiles(s.name, rp, delimiter, marker, 1000)
 		if err != nil {
 			return err
 		}
 
-		for _, v := range entries {
-			o := &types.Object{
-				Name:       s.getRelPath(v.Key),
-				Type:       types.ObjectTypeDir,
-				Size:       v.Fsize,
-				UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-			o.SetContentType(v.MimeType)
-			o.SetETag(v.Hash)
+		if opt.HasDirFunc {
+			for _, v := range commonPrefix {
+				o := &types.Object{
+					ID:         v,
+					Name:       s.getRelPath(v),
+					Type:       types.ObjectTypeDir,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
 
-			storageClass, err := formatStorageClass(v.Type)
-			if err != nil {
-				return err
+				opt.DirFunc(o)
 			}
-			o.SetStorageClass(storageClass)
+		}
 
-			opt.FileFunc(o)
+		if opt.HasObjectFunc || opt.HasFileFunc {
+			for _, v := range entries {
+				o := &types.Object{
+					Name:       s.getRelPath(v.Key),
+					Type:       types.ObjectTypeDir,
+					Size:       v.Fsize,
+					UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
+				o.SetContentType(v.MimeType)
+				o.SetETag(v.Hash)
+
+				storageClass, err := formatStorageClass(v.Type)
+				if err != nil {
+					return err
+				}
+				o.SetStorageClass(storageClass)
+
+				if opt.HasObjectFunc {
+					opt.ObjectFunc(o)
+				}
+				if opt.HasFileFunc {
+					opt.FileFunc(o)
+				}
+			}
 		}
 
 		marker = nextMarker

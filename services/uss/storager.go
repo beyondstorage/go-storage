@@ -46,13 +46,35 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 		return err
 	}
 
+	maxListLevel := -1
+
 	rp := s.getAbsPath(path)
+
+	if !opt.HasObjectFunc {
+		maxListLevel = 1
+	}
 
 	ch := make(chan *upyun.FileInfo, 200)
 	defer close(ch)
 
 	go func() {
 		for v := range ch {
+			if v.IsDir {
+				if !opt.HasDirFunc {
+					continue
+				}
+
+				o := &types.Object{
+					ID:         v.Name,
+					Name:       s.getRelPath(v.Name),
+					Type:       types.ObjectTypeDir,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
+
+				opt.DirFunc(o)
+				continue
+			}
+
 			o := &types.Object{
 				ID:         v.Name,
 				Name:       s.getRelPath(v.Name),
@@ -63,13 +85,19 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 			o.SetETag(v.ETag)
 
-			opt.FileFunc(o)
+			if opt.HasObjectFunc {
+				opt.ObjectFunc(o)
+			}
+			if opt.HasFileFunc {
+				opt.FileFunc(o)
+			}
 		}
 	}()
 
 	err = s.bucket.List(&upyun.GetObjectsConfig{
-		Path:        rp,
-		ObjectsChan: ch,
+		Path:         rp,
+		ObjectsChan:  ch,
+		MaxListLevel: maxListLevel,
 	})
 	if err != nil {
 		return err

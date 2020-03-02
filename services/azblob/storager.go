@@ -50,34 +50,90 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	rp := s.getAbsPath(path)
 
 	marker := azblob.Marker{}
-	var output *azblob.ListBlobsFlatSegmentResponse
+
+	if opt.HasObjectFunc {
+		var output *azblob.ListBlobsFlatSegmentResponse
+		for {
+			output, err = s.bucket.ListBlobsFlatSegment(opt.Context, marker, azblob.ListBlobsSegmentOptions{
+				Prefix: rp,
+			})
+			if err != nil {
+				return err
+			}
+
+			for _, v := range output.Segment.BlobItems {
+				o := &types.Object{
+					ID:         v.Name,
+					Name:       s.getRelPath(v.Name),
+					Type:       types.ObjectTypeFile,
+					Size:       *v.Properties.ContentLength,
+					UpdatedAt:  v.Properties.LastModified,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
+				o.SetContentType(*v.Properties.ContentType)
+				o.SetContentMD5(string(v.Properties.ContentMD5))
+
+				storageClass, err := formatStorageClass(v.Properties.AccessTier)
+				if err != nil {
+					return err
+				}
+				o.SetStorageClass(storageClass)
+
+				opt.ObjectFunc(o)
+			}
+
+			marker = output.NextMarker
+			if !marker.NotDone() {
+				break
+			}
+		}
+		return
+	}
+
+	var output *azblob.ListBlobsHierarchySegmentResponse
 	for {
-		output, err = s.bucket.ListBlobsFlatSegment(opt.Context, marker, azblob.ListBlobsSegmentOptions{
+		output, err = s.bucket.ListBlobsHierarchySegment(opt.Context, marker, "/", azblob.ListBlobsSegmentOptions{
 			Prefix: rp,
 		})
 		if err != nil {
 			return err
 		}
 
-		for _, v := range output.Segment.BlobItems {
-			o := &types.Object{
-				ID:         v.Name,
-				Name:       s.getRelPath(v.Name),
-				Type:       types.ObjectTypeDir,
-				Size:       *v.Properties.ContentLength,
-				UpdatedAt:  v.Properties.LastModified,
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-			o.SetContentType(*v.Properties.ContentType)
-			o.SetContentMD5(string(v.Properties.ContentMD5))
+		if opt.HasDirFunc {
+			for _, v := range output.Segment.BlobPrefixes {
+				o := &types.Object{
+					ID:         v.Name,
+					Name:       s.getRelPath(v.Name),
+					Type:       types.ObjectTypeDir,
+					Size:       0,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
 
-			storageClass, err := formatStorageClass(v.Properties.AccessTier)
-			if err != nil {
-				return err
+				opt.DirFunc(o)
 			}
-			o.SetStorageClass(storageClass)
+		}
 
-			opt.FileFunc(o)
+		if opt.HasFileFunc {
+			for _, v := range output.Segment.BlobItems {
+				o := &types.Object{
+					ID:         v.Name,
+					Name:       s.getRelPath(v.Name),
+					Type:       types.ObjectTypeFile,
+					Size:       *v.Properties.ContentLength,
+					UpdatedAt:  v.Properties.LastModified,
+					ObjectMeta: metadata.NewObjectMeta(),
+				}
+				o.SetContentType(*v.Properties.ContentType)
+				o.SetContentMD5(string(v.Properties.ContentMD5))
+
+				storageClass, err := formatStorageClass(v.Properties.AccessTier)
+				if err != nil {
+					return err
+				}
+				o.SetStorageClass(storageClass)
+
+				opt.FileFunc(o)
+			}
 		}
 
 		marker = output.NextMarker
@@ -85,7 +141,6 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			break
 		}
 	}
-
 	return
 }
 
