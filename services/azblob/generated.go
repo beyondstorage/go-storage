@@ -252,7 +252,12 @@ type pairStorageList struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	FileFunc types.ObjectFunc
+	HasDirFunc    bool
+	DirFunc       types.ObjectFunc
+	HasFileFunc   bool
+	FileFunc      types.ObjectFunc
+	HasObjectFunc bool
+	ObjectFunc    types.ObjectFunc
 }
 
 func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
@@ -275,17 +280,20 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	}
 
 	// Parse meta-defined pairs
-	v, ok = values[ps.FileFunc]
-	if !ok {
-		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairRequired,
-			Key:   ps.FileFunc,
-			Value: nil,
-		}
-	}
+	v, ok = values[ps.DirFunc]
 	if ok {
+		result.HasDirFunc = true
+		result.DirFunc = v.(types.ObjectFunc)
+	}
+	v, ok = values[ps.FileFunc]
+	if ok {
+		result.HasFileFunc = true
 		result.FileFunc = v.(types.ObjectFunc)
+	}
+	v, ok = values[ps.ObjectFunc]
+	if ok {
+		result.HasObjectFunc = true
+		result.ObjectFunc = v.(types.ObjectFunc)
 	}
 	return result, nil
 }
