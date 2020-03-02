@@ -5,10 +5,12 @@ import (
 	"io"
 	"strings"
 
+	"github.com/upyun/go-sdk/upyun"
+
 	"github.com/Xuanwo/storage/pkg/iowrap"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
-	"github.com/upyun/go-sdk/upyun"
 )
 
 // Storage is the uss service.
@@ -35,11 +37,13 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 
 // List implements Storager.List
 func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s List [%s]: %w"
+	defer func() {
+		err = s.formatError("list", err, path)
+	}()
 
 	opt, err := parseStoragePairList(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	rp := s.getAbsPath(path)
@@ -68,18 +72,20 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 		ObjectsChan: ch,
 	})
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 	return
 }
 
 // Read implements Storager.Read
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	const errorMessage = "%s Read [%s]: %w"
+	defer func() {
+		err = s.formatError("read", err, path)
+	}()
 
 	opt, err := parseStoragePairRead(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	rp := s.getAbsPath(path)
@@ -91,7 +97,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		Writer: w,
 	})
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	if opt.HasReadCallbackFunc {
@@ -102,11 +108,13 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 // Write implements Storager.Write
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Write [%s]: %w"
+	defer func() {
+		err = s.formatError("write", err, path)
+	}()
 
 	opt, err := parseStoragePairWrite(pairs...)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 
 	if opt.HasReadCallbackFunc {
@@ -122,20 +130,22 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 
 	err = s.bucket.Put(cfg)
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 	return
 }
 
 // Stat implements Storager.Stat
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	const errorMessage = "%s Stat [%s]: %w"
+	defer func() {
+		err = s.formatError("stat", err, path)
+	}()
 
 	rp := s.getAbsPath(path)
 
 	output, err := s.bucket.GetInfo(rp)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, s, path, err)
+		return nil, err
 	}
 
 	o = &types.Object{
@@ -151,7 +161,9 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 // Delete implements Storager.Delete
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	const errorMessage = "%s Delete [%s]: %w"
+	defer func() {
+		err = s.formatError("delete", err, path)
+	}()
 
 	rp := s.getAbsPath(path)
 
@@ -159,7 +171,7 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		Path: rp,
 	})
 	if err != nil {
-		return fmt.Errorf(errorMessage, s, path, err)
+		return err
 	}
 	return
 }
@@ -170,4 +182,17 @@ func (s *Storage) getAbsPath(path string) string {
 
 func (s *Storage) getRelPath(path string) string {
 	return strings.TrimPrefix(path, s.workDir+"/")
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      formatError(err),
+		Storager: s,
+		Path:     path,
+	}
 }

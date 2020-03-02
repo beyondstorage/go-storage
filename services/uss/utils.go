@@ -2,11 +2,13 @@ package uss
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/upyun/go-sdk/upyun"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 )
 
@@ -35,4 +37,24 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	store.name = opt.Name
 	store.workDir = opt.WorkDir
 	return nil, store, nil
+}
+
+// ref: https://help.upyun.com/knowledge-base/errno/
+func formatError(err error) error {
+	fn := func(s string) bool {
+		return strings.Contains(err.Error(), `"code": `+s)
+	}
+
+	switch {
+	case fn("40400001"):
+		// 40400001:	file or directory not found
+		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+	case fn("40100017"), fn("40100019"), fn("40300011"):
+		// 40100017: user need permission
+		// 40100019: account forbidden
+		// 40300011: has no permission to delete
+		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+	default:
+		return err
+	}
 }
