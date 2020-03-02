@@ -516,6 +516,38 @@ func TestStorage_List(t *testing.T) {
 	}
 }
 
+func TestStorage_ListWithObjectFunc(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBucket := NewMockBucket(ctrl)
+
+	path := uuid.New().String()
+	key := uuid.New().String()
+
+	mockBucket.EXPECT().ListObjects(gomock.Any()).DoAndReturn(func(input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
+		assert.Equal(t, path, *input.Prefix)
+		assert.Equal(t, 200, *input.Limit)
+		return &service.ListObjectsOutput{
+			HasMore: service.Bool(false),
+			Keys: []*service.KeyType{
+				{
+					Key: service.String(key),
+				},
+			},
+		}, nil
+	})
+
+	client := Storage{
+		bucket: mockBucket,
+	}
+
+	err := client.List(path, pairs.WithObjectFunc(func(object *types.Object) {
+		assert.Equal(t, object.ID, key)
+	}))
+	assert.Nil(t, err)
+}
+
 func TestStorage_Move(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
