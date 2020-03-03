@@ -88,8 +88,8 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			for _, v := range output.Contents {
 				o := &types.Object{
 					ID:         *v.Key,
-					Type:       types.ObjectTypeFile,
 					Name:       s.getRelPath(*v.Key),
+					Type:       types.ObjectTypeFile,
 					Size:       aws.Int64Value(v.Size),
 					UpdatedAt:  aws.TimeValue(v.LastModified),
 					ObjectMeta: metadata.NewObjectMeta(),

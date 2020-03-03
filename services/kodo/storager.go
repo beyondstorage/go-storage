@@ -82,7 +82,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			for _, v := range entries {
 				o := &types.Object{
 					Name:       s.getRelPath(v.Key),
-					Type:       types.ObjectTypeDir,
+					Type:       types.ObjectTypeFile,
 					Size:       v.Fsize,
 					UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
 					ObjectMeta: metadata.NewObjectMeta(),
