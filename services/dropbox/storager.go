@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
-	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/auth"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
@@ -248,30 +247,14 @@ func (s *Storage) getAbsPath(path string) string {
 	return strings.TrimPrefix(s.workDir+"/"+path, "/")
 }
 
-// ref: https://www.dropbox.com/developers/documentation/http/documentation
-//
-// FIXME: I don't know how to handle dropbox's API error correctly, please give me some help.
 func (s *Storage) formatError(op string, err error, path ...string) error {
 	if err == nil {
 		return nil
 	}
 
-	fn := func(errorSummary, s string) bool {
-		return strings.HasPrefix(errorSummary, s)
-	}
-
-	switch e := err.(type) {
-	case files.DownloadAPIError:
-		if fn(e.ErrorSummary, "not_found") {
-			err = fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
-		}
-	case auth.AccessAPIError:
-		err = fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
-	}
-
 	return &services.StorageError{
 		Op:       op,
-		Err:      err,
+		Err:      formatError(err),
 		Storager: s,
 		Path:     path,
 	}

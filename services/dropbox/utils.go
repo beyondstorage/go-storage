@@ -2,12 +2,15 @@ package dropbox
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
+	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/auth"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 )
 
@@ -37,4 +40,23 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	}
 
 	return nil, store, nil
+}
+
+// ref: https://www.dropbox.com/developers/documentation/http/documentation
+//
+// FIXME: I don't know how to handle dropbox's API error correctly, please give me some help.
+func formatError(err error) error {
+	fn := func(errorSummary, s string) bool {
+		return strings.HasPrefix(errorSummary, s)
+	}
+
+	switch e := err.(type) {
+	case files.DownloadAPIError:
+		if fn(e.ErrorSummary, "not_found") {
+			err = fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		}
+	case auth.AccessAPIError:
+		err = fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+	}
+	return err
 }
