@@ -103,12 +103,6 @@ func TestGetRelPath(t *testing.T) {
 }
 
 func TestHandleQingStorError(t *testing.T) {
-	t.Run("nil error will panic", func(t *testing.T) {
-		assert.Panics(t, func() {
-			_ = formatError(nil)
-		})
-	})
-
 	{
 		tests := []struct {
 			name     string
