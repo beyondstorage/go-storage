@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Xuanwo/storage/services"
-	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/tencentyun/cos-go-sdk-v5"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 // New will create a new Tencent oss service.

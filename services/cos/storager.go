@@ -3,16 +3,15 @@ package cos
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"time"
+
+	"github.com/tencentyun/cos-go-sdk-v5"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
-
-	"github.com/tencentyun/cos-go-sdk-v5"
 )
 
 // Storage is the cos object storage service.
@@ -23,19 +22,6 @@ type Storage struct {
 	name     string
 	location string
 	workDir  string
-}
-
-// newStorage will create a new client.
-func newStorage(bucketName, region string, client *http.Client) *Storage {
-	s := &Storage{}
-
-	url := cos.NewBucketURL(bucketName, region, true)
-	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, client)
-	s.bucket = c.Bucket
-	s.object = c.Object
-	s.name = bucketName
-	s.location = region
-	return s
 }
 
 // String implements Storager.String
