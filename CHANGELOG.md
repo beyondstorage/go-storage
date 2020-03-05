@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.7.2] - 2020-03-05
+
+### Added
+
+- services/*: Implement proposal 11-error-handling (#143)
+- docs/design: Support both directory and prefix based list (#157)
+- services/*: Implement proposal 12-support-both-directory-and-prefix-based-list (#158)
+
+### Changed
+
+- services/*: Refactor format error (#166)
+
+### Fixed
+
+- services/{gcs,kodo,oss,s3}: Fix Object type in List incorrect (#162)
+
 ## [v0.7.1] - 2020-02-29
 
 ### Added
@@ -158,7 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.7.2...HEAD
+[v0.7.1]: https://github.com/Xuanwo/storage/compare/v0.7.1...v0.7.2
 [v0.7.1]: https://github.com/Xuanwo/storage/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/Xuanwo/storage/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/Xuanwo/storage/compare/v0.5.0...v0.6.0
