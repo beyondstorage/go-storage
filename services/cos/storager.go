@@ -282,15 +282,9 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	// Handle errors returned by cos.
-	e, ok := err.(*cos.ErrorResponse)
-	if ok {
-		err = formatCosError(e)
-	}
-
 	return &services.StorageError{
 		Op:       op,
-		Err:      err,
+		Err:      formatError(err),
 		Storager: s,
 		Path:     path,
 	}

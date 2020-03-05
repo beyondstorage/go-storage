@@ -103,12 +103,6 @@ func TestGetRelPath(t *testing.T) {
 }
 
 func TestHandleQingStorError(t *testing.T) {
-	t.Run("nil error will panic", func(t *testing.T) {
-		assert.Panics(t, func() {
-			_ = formatQingStorError(nil)
-		})
-	})
-
 	{
 		tests := []struct {
 			name     string
@@ -130,7 +124,7 @@ func TestHandleQingStorError(t *testing.T) {
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				assert.True(t, errors.Is(formatQingStorError(tt.input), tt.expected))
+				assert.True(t, errors.Is(formatError(tt.input), tt.expected))
 			})
 		}
 	}
@@ -167,7 +161,7 @@ func TestHandleQingStorError(t *testing.T) {
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				assert.True(t, errors.Is(formatQingStorError(tt.input), tt.expected))
+				assert.True(t, errors.Is(formatError(tt.input), tt.expected))
 			})
 		}
 	}

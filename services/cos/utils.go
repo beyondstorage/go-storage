@@ -100,8 +100,14 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 }
 
 // ref: https://www.qcloud.com/document/product/436/7730
-func formatCosError(err *cos.ErrorResponse) error {
-	switch err.Code {
+func formatError(err error) error {
+	// Handle errors returned by cos.
+	e, ok := err.(*cos.ErrorResponse)
+	if !ok {
+		return err
+	}
+
+	switch e.Code {
 	case "NoSuchKey":
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	case "AccessDenied":

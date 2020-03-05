@@ -36,7 +36,8 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	return nil, store, nil
 }
 
-func formatOsError(err error) error {
+func formatError(err error) error {
+	// Handle error returned by os package.
 	switch {
 	case os.IsNotExist(err):
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)

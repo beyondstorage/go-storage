@@ -251,7 +251,7 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 
 	return &services.StorageError{
 		Op:       op,
-		Err:      formatGcsError(err),
+		Err:      formatError(err),
 		Storager: s,
 		Path:     path,
 	}

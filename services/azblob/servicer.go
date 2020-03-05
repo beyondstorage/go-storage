@@ -138,15 +138,9 @@ func (s *Service) formatError(op string, err error, name string) error {
 		return nil
 	}
 
-	// Handle errors returned by azblob.
-	e, ok := err.(azblob.StorageError)
-	if ok {
-		err = formatAzblobError(e)
-	}
-
 	return &services.ServiceError{
 		Op:       op,
-		Err:      err,
+		Err:      formatError(err),
 		Servicer: s,
 		Name:     name,
 	}

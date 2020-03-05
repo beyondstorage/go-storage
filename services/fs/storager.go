@@ -329,15 +329,9 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	// Handle error returned by os package.
-	switch e := err.(type) {
-	case *os.PathError, *os.SyscallError, *os.LinkError:
-		err = formatOsError(e)
-	}
-
 	return &services.StorageError{
 		Op:       op,
-		Err:      err,
+		Err:      formatError(err),
 		Storager: s,
 		Path:     path,
 	}

@@ -7,15 +7,16 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/yunify/qingstor-sdk-go/v3/config"
+	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
+	"github.com/yunify/qingstor-sdk-go/v3/service"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
-	"github.com/yunify/qingstor-sdk-go/v3/config"
-	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
-	"github.com/yunify/qingstor-sdk-go/v3/service"
 )
 
 // New will create a new qingstor service.
@@ -77,17 +78,22 @@ func IsBucketNameValid(s string) bool {
 	return bucketNameRegexp.MatchString(s)
 }
 
-func formatQingStorError(e *qserror.QingStorError) error {
-	if e.Code == "" {
+func formatError(err error) error {
+	// Handle errors returned by qingstor.
+	var e *qserror.QingStorError
+	if !errors.As(err, &e) {
+		return err
+	}
+
+	switch e.Code {
+	case "":
+		// code=="" means this response doesn't have body.
 		switch e.StatusCode {
 		case 404:
 			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, e)
 		default:
 			return e
 		}
-	}
-
-	switch e.Code {
 	case "permission_denied":
 		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, e)
 	case "object_not_exists":

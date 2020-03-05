@@ -104,7 +104,7 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 }
 
 // ref: https://cloud.google.com/storage/docs/json_api/v1/status-codes
-func formatGcsError(err error) error {
+func formatError(err error) error {
 	// gcs sdk could return explicit error, we should handle them.
 	if errors.Is(err, gs.ErrObjectNotExist) {
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
