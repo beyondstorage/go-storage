@@ -99,8 +99,14 @@ func formatStorageClass(in azblob.AccessTierType) (storageclass.Type, error) {
 }
 
 // ref: https://docs.microsoft.com/en-us/rest/api/storageservices/status-and-error-codes2
-func formatAzblobError(err azblob.StorageError) error {
-	switch azblob.StorageErrorCodeType(err.ServiceCode()) {
+func formatError(err error) error {
+	// Handle errors returned by azblob.
+	e, ok := err.(azblob.StorageError)
+	if !ok {
+		return err
+	}
+
+	switch azblob.StorageErrorCodeType(e.ServiceCode()) {
 	case azblob.StorageErrorCodeBlobNotFound:
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	case azblob.StorageErrorCodeInsufficientAccountPermissions:

@@ -264,15 +264,9 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	// Handle errors returned by azblob.
-	e, ok := err.(azblob.StorageError)
-	if ok {
-		err = formatAzblobError(e)
-	}
-
 	return &services.StorageError{
 		Op:       op,
-		Err:      err,
+		Err:      formatError(err),
 		Storager: s,
 		Path:     path,
 	}
