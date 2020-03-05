@@ -81,6 +81,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 		if opt.HasObjectFunc || opt.HasFileFunc {
 			for _, v := range entries {
 				o := &types.Object{
+					ID:         v.Key,
 					Name:       s.getRelPath(v.Key),
 					Type:       types.ObjectTypeFile,
 					Size:       v.Fsize,
