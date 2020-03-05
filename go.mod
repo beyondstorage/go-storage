@@ -8,7 +8,7 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest/adal v0.8.1 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v2.0.5+incompatible
-	github.com/aws/aws-sdk-go v1.29.13
+	github.com/aws/aws-sdk-go v1.29.17
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dropbox/dropbox-sdk-go-unofficial v5.6.0+incompatible
@@ -22,5 +22,5 @@ require (
 	github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20191221060900-c807d39e9045
 	github.com/upyun/go-sdk v2.1.0+incompatible
 	github.com/yunify/qingstor-sdk-go/v3 v3.1.2-0.20191015085047-089474e57bf8
-	google.golang.org/api v0.19.0
+	google.golang.org/api v0.20.0
 )
