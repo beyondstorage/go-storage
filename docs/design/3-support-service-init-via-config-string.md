@@ -5,6 +5,8 @@ updated_at: 2019-12-23
 updated_by:
   - design/4-credential-refactor.md
   - design/9-remove-storager-init.md
+deprecated_by:
+  - design/13-remove-config-string.md
 ---
 
 # Proposal: Support service init via config string
