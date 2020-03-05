@@ -123,15 +123,9 @@ func (s *Service) formatError(op string, err error, name string) error {
 		return nil
 	}
 
-	// Handle errors returned by cos.
-	e, ok := err.(*cos.ErrorResponse)
-	if ok {
-		err = formatCosError(e)
-	}
-
 	return &services.ServiceError{
 		Op:       op,
-		Err:      err,
+		Err:      formatError(err),
 		Servicer: s,
 		Name:     name,
 	}
