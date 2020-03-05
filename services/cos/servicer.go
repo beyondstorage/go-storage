@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/tencentyun/cos-go-sdk-v5"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-
-	"github.com/tencentyun/cos-go-sdk-v5"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 // Service is the Tencent oss *Service config.
@@ -38,7 +39,10 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		return err
 	}
 	for _, v := range output.Buckets {
-		store := newStorage(v.Name, v.Region, s.client)
+		store, err := s.newStorage(ps.WithName(v.Name), ps.WithLocation(v.Region))
+		if err != nil {
+			return err
+		}
 		opt.StoragerFunc(store)
 	}
 	return
@@ -55,7 +59,10 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, e
 		return nil, err
 	}
 
-	store := newStorage(name, opt.Location, s.client)
+	store, err := s.newStorage(ps.WithName(name), ps.WithLocation(opt.Location))
+	if err != nil {
+		return nil, err
+	}
 	return store, nil
 }
 
@@ -70,7 +77,10 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager
 		return nil, err
 	}
 
-	store := newStorage(name, opt.Location, s.client)
+	store, err := s.newStorage(ps.WithName(name), ps.WithLocation(opt.Location))
+	if err != nil {
+		return nil, err
+	}
 	_, err = store.bucket.Put(opt.Context, nil)
 	if err != nil {
 		return nil, err
@@ -89,7 +99,10 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 		return err
 	}
 
-	store := newStorage(name, opt.Location, s.client)
+	store, err := s.newStorage(ps.WithName(name), ps.WithLocation(opt.Location))
+	if err != nil {
+		return err
+	}
 	_, err = store.bucket.Delete(opt.Context)
 	if err != nil {
 		return err

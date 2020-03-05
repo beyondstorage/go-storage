@@ -113,22 +113,21 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	if err != nil {
 		return nil, err
 	}
-	if opt.HasSize && opt.HasOffset {
-		return iowrap.SectionReadCloser(f, opt.Offset, opt.Size), nil
-	}
-	if opt.HasSize {
-		return iowrap.LimitReadCloser(f, opt.Size), nil
-	}
 	if opt.HasOffset {
 		_, err = f.Seek(opt.Offset, 0)
 		if err != nil {
 			return nil, err
 		}
 	}
-	if opt.HasReadCallbackFunc {
-		return iowrap.CallbackReadCloser(f, opt.ReadCallbackFunc), nil
+
+	r = f
+	if opt.HasSize {
+		r = iowrap.LimitReadCloser(r, opt.Size)
 	}
-	return f, nil
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+	}
+	return r, nil
 }
 
 // WriteFile implements Storager.WriteFile
