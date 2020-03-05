@@ -25,26 +25,30 @@ import (
 //      - BlobURL's       methods perform operations on a container's blob regardless of the blob's type.
 //
 // Our Service will store a ServiceURL for operation.
-func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
-	const errorMessage = "azblob New: %w"
+func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.PairError{Op: "new azblob", Err: err, Pairs: pairs}
+		}
+	}()
 
 	srv := &Service{}
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	primaryURL, _ := url.Parse(opt.Endpoint.Value().String())
 
 	credProtocol, credValue := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, fmt.Errorf(errorMessage, credential.ErrUnsupportedProtocol)
+		return nil, nil, services.ErrCredentialProtocolNotSupported
 	}
 
 	cred, err := azblob.NewSharedKeyCredential(credValue[0], credValue[1])
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	p := azblob.NewPipeline(cred, azblob.PipelineOptions{})
@@ -55,7 +59,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 		return srv, nil, nil
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 	return srv, store, nil
 }
@@ -73,8 +77,7 @@ func parseStorageClass(in storageclass.Type) (azblob.AccessTierType, error) {
 		return "", &services.PairError{
 			Op:    "parse storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }
@@ -92,8 +95,7 @@ func formatStorageClass(in azblob.AccessTierType) (storageclass.Type, error) {
 		return "", &services.PairError{
 			Op:    "format storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }

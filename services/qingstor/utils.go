@@ -20,7 +20,13 @@ import (
 )
 
 // New will create a new qingstor service.
-func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.PairError{Op: "new qingstor", Err: err, Pairs: pairs}
+		}
+	}()
+
 	srv := &Service{
 		noRedirectClient: &http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -36,12 +42,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, &services.PairError{
-			Op:    "new",
-			Err:   services.ErrCredentialProtocolNotSupported,
-			Key:   credProtocol,
-			Value: cred,
-		}
+		return nil, nil, services.ErrCredentialProtocolNotSupported
 	}
 	cfg, err := config.New(cred[0], cred[1])
 	if err != nil {
@@ -126,8 +127,7 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 		return "", &services.PairError{
 			Op:    "parse storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }
@@ -143,8 +143,7 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 		return "", &services.PairError{
 			Op:    "format storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }

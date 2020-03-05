@@ -15,12 +15,16 @@ import (
 )
 
 // New will create a new client.
-func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
-	const errorMessage = "dropbox New: %w"
+func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.PairError{Op: "new dropbox", Err: err, Pairs: pairs}
+		}
+	}()
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	cfg := dropbox.Config{}
@@ -30,7 +34,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	case credential.ProtocolAPIKey:
 		cfg.Token = cred[0]
 	default:
-		return nil, nil, fmt.Errorf(errorMessage, credential.ErrUnsupportedProtocol)
+		return nil, nil, services.ErrCredentialProtocolNotSupported
 	}
 
 	store := &Storage{

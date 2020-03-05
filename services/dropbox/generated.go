@@ -188,10 +188,11 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	v, ok = values[ps.Credential]
 	if !ok {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairRequired,
-			Key:   ps.Credential,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairRequired,
+			Pairs: []*types.Pair{
+				{Key: ps.Credential, Value: nil},
+			},
 		}
 	}
 	if ok {
