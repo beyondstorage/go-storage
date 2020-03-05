@@ -19,12 +19,16 @@ import (
 )
 
 // New will create a new s3 service.
-func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
-	const errorMessage = "s3 New: %w"
+func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.PairError{Op: "new s3", Err: err, Pairs: pairs}
+		}
+	}()
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	cfg := aws.NewConfig()
@@ -36,12 +40,12 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	case credential.ProtocolEnv:
 		cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
 	default:
-		return nil, nil, fmt.Errorf(errorMessage, credential.ErrUnsupportedProtocol)
+		return nil, nil, services.ErrCredentialProtocolNotSupported
 	}
 
 	sess, err := session.NewSession(cfg)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	srv := &Service{service: s3.New(sess)}
@@ -51,7 +55,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 		return srv, nil, nil
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 	return srv, store, nil
 }
@@ -69,8 +73,7 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 		return "", &services.PairError{
 			Op:    "parse storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }
@@ -88,8 +91,7 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 		return "", &services.PairError{
 			Op:    "format storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 

@@ -149,10 +149,11 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	v, ok = values[ps.StoragerFunc]
 	if !ok {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairRequired,
-			Key:   ps.StoragerFunc,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairRequired,
+			Pairs: []*types.Pair{
+				{Key: ps.StoragerFunc, Value: nil},
+			},
 		}
 	}
 	if ok {
@@ -193,10 +194,11 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	v, ok = values[ps.Credential]
 	if !ok {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairRequired,
-			Key:   ps.Credential,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairRequired,
+			Pairs: []*types.Pair{
+				{Key: ps.Credential, Value: nil},
+			},
 		}
 	}
 	if ok {
@@ -205,10 +207,11 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	v, ok = values[ps.Project]
 	if !ok {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairRequired,
-			Key:   ps.Project,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairRequired,
+			Pairs: []*types.Pair{
+				{Key: ps.Project, Value: nil},
+			},
 		}
 	}
 	if ok {
@@ -298,26 +301,33 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	// Validate for ObjectFunc
 	if result.HasObjectFunc && result.HasFileFunc {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairConflict,
-			Key:   ps.ObjectFunc,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairConflict,
+			Pairs: []*types.Pair{
+				{Key: ps.ObjectFunc, Value: result.ObjectFunc},
+				{Key: ps.FileFunc, Value: result.FileFunc},
+			},
 		}
 	}
 	if result.HasObjectFunc && result.HasDirFunc {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairConflict,
-			Key:   ps.ObjectFunc,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairConflict,
+			Pairs: []*types.Pair{
+				{Key: ps.ObjectFunc, Value: result.ObjectFunc},
+				{Key: ps.DirFunc, Value: result.DirFunc},
+			},
 		}
 	}
 	if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairRequired,
-			Key:   ps.FileFunc,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairRequired,
+			Pairs: []*types.Pair{
+				{Key: ps.ObjectFunc, Value: nil},
+				{Key: ps.FileFunc, Value: nil},
+				{Key: ps.DirFunc, Value: nil},
+			},
 		}
 	}
 	return result, nil
@@ -379,10 +389,11 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	v, ok = values[ps.Name]
 	if !ok {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairRequired,
-			Key:   ps.Name,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairRequired,
+			Pairs: []*types.Pair{
+				{Key: ps.Name, Value: nil},
+			},
 		}
 	}
 	if ok {
@@ -510,10 +521,11 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	v, ok = values[ps.Size]
 	if !ok {
 		return nil, &services.PairError{
-			Op:    "parse",
-			Err:   services.ErrPairRequired,
-			Key:   ps.Size,
-			Value: nil,
+			Op:  "parse",
+			Err: services.ErrPairRequired,
+			Pairs: []*types.Pair{
+				{Key: ps.Size, Value: nil},
+			},
 		}
 	}
 	if ok {

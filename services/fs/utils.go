@@ -12,12 +12,16 @@ import (
 )
 
 // New will create a fs client.
-func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
-	const errorMessage = "fs New: %w"
+func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.PairError{Op: "new fs", Err: err, Pairs: pairs}
+		}
+	}()
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	store := &Storage{

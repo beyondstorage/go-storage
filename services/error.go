@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/types"
 )
 
 var (
@@ -32,15 +33,11 @@ type PairError struct {
 	Op  string
 	Err error
 
-	Key   string
-	Value interface{}
+	Pairs []*types.Pair
 }
 
 func (e *PairError) Error() string {
-	if e.Value == nil {
-		return fmt.Sprintf("%s: %s: %s", e.Op, e.Key, e.Err.Error())
-	}
-	return fmt.Sprintf("%s: %s, %s: %s", e.Op, e.Key, e.Value, e.Err.Error())
+	return fmt.Sprintf("%s: %v: %s", e.Op, e.Pairs, e.Err.Error())
 }
 
 // Unwrap implements xerrors.Wrapper

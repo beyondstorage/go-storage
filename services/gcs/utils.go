@@ -18,14 +18,18 @@ import (
 )
 
 // New will create a new aliyun oss service.
-func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
-	const errorMessage = "gcs New: %w"
+func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.PairError{Op: "new gcs", Err: err, Pairs: pairs}
+		}
+	}()
 
 	srv := &Service{}
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	options := make([]option.ClientOption, 0)
@@ -37,13 +41,13 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 	case credential.ProtocolFile:
 		options = append(options, option.WithCredentialsFile(cred[0]))
 	default:
-		return nil, nil, fmt.Errorf(errorMessage, credential.ErrUnsupportedProtocol)
+		return nil, nil, services.ErrCredentialProtocolNotSupported
 	}
 
 	client, err := gs.NewClient(opt.Context, options...)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	srv.service = client
@@ -54,7 +58,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 		return srv, nil, nil
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 	return srv, store, nil
 }
@@ -78,8 +82,7 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 		return "", &services.PairError{
 			Op:    "parse storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }
@@ -97,8 +100,7 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 		return "", &services.PairError{
 			Op:    "format storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }

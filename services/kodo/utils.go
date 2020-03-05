@@ -17,19 +17,23 @@ import (
 )
 
 // New will create a new kodo service.
-func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
-	const errorMessage = "kodo New: %w"
+func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.PairError{Op: "new kodo", Err: err, Pairs: pairs}
+		}
+	}()
 
 	srv := &Service{}
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, services.ErrCredentialProtocolNotSupported
 	}
 
 	mac := qbox.NewMac(cred[0], cred[1])
@@ -41,7 +45,7 @@ func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
 		return srv, nil, nil
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, err)
+		return nil, nil, err
 	}
 	return srv, store, nil
 }
@@ -73,8 +77,7 @@ func parseStorageClass(in storageclass.Type) (int, error) {
 		return 0, &services.PairError{
 			Op:    "parse storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }
@@ -92,8 +95,7 @@ func formatStorageClass(in int) (storageclass.Type, error) {
 		return "", &services.PairError{
 			Op:    "format storage class",
 			Err:   services.ErrStorageClassNotSupported,
-			Key:   ps.StorageClass,
-			Value: in,
+			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
 		}
 	}
 }
