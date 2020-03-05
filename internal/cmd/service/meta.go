@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/Xuanwo/templateutils"
 )
@@ -65,23 +66,36 @@ func parseMeta() metadata {
 		log.Fatalf("json unmarshal failed: %v", err)
 	}
 
-	// Inject ReadCallbackFunc in all operations who have a Reader.
-	if _, ok := meta.Storage["read"]; !ok {
-		meta.Storage["read"] = make(map[string]bool)
-	}
-	meta.Storage["read"]["read_callback_func"] = false
-	if _, ok := meta.Storage["write"]; !ok {
-		meta.Storage["write"] = make(map[string]bool)
-	}
-	meta.Storage["write"]["read_callback_func"] = false
-	// TODO: WriteSegment should also be supported.
+	// Get all funcs
+	servicerFuncs, storagerFuncs, utilsFuncs := parseFunc("servicer"), parseFunc("storager"), parseFunc("utils")
+
+	injectReadCallbackFunc(meta.Storage, storagerFuncs)
 
 	// Handle Data
 	meta.Data = make(map[string]map[string]*fn)
-	meta.Data["service"] = mergeFn(meta.Service, parseFunc("servicer"), parseFunc("utils"))
-	meta.Data["storage"] = mergeFn(meta.Storage, parseFunc("storager"))
+	meta.Data["service"] = mergeFn(meta.Service, servicerFuncs, utilsFuncs)
+	meta.Data["storage"] = mergeFn(meta.Storage, storagerFuncs)
 
 	return meta
+}
+
+// Inject ReadCallbackFunc in all operations who have a Reader.
+func injectReadCallbackFunc(mp map[string]map[string]bool, fns map[string]*contextFunc) {
+	funcs := make([]string, 0)
+	for funcName, fn := range fns {
+		funcName = templateutils.ToSnack(funcName)
+		if strings.Contains(fn.Params, "io.Reader") ||
+			strings.Contains(fn.Returns, "io.ReadCloser") {
+			funcs = append(funcs, funcName)
+		}
+	}
+
+	for _, funcName := range funcs {
+		if _, ok := mp[funcName]; !ok {
+			mp[funcName] = make(map[string]bool)
+		}
+		mp[funcName]["read_callback_func"] = false
+	}
 }
 
 func mergeFn(mp map[string]map[string]bool, mfn ...map[string]*contextFunc) map[string]*fn {

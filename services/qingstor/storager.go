@@ -440,6 +440,11 @@ func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs
 		err = s.formatError("write segment", err, id)
 	}()
 
+	opt, err := parseStoragePairWriteSegment(pairs...)
+	if err != nil {
+		return
+	}
+
 	s.segmentLock.RLock()
 	seg, ok := s.segments[id]
 	if !ok {
@@ -454,6 +459,10 @@ func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs
 	}
 
 	rp := s.getAbsPath(seg.Path)
+
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
+	}
 
 	_, err = s.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
 		PartNumber:    &p.Index,
