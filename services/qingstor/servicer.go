@@ -1,14 +1,12 @@
 package qingstor
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/yunify/qingstor-sdk-go/v3/config"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
-	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage"
@@ -215,15 +213,9 @@ func (s *Service) formatError(op string, err error, name string) error {
 		return nil
 	}
 
-	// Handle errors returned by qingstor.
-	var e *qserror.QingStorError
-	if errors.As(err, &e) {
-		err = formatQingStorError(e)
-	}
-
 	return &services.ServiceError{
 		Op:       op,
-		Err:      err,
+		Err:      formatError(err),
 		Servicer: s,
 		Name:     name,
 	}

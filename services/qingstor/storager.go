@@ -1,7 +1,6 @@
 package qingstor
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -10,7 +9,6 @@ import (
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/yunify/qingstor-sdk-go/v3/config"
 	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
-	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
@@ -558,15 +556,9 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	// Handle errors returned by qingstor.
-	var e *qserror.QingStorError
-	if errors.As(err, &e) {
-		err = formatQingStorError(e)
-	}
-
 	return &services.StorageError{
 		Op:       op,
-		Err:      err,
+		Err:      formatError(err),
 		Storager: s,
 		Path:     path,
 	}
