@@ -138,7 +138,7 @@ func (s *Service) formatError(op string, err error, name string) error {
 
 	return &services.ServiceError{
 		Op:       op,
-		Err:      formatGcsError(err),
+		Err:      formatError(err),
 		Servicer: s,
 		Name:     name,
 	}
