@@ -2,10 +2,8 @@ package coreutils
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/config"
 	"github.com/Xuanwo/storage/services/azblob"
 	"github.com/Xuanwo/storage/services/cos"
 	"github.com/Xuanwo/storage/services/dropbox"
@@ -25,6 +23,7 @@ var (
 	// ErrServiceNotImplemented will return when service doesn't implement Servicer.
 	ErrServiceNotImplemented = errors.New("service not implemented")
 	// ErrServiceNamespaceNotGiven will return when service namespace not given.
+	// TODO: namespace has been removed, this error should be changed.
 	ErrServiceNamespaceNotGiven = errors.New("service namespace not given")
 )
 
@@ -47,50 +46,38 @@ var opener = map[string]openFunc{
 //
 // Depends on config string's service type, Servicer could be nil.
 // Depends on config string's content, Storager could be nil if namespace not given.
-func Open(cfg string) (srv storage.Servicer, store storage.Storager, err error) {
-	errorMessage := "coreutils Open [%s]: <%w>"
-
-	t, opt, err := config.Parse(cfg)
-	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, cfg, err)
-	}
-
+func Open(t string, opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error) {
 	fn, ok := opener[t]
 	if !ok {
-		err = fmt.Errorf(errorMessage, cfg, ErrServiceNotSupported)
-		return nil, nil, err
+		return nil, nil, &OpenError{ErrServiceNotSupported, t, opt}
 	}
 	srv, store, err = fn(opt...)
 	if err != nil {
-		return nil, nil, fmt.Errorf(errorMessage, cfg, err)
+		return nil, nil, &OpenError{err, t, opt}
 	}
 	return
 }
 
 // OpenServicer will open a servicer from config string.
-func OpenServicer(cfg string) (srv storage.Servicer, err error) {
-	errorMessage := "coreutils OpenServicer [%s]: <%w>"
-
-	srv, _, err = Open(cfg)
+func OpenServicer(t string, opt ...*types.Pair) (srv storage.Servicer, err error) {
+	srv, _, err = Open(t, opt...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, cfg, err)
+		return nil, err
 	}
 	if srv == nil {
-		return nil, fmt.Errorf(errorMessage, cfg, ErrServiceNotImplemented)
+		return nil, &OpenError{ErrServiceNotImplemented, t, opt}
 	}
 	return
 }
 
 // OpenStorager will open a storager from config string.
-func OpenStorager(cfg string) (store storage.Storager, err error) {
-	errorMessage := "coreutils OpenStorager [%s]: <%w>"
-
-	_, store, err = Open(cfg)
+func OpenStorager(t string, opt ...*types.Pair) (store storage.Storager, err error) {
+	_, store, err = Open(t, opt...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, cfg, err)
+		return nil, err
 	}
 	if store == nil {
-		return nil, fmt.Errorf(errorMessage, cfg, ErrServiceNamespaceNotGiven)
+		return nil, &OpenError{ErrServiceNamespaceNotGiven, t, opt}
 	}
 	return
 }
