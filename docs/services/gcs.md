@@ -2,4 +2,18 @@
 
 [Google Cloud Storage](https://cloud.google.com/storage/)
 
-`gcs://apikey:<api_key>/?name=<bucket_name>&work_dir=<prefix>&project=<project_id>`
+## Config
+
+### Servicer
+
+| Name | Required | Comments |
+| ---- | -------- | -------- |
+| `credential` | Y | only support `api_key` protocol |
+
+### Storager
+
+| Name | Required | Comments |
+| ---- | -------- | -------- |
+| `name` | Y | bucket name |
+| `work_dir` | N | work dir |
+| `project_id` | Y | google cloud project id |

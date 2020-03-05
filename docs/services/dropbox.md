@@ -2,4 +2,11 @@
 
 [Dropbox](https://www.dropbox.com)
 
-`dropbox://apikey:<api_key>/?work_dir=</path/to/work/dir>`
+## Config
+
+### Storager
+
+| Name | Required | Comments |
+| ---- | -------- | -------- |
+| `credential` | Y | only support `api_key` protocol |
+| `work_dir` | N | work dir |

@@ -71,7 +71,7 @@ import "github.com/Xuanwo/storage"
 
 ```go
 // Init a service.
-srv, store, err := coreutils.Open("fs:///?work_dir=/path/to/dir")
+srv, store, err := coreutils.Open("fs", pairs.WithWorkDir("/tmp"))
 if err != nil {
     log.Fatalf("service init failed: %v", err)
 }

@@ -2,4 +2,10 @@
 
 Local file system
 
-`fs:///?work_dir=/path/to/dir`
+## Config
+
+### Storager
+
+| Name | Required | Comments |
+| ---- | -------- | -------- |
+| `work_dir` | N | work dir |

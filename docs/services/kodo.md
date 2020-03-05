@@ -2,4 +2,17 @@
 
 [qiniu kodo](https://www.qiniu.com/products/kodo)
 
-`kodo://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
+## Config
+
+### Servicer
+
+| Name | Required | Comments |
+| ---- | -------- | -------- |
+| `credential` | Y | only support `hmac` protocol |
+
+### Storager
+
+| Name | Required | Comments |
+| ---- | -------- | -------- |
+| `name` | Y | bucket name |
+| `work_dir` | N | work dir |
