@@ -10,6 +10,8 @@
   - [9-remove-storager-init](docs/design/9-remove-storager-init.md)
   - [10-callback-reader](docs/design/10-callback-reader.md)
   - [11-error-handling](docs/design/11-error-handling.md)
+  - [12-support-both-directory-and-prefix-based-list](docs/design/12-support-both-directory-and-prefix-based-list.md)
+  - [13-remove-config-string](docs/design/13-remove-config-string.md)
   
 - Sepc
   - [1-error-handling](docs/spec/1-error-handling.md)
