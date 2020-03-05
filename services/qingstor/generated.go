@@ -876,6 +876,8 @@ type pairStorageWriteSegment struct {
 	Context context.Context
 
 	// Meta-defined pairs
+	HasReadCallbackFunc bool
+	ReadCallbackFunc    func([]byte)
 }
 
 func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment, error) {
@@ -898,6 +900,11 @@ func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
+	}
 	return result, nil
 }
 
