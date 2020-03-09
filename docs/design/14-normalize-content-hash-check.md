@@ -20,12 +20,12 @@ So we need to normalize the content hash check behavior so that we can compare c
 
 So I propose following changes:
 
-- Object metadata `content-md5` SHOULD filled with content md5 with normalization or keep empty
-  - In string format without any `"` or `'`
-- Object metadata `etag` SHOULD filled with services self defined content hash without any modification or keep empty
-  - In string format and keep all `"` and `'`
-- `content-md5` CAN be used safely across services
-- `etag` CAN only be used in same service
+- Standard `content-md5` SHOULD be filled into object metadata `content-md5` in `base64 of 128 bit MD5 digest as per RFC 1864`
+- Non-standard `content-md5` header SHOULD be treated as services self defined content hash
+- Services self defined content hash SHOULD be filled into object metadata `etag` without any modification
+- If service returns `content-md5` only, it should be filled into object metadata `etag` as well.
+- Object metadata `content-md5` CAN be used safely across services
+- Object metadata `etag` CAN only be used in same service
 
 ## Rationale
 
