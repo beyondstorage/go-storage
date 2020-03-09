@@ -1,6 +1,6 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: finished
 updated_at: 2020-03-06
 deprecated:
   - design/3-support-service-init-via-config-string.md
