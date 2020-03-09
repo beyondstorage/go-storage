@@ -76,21 +76,29 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		if opt.HasObjectFunc || opt.HasFileFunc {
 			for _, v := range resp.Contents {
-				// COS use ISO8601 format: 2019-05-27T11:26:14.000Z
-				t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
-				if err != nil {
-					return err
-				}
 
 				o := &types.Object{
 					ID:         v.Key,
 					Name:       s.getRelPath(v.Key),
 					Type:       types.ObjectTypeFile,
 					Size:       int64(v.Size),
-					UpdatedAt:  t,
 					ObjectMeta: metadata.NewObjectMeta(),
 				}
+
+				// COS returns different value depends on object upload method or
+				// encryption method, so we can't treat this value as content-md5
+				//
+				// ref: https://cloud.tencent.com/document/product/436/7729
 				o.SetETag(v.ETag)
+
+				// COS uses ISO8601 format: "2019-05-27T11:26:14.000Z" in List
+				//
+				// ref: https://cloud.tencent.com/document/product/436/7729
+				t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
+				if err != nil {
+					return err
+				}
+				o.UpdatedAt = t
 
 				storageClass, err := formatStorageClass(v.StorageClass)
 				if err != nil {
@@ -212,19 +220,26 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		return nil, err
 	}
 
-	lastModified, err := time.Parse(time.RFC822, output.Header.Get("Last-Modified"))
-	if err != nil {
-		return nil, err
-	}
-
 	o = &types.Object{
 		ID:         rp,
 		Name:       path,
 		Type:       types.ObjectTypeFile,
 		Size:       output.ContentLength,
-		UpdatedAt:  lastModified,
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
+
+	// COS uses RFC1123 format in HEAD
+	//
+	// > Last-Modified: Fri, 09 Aug 2019 10:20:56 GMT
+	//
+	// ref: https://cloud.tencent.com/document/product/436/7745
+	lastModified, err := time.Parse(time.RFC1123, output.Header.Get("Last-Modified"))
+	if err != nil {
+		return nil, err
+	}
+	o.UpdatedAt = lastModified
+
+	o.SetETag(output.Header.Get("ETag"))
 
 	storageClass, err := formatStorageClass(output.Header.Get(storageClassHeader))
 	if err != nil {
