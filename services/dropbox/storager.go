@@ -71,7 +71,8 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 					UpdatedAt:  meta.ServerModified,
 					ObjectMeta: metadata.NewObjectMeta(),
 				}
-				// TODO: manage ContentHash
+
+				o.SetETag(meta.ContentHash)
 
 				if opt.HasFileFunc {
 					opt.FileFunc(o)
@@ -202,7 +203,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 			UpdatedAt:  meta.ServerModified,
 			ObjectMeta: metadata.NewObjectMeta(),
 		}
-		// TODO: manage ContentHash
+
+		o.SetETag(meta.ContentHash)
 
 		return o, nil
 	case *files.FolderMetadata:
