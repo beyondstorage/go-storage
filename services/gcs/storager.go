@@ -1,6 +1,7 @@
 package gcs
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"strings"
@@ -98,8 +99,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			UpdatedAt:  object.Updated,
 			ObjectMeta: metadata.NewObjectMeta(),
 		}
+
 		o.SetContentType(object.ContentType)
-		o.SetContentMD5(string(object.MD5))
+		o.SetETag(object.Etag)
+
+		if len(object.MD5) > 0 {
+			o.SetContentMD5(base64.StdEncoding.EncodeToString(object.MD5))
+		}
 
 		storageClass, err := formatStorageClass(object.StorageClass)
 		if err != nil {
@@ -205,6 +211,12 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		Size:       attr.Size,
 		UpdatedAt:  attr.Updated,
 		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	o.SetETag(attr.Etag)
+
+	if len(attr.MD5) > 0 {
+		o.SetContentMD5(base64.StdEncoding.EncodeToString(attr.MD5))
 	}
 
 	storageClass, err := formatStorageClass(attr.StorageClass)
