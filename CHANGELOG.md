@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.8.0] - 2020-03-09
+
+### Added
+
+- services/*: Add ReadCallbackFunc for WriteSegment (#169)
+- docs/design, coreutils: Propose and implement proposal remove config string (#172)
+
+### Changed
+
+- services/cos: Refactor service newStorage (#176)
+
+### Fixed
+
+- services/fs: Fix size and offset pair not handled correctly (#175)
+- services/kodo: Fix ID not set (#178)
+- services/*: Handle errors returned by New (#179) 
+
 ## [v0.7.2] - 2020-03-05
 
 ### Added
@@ -174,7 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.8.0...HEAD
+[v0.8.0]: https://github.com/Xuanwo/storage/compare/v0.7.2...v0.8.0
 [v0.7.2]: https://github.com/Xuanwo/storage/compare/v0.7.1...v0.7.2
 [v0.7.1]: https://github.com/Xuanwo/storage/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/Xuanwo/storage/compare/v0.6.0...v0.7.0
