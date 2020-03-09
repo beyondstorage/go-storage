@@ -1,6 +1,7 @@
 package azblob
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"strings"
@@ -62,22 +63,10 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 
 			for _, v := range output.Segment.BlobItems {
-				o := &types.Object{
-					ID:         v.Name,
-					Name:       s.getRelPath(v.Name),
-					Type:       types.ObjectTypeFile,
-					Size:       *v.Properties.ContentLength,
-					UpdatedAt:  v.Properties.LastModified,
-					ObjectMeta: metadata.NewObjectMeta(),
-				}
-				o.SetContentType(*v.Properties.ContentType)
-				o.SetContentMD5(string(v.Properties.ContentMD5))
-
-				storageClass, err := formatStorageClass(v.Properties.AccessTier)
+				o, err := s.formatFileObject(v)
 				if err != nil {
 					return err
 				}
-				o.SetStorageClass(storageClass)
 
 				opt.ObjectFunc(o)
 			}
@@ -101,13 +90,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		if opt.HasDirFunc {
 			for _, v := range output.Segment.BlobPrefixes {
-				o := &types.Object{
-					ID:         v.Name,
-					Name:       s.getRelPath(v.Name),
-					Type:       types.ObjectTypeDir,
-					Size:       0,
-					ObjectMeta: metadata.NewObjectMeta(),
-				}
+				o := s.formatDirObject(v)
 
 				opt.DirFunc(o)
 			}
@@ -115,22 +98,10 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 		if opt.HasFileFunc {
 			for _, v := range output.Segment.BlobItems {
-				o := &types.Object{
-					ID:         v.Name,
-					Name:       s.getRelPath(v.Name),
-					Type:       types.ObjectTypeFile,
-					Size:       *v.Properties.ContentLength,
-					UpdatedAt:  v.Properties.LastModified,
-					ObjectMeta: metadata.NewObjectMeta(),
-				}
-				o.SetContentType(*v.Properties.ContentType)
-				o.SetContentMD5(string(v.Properties.ContentMD5))
-
-				storageClass, err := formatStorageClass(v.Properties.AccessTier)
+				o, err := s.formatFileObject(v)
 				if err != nil {
 					return err
 				}
-				o.SetStorageClass(storageClass)
 
 				opt.FileFunc(o)
 			}
@@ -222,6 +193,12 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
+	o.SetETag(string(output.ETag()))
+
+	if len(output.ContentMD5()) > 0 {
+		o.SetContentMD5(base64.StdEncoding.EncodeToString(output.ContentMD5()))
+	}
+
 	storageClass, err := formatStorageClass(azblob.AccessTierType(output.AccessTier()))
 	if err != nil {
 		return nil, err
@@ -270,4 +247,43 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v azblob.BlobItem) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Name,
+		Name:       s.getRelPath(v.Name),
+		Type:       types.ObjectTypeFile,
+		UpdatedAt:  v.Properties.LastModified,
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	o.SetETag(string(v.Properties.Etag))
+
+	if v.Properties.ContentLength != nil {
+		o.Size = *v.Properties.ContentLength
+	}
+	if len(v.Properties.ContentMD5) > 0 {
+		o.SetContentMD5(base64.StdEncoding.EncodeToString(v.Properties.ContentMD5))
+	}
+
+	storageClass, err := formatStorageClass(v.Properties.AccessTier)
+	if err != nil {
+		return nil, err
+	}
+	o.SetStorageClass(storageClass)
+
+	return o, nil
+}
+
+func (s *Storage) formatDirObject(v azblob.BlobPrefix) (o *types.Object) {
+	o = &types.Object{
+		ID:         v.Name,
+		Name:       s.getRelPath(v.Name),
+		Type:       types.ObjectTypeDir,
+		Size:       0,
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	return o
 }

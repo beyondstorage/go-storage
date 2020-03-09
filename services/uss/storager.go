@@ -184,6 +184,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		UpdatedAt:  output.Time,
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
+	o.SetETag(output.ETag)
+
 	return o, nil
 }
 

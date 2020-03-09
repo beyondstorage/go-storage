@@ -99,6 +99,9 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				}
 
 				o.SetContentType(v.Type)
+				// OSS advise us don't use Etag as Content-MD5.
+				//
+				// ref: https://help.aliyun.com/document_detail/31965.html
 				o.SetETag(v.ETag)
 
 				storageClass, err := formatStorageClass(v.Type)
@@ -195,26 +198,29 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		return nil, err
 	}
 
-	// Parse content length.
-	size, err := strconv.ParseInt(output.Get("Content-Length"), 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	// Parse last modified.
-	lastModified, err := time.Parse(time.RFC822, output.Get("Last-Modified"))
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: get object's checksum and storage class.
 	o = &types.Object{
 		ID:         rp,
 		Name:       path,
 		Type:       types.ObjectTypeFile,
-		Size:       size,
-		UpdatedAt:  lastModified,
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
+
+	size, err := strconv.ParseInt(output.Get("Content-Length"), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	o.Size = size
+
+	lastModified, err := time.Parse(time.RFC822, output.Get("Last-Modified"))
+	if err != nil {
+		return nil, err
+	}
+	o.UpdatedAt = lastModified
+
+	// OSS advise us don't use Etag as Content-MD5.
+	//
+	// ref: https://help.aliyun.com/document_detail/31965.html
+	o.SetETag(output.Get("ETag"))
 
 	storageClass, err := formatStorageClass(output.Get(storageClassHeader))
 	if err != nil {

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
+
+	"github.com/Azure/azure-storage-blob-go/azblob"
 )
 
 // New will create a new azblob oss service.
