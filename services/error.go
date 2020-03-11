@@ -9,7 +9,14 @@ import (
 )
 
 var (
-	// Errors related to service capability and restriction.
+	// Minor pair error that could be ignored in loose mode.
+
+	// ErrPairNotSupported mains this operation doesn't this pair.
+	ErrPairNotSupported = errors.New("pair not supported")
+	// ErrStorageClassNotSupported means this service doesn't support this storage class
+	ErrStorageClassNotSupported = errors.New("storage class not supported")
+
+	// Serious pair error that affects subsequent operations
 
 	// ErrCredentialProtocolNotSupported means this service doesn't support this credential protocol
 	ErrCredentialProtocolNotSupported = errors.New("credential protocol not supported")
@@ -17,10 +24,8 @@ var (
 	ErrPairRequired = errors.New("pair required")
 	// ErrPairConflict means this operation has conflict pairs.
 	ErrPairConflict = errors.New("pair conflict")
-	// ErrStorageClassNotSupported means this service doesn't support this storage class
-	ErrStorageClassNotSupported = errors.New("storage class not supported")
 
-	// Errors related to service business logic.
+	// Service business logic related errors.
 
 	// ErrObjectNotExist means the object to be operated is not exist.
 	ErrObjectNotExist = errors.New("object not exist")
@@ -28,20 +33,54 @@ var (
 	ErrPermissionDenied = errors.New("permission denied")
 )
 
-// PairError represent errors related to pair.
-type PairError struct {
+// MinorPairError means this error will not affect subsequent operations, and could be ignored in loose mode
+type MinorPairError struct {
 	Op  string
 	Err error
 
 	Pairs []*types.Pair
 }
 
-func (e *PairError) Error() string {
+func (e *MinorPairError) Error() string {
 	return fmt.Sprintf("%s: %v: %s", e.Op, e.Pairs, e.Err.Error())
 }
 
 // Unwrap implements xerrors.Wrapper
-func (e *PairError) Unwrap() error {
+func (e *MinorPairError) Unwrap() error {
+	return e.Err
+}
+
+// SeriousPairError means this error affects subsequent operations.
+type SeriousPairError struct {
+	Op  string
+	Err error
+
+	Pairs []*types.Pair
+}
+
+func (e *SeriousPairError) Error() string {
+	return fmt.Sprintf("%s: %v: %s", e.Op, e.Pairs, e.Err.Error())
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *SeriousPairError) Unwrap() error {
+	return e.Err
+}
+
+// InitError means this service init failed.
+type InitError struct {
+	Type string
+	Err  error
+
+	Pairs []*types.Pair
+}
+
+func (e *InitError) Error() string {
+	return fmt.Sprintf("new %s: %v: %s", e.Type, e.Pairs, e.Err.Error())
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *InitError) Unwrap() error {
 	return e.Err
 }
 

@@ -46,7 +46,7 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
     v, ok = values[ps.{{ $pkey }}]
     {{- if $required }}
     if !ok {
-        return nil, &services.PairError{
+        return nil, &services.SeriousPairError{
             Op: "parse",
             Err: services.ErrPairRequired,
             Pairs: []*types.Pair{
@@ -66,7 +66,7 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
     {{- if in $v.Pairs "object_func" }}
     // Validate for ObjectFunc
     if result.HasObjectFunc && result.HasFileFunc {
-        return nil, &services.PairError{
+        return nil, &services.SeriousPairError{
             Op: "parse",
             Err: services.ErrPairConflict,
             Pairs: []*types.Pair{
@@ -76,7 +76,7 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
         }
     }
     if result.HasObjectFunc && result.HasDirFunc {
-        return nil, &services.PairError{
+        return nil, &services.SeriousPairError{
             Op: "parse",
             Err: services.ErrPairConflict,
             Pairs: []*types.Pair{
@@ -86,7 +86,7 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
         }
     }
     if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
-        return nil, &services.PairError{
+        return nil, &services.SeriousPairError{
             Op: "parse",
             Err: services.ErrPairRequired,
             Pairs: []*types.Pair{

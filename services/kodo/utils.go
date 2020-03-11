@@ -20,7 +20,7 @@ import (
 func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.PairError{Op: "new kodo", Err: err, Pairs: pairs}
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -74,7 +74,7 @@ func parseStorageClass(in storageclass.Type) (int, error) {
 	case storageclass.Cold:
 		return storageClassArchive, nil
 	default:
-		return 0, &services.PairError{
+		return 0, &services.MinorPairError{
 			Op:    "parse storage class",
 			Err:   services.ErrStorageClassNotSupported,
 			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
@@ -92,7 +92,7 @@ func formatStorageClass(in int) (storageclass.Type, error) {
 	case 2:
 		return storageclass.Cold, nil
 	default:
-		return "", &services.PairError{
+		return "", &services.MinorPairError{
 			Op:    "format storage class",
 			Err:   services.ErrStorageClassNotSupported,
 			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},

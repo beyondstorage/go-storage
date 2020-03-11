@@ -21,7 +21,7 @@ import (
 func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.PairError{Op: "new gcs", Err: err, Pairs: pairs}
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -79,7 +79,7 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 	case storageclass.Cold:
 		return storageClassColdLine, nil
 	default:
-		return "", &services.PairError{
+		return "", &services.MinorPairError{
 			Op:    "parse storage class",
 			Err:   services.ErrStorageClassNotSupported,
 			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
@@ -97,7 +97,7 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 	case storageClassColdLine:
 		return storageclass.Cold, nil
 	default:
-		return "", &services.PairError{
+		return "", &services.MinorPairError{
 			Op:    "format storage class",
 			Err:   services.ErrStorageClassNotSupported,
 			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},

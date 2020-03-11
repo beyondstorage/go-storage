@@ -7,6 +7,7 @@
   "expire": "int",
   "file_func": "types.ObjectFunc",
   "location": "string",
+  "loose": "bool",
   "name": "string",
   "object_func": "types.ObjectFunc",
   "offset": "int64",

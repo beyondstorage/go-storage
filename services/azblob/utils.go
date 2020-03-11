@@ -29,7 +29,7 @@ import (
 func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.PairError{Op: "new azblob", Err: err, Pairs: pairs}
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -75,7 +75,7 @@ func parseStorageClass(in storageclass.Type) (azblob.AccessTierType, error) {
 	case storageclass.Warm:
 		return azblob.AccessTierCool, nil
 	default:
-		return "", &services.PairError{
+		return "", &services.MinorPairError{
 			Op:    "parse storage class",
 			Err:   services.ErrStorageClassNotSupported,
 			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
@@ -93,7 +93,7 @@ func formatStorageClass(in azblob.AccessTierType) (storageclass.Type, error) {
 	case azblob.AccessTierHot:
 		return storageclass.Hot, nil
 	default:
-		return "", &services.PairError{
+		return "", &services.MinorPairError{
 			Op:    "format storage class",
 			Err:   services.ErrStorageClassNotSupported,
 			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},

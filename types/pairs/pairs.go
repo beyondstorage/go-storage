@@ -22,6 +22,7 @@ const (
 	Expire           = "expire"
 	FileFunc         = "file_func"
 	Location         = "location"
+	Loose            = "loose"
 	Name             = "name"
 	ObjectFunc       = "object_func"
 	Offset           = "offset"
@@ -96,6 +97,14 @@ func WithFileFunc(v types.ObjectFunc) *types.Pair {
 func WithLocation(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Location,
+		Value: v,
+	}
+}
+
+// WithLoose will apply loose value to Options
+func WithLoose(v bool) *types.Pair {
+	return &types.Pair{
+		Key:   Loose,
 		Value: v,
 	}
 }
