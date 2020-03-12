@@ -59,9 +59,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	store, err := srv.newStorage(pairs...)
 	if err != nil {
 		if e := services.NewPairRequiredError(); errors.As(err, &e) {
-			if len(e.Keys) == 1 && e.Keys[0] == ps.Name {
-				return srv, nil, nil
-			}
+			return srv, nil, nil
 		}
 		return nil, nil, err
 	}
