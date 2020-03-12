@@ -1,6 +1,7 @@
 package dropbox
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -20,6 +21,7 @@ type Storage struct {
 	client files.Client
 
 	workDir string
+	loose   bool
 }
 
 // String implements Storager.String
@@ -251,6 +253,10 @@ func (s *Storage) getAbsPath(path string) string {
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

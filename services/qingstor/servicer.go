@@ -1,6 +1,7 @@
 package qingstor
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -22,6 +23,8 @@ type Service struct {
 	service iface.Service
 
 	noRedirectClient *http.Client
+
+	loose bool
 }
 
 // String implements Service.String
@@ -184,6 +187,7 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		segments:   make(map[string]*segment.Segment),
 
 		workDir: opt.WorkDir,
+		loose:   opt.Loose || s.loose,
 	}, nil
 }
 
@@ -210,6 +214,10 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

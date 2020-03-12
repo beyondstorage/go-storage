@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -21,6 +22,7 @@ type Storage struct {
 
 	name    string
 	workDir string
+	loose   bool
 }
 
 // String implements Storager.String
@@ -267,6 +269,10 @@ func (s *Storage) getRelPath(path string) string {
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

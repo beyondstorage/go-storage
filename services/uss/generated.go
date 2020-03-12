@@ -190,6 +190,8 @@ type pairStorageNew struct {
 
 	// Meta-defined pairs
 	Credential *credential.Provider
+	HasLoose   bool
+	Loose      bool
 	Name       string
 	HasWorkDir bool
 	WorkDir    string
@@ -215,6 +217,11 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	}
 	if ok {
 		result.Credential = v.(*credential.Provider)
+	}
+	v, ok = values[ps.Loose]
+	if ok {
+		result.HasLoose = true
+		result.Loose = v.(bool)
 	}
 	v, ok = values[ps.Name]
 	if !ok {

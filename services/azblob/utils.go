@@ -41,6 +41,8 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		return nil, nil, err
 	}
 
+	srv.loose = opt.Loose
+
 	primaryURL, _ := url.Parse(opt.Endpoint.Value().String())
 
 	credProtocol, credValue := opt.Credential.Protocol(), opt.Credential.Value()

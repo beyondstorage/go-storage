@@ -1,6 +1,7 @@
 package oss
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Xuanwo/storage/services"
@@ -14,6 +15,8 @@ import (
 // Service is the aliyun oss *Service config.
 type Service struct {
 	service *oss.Client
+
+	loose bool
 }
 
 // String implements Servicer.String
@@ -125,12 +128,17 @@ func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
 		bucket: bucket,
 
 		workDir: opt.WorkDir,
+		loose:   opt.Loose || s.loose,
 	}
 	return store, nil
 }
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

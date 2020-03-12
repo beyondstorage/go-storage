@@ -41,6 +41,8 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		return nil, nil, err
 	}
 
+	srv.loose = opt.Loose
+
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
 		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))

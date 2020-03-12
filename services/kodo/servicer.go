@@ -15,6 +15,8 @@ import (
 // Service is the kodo config.
 type Service struct {
 	service *qs.BucketManager
+
+	loose bool
 }
 
 // String implements Service.String
@@ -130,12 +132,17 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 
 		name:    opt.Name,
 		workDir: opt.WorkDir,
+		loose:   opt.Loose || s.loose,
 	}
 	return store, nil
 }
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

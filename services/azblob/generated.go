@@ -163,6 +163,8 @@ type pairServiceNew struct {
 	// Meta-defined pairs
 	Credential *credential.Provider
 	Endpoint   endpoint.Provider
+	HasLoose   bool
+	Loose      bool
 }
 
 func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
@@ -198,6 +200,11 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	}
 	if ok {
 		result.Endpoint = v.(endpoint.Provider)
+	}
+	v, ok = values[ps.Loose]
+	if ok {
+		result.HasLoose = true
+		result.Loose = v.(bool)
 	}
 	return result, nil
 }
@@ -333,6 +340,8 @@ type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
+	HasLoose   bool
+	Loose      bool
 	Name       string
 	HasWorkDir bool
 	WorkDir    string
@@ -352,6 +361,11 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse pre-defined pairs
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.Loose]
+	if ok {
+		result.HasLoose = true
+		result.Loose = v.(bool)
+	}
 	v, ok = values[ps.Name]
 	if !ok {
 		return nil, services.NewPairRequiredError(ps.Name)

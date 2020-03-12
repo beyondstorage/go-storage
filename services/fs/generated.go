@@ -226,6 +226,8 @@ type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
+	HasLoose   bool
+	Loose      bool
 	HasWorkDir bool
 	WorkDir    string
 }
@@ -244,6 +246,11 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse pre-defined pairs
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.Loose]
+	if ok {
+		result.HasLoose = true
+		result.Loose = v.(bool)
+	}
 	v, ok = values[ps.WorkDir]
 	if ok {
 		result.HasWorkDir = true

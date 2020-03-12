@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -19,6 +20,7 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 type Storage struct {
 	// options for this storager.
 	workDir string // workDir dir for all operation.
+	loose   bool
 
 	// All stdlib call will be added here for better unit test.
 	ioCopyBuffer  func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
@@ -325,6 +327,10 @@ func (s *Storage) getDirPath(path string) string {
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 
