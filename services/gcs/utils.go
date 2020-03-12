@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	gs "cloud.google.com/go/storage"
+	"github.com/Xuanwo/storage/types/metadata"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 
@@ -21,7 +22,7 @@ import (
 func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.PairError{Op: "new gcs", Err: err, Pairs: pairs}
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -32,6 +33,8 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		return nil, nil, err
 	}
 
+	srv.loose = opt.Loose
+
 	options := make([]option.ClientOption, 0)
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
@@ -41,7 +44,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	case credential.ProtocolFile:
 		options = append(options, option.WithCredentialsFile(cred[0]))
 	default:
-		return nil, nil, services.ErrCredentialProtocolNotSupported
+		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	client, err := gs.NewClient(opt.Context, options...)
@@ -54,10 +57,10 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	srv.projectID = opt.Project
 
 	store, err := srv.newStorage(pairs...)
-	if err != nil && errors.Is(err, services.ErrPairRequired) {
-		return srv, nil, nil
-	}
 	if err != nil {
+		if e := services.NewPairRequiredError(); errors.As(err, &e) {
+			return srv, nil, nil
+		}
 		return nil, nil, err
 	}
 	return srv, store, nil
@@ -79,11 +82,7 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 	case storageclass.Cold:
 		return storageClassColdLine, nil
 	default:
-		return "", &services.PairError{
-			Op:    "parse storage class",
-			Err:   services.ErrStorageClassNotSupported,
-			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
-		}
+		return "", services.NewPairUnsupportedError(ps.WithStorageClass(in))
 	}
 }
 
@@ -97,11 +96,7 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 	case storageClassColdLine:
 		return storageclass.Cold, nil
 	default:
-		return "", &services.PairError{
-			Op:    "format storage class",
-			Err:   services.ErrStorageClassNotSupported,
-			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
-		}
+		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
 	}
 }
 

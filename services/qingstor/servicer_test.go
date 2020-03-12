@@ -146,7 +146,7 @@ func TestService_Create(t *testing.T) {
 	path := uuid.New().String()
 	_, err := srv.Create(path)
 	assert.Error(t, err)
-	assert.True(t, errors.Is(err, services.ErrPairRequired))
+	assert.True(t, errors.Is(err, services.ErrRestrictionDissatisfied))
 
 	// Test case2: with valid location.
 	path = uuid.New().String()
@@ -418,7 +418,7 @@ func TestService_newStorage(t *testing.T) {
 			name:       "no pairs, fail when parse",
 			args:       args{},
 			wantBucket: nil,
-			targetErr:  services.ErrPairRequired,
+			targetErr:  services.ErrRestrictionDissatisfied,
 			wantErr:    true,
 		},
 	}

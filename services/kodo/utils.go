@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	qs "github.com/qiniu/api.v7/v7/storage"
 
@@ -20,7 +21,7 @@ import (
 func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.PairError{Op: "new kodo", Err: err, Pairs: pairs}
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -31,9 +32,11 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		return nil, nil, err
 	}
 
+	srv.loose = opt.Loose
+
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, services.ErrCredentialProtocolNotSupported
+		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	mac := qbox.NewMac(cred[0], cred[1])
@@ -41,10 +44,10 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	srv.service = qs.NewBucketManager(mac, cfg)
 
 	store, err := srv.newStorage(pairs...)
-	if err != nil && errors.Is(err, services.ErrPairRequired) {
-		return srv, nil, nil
-	}
 	if err != nil {
+		if e := services.NewPairRequiredError(); errors.As(err, &e) {
+			return srv, nil, nil
+		}
 		return nil, nil, err
 	}
 	return srv, store, nil
@@ -74,11 +77,7 @@ func parseStorageClass(in storageclass.Type) (int, error) {
 	case storageclass.Cold:
 		return storageClassArchive, nil
 	default:
-		return 0, &services.PairError{
-			Op:    "parse storage class",
-			Err:   services.ErrStorageClassNotSupported,
-			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
-		}
+		return 0, services.NewPairUnsupportedError(ps.WithStorageClass(in))
 	}
 }
 
@@ -92,11 +91,7 @@ func formatStorageClass(in int) (storageclass.Type, error) {
 	case 2:
 		return storageclass.Cold, nil
 	default:
-		return "", &services.PairError{
-			Op:    "format storage class",
-			Err:   services.ErrStorageClassNotSupported,
-			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
-		}
+		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
 	}
 }
 

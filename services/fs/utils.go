@@ -15,7 +15,7 @@ import (
 func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.PairError{Op: "new fs", Err: err, Pairs: pairs}
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -36,6 +36,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		osStat:        os.Stat,
 
 		workDir: opt.WorkDir,
+		loose:   opt.Loose,
 	}
 	return nil, store, nil
 }

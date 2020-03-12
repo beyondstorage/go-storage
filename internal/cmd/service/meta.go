@@ -70,6 +70,8 @@ func parseMeta() metadata {
 	servicerFuncs, storagerFuncs, utilsFuncs := parseFunc("servicer"), parseFunc("storager"), parseFunc("utils")
 
 	injectReadCallbackFunc(meta.Storage, storagerFuncs)
+	injectLoose(meta.Service, nil)
+	injectLoose(meta.Storage, nil)
 
 	// Handle Data
 	meta.Data = make(map[string]map[string]*fn)
@@ -95,6 +97,13 @@ func injectReadCallbackFunc(mp map[string]map[string]bool, fns map[string]*conte
 			mp[funcName] = make(map[string]bool)
 		}
 		mp[funcName]["read_callback_func"] = false
+	}
+}
+
+// Inject Loose in service/storage New operation.
+func injectLoose(mp map[string]map[string]bool, fns map[string]*contextFunc) {
+	if _, ok := mp["new"]; ok {
+		mp["new"]["loose"] = false
 	}
 }
 

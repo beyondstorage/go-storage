@@ -58,13 +58,7 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Location]
 	if !ok {
-		return nil, &services.PairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Location, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Location)
 	}
 	if ok {
 		result.Location = v.(string)
@@ -162,13 +156,7 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.StoragerFunc]
 	if !ok {
-		return nil, &services.PairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.StoragerFunc, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.StoragerFunc)
 	}
 	if ok {
 		result.StoragerFunc = v.(storage.StoragerFunc)
@@ -182,6 +170,8 @@ type pairServiceNew struct {
 
 	// Meta-defined pairs
 	Credential *credential.Provider
+	HasLoose   bool
+	Loose      bool
 }
 
 func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
@@ -206,16 +196,15 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]
 	if !ok {
-		return nil, &services.PairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Credential, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Credential)
 	}
 	if ok {
 		result.Credential = v.(*credential.Provider)
+	}
+	v, ok = values[ps.Loose]
+	if ok {
+		result.HasLoose = true
+		result.Loose = v.(bool)
 	}
 	return result, nil
 }
@@ -300,35 +289,19 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	}
 	// Validate for ObjectFunc
 	if result.HasObjectFunc && result.HasFileFunc {
-		return nil, &services.PairError{
-			Op:  "parse",
-			Err: services.ErrPairConflict,
-			Pairs: []*types.Pair{
-				{Key: ps.ObjectFunc, Value: result.ObjectFunc},
-				{Key: ps.FileFunc, Value: result.FileFunc},
-			},
-		}
+		return nil, services.NewPairConflictError(
+			&types.Pair{Key: ps.ObjectFunc, Value: result.ObjectFunc},
+			&types.Pair{Key: ps.FileFunc, Value: result.FileFunc},
+		)
 	}
 	if result.HasObjectFunc && result.HasDirFunc {
-		return nil, &services.PairError{
-			Op:  "parse",
-			Err: services.ErrPairConflict,
-			Pairs: []*types.Pair{
-				{Key: ps.ObjectFunc, Value: result.ObjectFunc},
-				{Key: ps.DirFunc, Value: result.DirFunc},
-			},
-		}
+		return nil, services.NewPairConflictError(
+			&types.Pair{Key: ps.ObjectFunc, Value: result.ObjectFunc},
+			&types.Pair{Key: ps.DirFunc, Value: result.DirFunc},
+		)
 	}
 	if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
-		return nil, &services.PairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.ObjectFunc, Value: nil},
-				{Key: ps.FileFunc, Value: nil},
-				{Key: ps.DirFunc, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.ObjectFunc, ps.FileFunc, ps.DirFunc)
 	}
 	return result, nil
 }
@@ -367,6 +340,8 @@ type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
+	HasLoose   bool
+	Loose      bool
 	Name       string
 	HasWorkDir bool
 	WorkDir    string
@@ -386,15 +361,14 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse pre-defined pairs
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.Loose]
+	if ok {
+		result.HasLoose = true
+		result.Loose = v.(bool)
+	}
 	v, ok = values[ps.Name]
 	if !ok {
-		return nil, &services.PairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Name, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Name)
 	}
 	if ok {
 		result.Name = v.(string)
@@ -520,13 +494,7 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	}
 	v, ok = values[ps.Size]
 	if !ok {
-		return nil, &services.PairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Size, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Size)
 	}
 	if ok {
 		result.Size = v.(int64)

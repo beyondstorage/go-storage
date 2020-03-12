@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/auth"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
@@ -18,7 +19,7 @@ import (
 func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.PairError{Op: "new dropbox", Err: err, Pairs: pairs}
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -34,13 +35,14 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	case credential.ProtocolAPIKey:
 		cfg.Token = cred[0]
 	default:
-		return nil, nil, services.ErrCredentialProtocolNotSupported
+		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	store := &Storage{
 		client: files.New(cfg),
 
 		workDir: opt.WorkDir,
+		loose:   opt.Loose,
 	}
 
 	return nil, store, nil

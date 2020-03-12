@@ -22,7 +22,7 @@ func Test_New(t *testing.T) {
 	// Missing required pair
 	_, _, err := New()
 	assert.Error(t, err)
-	assert.True(t, errors.Is(err, services.ErrPairRequired))
+	assert.True(t, errors.Is(err, services.ErrRestrictionDissatisfied))
 
 	// Valid case
 	accessKey := uuid.New().String()
@@ -176,7 +176,7 @@ func TestParseStorageClass(t *testing.T) {
 	}{
 		{"hot", storageclass.Hot, storageClassStandard, nil},
 		{"warm", storageclass.Warm, storageClassStandardIA, nil},
-		{"xxxxx", "xxxx", "", services.ErrStorageClassNotSupported},
+		{"xxxxx", "xxxx", "", services.ErrCapabilityInsufficient},
 	}
 
 	for _, tt := range tests {
@@ -199,7 +199,7 @@ func TestFormatStorageClass(t *testing.T) {
 	}{
 		{"hot", storageClassStandard, storageclass.Hot, nil},
 		{"warm", storageClassStandardIA, storageclass.Warm, nil},
-		{"xxxxx", "xxxxx", "", services.ErrStorageClassNotSupported},
+		{"xxxxx", "xxxxx", "", services.ErrCapabilityInsufficient},
 	}
 
 	for _, tt := range tests {

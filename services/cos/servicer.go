@@ -1,6 +1,7 @@
 package cos
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -16,6 +17,8 @@ import (
 type Service struct {
 	service *cos.Client
 	client  *http.Client
+
+	loose bool
 }
 
 // String implements Servicer.String
@@ -123,16 +126,22 @@ func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
 
 	url := cos.NewBucketURL(opt.Name, opt.Location, true)
 	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, s.client)
+
 	store.bucket = c.Bucket
 	store.object = c.Object
 	store.name = opt.Name
 	store.location = opt.Location
 	store.workDir = opt.WorkDir
+	store.loose = opt.Loose || s.loose
 	return store, nil
 }
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

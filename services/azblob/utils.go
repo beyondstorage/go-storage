@@ -10,6 +10,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/metadata"
 	ps "github.com/Xuanwo/storage/types/pairs"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -29,7 +30,7 @@ import (
 func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.PairError{Op: "new azblob", Err: err, Pairs: pairs}
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -40,11 +41,13 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		return nil, nil, err
 	}
 
+	srv.loose = opt.Loose
+
 	primaryURL, _ := url.Parse(opt.Endpoint.Value().String())
 
 	credProtocol, credValue := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, services.ErrCredentialProtocolNotSupported
+		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	cred, err := azblob.NewSharedKeyCredential(credValue[0], credValue[1])
@@ -56,10 +59,10 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	srv.service = azblob.NewServiceURL(*primaryURL, p)
 
 	store, err := srv.newStorage(pairs...)
-	if err != nil && errors.Is(err, services.ErrPairRequired) {
-		return srv, nil, nil
-	}
 	if err != nil {
+		if e := services.NewPairRequiredError(); errors.As(err, &e) {
+			return srv, nil, nil
+		}
 		return nil, nil, err
 	}
 	return srv, store, nil
@@ -75,11 +78,7 @@ func parseStorageClass(in storageclass.Type) (azblob.AccessTierType, error) {
 	case storageclass.Warm:
 		return azblob.AccessTierCool, nil
 	default:
-		return "", &services.PairError{
-			Op:    "parse storage class",
-			Err:   services.ErrStorageClassNotSupported,
-			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
-		}
+		return "", services.NewPairUnsupportedError(ps.WithStorageClass(in))
 	}
 }
 
@@ -93,11 +92,7 @@ func formatStorageClass(in azblob.AccessTierType) (storageclass.Type, error) {
 	case azblob.AccessTierHot:
 		return storageclass.Hot, nil
 	default:
-		return "", &services.PairError{
-			Op:    "format storage class",
-			Err:   services.ErrStorageClassNotSupported,
-			Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
-		}
+		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
 	}
 }
 

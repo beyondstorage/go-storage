@@ -1,6 +1,7 @@
 package qingstor
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -26,6 +27,7 @@ type Storage struct {
 
 	// options for this storager.
 	workDir string // workDir dir for all operation.
+	loose   bool
 
 	segments    map[string]*segment.Segment
 	segmentLock sync.RWMutex
@@ -562,6 +564,10 @@ func (s *Storage) getRelPath(path string) string {
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

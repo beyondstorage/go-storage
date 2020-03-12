@@ -46,13 +46,7 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
     v, ok = values[ps.{{ $pkey }}]
     {{- if $required }}
     if !ok {
-        return nil, &services.PairError{
-            Op: "parse",
-            Err: services.ErrPairRequired,
-            Pairs: []*types.Pair{
-                {Key:ps.{{ $pkey }}, Value: nil},
-            },
-        }
+        return nil, services.NewPairRequiredError(ps.{{ $pkey }})
     }
     {{- end }}
     if ok {
@@ -66,35 +60,19 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
     {{- if in $v.Pairs "object_func" }}
     // Validate for ObjectFunc
     if result.HasObjectFunc && result.HasFileFunc {
-        return nil, &services.PairError{
-            Op: "parse",
-            Err: services.ErrPairConflict,
-            Pairs: []*types.Pair{
-                {Key:ps.ObjectFunc, Value: result.ObjectFunc},
-                {Key:ps.FileFunc, Value: result.FileFunc},
-            },
-        }
+        return nil, services.NewPairConflictError(
+            &types.Pair{Key:ps.ObjectFunc, Value: result.ObjectFunc},
+            &types.Pair{Key:ps.FileFunc, Value: result.FileFunc},
+        )
     }
     if result.HasObjectFunc && result.HasDirFunc {
-        return nil, &services.PairError{
-            Op: "parse",
-            Err: services.ErrPairConflict,
-            Pairs: []*types.Pair{
-                {Key:ps.ObjectFunc, Value: result.ObjectFunc},
-                {Key:ps.DirFunc, Value: result.DirFunc},
-            },
-        }
+        return nil, services.NewPairConflictError(
+            &types.Pair{Key:ps.ObjectFunc, Value: result.ObjectFunc},
+            &types.Pair{Key:ps.DirFunc, Value: result.DirFunc},
+        )
     }
     if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
-        return nil, &services.PairError{
-            Op: "parse",
-            Err: services.ErrPairRequired,
-            Pairs: []*types.Pair{
-                {Key:ps.ObjectFunc, Value: nil},
-                {Key:ps.FileFunc, Value: nil},
-                {Key:ps.DirFunc, Value: nil},
-            },
-        }
+        return nil, services.NewPairRequiredError(ps.ObjectFunc, ps.FileFunc, ps.DirFunc)
     }
     {{- end }}
     return result, nil

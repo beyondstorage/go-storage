@@ -1,6 +1,7 @@
 package azblob
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -13,6 +14,8 @@ import (
 // Service is the azblob config.
 type Service struct {
 	service azblob.ServiceURL
+
+	loose bool
 }
 
 // String implements Servicer.String
@@ -129,12 +132,17 @@ func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
 
 		name:    opt.Name,
 		workDir: opt.WorkDir,
+		loose:   opt.Loose || s.loose,
 	}
 	return c, nil
 }
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

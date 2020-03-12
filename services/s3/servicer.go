@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -16,6 +17,8 @@ import (
 // Service is the s3 service config.
 type Service struct {
 	service s3iface.S3API
+
+	loose bool
 }
 
 // String implements Servicer.String
@@ -129,14 +132,20 @@ func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
 
 	c := &Storage{
 		service: s.service,
+
 		name:    opt.Name,
 		workDir: opt.WorkDir,
+		loose:   opt.Loose || s.loose,
 	}
 	return c, nil
 }
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
+		return nil
+	}
+
+	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 
