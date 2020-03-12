@@ -187,13 +187,7 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Credential, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Credential)
 	}
 	if ok {
 		result.Credential = v.(*credential.Provider)

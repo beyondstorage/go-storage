@@ -9,23 +9,10 @@ import (
 )
 
 var (
-	// Minor pair error that could be ignored in loose mode.
-
-	// ErrPairNotSupported mains this operation doesn't this pair.
-	ErrPairNotSupported = errors.New("pair not supported")
-	// ErrStorageClassNotSupported means this service doesn't support this storage class
-	ErrStorageClassNotSupported = errors.New("storage class not supported")
-
-	// Serious pair error that affects subsequent operations
-
-	// ErrCredentialProtocolNotSupported means this service doesn't support this credential protocol
-	ErrCredentialProtocolNotSupported = errors.New("credential protocol not supported")
-	// ErrPairRequired means this operation missing required pairs.
-	ErrPairRequired = errors.New("pair required")
-	// ErrPairConflict means this operation has conflict pairs.
-	ErrPairConflict = errors.New("pair conflict")
-
-	// Service business logic related errors.
+	// ErrCapabilityInsufficient means this service doesn't have this capability
+	ErrCapabilityInsufficient = errors.New("capability insufficient")
+	// ErrRestrictionDissatisfied means this operation doesn't meat service's restriction.
+	ErrRestrictionDissatisfied = errors.New("restriction dissatisfied")
 
 	// ErrObjectNotExist means the object to be operated is not exist.
 	ErrObjectNotExist = errors.New("object not exist")
@@ -33,41 +20,9 @@ var (
 	ErrPermissionDenied = errors.New("permission denied")
 )
 
-// MinorPairError means this error will not affect subsequent operations, and could be ignored in loose mode
-type MinorPairError struct {
-	Op  string
-	Err error
-
-	Pairs []*types.Pair
-}
-
-func (e *MinorPairError) Error() string {
-	return fmt.Sprintf("%s: %v: %s", e.Op, e.Pairs, e.Err.Error())
-}
-
-// Unwrap implements xerrors.Wrapper
-func (e *MinorPairError) Unwrap() error {
-	return e.Err
-}
-
-// SeriousPairError means this error affects subsequent operations.
-type SeriousPairError struct {
-	Op  string
-	Err error
-
-	Pairs []*types.Pair
-}
-
-func (e *SeriousPairError) Error() string {
-	return fmt.Sprintf("%s: %v: %s", e.Op, e.Pairs, e.Err.Error())
-}
-
-// Unwrap implements xerrors.Wrapper
-func (e *SeriousPairError) Unwrap() error {
-	return e.Err
-}
-
 // InitError means this service init failed.
+//
+// Only returned in New
 type InitError struct {
 	Type string
 	Err  error
@@ -85,6 +40,8 @@ func (e *InitError) Unwrap() error {
 }
 
 // ServiceError represent errors related to service.
+//
+// Only returned in Servicer related operations
 type ServiceError struct {
 	Op  string
 	Err error
@@ -106,6 +63,8 @@ func (e *ServiceError) Unwrap() error {
 }
 
 // StorageError represent errors related to storage.
+//
+// Only returned in Storager related operations
 type StorageError struct {
 	Op  string
 	Err error
@@ -123,5 +82,103 @@ func (e *StorageError) Error() string {
 
 // Unwrap implements xerrors.Wrapper
 func (e *StorageError) Unwrap() error {
+	return e.Err
+}
+
+// NewMetadataNotRecognizedError will create a new MetadataUnrecognizedError.
+func NewMetadataNotRecognizedError(key string, value interface{}) *MetadataUnrecognizedError {
+	return &MetadataUnrecognizedError{
+		Err:   ErrCapabilityInsufficient,
+		Key:   key,
+		Value: value,
+	}
+}
+
+// MetadataUnrecognizedError means this operation meets unrecognized metadata.
+type MetadataUnrecognizedError struct {
+	Err error
+
+	Key   string
+	Value interface{}
+}
+
+func (e *MetadataUnrecognizedError) Error() string {
+	return fmt.Sprintf("metadata unrecognized, %s, %v: %s", e.Key, e.Value, e.Err.Error())
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *MetadataUnrecognizedError) Unwrap() error {
+	return e.Err
+}
+
+// NewPairUnsupportedError will create a new PairUnsupportedError.
+func NewPairUnsupportedError(pair *types.Pair) *PairUnsupportedError {
+	return &PairUnsupportedError{
+		Err:  ErrCapabilityInsufficient,
+		Pair: pair,
+	}
+}
+
+// PairUnsupportedError means this operation has unsupported pair.
+type PairUnsupportedError struct {
+	Err error
+
+	Pair *types.Pair
+}
+
+func (e *PairUnsupportedError) Error() string {
+	return fmt.Sprintf("pair unsupported, %s: %s", e.Pair, e.Err.Error())
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *PairUnsupportedError) Unwrap() error {
+	return e.Err
+}
+
+// NewPairRequiredError will create a new PairRequiredError.
+func NewPairRequiredError(keys ...string) *PairRequiredError {
+	return &PairRequiredError{
+		Err:  ErrRestrictionDissatisfied,
+		Keys: keys,
+	}
+}
+
+// PairRequiredError means this operation has required pair but missing.
+type PairRequiredError struct {
+	Err error
+
+	Keys []string
+}
+
+func (e *PairRequiredError) Error() string {
+	return fmt.Sprintf("pair required, %v: %s", e.Keys, e.Err.Error())
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *PairRequiredError) Unwrap() error {
+	return e.Err
+}
+
+// NewPairConflictError will create a new NewPairConflictError.
+func NewPairConflictError(pairs ...*types.Pair) *PairConflictError {
+	return &PairConflictError{
+		Err:   ErrRestrictionDissatisfied,
+		Pairs: pairs,
+	}
+}
+
+// PairConflictError means this operation has conflict pairs.
+type PairConflictError struct {
+	Err error
+
+	Pairs []*types.Pair
+}
+
+func (e *PairConflictError) Error() string {
+	return fmt.Sprintf("pair conflict, %v: %s", e.Pairs, e.Err.Error())
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *PairConflictError) Unwrap() error {
 	return e.Err
 }

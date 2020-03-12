@@ -485,7 +485,7 @@ func TestStorage_List(t *testing.T) {
 				},
 			},
 			[]*types.Object{},
-			services.ErrStorageClassNotSupported,
+			services.ErrCapabilityInsufficient,
 		},
 	}
 
@@ -678,7 +678,7 @@ func TestStorage_Stat(t *testing.T) {
 					XQSStorageClass: convert.String("xxxx"),
 				}, nil
 			},
-			true, services.ErrStorageClassNotSupported,
+			true, services.ErrCapabilityInsufficient,
 		},
 	}
 

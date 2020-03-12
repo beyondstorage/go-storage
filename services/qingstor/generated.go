@@ -58,13 +58,7 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Location]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Location, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Location)
 	}
 	if ok {
 		result.Location = v.(string)
@@ -213,13 +207,7 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	}
 	v, ok = values[ps.StoragerFunc]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.StoragerFunc, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.StoragerFunc)
 	}
 	if ok {
 		result.StoragerFunc = v.(storage.StoragerFunc)
@@ -259,13 +247,7 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Credential, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Credential)
 	}
 	if ok {
 		result.Credential = v.(*credential.Provider)
@@ -428,13 +410,7 @@ func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, 
 	// Parse meta-defined pairs
 	v, ok = values[ps.PartSize]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.PartSize, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.PartSize)
 	}
 	if ok {
 		result.PartSize = v.(int64)
@@ -492,35 +468,19 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	}
 	// Validate for ObjectFunc
 	if result.HasObjectFunc && result.HasFileFunc {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairConflict,
-			Pairs: []*types.Pair{
-				{Key: ps.ObjectFunc, Value: result.ObjectFunc},
-				{Key: ps.FileFunc, Value: result.FileFunc},
-			},
-		}
+		return nil, services.NewPairConflictError(
+			&types.Pair{Key: ps.ObjectFunc, Value: result.ObjectFunc},
+			&types.Pair{Key: ps.FileFunc, Value: result.FileFunc},
+		)
 	}
 	if result.HasObjectFunc && result.HasDirFunc {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairConflict,
-			Pairs: []*types.Pair{
-				{Key: ps.ObjectFunc, Value: result.ObjectFunc},
-				{Key: ps.DirFunc, Value: result.DirFunc},
-			},
-		}
+		return nil, services.NewPairConflictError(
+			&types.Pair{Key: ps.ObjectFunc, Value: result.ObjectFunc},
+			&types.Pair{Key: ps.DirFunc, Value: result.DirFunc},
+		)
 	}
 	if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.ObjectFunc, Value: nil},
-				{Key: ps.FileFunc, Value: nil},
-				{Key: ps.DirFunc, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.ObjectFunc, ps.FileFunc, ps.DirFunc)
 	}
 	return result, nil
 }
@@ -648,26 +608,14 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Location]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Location, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Location)
 	}
 	if ok {
 		result.Location = v.(string)
 	}
 	v, ok = values[ps.Name]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Name, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Name)
 	}
 	if ok {
 		result.Name = v.(string)
@@ -710,13 +658,7 @@ func parseStoragePairReach(opts ...*types.Pair) (*pairStorageReach, error) {
 	// Parse meta-defined pairs
 	v, ok = values[ps.Expire]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Expire, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Expire)
 	}
 	if ok {
 		result.Expire = v.(int)
@@ -867,13 +809,7 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	}
 	v, ok = values[ps.Size]
 	if !ok {
-		return nil, &services.SeriousPairError{
-			Op:  "parse",
-			Err: services.ErrPairRequired,
-			Pairs: []*types.Pair{
-				{Key: ps.Size, Value: nil},
-			},
-		}
+		return nil, services.NewPairRequiredError(ps.Size)
 	}
 	if ok {
 		result.Size = v.(int64)

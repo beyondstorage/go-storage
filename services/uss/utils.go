@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/upyun/go-sdk/upyun"
 
 	"github.com/Xuanwo/storage"
@@ -29,7 +30,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, services.ErrCredentialProtocolNotSupported
+		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	cfg := &upyun.UpYunConfig{
