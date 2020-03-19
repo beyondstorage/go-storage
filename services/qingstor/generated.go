@@ -392,7 +392,6 @@ type pairStorageInitSegment struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	PartSize int64
 }
 
 func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, error) {
@@ -415,13 +414,6 @@ func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, 
 	}
 
 	// Parse meta-defined pairs
-	v, ok = values[ps.PartSize]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.PartSize)
-	}
-	if ok {
-		result.PartSize = v.(int64)
-	}
 	return result, nil
 }
 
@@ -843,6 +835,7 @@ type pairStorageWriteSegment struct {
 	// Meta-defined pairs
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
+	Size                int64
 }
 
 func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment, error) {
@@ -869,6 +862,13 @@ func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment
 	if ok {
 		result.HasReadCallbackFunc = true
 		result.ReadCallbackFunc = v.(func([]byte))
+	}
+	v, ok = values[ps.Size]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.Size)
+	}
+	if ok {
+		result.Size = v.(int64)
 	}
 	return result, nil
 }
@@ -1036,10 +1036,10 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 }
 
 // WriteSegmentWithContext adds context support for WriteSegment.
-func (s *Storage) WriteSegmentWithContext(ctx context.Context, id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteSegmentWithContext(ctx context.Context, id string, idx int, r io.Reader, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.WriteSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.WriteSegment(id, offset, size, r, pairs...)
+	return s.WriteSegment(id, idx, r, pairs...)
 }

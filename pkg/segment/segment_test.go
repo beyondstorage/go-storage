@@ -9,35 +9,33 @@ import (
 
 func TestPart_String(t *testing.T) {
 	p := Part{
-		Offset: 10,
-		Size:   20,
-		Index:  30,
+		Size:  20,
+		Index: 30,
 	}
-	assert.Equal(t, "Part {Offset: 10, Size: 20, Index: 30}", p.String())
+	assert.Equal(t, "Part {Index: 30, Size: 20}", p.String())
 }
 
 func TestNewSegment(t *testing.T) {
-	s := NewSegment("test", "xxxx", 10)
+	s := NewSegment("test", "xxxx")
 	assert.Equal(t, "test", s.Path)
 	assert.Equal(t, "xxxx", s.ID)
-	assert.Equal(t, int64(10), s.PartSize)
-	assert.NotNil(t, s.Parts)
+	assert.NotNil(t, s.p)
 }
 
 func TestSegment_String(t *testing.T) {
-	s := NewSegment("test", "xxxx", 10)
-	assert.Equal(t, "Segment {ID: xxxx, Path: test, PartSize: 10}", s.String())
+	s := NewSegment("test", "xxxx")
+	assert.Equal(t, "Segment {ID: xxxx, Path: test}", s.String())
 }
 
 func TestSegment_InsertPart(t *testing.T) {
 	type fields struct {
 		TotalSize int64
 		ID        string
-		Parts     map[int64]*Part
+		Parts     map[int]*Part
 	}
 	type args struct {
-		offset int64
-		size   int64
+		idx  int
+		size int64
 	}
 	tests := []struct {
 		name    string
@@ -48,27 +46,26 @@ func TestSegment_InsertPart(t *testing.T) {
 		wantErr error
 	}{
 		{"first part", fields{1, "", nil}, args{0, 1}, 0, false, nil},
-		{"middle part", fields{3, "", map[int64]*Part{
-			0: {0, 1, 0},
-			2: {2, 1, 2},
+		{"middle part", fields{3, "", map[int]*Part{
+			0: {0, 1},
+			2: {2, 1},
 		}}, args{1, 1}, 1, false, nil},
-		{"last part", fields{3, "", map[int64]*Part{
-			0: {0, 1, 0},
-			1: {1, 1, 1},
+		{"last part", fields{3, "", map[int]*Part{
+			0: {0, 1},
+			1: {1, 1},
 		}}, args{2, 1}, 2, false, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Segment{
-				ID:       tt.fields.ID,
-				Parts:    tt.fields.Parts,
-				PartSize: 1,
+				ID: tt.fields.ID,
+				p:  tt.fields.Parts,
 			}
-			if s.Parts == nil {
-				s.Parts = make(map[int64]*Part)
+			if s.p == nil {
+				s.p = make(map[int]*Part)
 			}
 
-			gotPart, err := s.InsertPart(tt.args.offset, tt.args.size)
+			gotPart, err := s.InsertPart(tt.args.idx, tt.args.size)
 			if tt.hasErr {
 				assert.Error(t, err)
 				assert.True(t, errors.Is(err, tt.wantErr))
@@ -80,88 +77,93 @@ func TestSegment_InsertPart(t *testing.T) {
 	}
 }
 
-func TestSegment_ValidateParts(t *testing.T) {
-	type fields struct {
-		ID    string
-		Parts map[int64]*Part
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		hasErr  bool
-		wantErr error
-	}{
-		{"single part", fields{"", map[int64]*Part{
-			0: {0, 1, 0},
-		}}, false, nil},
-		{"missing part at middle", fields{"", map[int64]*Part{
-			0: {0, 1, 0},
-			2: {2, 1, 2},
-		}}, true, ErrSegmentNotFulfilled},
-		{"two part", fields{"", map[int64]*Part{
-			0: {0, 5, 0},
-			5: {5, 5, 1},
-		}}, false, nil},
-		{"empty parts", fields{"", map[int64]*Part{}}, true, ErrSegmentPartsEmpty},
-		{"first part is not 0", fields{"", map[int64]*Part{
-			1: {1, 5, 0},
-		}}, true, ErrSegmentNotFulfilled},
-		{"intersected part", fields{"", map[int64]*Part{
-			0: {0, 5, 0},
-			2: {2, 5, 1},
-		}}, true, ErrPartIntersected},
-		{"not fulfilled part", fields{"", map[int64]*Part{
-			0:  {0, 5, 0},
-			10: {10, 5, 2},
-		}}, true, ErrSegmentNotFulfilled},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Segment{
-				ID:    tt.fields.ID,
-				Parts: tt.fields.Parts,
-			}
-			if s.Parts == nil {
-				s.Parts = make(map[int64]*Part)
-			}
-
-			err := s.ValidateParts()
-			if tt.hasErr {
-				assert.Error(t, err, tt.name)
-				assert.True(t, errors.Is(err, tt.wantErr), tt.name)
-			} else {
-				assert.NoError(t, err, tt.name)
-			}
-		})
-	}
-}
-
 func TestSegment_SortedParts(t *testing.T) {
 	tests := []struct {
 		name          string
-		parts         map[int64]*Part
+		parts         map[int]*Part
 		expectedParts []*Part
 	}{
 		{
 			"normal case",
-			map[int64]*Part{
-				0: {0, 5, 0},
-				5: {5, 5, 1},
+			map[int]*Part{
+				0: {0, 5},
+				5: {5, 5},
 			},
 			[]*Part{
-				{0, 5, 0},
-				{5, 5, 1},
+				{0, 5},
+				{5, 5},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Segment{
-				Parts: tt.parts,
+				p: tt.parts,
 			}
 
-			gotParts := s.SortedParts()
+			gotParts := s.Parts()
 			assert.EqualValues(t, tt.expectedParts, gotParts)
 		})
 	}
+}
+
+func TestNewSegments(t *testing.T) {
+	s := NewSegments()
+	assert.NotNil(t, s)
+}
+
+func TestSegments_Len(t *testing.T) {
+	s := Segments{s: map[string]*Segment{
+		"x": {
+			ID:   "abc",
+			Path: "def",
+		},
+	}}
+	assert.Equal(t, 1, s.Len())
+}
+
+func TestSegments_Delete(t *testing.T) {
+	s := Segments{s: map[string]*Segment{
+		"x": {
+			ID:   "abc",
+			Path: "def",
+		},
+	}}
+
+	s.Delete("x")
+	s.Delete("not exist")
+	assert.Equal(t, 0, len(s.s))
+}
+
+func TestSegments_Insert(t *testing.T) {
+	s := Segments{s: map[string]*Segment{
+		"x": {
+			ID:   "abc",
+			Path: "def",
+		},
+	}}
+
+	s.Insert(&Segment{
+		ID:   "y",
+		Path: "q",
+	})
+	assert.Equal(t, 2, len(s.s))
+}
+
+func TestSegments_Get(t *testing.T) {
+	s := Segments{s: map[string]*Segment{
+		"abc": {
+			ID:   "abc",
+			Path: "def",
+		},
+	}}
+
+	seg, err := s.Get("abc")
+	assert.NoError(t, err)
+	assert.Equal(t, "abc", seg.ID)
+	assert.Equal(t, "def", seg.Path)
+
+	seg, err = s.Get("not exist")
+	assert.True(t, errors.Is(err, ErrSegmentNotFound))
+	assert.Nil(t, seg)
 }

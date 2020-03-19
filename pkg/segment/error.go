@@ -7,14 +7,11 @@ import (
 
 // All errors that segment could return.
 var (
-	ErrPartSizeInvalid     = errors.New("part size invalid")
-	ErrPartIntersected     = errors.New("part intersected")
-	ErrSegmentNotInitiated = errors.New("segment not initiated")
-	ErrSegmentPartsEmpty   = errors.New("segment Parts are empty")
-	ErrSegmentNotFulfilled = errors.New("segment not fulfilled")
+	ErrPartSizeInvalid = errors.New("part size invalid")
+	ErrSegmentNotFound = errors.New("segment not found")
 )
 
-// Error represents error related to endpoint.
+// Error represents error related to segment.
 type Error struct {
 	Op  string
 	Err error

@@ -8,23 +8,20 @@ import (
 
 // Part is a part of segment.
 type Part struct {
-	Offset int64
-	Size   int64
-
 	Index int
+	Size  int64
 }
 
 func (p *Part) String() string {
-	return fmt.Sprintf("Part {Offset: %d, Size: %d, Index: %d}", p.Offset, p.Size, p.Index)
+	return fmt.Sprintf("Part {Index: %d, Size: %d}", p.Index, p.Size)
 }
 
 // Segment will hold the whole segment operations.
 type Segment struct {
-	ID       string
-	Path     string
-	PartSize int64
-	Parts    map[int64]*Part
+	ID   string
+	Path string
 
+	p map[int]*Part
 	l sync.RWMutex
 }
 
@@ -32,29 +29,25 @@ type Segment struct {
 type Func func(segment *Segment)
 
 // NewSegment will init a new segment.
-func NewSegment(path, id string, partSize int64) *Segment {
+func NewSegment(path, id string) *Segment {
 	return &Segment{
-		ID:       id,
-		Path:     path,
-		PartSize: partSize,
-		Parts:    make(map[int64]*Part),
+		ID:   id,
+		Path: path,
+
+		p: make(map[int]*Part),
 	}
 }
 
 func (s *Segment) String() string {
 	return fmt.Sprintf(
-		"Segment {ID: %s, Path: %s, PartSize: %d}",
-		s.ID, s.Path, s.PartSize,
+		"Segment {ID: %s, Path: %s}", s.ID, s.Path,
 	)
 }
 
 // InsertPart will insert a part into a segment and return it's Index.
 // Index will start from 0.
-func (s *Segment) InsertPart(offset, size int64) (p *Part, err error) {
+func (s *Segment) InsertPart(idx int, size int64) (p *Part, err error) {
 	if size == 0 {
-		panic(&Error{"insert part", ErrPartSizeInvalid, s, nil})
-	}
-	if s.PartSize == 0 {
 		panic(&Error{"insert part", ErrPartSizeInvalid, s, nil})
 	}
 
@@ -62,57 +55,73 @@ func (s *Segment) InsertPart(offset, size int64) (p *Part, err error) {
 	defer s.l.Unlock()
 
 	p = &Part{
-		Offset: offset,
-		Size:   size,
-		Index:  int(offset / s.PartSize),
+		Size:  size,
+		Index: idx,
 	}
 
-	s.Parts[offset] = p
+	s.p[idx] = p
 	return p, nil
 }
 
-// SortedParts will return sorted Parts.
-func (s *Segment) SortedParts() []*Part {
+// Parts will return sorted p.
+func (s *Segment) Parts() []*Part {
 	s.l.RLock()
 	defer s.l.RUnlock()
 
-	x := make([]*Part, 0, len(s.Parts))
-	for _, v := range s.Parts {
+	x := make([]*Part, 0, len(s.p))
+	for _, v := range s.p {
 		v := v
 		x = append(x, v)
 	}
-	sort.Slice(x, func(i, j int) bool { return x[i].Offset < x[j].Offset })
+	sort.Slice(x, func(i, j int) bool { return x[i].Index < x[j].Index })
 	return x
 }
 
-// ValidateParts will validate a segment's Parts.
-func (s *Segment) ValidateParts() (err error) {
+// Segments carrys all segments in a service.
+type Segments struct {
+	s map[string]*Segment
+	l sync.RWMutex
+}
+
+// NewSegments will init a new segments.
+func NewSegments() *Segments {
+	return &Segments{
+		s: make(map[string]*Segment),
+	}
+}
+
+// Insert will insert a segment into segments
+func (s *Segments) Insert(seg *Segment) {
+	s.l.Lock()
+	defer s.l.Unlock()
+
+	s.s[seg.ID] = seg
+}
+
+// Get will get a segment from segments via id.
+func (s *Segments) Get(id string) (seg *Segment, err error) {
 	s.l.RLock()
 	defer s.l.RUnlock()
 
-	// Zero Parts are not allowed, cause they can't be completed.
-	if len(s.Parts) == 0 {
-		return &Error{"validate parts", ErrSegmentPartsEmpty, s, nil}
+	seg, ok := s.s[id]
+	if !ok {
+		return nil, &Error{"get segment", ErrSegmentNotFound, &Segment{ID: id}, nil}
 	}
+	return seg, nil
+}
 
-	p := s.SortedParts()
+// Delete will delete a segments.
+func (s *Segments) Delete(id string) {
+	s.l.Lock()
+	defer s.l.Unlock()
 
-	// First part offset must be 0
-	if p[0].Offset != 0 {
-		return &Error{"validate parts", ErrSegmentNotFulfilled, s, p[0]}
-	}
+	delete(s.s, id)
+}
 
-	for idx := 1; idx < len(s.Parts); idx++ {
-		last := p[idx-1]
-		cur := p[idx]
-		if last.Offset+last.Size == cur.Offset {
-			continue
-		}
-		if last.Offset+last.Size > cur.Offset {
-			return &Error{"validate parts", ErrPartIntersected, s, cur}
-		}
-		return &Error{"validate parts", ErrSegmentNotFulfilled, s, cur}
-	}
+// Len will return length of segments.
+func (s *Segments) Len() int {
+	s.l.RLock()
+	defer s.l.RUnlock()
 
-	return nil
+	return len(s.s)
 }

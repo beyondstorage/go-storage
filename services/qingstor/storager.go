@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"sync"
 
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/yunify/qingstor-sdk-go/v3/config"
@@ -29,8 +28,7 @@ type Storage struct {
 	workDir string // workDir dir for all operation.
 	loose   bool
 
-	segments    map[string]*segment.Segment
-	segmentLock sync.RWMutex
+	segments *segment.Segments
 }
 
 // String implements Storager.String
@@ -384,16 +382,12 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range output.Uploads {
-			seg := segment.NewSegment(*v.Key, *v.UploadID, 0)
+			seg := segment.NewSegment(*v.Key, *v.UploadID)
+			s.segments.Insert(seg)
 
 			if opt.HasSegmentFunc {
 				opt.SegmentFunc(seg)
 			}
-
-			s.segmentLock.Lock()
-			// Update client's segments.
-			s.segments[seg.ID] = seg
-			s.segmentLock.Unlock()
 		}
 
 		keyMarker = convert.StringValue(output.NextKeyMarker)
@@ -414,7 +408,7 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err
 		err = s.formatError("init segments", err, path)
 	}()
 
-	opt, err := parseStoragePairInitSegment(pairs...)
+	_, err = parseStoragePairInitSegment(pairs...)
 	if err != nil {
 		return
 	}
@@ -430,14 +424,12 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err
 
 	id = *output.UploadID
 
-	s.segmentLock.Lock()
-	s.segments[id] = segment.NewSegment(path, id, opt.PartSize)
-	s.segmentLock.Unlock()
+	s.segments.Insert(segment.NewSegment(path, id))
 	return
 }
 
 // WriteSegment implements Storager.WriteSegment
-func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteSegment(id string, idx int, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError("write segment", err, id)
 	}()
@@ -447,15 +439,12 @@ func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs
 		return
 	}
 
-	s.segmentLock.RLock()
-	seg, ok := s.segments[id]
-	if !ok {
-		err = segment.ErrSegmentNotInitiated
+	seg, err := s.segments.Get(id)
+	if err != nil {
 		return
 	}
-	s.segmentLock.RUnlock()
 
-	p, err := seg.InsertPart(offset, size)
+	p, err := seg.InsertPart(idx, opt.Size)
 	if err != nil {
 		return
 	}
@@ -469,7 +458,7 @@ func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs
 	_, err = s.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
 		PartNumber:    &p.Index,
 		UploadID:      &seg.ID,
-		ContentLength: &size,
+		ContentLength: &opt.Size,
 		Body:          r,
 	})
 	if err != nil {
@@ -484,25 +473,16 @@ func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("complete segment", err, id)
 	}()
 
-	s.segmentLock.RLock()
-	seg, ok := s.segments[id]
-	if !ok {
-		err = segment.ErrSegmentNotInitiated
-		return
-	}
-	s.segmentLock.RUnlock()
-
-	err = seg.ValidateParts()
+	seg, err := s.segments.Get(id)
 	if err != nil {
 		return
 	}
 
-	parts := seg.SortedParts()
+	parts := seg.Parts()
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
-	for k, v := range parts {
-		k := k
+	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
-			PartNumber: &k,
+			PartNumber: &v.Index,
 			Size:       &v.Size,
 		})
 	}
@@ -517,9 +497,7 @@ func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		return
 	}
 
-	s.segmentLock.Lock()
-	delete(s.segments, id)
-	s.segmentLock.Unlock()
+	s.segments.Delete(id)
 	return
 }
 
@@ -529,13 +507,10 @@ func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("abort segment", err, id)
 	}()
 
-	s.segmentLock.RLock()
-	seg, ok := s.segments[id]
-	if !ok {
-		err = segment.ErrSegmentNotInitiated
+	seg, err := s.segments.Get(id)
+	if err != nil {
 		return
 	}
-	s.segmentLock.RUnlock()
 
 	rp := s.getAbsPath(seg.Path)
 
@@ -546,9 +521,7 @@ func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
 		return
 	}
 
-	s.segmentLock.Lock()
-	delete(s.segments, id)
-	s.segmentLock.Unlock()
+	s.segments.Delete(id)
 	return
 }
 
