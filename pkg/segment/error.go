@@ -7,6 +7,7 @@ import (
 
 // All errors that segment could return.
 var (
+	ErrPartTypeInvalid = errors.New("part type invalid")
 	ErrPartSizeInvalid = errors.New("part size invalid")
 	ErrSegmentNotFound = errors.New("segment not found")
 )
@@ -16,15 +17,21 @@ type Error struct {
 	Op  string
 	Err error
 
-	Segment *Segment
-	Part    *Part
+	Segment Segment
+	Part    Part
 }
 
 func (e *Error) Error() string {
-	if e.Part == nil {
+	switch {
+	case e.Segment == nil && e.Part == nil:
+		return fmt.Sprintf("%s: %s", e.Op, e.Err.Error())
+	case e.Segment == nil:
+		return fmt.Sprintf("%s: %s: %s", e.Op, e.Part, e.Err.Error())
+	case e.Part == nil:
 		return fmt.Sprintf("%s: %s: %s", e.Op, e.Segment, e.Err.Error())
+	default:
+		return fmt.Sprintf("%s: %s, %s: %s", e.Op, e.Segment, e.Part, e.Err.Error())
 	}
-	return fmt.Sprintf("%s: %s, %s: %s", e.Op, e.Segment, e.Part, e.Err.Error())
 }
 
 // Unwrap implements xerrors.Wrapper
