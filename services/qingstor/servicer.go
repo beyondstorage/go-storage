@@ -184,7 +184,7 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		bucket:     bucket,
 		config:     bucket.Config,
 		properties: bucket.Properties,
-		segments:   segment.NewSegments(),
+		segments:   segment.NewIndexBasedSegments(),
 
 		workDir: opt.WorkDir,
 		loose:   opt.Loose || s.loose,

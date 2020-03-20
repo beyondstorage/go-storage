@@ -169,9 +169,9 @@ type Segmenter interface {
 	//   - SHOULD return error while caller call WriteSegment without init.
 	// Caller:
 	//   - SHOULD call InitSegment before WriteSegment.
-	WriteSegment(id string, idx int, r io.Reader, pairs ...*types.Pair) (err error)
+	WriteSegment(id string, r io.Reader, pairs ...*types.Pair) (err error)
 	// WriteSegmentWithContext will read data into segment.
-	WriteSegmentWithContext(ctx context.Context, id string, idx int, r io.Reader, pairs ...*types.Pair) (err error)
+	WriteSegmentWithContext(ctx context.Context, id string, r io.Reader, pairs ...*types.Pair) (err error)
 	// CompleteSegment will complete a segment and merge them into a File.
 	//
 	// Implementer:

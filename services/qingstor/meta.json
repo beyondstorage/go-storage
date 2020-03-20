@@ -26,7 +26,7 @@
       "object_func": false
     },
     "list_segments": {
-      "segment_func": false
+      "segment_func": true
     },
     "new": {
       "location": true,
@@ -42,6 +42,7 @@
       "storage_class": false
     },
     "write_segment": {
+      "index": true,
       "size": true
     }
   }
