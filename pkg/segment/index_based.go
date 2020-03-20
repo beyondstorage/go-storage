@@ -18,7 +18,8 @@ func (p *IndexBasedPart) String() string {
 
 // IndexBasedSegment will hold the whole segment operations.
 type IndexBasedSegment struct {
-	*Segment
+	path string
+	id   string
 
 	p map[int]*IndexBasedPart
 	l sync.RWMutex
@@ -27,10 +28,8 @@ type IndexBasedSegment struct {
 // NewIndexBasedSegment will init a new segment.
 func NewIndexBasedSegment(path, id string) *IndexBasedSegment {
 	return &IndexBasedSegment{
-		Segment: &Segment{
-			ID:   id,
-			Path: path,
-		},
+		id:   id,
+		path: path,
 
 		p: make(map[int]*IndexBasedPart),
 	}
@@ -38,8 +37,18 @@ func NewIndexBasedSegment(path, id string) *IndexBasedSegment {
 
 func (s *IndexBasedSegment) String() string {
 	return fmt.Sprintf(
-		"IndexBasedSegment {ID: %s, Path: %s}", s.ID, s.Path,
+		"IndexBasedSegment {ID: %s, Path: %s}", s.id, s.path,
 	)
+}
+
+// ID implements Segment.ID()
+func (s *IndexBasedSegment) ID() string {
+	return s.id
+}
+
+// Path implements Segment.Path()
+func (s *IndexBasedSegment) Path() string {
+	return s.path
 }
 
 // InsertPart will insert a part into a segment and return it's Index.
@@ -89,19 +98,7 @@ func (s *IndexBasedSegments) Insert(seg *IndexBasedSegment) {
 	s.l.Lock()
 	defer s.l.Unlock()
 
-	s.s[seg.ID] = seg
-}
-
-// Get will get a segment from segments via id.
-func (s *IndexBasedSegments) Get(id string) (seg *IndexBasedSegment, err error) {
-	s.l.RLock()
-	defer s.l.RUnlock()
-
-	seg, ok := s.s[id]
-	if !ok {
-		return nil, &Error{"get segment", ErrSegmentNotFound, &Segment{ID: id}}
-	}
-	return seg, nil
+	s.s[seg.id] = seg
 }
 
 // Delete will delete a segments.
@@ -110,12 +107,4 @@ func (s *IndexBasedSegments) Delete(id string) {
 	defer s.l.Unlock()
 
 	delete(s.s, id)
-}
-
-// Len will return length of segments.
-func (s *IndexBasedSegments) Len() int {
-	s.l.RLock()
-	defer s.l.RUnlock()
-
-	return len(s.s)
 }

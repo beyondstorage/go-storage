@@ -17,8 +17,8 @@ func TestIndexBasedPart_String(t *testing.T) {
 
 func TestNewIndexBasedSegment(t *testing.T) {
 	s := NewIndexBasedSegment("test", "xxxx")
-	assert.Equal(t, "test", s.Path)
-	assert.Equal(t, "xxxx", s.ID)
+	assert.Equal(t, "test", s.Path())
+	assert.Equal(t, "xxxx", s.ID())
 	assert.NotNil(t, s.p)
 }
 
@@ -58,8 +58,8 @@ func TestIndexBasedSegment_InsertPart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &IndexBasedSegment{
-				Segment: NewSegment("", tt.fields.ID),
-				p:       tt.fields.Parts,
+				id: tt.fields.ID,
+				p:  tt.fields.Parts,
 			}
 			if s.p == nil {
 				s.p = make(map[int]*IndexBasedPart)
@@ -112,13 +112,6 @@ func TestNewIndexBasedSegments(t *testing.T) {
 	assert.NotNil(t, s)
 }
 
-func TestIndexBasedSegments_Len(t *testing.T) {
-	s := IndexBasedSegments{s: map[string]*IndexBasedSegment{
-		"x": NewIndexBasedSegment("def", "abc"),
-	}}
-	assert.Equal(t, 1, s.Len())
-}
-
 func TestIndexBasedSegments_Delete(t *testing.T) {
 	s := IndexBasedSegments{s: map[string]*IndexBasedSegment{
 		"x": NewIndexBasedSegment("def", "abc"),
@@ -135,22 +128,8 @@ func TestIndexBasedSegments_Insert(t *testing.T) {
 	}}
 
 	s.Insert(&IndexBasedSegment{
-		Segment: NewSegment("q", "y"),
+		path: "q",
+		id:   "y",
 	})
 	assert.Equal(t, 2, len(s.s))
-}
-
-func TestIndexBasedSegments_Get(t *testing.T) {
-	s := IndexBasedSegments{s: map[string]*IndexBasedSegment{
-		"abc": NewIndexBasedSegment("def", "abc"),
-	}}
-
-	seg, err := s.Get("abc")
-	assert.NoError(t, err)
-	assert.Equal(t, "abc", seg.ID)
-	assert.Equal(t, "def", seg.Path)
-
-	seg, err = s.Get("not exist")
-	assert.True(t, errors.Is(err, ErrSegmentNotFound))
-	assert.Nil(t, seg)
 }

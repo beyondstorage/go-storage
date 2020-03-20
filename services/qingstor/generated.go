@@ -919,21 +919,21 @@ func (s *Service) ListWithContext(ctx context.Context, pairs ...*types.Pair) (er
 }
 
 // AbortSegmentWithContext adds context support for AbortSegment.
-func (s *Storage) AbortSegmentWithContext(ctx context.Context, id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.AbortSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.AbortSegment(id, pairs...)
+	return s.AbortSegment(seg, pairs...)
 }
 
 // CompleteSegmentWithContext adds context support for CompleteSegment.
-func (s *Storage) CompleteSegmentWithContext(ctx context.Context, id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.CompleteSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.CompleteSegment(id, pairs...)
+	return s.CompleteSegment(seg, pairs...)
 }
 
 // CopyWithContext adds context support for Copy.
@@ -955,7 +955,7 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 }
 
 // InitSegmentWithContext adds context support for InitSegment.
-func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (id string, err error) {
+func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (_ segment.Segment, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.InitSegment")
 	defer span.Finish()
 
@@ -1045,10 +1045,10 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 }
 
 // WriteSegmentWithContext adds context support for WriteSegment.
-func (s *Storage) WriteSegmentWithContext(ctx context.Context, id string, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.WriteSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.WriteSegment(id, r, pairs...)
+	return s.WriteSegment(seg, r, pairs...)
 }

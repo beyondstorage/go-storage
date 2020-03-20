@@ -117,41 +117,17 @@ func TestStorage_AbortSegment(t *testing.T) {
 	// Test valid segment.
 	path := uuid.New().String()
 	id := uuid.New().String()
-	client.segments.Insert(segment.NewIndexBasedSegment(path, id))
+	seg := segment.NewIndexBasedSegment(path, id)
+	client.segments.Insert(seg)
 	mockBucket.EXPECT().AbortMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.AbortMultipartUploadInput) {
 		assert.Equal(t, path, inputPath)
 		assert.Equal(t, id, *input.UploadID)
 	})
-	err := client.AbortSegment(id)
+	err := client.AbortSegment(seg)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, client.segments.Len())
-
-	// Test not exist segment.
-	id = uuid.New().String()
-	err = client.AbortSegment(id)
-	assert.Error(t, err)
-	assert.True(t, errors.Is(err, segment.ErrSegmentNotFound))
 }
 
 func TestStorage_CompleteSegment(t *testing.T) {
-	t.Run("not initiated segment", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockBucket := NewMockBucket(ctrl)
-
-		client := Storage{
-			bucket:   mockBucket,
-			segments: segment.NewIndexBasedSegments(),
-		}
-
-		id := uuid.New().String()
-
-		err := client.CompleteSegment(id)
-		assert.NotNil(t, err)
-		assert.True(t, errors.Is(err, segment.ErrSegmentNotFound))
-	})
-
 	t.Run("valid segment", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -159,9 +135,9 @@ func TestStorage_CompleteSegment(t *testing.T) {
 		mockBucket := NewMockBucket(ctrl)
 
 		path, id := uuid.New().String(), uuid.New().String()
-
+		seg := segment.NewIndexBasedSegment(path, id)
 		segments := segment.NewIndexBasedSegments()
-		segments.Insert(segment.NewIndexBasedSegment(path, id))
+		segments.Insert(seg)
 
 		client := Storage{
 			bucket:   mockBucket,
@@ -173,7 +149,7 @@ func TestStorage_CompleteSegment(t *testing.T) {
 			assert.Equal(t, id, *input.UploadID)
 		})
 
-		err := client.CompleteSegment(id)
+		err := client.CompleteSegment(seg)
 		assert.NoError(t, err)
 	})
 }
@@ -717,23 +693,6 @@ func TestStorage_Write(t *testing.T) {
 }
 
 func TestStorage_WriteSegment(t *testing.T) {
-	t.Run("not initiated segment", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockBucket := NewMockBucket(ctrl)
-
-		client := Storage{
-			bucket:   mockBucket,
-			segments: segment.NewIndexBasedSegments(),
-		}
-
-		id := uuid.New().String()
-
-		err := client.WriteSegment(id, nil, pairs.WithSize(100), pairs.WithIndex(0))
-		assert.True(t, errors.Is(err, segment.ErrSegmentNotFound))
-	})
-
 	t.Run("valid segment", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -741,9 +700,9 @@ func TestStorage_WriteSegment(t *testing.T) {
 		mockBucket := NewMockBucket(ctrl)
 
 		path, id := uuid.New().String(), uuid.New().String()
-
+		seg := segment.NewIndexBasedSegment(path, id)
 		segments := segment.NewIndexBasedSegments()
-		segments.Insert(segment.NewIndexBasedSegment(path, id))
+		segments.Insert(seg)
 
 		client := Storage{
 			bucket:   mockBucket,
@@ -755,7 +714,7 @@ func TestStorage_WriteSegment(t *testing.T) {
 			assert.Equal(t, id, *input.UploadID)
 		})
 
-		err := client.WriteSegment(id, nil, pairs.WithSize(100), pairs.WithIndex(0))
+		err := client.WriteSegment(seg, nil, pairs.WithSize(100), pairs.WithIndex(0))
 		assert.NoError(t, err)
 	})
 }
@@ -774,7 +733,7 @@ func TestStorage_ListSegments(t *testing.T) {
 	tests := []struct {
 		name   string
 		output *service.ListMultipartUploadsOutput
-		items  []*segment.Segment
+		items  []segment.Segment
 		err    error
 	}{
 		{
@@ -788,8 +747,8 @@ func TestStorage_ListSegments(t *testing.T) {
 					},
 				},
 			},
-			[]*segment.Segment{
-				segment.NewSegment(keys[0], keys[1]),
+			[]segment.Segment{
+				segment.NewIndexBasedSegment(keys[0], keys[1]),
 			},
 			nil,
 		},
@@ -805,15 +764,15 @@ func TestStorage_ListSegments(t *testing.T) {
 					},
 				},
 			},
-			[]*segment.Segment{
-				segment.NewSegment(keys[1], keys[2]),
+			[]segment.Segment{
+				segment.NewIndexBasedSegment(keys[1], keys[2]),
 			},
 			nil,
 		},
 		{
 			"list with error return",
 			nil,
-			[]*segment.Segment{},
+			[]segment.Segment{},
 			&qerror.QingStorError{
 				StatusCode: 401,
 			},
@@ -835,10 +794,10 @@ func TestStorage_ListSegments(t *testing.T) {
 				segments: segment.NewIndexBasedSegments(),
 			}
 
-			items := make([]*segment.Segment, 0)
+			items := make([]segment.Segment, 0)
 
 			err := client.ListSegments(path,
-				pairs.WithSegmentFunc(func(segment *segment.Segment) {
+				pairs.WithSegmentFunc(func(segment segment.Segment) {
 					items = append(items, segment)
 				}),
 			)

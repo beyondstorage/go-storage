@@ -383,7 +383,7 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 
 		for _, v := range output.Uploads {
 			// TODO: we should handle rel path here.
-			seg := segment.NewSegment(*v.Key, *v.UploadID)
+			seg := segment.NewIndexBasedSegment(*v.Key, *v.UploadID)
 
 			opt.SegmentFunc(seg)
 		}
@@ -401,7 +401,7 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 }
 
 // InitSegment implements Storager.InitSegment
-func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err error) {
+func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (_ segment.Segment, err error) {
 	defer func() {
 		err = s.formatError("init segments", err, path)
 	}()
@@ -420,16 +420,17 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err
 		return
 	}
 
-	id = *output.UploadID
+	id := *output.UploadID
 
-	s.segments.Insert(segment.NewIndexBasedSegment(path, id))
-	return
+	seg := segment.NewIndexBasedSegment(path, id)
+	s.segments.Insert(seg)
+	return seg, nil
 }
 
 // WriteSegment implements Storager.WriteSegment
-func (s *Storage) WriteSegment(id string, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("write segment", err, id)
+		err = s.formatError("write segment", err, seg.Path(), seg.ID())
 	}()
 
 	opt, err := parseStoragePairWriteSegment(pairs...)
@@ -437,17 +438,12 @@ func (s *Storage) WriteSegment(id string, r io.Reader, pairs ...*types.Pair) (er
 		return
 	}
 
-	seg, err := s.segments.Get(id)
+	p, err := seg.(*segment.IndexBasedSegment).InsertPart(opt.Index, opt.Size)
 	if err != nil {
 		return
 	}
 
-	p, err := seg.InsertPart(opt.Index, opt.Size)
-	if err != nil {
-		return
-	}
-
-	rp := s.getAbsPath(seg.Path)
+	rp := s.getAbsPath(seg.Path())
 
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
@@ -455,7 +451,7 @@ func (s *Storage) WriteSegment(id string, r io.Reader, pairs ...*types.Pair) (er
 
 	_, err = s.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
 		PartNumber:    service.Int(p.Index),
-		UploadID:      service.String(seg.ID),
+		UploadID:      service.String(seg.ID()),
 		ContentLength: &opt.Size,
 		Body:          r,
 	})
@@ -466,17 +462,12 @@ func (s *Storage) WriteSegment(id string, r io.Reader, pairs ...*types.Pair) (er
 }
 
 // CompleteSegment implements Storager.CompleteSegment
-func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("complete segment", err, id)
+		err = s.formatError("complete segment", err, seg.Path(), seg.ID())
 	}()
 
-	seg, err := s.segments.Get(id)
-	if err != nil {
-		return
-	}
-
-	parts := seg.Parts()
+	parts := seg.(*segment.IndexBasedSegment).Parts()
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
@@ -485,41 +476,36 @@ func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
 		})
 	}
 
-	rp := s.getAbsPath(seg.Path)
+	rp := s.getAbsPath(seg.Path())
 
 	_, err = s.bucket.CompleteMultipartUpload(rp, &service.CompleteMultipartUploadInput{
-		UploadID:    service.String(seg.ID),
+		UploadID:    service.String(seg.ID()),
 		ObjectParts: objectParts,
 	})
 	if err != nil {
 		return
 	}
 
-	s.segments.Delete(id)
+	s.segments.Delete(seg.ID())
 	return
 }
 
 // AbortSegment implements Storager.AbortSegment
-func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("abort segment", err, id)
+		err = s.formatError("abort segment", err, seg.Path(), seg.ID())
 	}()
 
-	seg, err := s.segments.Get(id)
-	if err != nil {
-		return
-	}
-
-	rp := s.getAbsPath(seg.Path)
+	rp := s.getAbsPath(seg.Path())
 
 	_, err = s.bucket.AbortMultipartUpload(rp, &service.AbortMultipartUploadInput{
-		UploadID: service.String(seg.ID),
+		UploadID: service.String(seg.ID()),
 	})
 	if err != nil {
 		return
 	}
 
-	s.segments.Delete(id)
+	s.segments.Delete(seg.ID())
 	return
 }
 
