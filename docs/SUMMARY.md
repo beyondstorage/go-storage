@@ -19,7 +19,7 @@
 * [15-release-policy](./design/15-release-policy.md)
 * [16-loose-mode](./design/16-loose-mode.md)
 * [17-proposal-process](./design/17-proposal-process.md)
-* [18-return-segment-interface-instead](./design/8-return-segment-interface-instead.md)
+* [18-return-segment-interface-instead](./design/18-return-segment-interface-instead.md)
   
 ## Sepc
 
