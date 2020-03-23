@@ -399,7 +399,7 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 }
 
 // InitSegment implements Storager.InitSegment
-func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (_ segment.Segment, err error) {
+func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
 	defer func() {
 		err = s.formatError("init segments", err, path)
 	}()
@@ -420,7 +420,7 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (_ segment.Segm
 
 	id := *output.UploadID
 
-	seg := segment.NewIndexBasedSegment(path, id)
+	seg = segment.NewIndexBasedSegment(path, id)
 	return seg, nil
 }
 

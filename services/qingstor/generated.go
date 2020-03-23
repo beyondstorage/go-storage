@@ -955,7 +955,7 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 }
 
 // InitSegmentWithContext adds context support for InitSegment.
-func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (_ segment.Segment, err error) {
+func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.InitSegment")
 	defer span.Finish()
 

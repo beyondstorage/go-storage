@@ -24,6 +24,9 @@
       "file_func": false,
       "object_func": false
     },
+    "list_segments": {
+      "segment_func": true
+    },
     "new": {
       "name": true,
       "work_dir": false
@@ -32,6 +35,10 @@
       "checksum": false,
       "size": true,
       "storage_class": false
+    },
+    "write_segment": {
+      "index": true,
+      "size": true
     }
   }
 }
