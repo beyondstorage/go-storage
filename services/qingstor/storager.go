@@ -27,8 +27,6 @@ type Storage struct {
 	// options for this storager.
 	workDir string // workDir dir for all operation.
 	loose   bool
-
-	segments *segment.IndexBasedSegments
 }
 
 // String implements Storager.String
@@ -423,7 +421,6 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (_ segment.Segm
 	id := *output.UploadID
 
 	seg := segment.NewIndexBasedSegment(path, id)
-	s.segments.Insert(seg)
 	return seg, nil
 }
 
@@ -485,8 +482,6 @@ func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (er
 	if err != nil {
 		return
 	}
-
-	s.segments.Delete(seg.ID())
 	return
 }
 
@@ -504,8 +499,6 @@ func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err e
 	if err != nil {
 		return
 	}
-
-	s.segments.Delete(seg.ID())
 	return
 }
 

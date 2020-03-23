@@ -106,30 +106,3 @@ func TestIndexBasedSegment_SortedParts(t *testing.T) {
 		})
 	}
 }
-
-func TestNewIndexBasedSegments(t *testing.T) {
-	s := NewIndexBasedSegments()
-	assert.NotNil(t, s)
-}
-
-func TestIndexBasedSegments_Delete(t *testing.T) {
-	s := IndexBasedSegments{s: map[string]*IndexBasedSegment{
-		"x": NewIndexBasedSegment("def", "abc"),
-	}}
-
-	s.Delete("x")
-	s.Delete("not exist")
-	assert.Equal(t, 0, len(s.s))
-}
-
-func TestIndexBasedSegments_Insert(t *testing.T) {
-	s := IndexBasedSegments{s: map[string]*IndexBasedSegment{
-		"x": NewIndexBasedSegment("def", "abc"),
-	}}
-
-	s.Insert(&IndexBasedSegment{
-		path: "q",
-		id:   "y",
-	})
-	assert.Equal(t, 2, len(s.s))
-}

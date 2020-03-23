@@ -110,15 +110,13 @@ func TestStorage_AbortSegment(t *testing.T) {
 	mockBucket := NewMockBucket(ctrl)
 
 	client := Storage{
-		bucket:   mockBucket,
-		segments: segment.NewIndexBasedSegments(),
+		bucket: mockBucket,
 	}
 
 	// Test valid segment.
 	path := uuid.New().String()
 	id := uuid.New().String()
 	seg := segment.NewIndexBasedSegment(path, id)
-	client.segments.Insert(seg)
 	mockBucket.EXPECT().AbortMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.AbortMultipartUploadInput) {
 		assert.Equal(t, path, inputPath)
 		assert.Equal(t, id, *input.UploadID)
@@ -136,12 +134,9 @@ func TestStorage_CompleteSegment(t *testing.T) {
 
 		path, id := uuid.New().String(), uuid.New().String()
 		seg := segment.NewIndexBasedSegment(path, id)
-		segments := segment.NewIndexBasedSegments()
-		segments.Insert(seg)
 
 		client := Storage{
-			bucket:   mockBucket,
-			segments: segments,
+			bucket: mockBucket,
 		}
 
 		mockBucket.EXPECT().CompleteMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.CompleteMultipartUploadInput) {
@@ -290,8 +285,7 @@ func TestStorage_InitSegment(t *testing.T) {
 		}
 
 		client := Storage{
-			bucket:   mockBucket,
-			segments: segment.NewIndexBasedSegments(),
+			bucket: mockBucket,
 		}
 
 		_, err := client.InitSegment(v.path, pairs.WithPartSize(10))
@@ -701,12 +695,9 @@ func TestStorage_WriteSegment(t *testing.T) {
 
 		path, id := uuid.New().String(), uuid.New().String()
 		seg := segment.NewIndexBasedSegment(path, id)
-		segments := segment.NewIndexBasedSegments()
-		segments.Insert(seg)
 
 		client := Storage{
-			bucket:   mockBucket,
-			segments: segments,
+			bucket: mockBucket,
 		}
 
 		mockBucket.EXPECT().UploadMultipart(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.UploadMultipartInput) {
@@ -790,8 +781,7 @@ func TestStorage_ListSegments(t *testing.T) {
 			})
 
 			client := Storage{
-				bucket:   mockBucket,
-				segments: segment.NewIndexBasedSegments(),
+				bucket: mockBucket,
 			}
 
 			items := make([]segment.Segment, 0)

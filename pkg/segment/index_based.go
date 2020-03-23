@@ -79,32 +79,3 @@ func (s *IndexBasedSegment) Parts() []*IndexBasedPart {
 	sort.Slice(x, func(i, j int) bool { return x[i].Index < x[j].Index })
 	return x
 }
-
-// IndexBasedSegments carrys all segments in a service.
-type IndexBasedSegments struct {
-	s map[string]*IndexBasedSegment
-	l sync.RWMutex
-}
-
-// NewIndexBasedSegments will init a new segments.
-func NewIndexBasedSegments() *IndexBasedSegments {
-	return &IndexBasedSegments{
-		s: make(map[string]*IndexBasedSegment),
-	}
-}
-
-// Insert will insert a segment into segments
-func (s *IndexBasedSegments) Insert(seg *IndexBasedSegment) {
-	s.l.Lock()
-	defer s.l.Unlock()
-
-	s.s[seg.id] = seg
-}
-
-// Delete will delete a segments.
-func (s *IndexBasedSegments) Delete(id string) {
-	s.l.Lock()
-	defer s.l.Unlock()
-
-	delete(s.s, id)
-}

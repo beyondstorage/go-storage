@@ -11,7 +11,6 @@ import (
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -184,7 +183,6 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		bucket:     bucket,
 		config:     bucket.Config,
 		properties: bucket.Properties,
-		segments:   segment.NewIndexBasedSegments(),
 
 		workDir: opt.WorkDir,
 		loose:   opt.Loose || s.loose,
