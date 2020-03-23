@@ -3,7 +3,7 @@ Package segment provided segment metadata support for storage.
 
 This package handles segment operation details, and Storager implementer don't need to write their own segment logic.
 
-Segment splits a File into several virtual parts, every part will have it's offset and size. Segment's life cycle
+Segment splits a File into several virtual parts, every part will have it's offset and Size. Segment's life cycle
 contains five stage.
 
                                                         +----------------+

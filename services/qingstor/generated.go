@@ -392,7 +392,6 @@ type pairStorageInitSegment struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	PartSize int64
 }
 
 func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, error) {
@@ -415,13 +414,6 @@ func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, 
 	}
 
 	// Parse meta-defined pairs
-	v, ok = values[ps.PartSize]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.PartSize)
-	}
-	if ok {
-		result.PartSize = v.(int64)
-	}
 	return result, nil
 }
 
@@ -497,8 +489,7 @@ type pairStorageListSegments struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasSegmentFunc bool
-	SegmentFunc    segment.Func
+	SegmentFunc segment.Func
 }
 
 func parseStoragePairListSegments(opts ...*types.Pair) (*pairStorageListSegments, error) {
@@ -522,8 +513,10 @@ func parseStoragePairListSegments(opts ...*types.Pair) (*pairStorageListSegments
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.SegmentFunc]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.SegmentFunc)
+	}
 	if ok {
-		result.HasSegmentFunc = true
 		result.SegmentFunc = v.(segment.Func)
 	}
 	return result, nil
@@ -841,8 +834,10 @@ type pairStorageWriteSegment struct {
 	Context context.Context
 
 	// Meta-defined pairs
+	Index               int
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
+	Size                int64
 }
 
 func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment, error) {
@@ -865,10 +860,24 @@ func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.Index]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.Index)
+	}
+	if ok {
+		result.Index = v.(int)
+	}
 	v, ok = values[ps.ReadCallbackFunc]
 	if ok {
 		result.HasReadCallbackFunc = true
 		result.ReadCallbackFunc = v.(func([]byte))
+	}
+	v, ok = values[ps.Size]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.Size)
+	}
+	if ok {
+		result.Size = v.(int64)
 	}
 	return result, nil
 }
@@ -910,21 +919,21 @@ func (s *Service) ListWithContext(ctx context.Context, pairs ...*types.Pair) (er
 }
 
 // AbortSegmentWithContext adds context support for AbortSegment.
-func (s *Storage) AbortSegmentWithContext(ctx context.Context, id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.AbortSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.AbortSegment(id, pairs...)
+	return s.AbortSegment(seg, pairs...)
 }
 
 // CompleteSegmentWithContext adds context support for CompleteSegment.
-func (s *Storage) CompleteSegmentWithContext(ctx context.Context, id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.CompleteSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.CompleteSegment(id, pairs...)
+	return s.CompleteSegment(seg, pairs...)
 }
 
 // CopyWithContext adds context support for Copy.
@@ -946,7 +955,7 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 }
 
 // InitSegmentWithContext adds context support for InitSegment.
-func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (id string, err error) {
+func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (_ segment.Segment, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.InitSegment")
 	defer span.Finish()
 
@@ -1036,10 +1045,10 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 }
 
 // WriteSegmentWithContext adds context support for WriteSegment.
-func (s *Storage) WriteSegmentWithContext(ctx context.Context, id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.WriteSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.WriteSegment(id, offset, size, r, pairs...)
+	return s.WriteSegment(seg, r, pairs...)
 }

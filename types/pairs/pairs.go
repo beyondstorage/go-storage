@@ -21,6 +21,7 @@ const (
 	Endpoint         = "endpoint"
 	Expire           = "expire"
 	FileFunc         = "file_func"
+	Index            = "index"
 	Location         = "location"
 	Loose            = "loose"
 	Name             = "name"
@@ -89,6 +90,14 @@ func WithExpire(v int) *types.Pair {
 func WithFileFunc(v types.ObjectFunc) *types.Pair {
 	return &types.Pair{
 		Key:   FileFunc,
+		Value: v,
+	}
+}
+
+// WithIndex will apply index value to Options
+func WithIndex(v int) *types.Pair {
+	return &types.Pair{
+		Key:   Index,
 		Value: v,
 	}
 }

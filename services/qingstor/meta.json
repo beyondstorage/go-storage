@@ -20,16 +20,13 @@
     }
   },
   "storage": {
-    "init_segment": {
-      "part_size": true
-    },
     "list": {
       "dir_func": false,
       "file_func": false,
       "object_func": false
     },
     "list_segments": {
-      "segment_func": false
+      "segment_func": true
     },
     "new": {
       "location": true,
@@ -43,6 +40,10 @@
       "checksum": false,
       "size": true,
       "storage_class": false
+    },
+    "write_segment": {
+      "index": true,
+      "size": true
     }
   }
 }

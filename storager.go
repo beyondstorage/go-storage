@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 )
@@ -160,34 +161,34 @@ type Segmenter interface {
 	//     other similar things.
 	// Caller:
 	//   - SHOULD call InitSegment before Write, Complete or Abort.
-	InitSegment(path string, pairs ...*types.Pair) (id string, err error)
+	InitSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error)
 	// InitSegmentWithContext will init a segment which could be a File after complete.
-	InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (id string, err error)
+	InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error)
 	// WriteSegment will read data into segment.
 	//
 	// Implementer:
 	//   - SHOULD return error while caller call WriteSegment without init.
 	// Caller:
 	//   - SHOULD call InitSegment before WriteSegment.
-	WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error)
+	WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error)
 	// WriteSegmentWithContext will read data into segment.
-	WriteSegmentWithContext(ctx context.Context, id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error)
+	WriteSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error)
 	// CompleteSegment will complete a segment and merge them into a File.
 	//
 	// Implementer:
 	//   - SHOULD return error while caller call CompleteSegment without init.
 	// Caller:
 	//   - SHOULD call InitSegment before CompleteSegment.
-	CompleteSegment(id string, pairs ...*types.Pair) (err error)
+	CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error)
 	// CompleteSegmentWithContext will complete a segment and merge them into a File.
-	CompleteSegmentWithContext(ctx context.Context, id string, pairs ...*types.Pair) (err error)
+	CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error)
 	// AbortSegment will abort a segment.
 	//
 	// Implementer:
 	//   - SHOULD return error while caller call AbortSegment without init.
 	// Caller:
 	//   - SHOULD call InitSegment before AbortSegment.
-	AbortSegment(id string, pairs ...*types.Pair) (err error)
+	AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error)
 	// AbortSegmentWithContext will abort a segment.
-	AbortSegmentWithContext(ctx context.Context, id string, pairs ...*types.Pair) (err error)
+	AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error)
 }

@@ -6,6 +6,7 @@
   "endpoint": "endpoint.Provider",
   "expire": "int",
   "file_func": "types.ObjectFunc",
+  "index": "int",
   "location": "string",
   "loose": "bool",
   "name": "string",

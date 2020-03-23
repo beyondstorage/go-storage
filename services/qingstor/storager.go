@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"sync"
 
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/yunify/qingstor-sdk-go/v3/config"
@@ -28,9 +27,6 @@ type Storage struct {
 	// options for this storager.
 	workDir string // workDir dir for all operation.
 	loose   bool
-
-	segments    map[string]*segment.Segment
-	segmentLock sync.RWMutex
 }
 
 // String implements Storager.String
@@ -384,16 +380,10 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range output.Uploads {
-			seg := segment.NewSegment(*v.Key, *v.UploadID, 0)
+			// TODO: we should handle rel path here.
+			seg := segment.NewIndexBasedSegment(*v.Key, *v.UploadID)
 
-			if opt.HasSegmentFunc {
-				opt.SegmentFunc(seg)
-			}
-
-			s.segmentLock.Lock()
-			// Update client's segments.
-			s.segments[seg.ID] = seg
-			s.segmentLock.Unlock()
+			opt.SegmentFunc(seg)
 		}
 
 		keyMarker = convert.StringValue(output.NextKeyMarker)
@@ -409,12 +399,12 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 }
 
 // InitSegment implements Storager.InitSegment
-func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err error) {
+func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (_ segment.Segment, err error) {
 	defer func() {
 		err = s.formatError("init segments", err, path)
 	}()
 
-	opt, err := parseStoragePairInitSegment(pairs...)
+	_, err = parseStoragePairInitSegment(pairs...)
 	if err != nil {
 		return
 	}
@@ -428,18 +418,16 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (id string, err
 		return
 	}
 
-	id = *output.UploadID
+	id := *output.UploadID
 
-	s.segmentLock.Lock()
-	s.segments[id] = segment.NewSegment(path, id, opt.PartSize)
-	s.segmentLock.Unlock()
-	return
+	seg := segment.NewIndexBasedSegment(path, id)
+	return seg, nil
 }
 
 // WriteSegment implements Storager.WriteSegment
-func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("write segment", err, id)
+		err = s.formatError("write segment", err, seg.Path(), seg.ID())
 	}()
 
 	opt, err := parseStoragePairWriteSegment(pairs...)
@@ -447,29 +435,21 @@ func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs
 		return
 	}
 
-	s.segmentLock.RLock()
-	seg, ok := s.segments[id]
-	if !ok {
-		err = segment.ErrSegmentNotInitiated
-		return
-	}
-	s.segmentLock.RUnlock()
-
-	p, err := seg.InsertPart(offset, size)
+	p, err := seg.(*segment.IndexBasedSegment).InsertPart(opt.Index, opt.Size)
 	if err != nil {
 		return
 	}
 
-	rp := s.getAbsPath(seg.Path)
+	rp := s.getAbsPath(seg.Path())
 
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	_, err = s.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
-		PartNumber:    &p.Index,
-		UploadID:      &seg.ID,
-		ContentLength: &size,
+		PartNumber:    service.Int(p.Index),
+		UploadID:      service.String(seg.ID()),
+		ContentLength: &opt.Size,
 		Body:          r,
 	})
 	if err != nil {
@@ -479,76 +459,46 @@ func (s *Storage) WriteSegment(id string, offset, size int64, r io.Reader, pairs
 }
 
 // CompleteSegment implements Storager.CompleteSegment
-func (s *Storage) CompleteSegment(id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("complete segment", err, id)
+		err = s.formatError("complete segment", err, seg.Path(), seg.ID())
 	}()
 
-	s.segmentLock.RLock()
-	seg, ok := s.segments[id]
-	if !ok {
-		err = segment.ErrSegmentNotInitiated
-		return
-	}
-	s.segmentLock.RUnlock()
-
-	err = seg.ValidateParts()
-	if err != nil {
-		return
-	}
-
-	parts := seg.SortedParts()
+	parts := seg.(*segment.IndexBasedSegment).Parts()
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
-	for k, v := range parts {
-		k := k
+	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
-			PartNumber: &k,
-			Size:       &v.Size,
+			PartNumber: service.Int(v.Index),
+			Size:       service.Int64(v.Size),
 		})
 	}
 
-	rp := s.getAbsPath(seg.Path)
+	rp := s.getAbsPath(seg.Path())
 
 	_, err = s.bucket.CompleteMultipartUpload(rp, &service.CompleteMultipartUploadInput{
-		UploadID:    &seg.ID,
+		UploadID:    service.String(seg.ID()),
 		ObjectParts: objectParts,
 	})
 	if err != nil {
 		return
 	}
-
-	s.segmentLock.Lock()
-	delete(s.segments, id)
-	s.segmentLock.Unlock()
 	return
 }
 
 // AbortSegment implements Storager.AbortSegment
-func (s *Storage) AbortSegment(id string, pairs ...*types.Pair) (err error) {
+func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("abort segment", err, id)
+		err = s.formatError("abort segment", err, seg.Path(), seg.ID())
 	}()
 
-	s.segmentLock.RLock()
-	seg, ok := s.segments[id]
-	if !ok {
-		err = segment.ErrSegmentNotInitiated
-		return
-	}
-	s.segmentLock.RUnlock()
-
-	rp := s.getAbsPath(seg.Path)
+	rp := s.getAbsPath(seg.Path())
 
 	_, err = s.bucket.AbortMultipartUpload(rp, &service.AbortMultipartUploadInput{
-		UploadID: &seg.ID,
+		UploadID: service.String(seg.ID()),
 	})
 	if err != nil {
 		return
 	}
-
-	s.segmentLock.Lock()
-	delete(s.segments, id)
-	s.segmentLock.Unlock()
 	return
 }
 
