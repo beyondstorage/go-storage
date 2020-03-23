@@ -230,6 +230,66 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	return result, nil
 }
 
+type pairStorageAbortSegment struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseStoragePairAbortSegment(opts ...*types.Pair) (*pairStorageAbortSegment, error) {
+	result := &pairStorageAbortSegment{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
+type pairStorageCompleteSegment struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseStoragePairCompleteSegment(opts ...*types.Pair) (*pairStorageCompleteSegment, error) {
+	result := &pairStorageCompleteSegment{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
 type pairStorageDelete struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -239,6 +299,36 @@ type pairStorageDelete struct {
 
 func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
 	result := &pairStorageDelete{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	return result, nil
+}
+
+type pairStorageInitSegment struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, error) {
+	result := &pairStorageInitSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -323,6 +413,44 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 	}
 	if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
 		return nil, services.NewPairRequiredError(ps.ObjectFunc, ps.FileFunc, ps.DirFunc)
+	}
+	return result, nil
+}
+
+type pairStorageListSegments struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+	SegmentFunc segment.Func
+}
+
+func parseStoragePairListSegments(opts ...*types.Pair) (*pairStorageListSegments, error) {
+	result := &pairStorageListSegments{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	v, ok = values[ps.SegmentFunc]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.SegmentFunc)
+	}
+	if ok {
+		result.SegmentFunc = v.(segment.Func)
 	}
 	return result, nil
 }
@@ -528,6 +656,59 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	return result, nil
 }
 
+type pairStorageWriteSegment struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+	Index               int
+	HasReadCallbackFunc bool
+	ReadCallbackFunc    func([]byte)
+	Size                int64
+}
+
+func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment, error) {
+	result := &pairStorageWriteSegment{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	v, ok = values[ps.Index]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.Index)
+	}
+	if ok {
+		result.Index = v.(int)
+	}
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
+	}
+	v, ok = values[ps.Size]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.Size)
+	}
+	if ok {
+		result.Size = v.(int64)
+	}
+	return result, nil
+}
+
 // CreateWithContext adds context support for Create.
 func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*types.Pair) (st storage.Storager, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Create")
@@ -564,6 +745,24 @@ func (s *Service) ListWithContext(ctx context.Context, pairs ...*types.Pair) (er
 	return s.List(pairs...)
 }
 
+// AbortSegmentWithContext adds context support for AbortSegment.
+func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.storage.AbortSegment")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.AbortSegment(seg, pairs...)
+}
+
+// CompleteSegmentWithContext adds context support for CompleteSegment.
+func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.storage.CompleteSegment")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.CompleteSegment(seg, pairs...)
+}
+
 // DeleteWithContext adds context support for Delete.
 func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.storage.Delete")
@@ -573,6 +772,15 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 	return s.Delete(path, pairs...)
 }
 
+// InitSegmentWithContext adds context support for InitSegment.
+func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.storage.InitSegment")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.InitSegment(path, pairs...)
+}
+
 // ListWithContext adds context support for List.
 func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.storage.List")
@@ -580,6 +788,15 @@ func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...*ty
 
 	pairs = append(pairs, ps.WithContext(ctx))
 	return s.List(path, pairs...)
+}
+
+// ListSegmentsWithContext adds context support for ListSegments.
+func (s *Storage) ListSegmentsWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.storage.ListSegments")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.ListSegments(path, pairs...)
 }
 
 // MetadataWithContext adds context support for Metadata.
@@ -616,4 +833,13 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 
 	pairs = append(pairs, ps.WithContext(ctx))
 	return s.Write(path, r, pairs...)
+}
+
+// WriteSegmentWithContext adds context support for WriteSegment.
+func (s *Storage) WriteSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.storage.WriteSegment")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.WriteSegment(seg, r, pairs...)
 }
