@@ -15,10 +15,16 @@
 * [11-error-handling](./design/11-error-handling.md)
 * [12-support-both-directory-and-prefix-based-list](./design/12-support-both-directory-and-prefix-based-list.md)
 * [13-remove-config-string](./design/13-remove-config-string.md)
+* [14-normalize-content-hash-check](./design/14-normalize-content-hash-check.md)
+* [15-release-policy](./design/15-release-policy.md)
+* [16-loose-mode](./design/16-loose-mode.md)
+* [17-proposal-process](./design/17-proposal-process.md)
+* [18-return-segment-interface-instead](./design/8-return-segment-interface-instead.md)
   
 ## Sepc
 
 * [1-error-handling](./spec/1-error-handling.md)
+* [2-proposal](./spec/2-proposal.md)
   
 ## Services
 
