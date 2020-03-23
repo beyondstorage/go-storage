@@ -7,12 +7,12 @@ require (
 	cloud.google.com/go/storage v1.6.0
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest/adal v0.8.1 // indirect
-	github.com/aliyun/aliyun-oss-go-sdk v2.0.5+incompatible
-	github.com/aws/aws-sdk-go v1.29.19
+	github.com/aliyun/aliyun-oss-go-sdk v2.0.7+incompatible
+	github.com/aws/aws-sdk-go v1.29.29
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dropbox/dropbox-sdk-go-unofficial v5.6.0+incompatible
-	github.com/golang/mock v1.4.1
+	github.com/golang/mock v1.4.3
 	github.com/google/uuid v1.1.1
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14
