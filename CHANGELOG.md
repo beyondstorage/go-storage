@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.9.0] - 2020-03-23
+
+### Proposal
+
+- docs/design: Add 14-normalize-content-hash-check (#186)
+- docs/design: Add proposal release policy (#192)
+- docs/design: Add proposal loose mode (#199)
+- docs: Add proposal 17-proposal-process (#210)
+- docs/design: Add proposal return-segment-interface-instead (#216)
+
+### Added
+
+- services/*: Implement 14-normalize-content-hash-check (#189)
+- services/*, types/pairs: Implement proposal loose-mode (#200)
+- pkg/segment, docs/design: Add and implement proposal return-segment-interface-instead (#216)
+- services/s3: Add multipart support (#220)
+
 ## [v0.8.0] - 2020-03-09
 
 ### Added
@@ -191,7 +208,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.9.0...HEAD
+[v0.9.0]: https://github.com/Xuanwo/storage/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/Xuanwo/storage/compare/v0.7.2...v0.8.0
 [v0.7.2]: https://github.com/Xuanwo/storage/compare/v0.7.1...v0.7.2
 [v0.7.1]: https://github.com/Xuanwo/storage/compare/v0.7.0...v0.7.1
