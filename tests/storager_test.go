@@ -17,6 +17,7 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/coreutils"
 	"github.com/Xuanwo/storage/pkg/randbytes"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
@@ -282,7 +283,7 @@ func testStorager(t *testing.T, config string) {
 			Convey("Stat should get nil Object and ObjectNotFound error", func() {
 				o, err := store.Stat(path)
 
-				So(errors.Is(err, types.ErrObjectNotExist), ShouldBeTrue)
+				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
 				So(o, ShouldBeNil)
 			})
 		})
