@@ -219,8 +219,6 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		return
 	}
 
-	// TODO: Add dir support.
-
 	o = &types.Object{
 		ID:         rp,
 		Name:       path,
