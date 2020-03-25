@@ -95,12 +95,19 @@ func formatStorageClass(in string) (storageclass.Type, error) {
 }
 
 func formatError(err error) error {
-	e, ok := err.(awserr.Error)
+	e, ok := err.(awserr.RequestFailure)
 	if !ok {
 		return err
 	}
 
 	switch e.Code() {
+	case "":
+		switch e.StatusCode() {
+		case 404:
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		default:
+			return err
+		}
 	case "NoSuchKey":
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	case "AccessDenied":

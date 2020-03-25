@@ -105,6 +105,13 @@ func formatError(err error) error {
 	}
 
 	switch azblob.StorageErrorCodeType(e.ServiceCode()) {
+	case "":
+		switch e.Response().StatusCode {
+		case 404:
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		default:
+			return err
+		}
 	case azblob.StorageErrorCodeBlobNotFound:
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	case azblob.StorageErrorCodeInsufficientAccountPermissions:
