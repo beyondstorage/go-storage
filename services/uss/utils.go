@@ -52,6 +52,14 @@ func formatError(err error) error {
 	}
 
 	switch {
+	case !fn(""):
+		// If body is empty
+		switch {
+		case strings.Contains(err.Error(), "404"):
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		default:
+			return err
+		}
 	case fn("40400001"):
 		// 40400001:	file or directory not found
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)

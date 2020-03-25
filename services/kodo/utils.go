@@ -104,7 +104,14 @@ func formatError(err error) error {
 
 	// error code returned by kodo looks like http status code, but it's not.
 	// kodo could return 6xx or 7xx for their costumed errors, so we use untyped int directly.
-	switch e.Code {
+	switch e.Errno {
+	case 0:
+		switch e.Code {
+		case 404:
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		default:
+			return err
+		}
 	case 404:
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	case 403:

@@ -104,6 +104,13 @@ func formatError(err error) error {
 	}
 
 	switch e.Code {
+	case "":
+		switch e.Response.StatusCode {
+		case 404:
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		default:
+			return err
+		}
 	case "NoSuchKey":
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	case "AccessDenied":
