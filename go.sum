@@ -174,8 +174,8 @@ github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20191221060900-c807d39e9045 h1:GTNQ+r
 github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20191221060900-c807d39e9045/go.mod h1:wk2XFUg6egk4tSDNZtXeKfe2G6690UVyt163PuUxBZk=
 github.com/upyun/go-sdk v2.1.0+incompatible h1:OdjXghQ/TVetWV16Pz3C1/SUpjhGBVPr+cLiqZLLyq0=
 github.com/upyun/go-sdk v2.1.0+incompatible/go.mod h1:eu3F5Uz4b9ZE5bE5QsCL6mgSNWRwfj0zpJ9J626HEqs=
-github.com/yunify/qingstor-sdk-go/v3 v3.1.2-0.20191015085047-089474e57bf8 h1:5ERd/Ms9nTbjg6eLegviBJYCAOCs4YHxmCBHsFC1p4M=
-github.com/yunify/qingstor-sdk-go/v3 v3.1.2-0.20191015085047-089474e57bf8/go.mod h1:KciFNuMu6F4WLk9nGwwK69sCGKLCdd9f97ac/wfumS4=
+github.com/yunify/qingstor-sdk-go/v3 v3.2.1-0.20200318145652-ad14af5b40e4 h1:4o11/xQbTQTYh/r+WCV3FcKD/CYRuVGulhsrP615fus=
+github.com/yunify/qingstor-sdk-go/v3 v3.2.1-0.20200318145652-ad14af5b40e4/go.mod h1:KciFNuMu6F4WLk9nGwwK69sCGKLCdd9f97ac/wfumS4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0 h1:C9hSCOW830chIVkdja34wa6Ky+IzWllkUinR+BtRZd4=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=

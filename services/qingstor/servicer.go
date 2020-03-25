@@ -50,18 +50,28 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		input.Location = &opt.Location
 	}
 
-	// FIXME: List buckets could be incomplete.
-	output, err := s.service.ListBuckets(input)
-	if err != nil {
-		return
-	}
+	offset := 0
+	var output *service.ListBucketsOutput
+	for {
+		input.Offset = service.Int(offset)
 
-	for _, v := range output.Buckets {
-		store, err := s.newStorage(ps.WithName(*v.Name), ps.WithLocation(*v.Location))
+		output, err = s.service.ListBuckets(input)
 		if err != nil {
-			return err
+			return
 		}
-		opt.StoragerFunc(store)
+
+		for _, v := range output.Buckets {
+			store, err := s.newStorage(ps.WithName(*v.Name), ps.WithLocation(*v.Location))
+			if err != nil {
+				return err
+			}
+			opt.StoragerFunc(store)
+		}
+
+		offset += len(output.Buckets)
+		if offset >= service.IntValue(output.Count) {
+			break
+		}
 	}
 	return nil
 }
