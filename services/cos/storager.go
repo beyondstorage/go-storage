@@ -241,7 +241,13 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	}
 	o.UpdatedAt = lastModified
 
-	o.SetETag(output.Header.Get("ETag"))
+	if v := output.Header.Get("Content-Type"); v != "" {
+		o.SetContentType(v)
+	}
+
+	if v := output.Header.Get("ETag"); v != "" {
+		o.SetETag(output.Header.Get(v))
+	}
 
 	storageClass, err := formatStorageClass(output.Header.Get(storageClassHeader))
 	if err != nil {

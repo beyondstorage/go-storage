@@ -197,6 +197,9 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	o.SetETag(string(output.ETag()))
 
+	if output.ContentType() != "" {
+		o.SetContentType(output.ContentType())
+	}
 	if len(output.ContentMD5()) > 0 {
 		o.SetContentMD5(base64.StdEncoding.EncodeToString(output.ContentMD5()))
 	}
@@ -268,6 +271,9 @@ func (s *Storage) formatFileObject(v azblob.BlobItem) (o *types.Object, err erro
 
 	if v.Properties.ContentLength != nil {
 		o.Size = *v.Properties.ContentLength
+	}
+	if v.Properties.ContentType != nil && *v.Properties.ContentType != "" {
+		o.SetContentType(*v.Properties.ContentType)
 	}
 	if len(v.Properties.ContentMD5) > 0 {
 		o.SetContentMD5(base64.StdEncoding.EncodeToString(v.Properties.ContentMD5))

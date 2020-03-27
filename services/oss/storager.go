@@ -223,6 +223,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	//
 	// ref: https://help.aliyun.com/document_detail/31965.html
 	o.SetETag(output.Get("ETag"))
+	o.SetContentType(output.Get("Content-Type"))
 
 	storageClass, err := formatStorageClass(output.Get(storageClassHeader))
 	if err != nil {
