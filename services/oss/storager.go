@@ -8,10 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/services"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 
+	"github.com/Xuanwo/storage/pkg/headers"
+	"github.com/Xuanwo/storage/pkg/iowrap"
+	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 )
@@ -214,7 +215,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
-	if v := output.Get("Content-Length"); v != "" {
+	if v := output.Get(headers.ContentLength); v != "" {
 		size, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
 			return nil, err
@@ -222,7 +223,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.Size = size
 	}
 
-	if v := output.Get("Last-Modified"); v != "" {
+	if v := output.Get(headers.LastModified); v != "" {
 		lastModified, err := time.Parse(time.RFC822, v)
 		if err != nil {
 			return nil, err
@@ -233,11 +234,11 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	// OSS advise us don't use Etag as Content-MD5.
 	//
 	// ref: https://help.aliyun.com/document_detail/31965.html
-	if v := output.Get("ETag"); v != "" {
+	if v := output.Get(headers.ETag); v != "" {
 		o.SetETag(v)
 	}
 
-	if v := output.Get("Content-Type"); v != "" {
+	if v := output.Get(headers.ContentType); v != "" {
 		o.SetContentType(v)
 	}
 

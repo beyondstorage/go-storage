@@ -11,6 +11,7 @@ import (
 	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -216,7 +217,7 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 	}
 
 	// Example URL: https://bucket.zone.qingstor.com
-	location = strings.Split(r.Header.Get("Location"), ".")[1]
+	location = strings.Split(r.Header.Get(headers.Location), ".")[1]
 	return
 }
 

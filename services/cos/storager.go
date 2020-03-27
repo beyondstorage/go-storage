@@ -9,6 +9,7 @@ import (
 
 	"github.com/tencentyun/cos-go-sdk-v5"
 
+	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
@@ -241,7 +242,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	// > Last-Modified: Fri, 09 Aug 2019 10:20:56 GMT
 	//
 	// ref: https://cloud.tencent.com/document/product/436/7745
-	if v := output.Header.Get("Last-Modified"); v != "" {
+	if v := output.Header.Get(headers.LastModified); v != "" {
 		lastModified, err := time.Parse(time.RFC1123, v)
 		if err != nil {
 			return nil, err
@@ -249,11 +250,11 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.UpdatedAt = lastModified
 	}
 
-	if v := output.Header.Get("Content-Type"); v != "" {
+	if v := output.Header.Get(headers.ContentType); v != "" {
 		o.SetContentType(v)
 	}
 
-	if v := output.Header.Get("ETag"); v != "" {
+	if v := output.Header.Get(headers.ETag); v != "" {
 		o.SetETag(output.Header.Get(v))
 	}
 
