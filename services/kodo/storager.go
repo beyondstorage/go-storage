@@ -91,8 +91,12 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 					ObjectMeta: metadata.NewObjectMeta(),
 				}
 
-				o.SetContentType(v.MimeType)
-				o.SetETag(v.Hash)
+				if v.MimeType != "" {
+					o.SetContentType(v.MimeType)
+				}
+				if v.Hash != "" {
+					o.SetETag(v.Hash)
+				}
 
 				storageClass, err := formatStorageClass(v.Type)
 				if err != nil {
@@ -193,8 +197,12 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
-	o.SetETag(fi.Hash)
-	o.SetContentType(fi.MimeType)
+	if fi.Hash != "" {
+		o.SetETag(fi.Hash)
+	}
+	if fi.MimeType != "" {
+		o.SetContentType(fi.MimeType)
+	}
 
 	storageClass, err := formatStorageClass(fi.Type)
 	if err != nil {

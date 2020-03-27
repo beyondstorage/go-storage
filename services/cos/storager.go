@@ -91,22 +91,28 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				// encryption method, so we can't treat this value as content-md5
 				//
 				// ref: https://cloud.tencent.com/document/product/436/7729
-				o.SetETag(v.ETag)
+				if v.ETag != "" {
+					o.SetETag(v.ETag)
+				}
 
 				// COS uses ISO8601 format: "2019-05-27T11:26:14.000Z" in List
 				//
 				// ref: https://cloud.tencent.com/document/product/436/7729
-				t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
-				if err != nil {
-					return err
+				if v.LastModified != "" {
+					t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
+					if err != nil {
+						return err
+					}
+					o.UpdatedAt = t
 				}
-				o.UpdatedAt = t
 
-				storageClass, err := formatStorageClass(v.StorageClass)
-				if err != nil {
-					return err
+				if v.StorageClass != "" {
+					storageClass, err := formatStorageClass(v.StorageClass)
+					if err != nil {
+						return err
+					}
+					o.SetStorageClass(storageClass)
 				}
-				o.SetStorageClass(storageClass)
 
 				if opt.HasObjectFunc {
 					opt.ObjectFunc(o)
@@ -235,11 +241,13 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	// > Last-Modified: Fri, 09 Aug 2019 10:20:56 GMT
 	//
 	// ref: https://cloud.tencent.com/document/product/436/7745
-	lastModified, err := time.Parse(time.RFC1123, output.Header.Get("Last-Modified"))
-	if err != nil {
-		return nil, err
+	if v := output.Header.Get("Last-Modified"); v != "" {
+		lastModified, err := time.Parse(time.RFC1123, v)
+		if err != nil {
+			return nil, err
+		}
+		o.UpdatedAt = lastModified
 	}
-	o.UpdatedAt = lastModified
 
 	if v := output.Header.Get("Content-Type"); v != "" {
 		o.SetContentType(v)
@@ -249,11 +257,13 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetETag(output.Header.Get(v))
 	}
 
-	storageClass, err := formatStorageClass(output.Header.Get(storageClassHeader))
-	if err != nil {
-		return nil, err
+	if v := output.Header.Get(storageClassHeader); v != "" {
+		storageClass, err := formatStorageClass(v)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
 	}
-	o.SetStorageClass(storageClass)
 
 	return o, nil
 }
