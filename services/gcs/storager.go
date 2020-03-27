@@ -256,12 +256,13 @@ func (s *Storage) formatFileObject(v *gs.ObjectAttrs) (o *types.Object, err erro
 	if len(v.MD5) > 0 {
 		o.SetContentMD5(base64.StdEncoding.EncodeToString(v.MD5))
 	}
-
-	storageClass, err := formatStorageClass(v.StorageClass)
-	if err != nil {
-		return nil, err
+	if v.StorageClass != "" {
+		storageClass, err := formatStorageClass(v.StorageClass)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
 	}
-	o.SetStorageClass(storageClass)
 
 	return
 }

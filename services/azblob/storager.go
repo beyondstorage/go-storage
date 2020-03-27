@@ -195,20 +195,23 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
-	o.SetETag(string(output.ETag()))
+	if v := string(output.ETag()); v != "" {
+		o.SetETag(v)
+	}
+	if v := output.ContentType(); v != "" {
+		o.SetContentType(v)
+	}
+	if v := output.ContentMD5(); len(v) > 0 {
+		o.SetContentMD5(base64.StdEncoding.EncodeToString(v))
+	}
+	if v := output.AccessTier(); v != "" {
+		storageClass, err := formatStorageClass(azblob.AccessTierType(v))
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
+	}
 
-	if output.ContentType() != "" {
-		o.SetContentType(output.ContentType())
-	}
-	if len(output.ContentMD5()) > 0 {
-		o.SetContentMD5(base64.StdEncoding.EncodeToString(output.ContentMD5()))
-	}
-
-	storageClass, err := formatStorageClass(azblob.AccessTierType(output.AccessTier()))
-	if err != nil {
-		return nil, err
-	}
-	o.SetStorageClass(storageClass)
 	return o, nil
 }
 
@@ -278,12 +281,13 @@ func (s *Storage) formatFileObject(v azblob.BlobItem) (o *types.Object, err erro
 	if len(v.Properties.ContentMD5) > 0 {
 		o.SetContentMD5(base64.StdEncoding.EncodeToString(v.Properties.ContentMD5))
 	}
-
-	storageClass, err := formatStorageClass(v.Properties.AccessTier)
-	if err != nil {
-		return nil, err
+	if value := v.Properties.AccessTier; len(value) > 0 {
+		storageClass, err := formatStorageClass(v.Properties.AccessTier)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
 	}
-	o.SetStorageClass(storageClass)
 
 	return o, nil
 }

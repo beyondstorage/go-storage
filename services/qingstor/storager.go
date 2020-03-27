@@ -235,11 +235,13 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetETag(service.StringValue(output.ETag))
 	}
 
-	storageClass, err := formatStorageClass(service.StringValue(output.XQSStorageClass))
-	if err != nil {
-		return
+	if v := service.StringValue(output.XQSStorageClass); v != "" {
+		storageClass, err := formatStorageClass(v)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
 	}
-	o.SetStorageClass(storageClass)
 
 	return o, nil
 }

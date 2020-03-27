@@ -100,17 +100,24 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 					ObjectMeta: metadata.NewObjectMeta(),
 				}
 
-				o.SetContentType(v.Type)
+				if v.Type != "" {
+					o.SetContentType(v.Type)
+				}
+
 				// OSS advise us don't use Etag as Content-MD5.
 				//
 				// ref: https://help.aliyun.com/document_detail/31965.html
-				o.SetETag(v.ETag)
-
-				storageClass, err := formatStorageClass(v.Type)
-				if err != nil {
-					return err
+				if v.ETag != "" {
+					o.SetETag(v.ETag)
 				}
-				o.SetStorageClass(storageClass)
+
+				if v.Type != "" {
+					storageClass, err := formatStorageClass(v.Type)
+					if err != nil {
+						return err
+					}
+					o.SetStorageClass(storageClass)
+				}
 
 				if opt.HasObjectFunc {
 					opt.ObjectFunc(o)
@@ -207,29 +214,40 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
-	size, err := strconv.ParseInt(output.Get("Content-Length"), 10, 64)
-	if err != nil {
-		return nil, err
+	if v := output.Get("Content-Length"); v != "" {
+		size, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		o.Size = size
 	}
-	o.Size = size
 
-	lastModified, err := time.Parse(time.RFC822, output.Get("Last-Modified"))
-	if err != nil {
-		return nil, err
+	if v := output.Get("Last-Modified"); v != "" {
+		lastModified, err := time.Parse(time.RFC822, v)
+		if err != nil {
+			return nil, err
+		}
+		o.UpdatedAt = lastModified
 	}
-	o.UpdatedAt = lastModified
 
 	// OSS advise us don't use Etag as Content-MD5.
 	//
 	// ref: https://help.aliyun.com/document_detail/31965.html
-	o.SetETag(output.Get("ETag"))
-	o.SetContentType(output.Get("Content-Type"))
-
-	storageClass, err := formatStorageClass(output.Get(storageClassHeader))
-	if err != nil {
-		return nil, err
+	if v := output.Get("ETag"); v != "" {
+		o.SetETag(v)
 	}
-	o.SetStorageClass(storageClass)
+
+	if v := output.Get("Content-Type"); v != "" {
+		o.SetContentType(v)
+	}
+
+	if v := output.Get(storageClassHeader); v != "" {
+		storageClass, err := formatStorageClass(v)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
+	}
 
 	return o, nil
 }

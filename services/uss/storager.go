@@ -85,8 +85,13 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				UpdatedAt:  v.Time,
 				ObjectMeta: metadata.NewObjectMeta(),
 			}
-			o.SetETag(v.ETag)
-			o.SetContentType(v.ContentType)
+
+			if v.ETag != "" {
+				o.SetETag(v.ETag)
+			}
+			if v.ContentType != "" {
+				o.SetContentType(v.ContentType)
+			}
 
 			if opt.HasObjectFunc {
 				opt.ObjectFunc(o)
@@ -187,8 +192,12 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		UpdatedAt:  output.Time,
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
-	o.SetETag(output.ETag)
-	o.SetContentType(output.ContentType)
+	if output.ETag != "" {
+		o.SetETag(output.ETag)
+	}
+	if output.ContentType != "" {
+		o.SetContentType(output.ContentType)
+	}
 
 	return o, nil
 }
