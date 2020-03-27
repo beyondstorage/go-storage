@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
+	"github.com/Xuanwo/storage/pkg/mime"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
@@ -79,6 +80,10 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				opt.DirFunc(o)
 			}
 			continue
+		}
+
+		if v := mime.TypeByFileName(v.Name()); v != "" {
+			o.SetContentType(v)
 		}
 
 		o.Type = types.ObjectTypeFile
@@ -213,6 +218,10 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		return
 	}
 	if fi.Mode().IsRegular() {
+		if v := mime.TypeByFileName(path); v != "" {
+			o.SetContentType(v)
+		}
+
 		o.Type = types.ObjectTypeFile
 		return
 	}
