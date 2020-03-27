@@ -93,27 +93,10 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			continue
 		}
 
-		o := &types.Object{
-			ID:         object.Name,
-			Name:       s.getRelPath(object.Name),
-			Type:       types.ObjectTypeFile,
-			Size:       object.Size,
-			UpdatedAt:  object.Updated,
-			ObjectMeta: metadata.NewObjectMeta(),
-		}
-
-		o.SetContentType(object.ContentType)
-		o.SetETag(object.Etag)
-
-		if len(object.MD5) > 0 {
-			o.SetContentMD5(base64.StdEncoding.EncodeToString(object.MD5))
-		}
-
-		storageClass, err := formatStorageClass(object.StorageClass)
+		o, err := s.formatFileObject(object)
 		if err != nil {
 			return err
 		}
-		o.SetStorageClass(storageClass)
 
 		if opt.HasFileFunc {
 			opt.FileFunc(o)
@@ -206,28 +189,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		return nil, err
 	}
 
-	o = &types.Object{
-		ID:         attr.Name,
-		Name:       path,
-		Type:       types.ObjectTypeFile,
-		Size:       attr.Size,
-		UpdatedAt:  attr.Updated,
-		ObjectMeta: metadata.NewObjectMeta(),
-	}
-
-	o.SetETag(attr.Etag)
-
-	if len(attr.MD5) > 0 {
-		o.SetContentMD5(base64.StdEncoding.EncodeToString(attr.MD5))
-	}
-
-	storageClass, err := formatStorageClass(attr.StorageClass)
-	if err != nil {
-		return nil, err
-	}
-	o.SetStorageClass(storageClass)
-
-	return o, nil
+	return s.formatFileObject(attr)
 }
 
 // Delete implements Storager.Delete
@@ -273,4 +235,33 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v *gs.ObjectAttrs) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Name,
+		Name:       s.getRelPath(v.Name),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Size,
+		UpdatedAt:  v.Updated,
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	if v.ContentType != "" {
+		o.SetContentType(v.ContentType)
+	}
+	if v.Etag != "" {
+		o.SetETag(v.Etag)
+	}
+	if len(v.MD5) > 0 {
+		o.SetContentMD5(base64.StdEncoding.EncodeToString(v.MD5))
+	}
+
+	storageClass, err := formatStorageClass(v.StorageClass)
+	if err != nil {
+		return nil, err
+	}
+	o.SetStorageClass(storageClass)
+
+	return
 }
