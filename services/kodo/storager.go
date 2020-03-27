@@ -90,6 +90,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 					UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
 					ObjectMeta: metadata.NewObjectMeta(),
 				}
+
 				o.SetContentType(v.MimeType)
 				o.SetETag(v.Hash)
 
@@ -191,7 +192,9 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		UpdatedAt:  convertUnixTimestampToTime(fi.PutTime),
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
+
 	o.SetETag(fi.Hash)
+	o.SetContentType(fi.MimeType)
 
 	storageClass, err := formatStorageClass(fi.Type)
 	if err != nil {
