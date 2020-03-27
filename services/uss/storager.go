@@ -86,6 +86,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				ObjectMeta: metadata.NewObjectMeta(),
 			}
 			o.SetETag(v.ETag)
+			o.SetContentType(v.ContentType)
 
 			if opt.HasObjectFunc {
 				opt.ObjectFunc(o)
@@ -187,6 +188,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 	o.SetETag(output.ETag)
+	o.SetContentType(output.ContentType)
 
 	return o, nil
 }
