@@ -5,6 +5,7 @@ os:
   - osx
 go:
   - "1.13"
+  - "1.14"
 
 install:
   # code lint tools
@@ -17,4 +18,4 @@ script:
   - make test
 
 after_success:
-  - if [ $TRAVIS_OS_NAME = linux ]; then bash <(curl -s https://codecov.io/bash); fi
+  - if [ $TRAVIS_OS_NAME = linux ] && [ $TRAVIS_GO_VERSION = "1.14" ]; then bash <(curl -s https://codecov.io/bash); fi
