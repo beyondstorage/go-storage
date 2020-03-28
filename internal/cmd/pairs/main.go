@@ -17,6 +17,12 @@ var (
 			Parse(string(MustAsset("pair.tmpl"))))
 )
 
+// Pairs is the struct for pairs.json
+type Pairs map[string]struct {
+	Type        string
+	Description string
+}
+
 //go:generate go-bindata -nometadata -ignore ".*.go" .
 func main() {
 	pairsPath := "pairs.json"
@@ -25,7 +31,7 @@ func main() {
 		log.Fatalf("read file failed: %v", err)
 	}
 
-	var pairs map[string]string
+	var pairs Pairs
 	err = json.Unmarshal(content, &pairs)
 	if err != nil {
 		log.Fatalf("json unmarshal failed: %v", err)
@@ -48,7 +54,7 @@ func main() {
 	defer pairsFile.Close()
 
 	err = pairsT.Execute(pairsFile, struct {
-		Data map[string]string
+		Data Pairs
 	}{
 		pairs,
 	})

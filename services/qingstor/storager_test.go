@@ -288,7 +288,7 @@ func TestStorage_InitSegment(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		_, err := client.InitSegment(v.path, pairs.WithPartSize(10))
+		_, err := client.InitSegment(v.path)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))

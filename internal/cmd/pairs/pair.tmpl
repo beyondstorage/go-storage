@@ -15,6 +15,7 @@ import (
 // All available pairs.
 const (
 {{- range $k, $v := .Data }}
+    // {{ $k | toPascal }} will {{ $v.Description }}
     {{ $k | toPascal }} = "{{ $k }}"
 {{- end }}
 )
@@ -22,7 +23,8 @@ const (
 {{- range $k, $v := .Data }}
 {{- $pk := $k | toPascal }}
 // With{{ $pk }} will apply {{ $k }} value to Options
-func With{{ $pk }}(v {{ $v }}) *types.Pair {
+// This pair is used to {{ $v.Description }}
+func With{{ $pk }}(v {{ $v.Type }}) *types.Pair {
     return &types.Pair{
         Key: {{ $pk }},
         Value: v,
