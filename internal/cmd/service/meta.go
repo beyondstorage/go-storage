@@ -15,12 +15,17 @@ const (
 	pairsPath = "../../types/pairs/pairs.json"
 )
 
+type pairs map[string]struct {
+	Type        string
+	Description string
+}
+
 type metadata struct {
 	Name    string                     `json:"name"`
 	Service map[string]map[string]bool `json:"service,omitempty"`
 	Storage map[string]map[string]bool `json:"storage"`
 
-	TypeMap map[string]string         `json:"-"`
+	TypeMap pairs                     `json:"-"`
 	Data    map[string]map[string]*fn `json:"-"`
 }
 

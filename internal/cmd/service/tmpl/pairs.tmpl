@@ -15,7 +15,7 @@ type pair{{ $pn }}{{ $pk }} struct {
     {{- if not $required }}
     Has{{ $key | toPascal }} bool
     {{- end }}
-    {{ $key | toPascal }}    {{ index $Data.TypeMap $key }}
+    {{ $key | toPascal }}    {{ (index $Data.TypeMap $key).Type }}
     {{- end }}
 }
 
@@ -53,7 +53,7 @@ func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, 
         {{- if not $required }}
         result.Has{{ $pkey }} = true
         {{- end }}
-        result.{{ $pkey }} = v.({{ index $Data.TypeMap $key }})
+        result.{{ $pkey }} = v.({{ (index $Data.TypeMap $key).Type }})
     }
     {{- end }}
 
