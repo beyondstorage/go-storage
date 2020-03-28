@@ -17,6 +17,7 @@ var (
 			Parse(string(MustAsset("pair.tmpl"))))
 )
 
+// Pairs is the struct for pairs.json
 type Pairs map[string]struct {
 	Type        string
 	Description string
