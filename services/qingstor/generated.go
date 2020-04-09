@@ -36,7 +36,7 @@ type pairServiceCreate struct {
 	Location string
 }
 
-func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
+func (s *Service) parsePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	result := &pairServiceCreate{}
 
 	values := make(map[string]interface{})
@@ -76,7 +76,7 @@ type pairServiceDelete struct {
 	Location    string
 }
 
-func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
+func (s *Service) parsePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
 	result := &pairServiceDelete{}
 
 	values := make(map[string]interface{})
@@ -114,7 +114,7 @@ type pairServiceGet struct {
 	Location    string
 }
 
-func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
+func (s *Service) parsePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 	result := &pairServiceGet{}
 
 	values := make(map[string]interface{})
@@ -150,7 +150,7 @@ type pairServiceIsBucketNameValid struct {
 	// Meta-defined pairs
 }
 
-func parseServicePairIsBucketNameValid(opts ...*types.Pair) (*pairServiceIsBucketNameValid, error) {
+func (s *Service) parsePairIsBucketNameValid(opts ...*types.Pair) (*pairServiceIsBucketNameValid, error) {
 	result := &pairServiceIsBucketNameValid{}
 
 	values := make(map[string]interface{})
@@ -184,7 +184,7 @@ type pairServiceList struct {
 	StoragerFunc storage.StoragerFunc
 }
 
-func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
+func (s *Service) parsePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	result := &pairServiceList{}
 
 	values := make(map[string]interface{})
@@ -228,8 +228,6 @@ type pairServiceNew struct {
 	Credential  *credential.Provider
 	HasEndpoint bool
 	Endpoint    endpoint.Provider
-	HasLoose    bool
-	Loose       bool
 }
 
 func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
@@ -264,11 +262,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 		result.HasEndpoint = true
 		result.Endpoint = v.(endpoint.Provider)
 	}
-	v, ok = values[ps.Loose]
-	if ok {
-		result.HasLoose = true
-		result.Loose = v.(bool)
-	}
 
 	return result, nil
 }
@@ -280,7 +273,7 @@ type pairStorageAbortSegment struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairAbortSegment(opts ...*types.Pair) (*pairStorageAbortSegment, error) {
+func (s *Storage) parsePairAbortSegment(opts ...*types.Pair) (*pairStorageAbortSegment, error) {
 	result := &pairStorageAbortSegment{}
 
 	values := make(map[string]interface{})
@@ -311,7 +304,7 @@ type pairStorageCompleteSegment struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairCompleteSegment(opts ...*types.Pair) (*pairStorageCompleteSegment, error) {
+func (s *Storage) parsePairCompleteSegment(opts ...*types.Pair) (*pairStorageCompleteSegment, error) {
 	result := &pairStorageCompleteSegment{}
 
 	values := make(map[string]interface{})
@@ -342,7 +335,7 @@ type pairStorageCopy struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairCopy(opts ...*types.Pair) (*pairStorageCopy, error) {
+func (s *Storage) parsePairCopy(opts ...*types.Pair) (*pairStorageCopy, error) {
 	result := &pairStorageCopy{}
 
 	values := make(map[string]interface{})
@@ -373,7 +366,7 @@ type pairStorageDelete struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
+func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
 	result := &pairStorageDelete{}
 
 	values := make(map[string]interface{})
@@ -404,7 +397,7 @@ type pairStorageInitSegment struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, error) {
+func (s *Storage) parsePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, error) {
 	result := &pairStorageInitSegment{}
 
 	values := make(map[string]interface{})
@@ -439,7 +432,7 @@ type pairStorageListDir struct {
 	FileFunc    types.ObjectFunc
 }
 
-func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
+func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
 	result := &pairStorageListDir{}
 
 	values := make(map[string]interface{})
@@ -481,7 +474,7 @@ type pairStorageListPrefix struct {
 	ObjectFunc types.ObjectFunc
 }
 
-func parseStoragePairListPrefix(opts ...*types.Pair) (*pairStorageListPrefix, error) {
+func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPrefix, error) {
 	result := &pairStorageListPrefix{}
 
 	values := make(map[string]interface{})
@@ -520,7 +513,7 @@ type pairStorageListPrefixSegments struct {
 	SegmentFunc segment.Func
 }
 
-func parseStoragePairListPrefixSegments(opts ...*types.Pair) (*pairStorageListPrefixSegments, error) {
+func (s *Storage) parsePairListPrefixSegments(opts ...*types.Pair) (*pairStorageListPrefixSegments, error) {
 	result := &pairStorageListPrefixSegments{}
 
 	values := make(map[string]interface{})
@@ -558,7 +551,7 @@ type pairStorageMetadata struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error) {
+func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error) {
 	result := &pairStorageMetadata{}
 
 	values := make(map[string]interface{})
@@ -589,7 +582,7 @@ type pairStorageMove struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairMove(opts ...*types.Pair) (*pairStorageMove, error) {
+func (s *Storage) parsePairMove(opts ...*types.Pair) (*pairStorageMove, error) {
 	result := &pairStorageMove{}
 
 	values := make(map[string]interface{})
@@ -618,8 +611,6 @@ type pairStorageNew struct {
 
 	// Meta-defined pairs
 	Location   string
-	HasLoose   bool
-	Loose      bool
 	Name       string
 	HasWorkDir bool
 	WorkDir    string
@@ -646,11 +637,6 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	if ok {
 		result.Location = v.(string)
 	}
-	v, ok = values[ps.Loose]
-	if ok {
-		result.HasLoose = true
-		result.Loose = v.(bool)
-	}
 	v, ok = values[ps.Name]
 	if !ok {
 		return nil, services.NewPairRequiredError(ps.Name)
@@ -675,7 +661,7 @@ type pairStorageReach struct {
 	Expire int
 }
 
-func parseStoragePairReach(opts ...*types.Pair) (*pairStorageReach, error) {
+func (s *Storage) parsePairReach(opts ...*types.Pair) (*pairStorageReach, error) {
 	result := &pairStorageReach{}
 
 	values := make(map[string]interface{})
@@ -715,7 +701,7 @@ type pairStorageRead struct {
 	ReadCallbackFunc    func([]byte)
 }
 
-func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
+func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	result := &pairStorageRead{}
 
 	values := make(map[string]interface{})
@@ -751,7 +737,7 @@ type pairStorageStat struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
+func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 	result := &pairStorageStat{}
 
 	values := make(map[string]interface{})
@@ -782,7 +768,7 @@ type pairStorageStatistical struct {
 	// Meta-defined pairs
 }
 
-func parseStoragePairStatistical(opts ...*types.Pair) (*pairStorageStatistical, error) {
+func (s *Storage) parsePairStatistical(opts ...*types.Pair) (*pairStorageStatistical, error) {
 	result := &pairStorageStatistical{}
 
 	values := make(map[string]interface{})
@@ -820,7 +806,7 @@ type pairStorageWrite struct {
 	StorageClass        storageclass.Type
 }
 
-func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
+func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 	result := &pairStorageWrite{}
 
 	values := make(map[string]interface{})
@@ -877,7 +863,7 @@ type pairStorageWriteSegment struct {
 	Size                int64
 }
 
-func parseStoragePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment, error) {
+func (s *Storage) parsePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment, error) {
 	result := &pairStorageWriteSegment{}
 
 	values := make(map[string]interface{})

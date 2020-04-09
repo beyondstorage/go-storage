@@ -1,7 +1,6 @@
 package qingstor
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -26,7 +25,6 @@ type Storage struct {
 
 	// options for this storager.
 	workDir string // workDir dir for all operation.
-	loose   bool
 }
 
 // String implements Storager.String
@@ -53,7 +51,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, _ := parseStoragePairListDir(pairs...)
+	opt, _ := s.parsePairListDir(pairs...)
 
 	marker := ""
 	delimiter := "/"
@@ -117,7 +115,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_prefix", err, prefix)
 	}()
 
-	opt, _ := parseStoragePairListPrefix(pairs...)
+	opt, _ := s.parsePairListPrefix(pairs...)
 
 	marker := ""
 	limit := 200
@@ -164,7 +162,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = s.formatError("read", err, path)
 	}()
 
-	opt, err := parseStoragePairRead(pairs...)
+	opt, err := s.parsePairRead(pairs...)
 	if err != nil {
 		return
 	}
@@ -191,7 +189,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		err = s.formatError("write", err, path)
 	}()
 
-	opt, err := parseStoragePairWrite(pairs...)
+	opt, err := s.parsePairWrite(pairs...)
 	if err != nil {
 		return
 	}
@@ -323,7 +321,7 @@ func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 		err = s.formatError("reach", err, path)
 	}()
 
-	opt, err := parseStoragePairReach(pairs...)
+	opt, err := s.parsePairReach(pairs...)
 	if err != nil {
 		return
 	}
@@ -376,7 +374,7 @@ func (s *Storage) ListPrefixSegments(prefix string, pairs ...*types.Pair) (err e
 		err = s.formatError("list_prefix_segments", err, prefix)
 	}()
 
-	opt, err := parseStoragePairListPrefixSegments(pairs...)
+	opt, err := s.parsePairListPrefixSegments(pairs...)
 	if err != nil {
 		return
 	}
@@ -424,7 +422,7 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Se
 		err = s.formatError("init_segments", err, path)
 	}()
 
-	_, err = parseStoragePairInitSegment(pairs...)
+	_, err = s.parsePairInitSegment(pairs...)
 	if err != nil {
 		return
 	}
@@ -450,7 +448,7 @@ func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types
 		err = s.formatError("write_segment", err, seg.Path(), seg.ID())
 	}()
 
-	opt, err := parseStoragePairWriteSegment(pairs...)
+	opt, err := s.parsePairWriteSegment(pairs...)
 	if err != nil {
 		return
 	}
@@ -534,10 +532,6 @@ func (s *Storage) getRelPath(path string) string {
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
 	if err == nil {
-		return nil
-	}
-
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

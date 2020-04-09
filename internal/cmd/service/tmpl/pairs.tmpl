@@ -19,7 +19,12 @@ type pair{{ $pn }}{{ $pk }} struct {
     {{- end }}
 }
 
-func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, error) {
+{{ if eq $pk "New" -}}
+func parse{{ $pn }}Pair
+{{- else -}}
+func (s *{{ $pn }} ) parsePair
+{{- end -}}
+{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, error) {
     result := &pair{{ $pn }}{{ $pk }}{}
 
     values := make(map[string]interface{})

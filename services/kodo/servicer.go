@@ -15,8 +15,6 @@ import (
 // Service is the kodo config.
 type Service struct {
 	service *qs.BucketManager
-
-	loose bool
 }
 
 // String implements Service.String
@@ -30,7 +28,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		err = s.formatError("list", err, "")
 	}()
 
-	opt, err := parseServicePairList(pairs...)
+	opt, err := s.parsePairList(pairs...)
 	if err != nil {
 		return err
 	}
@@ -65,7 +63,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager
 		err = s.formatError("create", err, name)
 	}()
 
-	opt, err := parseServicePairCreate(pairs...)
+	opt, err := s.parsePairCreate(pairs...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,17 +130,12 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 
 		name:    opt.Name,
 		workDir: opt.WorkDir,
-		loose:   opt.Loose || s.loose,
 	}
 	return store, nil
 }
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
-		return nil
-	}
-
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

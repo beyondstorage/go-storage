@@ -1,7 +1,6 @@
 package qingstor
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -23,8 +22,6 @@ type Service struct {
 	service iface.Service
 
 	noRedirectClient *http.Client
-
-	loose bool
 }
 
 // String implements Service.String
@@ -41,7 +38,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		err = s.formatError("list", err, "")
 	}()
 
-	opt, err := parseServicePairList(pairs...)
+	opt, err := s.parsePairList(pairs...)
 	if err != nil {
 		return
 	}
@@ -83,7 +80,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (store storage.Storager
 		err = s.formatError("get", err, name)
 	}()
 
-	opt, err := parseServicePairGet(pairs...)
+	opt, err := s.parsePairGet(pairs...)
 	if err != nil {
 		return
 	}
@@ -110,7 +107,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (store storage.Stora
 		err = s.formatError("create", err, name)
 	}()
 
-	_, err = parseServicePairCreate(pairs...)
+	_, err = s.parsePairCreate(pairs...)
 	if err != nil {
 		return
 	}
@@ -136,7 +133,7 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("delete", err, name)
 	}()
 
-	opt, err := parseServicePairDelete(pairs...)
+	opt, err := s.parsePairDelete(pairs...)
 	if err != nil {
 		return
 	}
@@ -196,7 +193,6 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		properties: bucket.Properties,
 
 		workDir: opt.WorkDir,
-		loose:   opt.Loose || s.loose,
 	}, nil
 }
 
@@ -223,10 +219,6 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
-		return nil
-	}
-
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

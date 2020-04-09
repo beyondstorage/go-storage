@@ -33,8 +33,6 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		return nil, nil, err
 	}
 
-	srv.loose = opt.Loose
-
 	options := make([]option.ClientOption, 0)
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()

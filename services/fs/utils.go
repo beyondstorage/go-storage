@@ -36,7 +36,6 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		osStat:        os.Stat,
 
 		workDir: opt.WorkDir,
-		loose:   opt.Loose,
 	}
 	return nil, store, nil
 }

@@ -1,7 +1,6 @@
 package cos
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -17,8 +16,6 @@ import (
 type Service struct {
 	service *cos.Client
 	client  *http.Client
-
-	loose bool
 }
 
 // String implements Servicer.String
@@ -32,7 +29,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 		err = s.formatError("list", err, "")
 	}()
 
-	opt, err := parseServicePairList(pairs...)
+	opt, err := s.parsePairList(pairs...)
 	if err != nil {
 		return err
 	}
@@ -57,7 +54,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, e
 		err = s.formatError("get", err, name)
 	}()
 
-	opt, err := parseServicePairGet(pairs...)
+	opt, err := s.parsePairGet(pairs...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +72,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager
 		err = s.formatError("create", err, name)
 	}()
 
-	opt, err := parseServicePairCreate(pairs...)
+	opt, err := s.parsePairCreate(pairs...)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +94,7 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("delete", err, name)
 	}()
 
-	opt, err := parseServicePairDelete(pairs...)
+	opt, err := s.parsePairDelete(pairs...)
 	if err != nil {
 		return err
 	}
@@ -114,34 +111,31 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 }
 
 // newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (*Storage, error) {
-	const errorMessage = "cos new_storage: %w"
+func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
+	defer func() {
+		err = s.formatError("new_storage", err, "")
+	}()
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, fmt.Errorf(errorMessage, err)
+		return nil, err
 	}
 
-	store := &Storage{}
+	st = &Storage{}
 
 	url := cos.NewBucketURL(opt.Name, opt.Location, true)
 	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, s.client)
 
-	store.bucket = c.Bucket
-	store.object = c.Object
-	store.name = opt.Name
-	store.location = opt.Location
-	store.workDir = opt.WorkDir
-	store.loose = opt.Loose || s.loose
-	return store, nil
+	st.bucket = c.Bucket
+	st.object = c.Object
+	st.name = opt.Name
+	st.location = opt.Location
+	st.workDir = opt.WorkDir
+	return st, nil
 }
 
 func (s *Service) formatError(op string, err error, name string) error {
 	if err == nil {
-		return nil
-	}
-
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

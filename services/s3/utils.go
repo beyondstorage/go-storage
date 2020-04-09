@@ -51,8 +51,6 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 
 	srv := &Service{
 		service: s3.New(sess),
-
-		loose: opt.Loose,
 	}
 
 	store, err := srv.newStorage(pairs...)
