@@ -19,12 +19,14 @@
     }
   },
   "storage": {
-    "list": {
+    "list_dir": {
       "dir_func": false,
-      "file_func": false,
-      "object_func": false
+      "file_func": false
     },
-    "list_segments": {
+    "list_prefix": {
+      "object_func": true
+    },
+    "list_prefix_segments": {
       "segment_func": true
     },
     "new": {

@@ -1,7 +1,7 @@
 {
   "name": "fs",
   "storage": {
-    "list": {
+    "list_dir": {
       "dir_func": false,
       "file_func": false
     },

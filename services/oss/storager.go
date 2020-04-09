@@ -44,24 +44,20 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements Storager.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairList(pairs...)
+	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
 
 	marker := ""
-	delimiter := ""
+	delimiter := "/"
 	limit := 200
-
-	if !opt.HasObjectFunc {
-		delimiter = "/"
-	}
 
 	rp := s.getAbsPath(path)
 
@@ -90,43 +86,59 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 		}
 
-		if opt.HasObjectFunc || opt.HasFileFunc {
+		if opt.HasFileFunc {
 			for _, v := range output.Objects {
-				o := &types.Object{
-					ID:         v.Key,
-					Name:       s.getRelPath(v.Key),
-					Type:       types.ObjectTypeFile,
-					Size:       v.Size,
-					UpdatedAt:  v.LastModified,
-					ObjectMeta: metadata.NewObjectMeta(),
+				o, err := s.formatFileObject(v)
+				if err != nil {
+					return err
 				}
 
-				if v.Type != "" {
-					o.SetContentType(v.Type)
-				}
-
-				// OSS advise us don't use Etag as Content-MD5.
-				//
-				// ref: https://help.aliyun.com/document_detail/31965.html
-				if v.ETag != "" {
-					o.SetETag(v.ETag)
-				}
-
-				if v.Type != "" {
-					storageClass, err := formatStorageClass(v.Type)
-					if err != nil {
-						return err
-					}
-					o.SetStorageClass(storageClass)
-				}
-
-				if opt.HasObjectFunc {
-					opt.ObjectFunc(o)
-				}
-				if opt.HasFileFunc {
-					opt.FileFunc(o)
-				}
+				opt.FileFunc(o)
 			}
+		}
+
+		marker = output.NextMarker
+		if output.IsTruncated {
+			break
+		}
+	}
+	return
+}
+
+// ListPrefix implements Storager.ListPrefix
+func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError("list_prefix", err, prefix)
+	}()
+
+	opt, err := parseStoragePairListPrefix(pairs...)
+	if err != nil {
+		return err
+	}
+
+	marker := ""
+	limit := 200
+
+	rp := s.getAbsPath(prefix)
+
+	var output oss.ListObjectsResult
+	for {
+		output, err = s.bucket.ListObjects(
+			oss.Marker(marker),
+			oss.MaxKeys(limit),
+			oss.Prefix(rp),
+		)
+		if err != nil {
+			return err
+		}
+
+		for _, v := range output.Objects {
+			o, err := s.formatFileObject(v)
+			if err != nil {
+				return err
+			}
+
+			opt.ObjectFunc(o)
 		}
 
 		marker = output.NextMarker
@@ -291,4 +303,36 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v oss.ObjectProperties) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Key,
+		Name:       s.getRelPath(v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Size,
+		UpdatedAt:  v.LastModified,
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	if v.Type != "" {
+		o.SetContentType(v.Type)
+	}
+
+	// OSS advise us don't use Etag as Content-MD5.
+	//
+	// ref: https://help.aliyun.com/document_detail/31965.html
+	if v.ETag != "" {
+		o.SetETag(v.ETag)
+	}
+
+	if v.Type != "" {
+		storageClass, err := formatStorageClass(v.Type)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
+	}
+
+	return
 }

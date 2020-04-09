@@ -43,26 +43,22 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements Storager.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairList(pairs...)
+	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
 
 	marker := ""
-	delimiter := ""
+	delimiter := "/"
 	limit := 200
 
 	rp := s.getAbsPath(path)
-
-	if !opt.HasObjectFunc {
-		delimiter = "/"
-	}
 
 	for {
 		req := &cos.BucketGetOptions{
@@ -77,53 +73,6 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			return err
 		}
 
-		if opt.HasObjectFunc || opt.HasFileFunc {
-			for _, v := range resp.Contents {
-
-				o := &types.Object{
-					ID:         v.Key,
-					Name:       s.getRelPath(v.Key),
-					Type:       types.ObjectTypeFile,
-					Size:       int64(v.Size),
-					ObjectMeta: metadata.NewObjectMeta(),
-				}
-
-				// COS returns different value depends on object upload method or
-				// encryption method, so we can't treat this value as content-md5
-				//
-				// ref: https://cloud.tencent.com/document/product/436/7729
-				if v.ETag != "" {
-					o.SetETag(v.ETag)
-				}
-
-				// COS uses ISO8601 format: "2019-05-27T11:26:14.000Z" in List
-				//
-				// ref: https://cloud.tencent.com/document/product/436/7729
-				if v.LastModified != "" {
-					t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
-					if err != nil {
-						return err
-					}
-					o.UpdatedAt = t
-				}
-
-				if v.StorageClass != "" {
-					storageClass, err := formatStorageClass(v.StorageClass)
-					if err != nil {
-						return err
-					}
-					o.SetStorageClass(storageClass)
-				}
-
-				if opt.HasObjectFunc {
-					opt.ObjectFunc(o)
-				}
-				if opt.HasFileFunc {
-					opt.FileFunc(o)
-				}
-			}
-		}
-
 		if opt.HasDirFunc {
 			for _, v := range resp.CommonPrefixes {
 				o := &types.Object{
@@ -135,6 +84,63 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 				opt.DirFunc(o)
 			}
+		}
+
+		if opt.HasFileFunc {
+			for _, v := range resp.Contents {
+				o, err := s.formatFileObject(v)
+				if err != nil {
+					return err
+				}
+
+				opt.FileFunc(o)
+			}
+		}
+
+		marker = resp.NextMarker
+		if !resp.IsTruncated {
+			break
+		}
+	}
+
+	return
+}
+
+// ListPrefix implements Storager.ListPrefix
+func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError("list_prefix", err, prefix)
+	}()
+
+	opt, err := parseStoragePairListPrefix(pairs...)
+	if err != nil {
+		return err
+	}
+
+	marker := ""
+	limit := 200
+
+	rp := s.getAbsPath(prefix)
+
+	for {
+		req := &cos.BucketGetOptions{
+			Prefix:  rp,
+			MaxKeys: limit,
+			Marker:  marker,
+		}
+
+		resp, _, err := s.bucket.Get(opt.Context, req)
+		if err != nil {
+			return err
+		}
+
+		for _, v := range resp.Contents {
+			o, err := s.formatFileObject(v)
+			if err != nil {
+				return err
+			}
+
+			opt.ObjectFunc(o)
 		}
 
 		marker = resp.NextMarker
@@ -312,4 +318,43 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v cos.Object) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Key,
+		Name:       s.getRelPath(v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       int64(v.Size),
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	// COS returns different value depends on object upload method or
+	// encryption method, so we can't treat this value as content-md5
+	//
+	// ref: https://cloud.tencent.com/document/product/436/7729
+	if v.ETag != "" {
+		o.SetETag(v.ETag)
+	}
+
+	// COS uses ISO8601 format: "2019-05-27T11:26:14.000Z" in List
+	//
+	// ref: https://cloud.tencent.com/document/product/436/7729
+	if v.LastModified != "" {
+		t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
+		if err != nil {
+			return nil, err
+		}
+		o.UpdatedAt = t
+	}
+
+	if v.StorageClass != "" {
+		storageClass, err := formatStorageClass(v.StorageClass)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
+	}
+
+	return o, nil
 }

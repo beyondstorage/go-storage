@@ -42,24 +42,20 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements Storager.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairList(pairs...)
+	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
 
 	marker := ""
-	delimiter := ""
+	delimiter := "/"
 	rp := s.getAbsPath(path)
-
-	if !opt.HasObjectFunc {
-		delimiter = "/"
-	}
 
 	for {
 		entries, commonPrefix, nextMarker, _, err := s.bucket.ListFiles(s.name, rp, delimiter, marker, 1000)
@@ -80,37 +76,51 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 		}
 
-		if opt.HasObjectFunc || opt.HasFileFunc {
+		if opt.HasFileFunc {
 			for _, v := range entries {
-				o := &types.Object{
-					ID:         v.Key,
-					Name:       s.getRelPath(v.Key),
-					Type:       types.ObjectTypeFile,
-					Size:       v.Fsize,
-					UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
-					ObjectMeta: metadata.NewObjectMeta(),
-				}
-
-				if v.MimeType != "" {
-					o.SetContentType(v.MimeType)
-				}
-				if v.Hash != "" {
-					o.SetETag(v.Hash)
-				}
-
-				storageClass, err := formatStorageClass(v.Type)
+				o, err := s.formatFileObject(v)
 				if err != nil {
 					return err
 				}
-				o.SetStorageClass(storageClass)
 
-				if opt.HasObjectFunc {
-					opt.ObjectFunc(o)
-				}
-				if opt.HasFileFunc {
-					opt.FileFunc(o)
-				}
+				opt.FileFunc(o)
 			}
+		}
+
+		marker = nextMarker
+		if marker == "" {
+			return nil
+		}
+	}
+}
+
+// ListPrefix implements Storager.ListPrefix
+func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError("list_prefix", err, prefix)
+	}()
+
+	opt, err := parseStoragePairListPrefix(pairs...)
+	if err != nil {
+		return err
+	}
+
+	marker := ""
+	rp := s.getAbsPath(prefix)
+
+	for {
+		entries, _, nextMarker, _, err := s.bucket.ListFiles(s.name, rp, "", marker, 1000)
+		if err != nil {
+			return err
+		}
+
+		for _, v := range entries {
+			o, err := s.formatFileObject(v)
+			if err != nil {
+				return err
+			}
+
+			opt.ObjectFunc(o)
 		}
 
 		marker = nextMarker
@@ -251,4 +261,30 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v qs.ListItem) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Key,
+		Name:       s.getRelPath(v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Fsize,
+		UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	if v.MimeType != "" {
+		o.SetContentType(v.MimeType)
+	}
+	if v.Hash != "" {
+		o.SetETag(v.Hash)
+	}
+
+	storageClass, err := formatStorageClass(v.Type)
+	if err != nil {
+		return nil, err
+	}
+	o.SetStorageClass(storageClass)
+
+	return
 }

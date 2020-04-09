@@ -55,6 +55,7 @@ func parseServicePairCreate(opts ...*types.Pair) (*pairServiceCreate, error) {
 	}
 
 	// Parse meta-defined pairs
+
 	return result, nil
 }
 
@@ -85,6 +86,7 @@ func parseServicePairDelete(opts ...*types.Pair) (*pairServiceDelete, error) {
 	}
 
 	// Parse meta-defined pairs
+
 	return result, nil
 }
 
@@ -115,6 +117,7 @@ func parseServicePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 	}
 
 	// Parse meta-defined pairs
+
 	return result, nil
 }
 
@@ -153,6 +156,7 @@ func parseServicePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	if ok {
 		result.StoragerFunc = v.(storage.StoragerFunc)
 	}
+
 	return result, nil
 }
 
@@ -206,6 +210,7 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 		result.HasLoose = true
 		result.Loose = v.(bool)
 	}
+
 	return result, nil
 }
 
@@ -236,24 +241,23 @@ func parseStoragePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
 	}
 
 	// Parse meta-defined pairs
+
 	return result, nil
 }
 
-type pairStorageList struct {
+type pairStorageListDir struct {
 	// Pre-defined pairs
 	Context context.Context
 
 	// Meta-defined pairs
-	HasDirFunc    bool
-	DirFunc       types.ObjectFunc
-	HasFileFunc   bool
-	FileFunc      types.ObjectFunc
-	HasObjectFunc bool
-	ObjectFunc    types.ObjectFunc
+	HasDirFunc  bool
+	DirFunc     types.ObjectFunc
+	HasFileFunc bool
+	FileFunc    types.ObjectFunc
 }
 
-func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
-	result := &pairStorageList{}
+func parseStoragePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
+	result := &pairStorageListDir{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -282,27 +286,46 @@ func parseStoragePairList(opts ...*types.Pair) (*pairStorageList, error) {
 		result.HasFileFunc = true
 		result.FileFunc = v.(types.ObjectFunc)
 	}
-	v, ok = values[ps.ObjectFunc]
+
+	return result, nil
+}
+
+type pairStorageListPrefix struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+	ObjectFunc types.ObjectFunc
+}
+
+func parseStoragePairListPrefix(opts ...*types.Pair) (*pairStorageListPrefix, error) {
+	result := &pairStorageListPrefix{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
 	if ok {
-		result.HasObjectFunc = true
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+	v, ok = values[ps.ObjectFunc]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.ObjectFunc)
+	}
+	if ok {
 		result.ObjectFunc = v.(types.ObjectFunc)
 	}
-	// Validate for ObjectFunc
-	if result.HasObjectFunc && result.HasFileFunc {
-		return nil, services.NewPairConflictError(
-			&types.Pair{Key: ps.ObjectFunc, Value: result.ObjectFunc},
-			&types.Pair{Key: ps.FileFunc, Value: result.FileFunc},
-		)
-	}
-	if result.HasObjectFunc && result.HasDirFunc {
-		return nil, services.NewPairConflictError(
-			&types.Pair{Key: ps.ObjectFunc, Value: result.ObjectFunc},
-			&types.Pair{Key: ps.DirFunc, Value: result.DirFunc},
-		)
-	}
-	if !result.HasObjectFunc && !result.HasFileFunc && !result.HasDirFunc {
-		return nil, services.NewPairRequiredError(ps.ObjectFunc, ps.FileFunc, ps.DirFunc)
-	}
+
 	return result, nil
 }
 
@@ -333,6 +356,7 @@ func parseStoragePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error)
 	}
 
 	// Parse meta-defined pairs
+
 	return result, nil
 }
 
@@ -378,6 +402,7 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 		result.HasWorkDir = true
 		result.WorkDir = v.(string)
 	}
+
 	return result, nil
 }
 
@@ -415,6 +440,7 @@ func parseStoragePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 		result.HasReadCallbackFunc = true
 		result.ReadCallbackFunc = v.(func([]byte))
 	}
+
 	return result, nil
 }
 
@@ -445,6 +471,7 @@ func parseStoragePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 	}
 
 	// Parse meta-defined pairs
+
 	return result, nil
 }
 
@@ -504,6 +531,7 @@ func parseStoragePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
 		result.HasStorageClass = true
 		result.StorageClass = v.(storageclass.Type)
 	}
+
 	return result, nil
 }
 
@@ -552,13 +580,22 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 	return s.Delete(path, pairs...)
 }
 
-// ListWithContext adds context support for List.
-func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/oss.storage.List")
+// ListDirWithContext adds context support for ListDir.
+func (s *Storage) ListDirWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/oss.storage.ListDir")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.List(path, pairs...)
+	return s.ListDir(path, pairs...)
+}
+
+// ListPrefixWithContext adds context support for ListPrefix.
+func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/oss.storage.ListPrefix")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.ListPrefix(prefix, pairs...)
 }
 
 // MetadataWithContext adds context support for Metadata.

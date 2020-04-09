@@ -39,13 +39,13 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements Storager.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairList(pairs...)
+	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
@@ -53,33 +53,6 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 	rp := s.getAbsPath(path)
 
 	marker := azblob.Marker{}
-
-	if opt.HasObjectFunc {
-		var output *azblob.ListBlobsFlatSegmentResponse
-		for {
-			output, err = s.bucket.ListBlobsFlatSegment(opt.Context, marker, azblob.ListBlobsSegmentOptions{
-				Prefix: rp,
-			})
-			if err != nil {
-				return err
-			}
-
-			for _, v := range output.Segment.BlobItems {
-				o, err := s.formatFileObject(v)
-				if err != nil {
-					return err
-				}
-
-				opt.ObjectFunc(o)
-			}
-
-			marker = output.NextMarker
-			if !marker.NotDone() {
-				break
-			}
-		}
-		return
-	}
 
 	var output *azblob.ListBlobsHierarchySegmentResponse
 	for {
@@ -107,6 +80,47 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 
 				opt.FileFunc(o)
 			}
+		}
+
+		marker = output.NextMarker
+		if !marker.NotDone() {
+			break
+		}
+	}
+	return
+}
+
+// ListPrefix implements Storager.ListPrefix
+func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError("list_prefix", err, prefix)
+	}()
+
+	opt, err := parseStoragePairListPrefix(pairs...)
+	if err != nil {
+		return err
+	}
+
+	rp := s.getAbsPath(prefix)
+
+	marker := azblob.Marker{}
+
+	var output *azblob.ListBlobsFlatSegmentResponse
+	for {
+		output, err = s.bucket.ListBlobsFlatSegment(opt.Context, marker, azblob.ListBlobsSegmentOptions{
+			Prefix: rp,
+		})
+		if err != nil {
+			return err
+		}
+
+		for _, v := range output.Segment.BlobItems {
+			o, err := s.formatFileObject(v)
+			if err != nil {
+				return err
+			}
+
+			opt.ObjectFunc(o)
 		}
 
 		marker = output.NextMarker

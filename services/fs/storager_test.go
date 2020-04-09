@@ -380,7 +380,7 @@ func TestStorage_Move(t *testing.T) {
 	})
 }
 
-func TestStorage_List(t *testing.T) {
+func TestStorage_ListDir(t *testing.T) {
 	paths := make([]string, 100)
 	for k := range paths {
 		paths[k] = uuid.New().String()
@@ -490,7 +490,7 @@ func TestStorage_List(t *testing.T) {
 
 	for k, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			client := Storage{
+			client := &Storage{
 				ioutilReadDir: func(dirname string) (infos []os.FileInfo, e error) {
 					assert.Equal(t, paths[k], dirname)
 					return v.fi, v.err
@@ -499,7 +499,7 @@ func TestStorage_List(t *testing.T) {
 
 			items := make([]*types.Object, 0)
 
-			err := client.List(paths[k], pairs.WithDirFunc(func(object *types.Object) {
+			err := client.ListDir(paths[k], pairs.WithDirFunc(func(object *types.Object) {
 				items = append(items, object)
 			}), pairs.WithFileFunc(func(object *types.Object) {
 				items = append(items, object)
