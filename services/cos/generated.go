@@ -28,6 +28,10 @@ var _ services.ServiceError
 // Type is the type for cos
 const Type = "cos"
 
+var pairServiceCreateMap = map[string]struct{}{
+	"location": struct{}{},
+}
+
 type pairServiceCreate struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -41,6 +45,9 @@ func (s *Service) parsePairCreate(opts ...*types.Pair) (*pairServiceCreate, erro
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairServiceCreateMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -65,6 +72,10 @@ func (s *Service) parsePairCreate(opts ...*types.Pair) (*pairServiceCreate, erro
 	}
 
 	return result, nil
+}
+
+var pairServiceDeleteMap = map[string]struct{}{
+	"location": struct{}{},
 }
 
 type pairServiceDelete struct {
@@ -80,6 +91,9 @@ func (s *Service) parsePairDelete(opts ...*types.Pair) (*pairServiceDelete, erro
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairServiceDeleteMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -104,6 +118,10 @@ func (s *Service) parsePairDelete(opts ...*types.Pair) (*pairServiceDelete, erro
 	}
 
 	return result, nil
+}
+
+var pairServiceGetMap = map[string]struct{}{
+	"location": struct{}{},
 }
 
 type pairServiceGet struct {
@@ -119,6 +137,9 @@ func (s *Service) parsePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairServiceGetMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -145,6 +166,10 @@ func (s *Service) parsePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 	return result, nil
 }
 
+var pairServiceListMap = map[string]struct{}{
+	"storager_func": struct{}{},
+}
+
 type pairServiceList struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -158,6 +183,9 @@ func (s *Service) parsePairList(opts ...*types.Pair) (*pairServiceList, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairServiceListMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -184,6 +212,10 @@ func (s *Service) parsePairList(opts ...*types.Pair) (*pairServiceList, error) {
 	return result, nil
 }
 
+var pairServiceNewMap = map[string]struct{}{
+	"credential": struct{}{},
+}
+
 type pairServiceNew struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -197,6 +229,9 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairServiceNewMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -223,6 +258,8 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	return result, nil
 }
 
+var pairStorageDeleteMap = map[string]struct{}{}
+
 type pairStorageDelete struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -235,6 +272,9 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairStorageDeleteMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -254,6 +294,11 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 	return result, nil
 }
 
+var pairStorageListDirMap = map[string]struct{}{
+	"dir_func":  struct{}{},
+	"file_func": struct{}{},
+}
+
 type pairStorageListDir struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -270,6 +315,9 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairStorageListDirMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -299,6 +347,10 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 	return result, nil
 }
 
+var pairStorageListPrefixMap = map[string]struct{}{
+	"object_func": struct{}{},
+}
+
 type pairStorageListPrefix struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -312,6 +364,9 @@ func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPref
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairStorageListPrefixMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -338,6 +393,8 @@ func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPref
 	return result, nil
 }
 
+var pairStorageMetadataMap = map[string]struct{}{}
+
 type pairStorageMetadata struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -350,6 +407,9 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairStorageMetadataMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -369,6 +429,12 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 	return result, nil
 }
 
+var pairStorageNewMap = map[string]struct{}{
+	"location": struct{}{},
+	"name":     struct{}{},
+	"work_dir": struct{}{},
+}
+
 type pairStorageNew struct {
 	// Pre-defined pairs
 
@@ -384,6 +450,9 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairStorageNewMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -416,6 +485,10 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	return result, nil
 }
 
+var pairStorageReadMap = map[string]struct{}{
+	"read_callback_func": struct{}{},
+}
+
 type pairStorageRead struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -430,6 +503,9 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairStorageReadMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -454,6 +530,8 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	return result, nil
 }
 
+var pairStorageStatMap = map[string]struct{}{}
+
 type pairStorageStat struct {
 	// Pre-defined pairs
 	Context context.Context
@@ -466,6 +544,9 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairStorageStatMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
@@ -483,6 +564,13 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 	// Parse meta-defined pairs
 
 	return result, nil
+}
+
+var pairStorageWriteMap = map[string]struct{}{
+	"checksum":           struct{}{},
+	"read_callback_func": struct{}{},
+	"size":               struct{}{},
+	"storage_class":      struct{}{},
 }
 
 type pairStorageWrite struct {
@@ -504,6 +592,9 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
+		if _, ok := pairStorageWriteMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
 		values[v.Key] = v.Value
 	}
 
