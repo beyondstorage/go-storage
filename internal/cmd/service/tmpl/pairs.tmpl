@@ -35,9 +35,11 @@ func (s *{{ $pn }} ) parsePair
 
     values := make(map[string]interface{})
     for _, v := range opts {
+        {{- if ne $pk "New" }}
         if _, ok := pair{{ $pn }}{{ $pk }}Map[v.Key]; !ok {
             return nil, services.NewPairUnsupportedError(v)
         }
+        {{- end }}
         values[v.Key] = v.Value
     }
 

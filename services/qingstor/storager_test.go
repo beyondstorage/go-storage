@@ -327,10 +327,11 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					ID:         keys[0],
-					Name:       keys[0],
-					Type:       types.ObjectTypeFile,
-					ObjectMeta: metadata.NewObjectMeta(),
+					ID:   keys[0],
+					Name: keys[0],
+					Type: types.ObjectTypeFile,
+					ObjectMeta: metadata.NewObjectMeta().
+						SetStorageClass(storageclass.Hot),
 				},
 			},
 			nil,
@@ -400,24 +401,6 @@ func TestStorage_ListDir(t *testing.T) {
 				},
 			},
 			nil,
-		},
-		{
-			"list with wrong storage class returned",
-			&service.ListObjectsOutput{
-				HasMore: service.Bool(false),
-				Keys: []*service.KeyType{
-					{
-						Key:          service.String(keys[5]),
-						MimeType:     service.String("application/json"),
-						StorageClass: service.String("xxxx"),
-						Etag:         service.String("xxxxx"),
-						Size:         service.Int64(1233),
-						Modified:     service.Int(1233),
-					},
-				},
-			},
-			[]*types.Object{},
-			services.ErrCapabilityInsufficient,
 		},
 	}
 
@@ -596,21 +579,6 @@ func TestStorage_Stat(t *testing.T) {
 				}, nil
 			},
 			false, nil,
-		},
-		{
-			"invalid file with wrong storage class",
-			"test_src",
-			func(objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
-				assert.Equal(t, "test_src", objectKey)
-				length := int64(100)
-				return &service.HeadObjectOutput{
-					ContentLength:   &length,
-					ContentType:     convert.String("test_content_type"),
-					ETag:            convert.String("test_etag"),
-					XQSStorageClass: convert.String("xxxx"),
-				}, nil
-			},
-			true, services.ErrCapabilityInsufficient,
 		},
 	}
 

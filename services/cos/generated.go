@@ -229,9 +229,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := pairServiceNewMap[v.Key]; !ok {
-			return nil, services.NewPairUnsupportedError(v)
-		}
 		values[v.Key] = v.Value
 	}
 
@@ -450,9 +447,6 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := pairStorageNewMap[v.Key]; !ok {
-			return nil, services.NewPairUnsupportedError(v)
-		}
 		values[v.Key] = v.Value
 	}
 
