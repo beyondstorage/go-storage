@@ -252,12 +252,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetContentType(v)
 	}
 
-	if v := output.Get(storageClassHeader); v != "" {
-		storageClass, err := formatStorageClass(v)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if v := formatStorageClass(output.Get(storageClassHeader)); v != "" {
+		o.SetStorageClass(v)
 	}
 
 	return o, nil
@@ -320,12 +316,8 @@ func (s *Storage) formatFileObject(v oss.ObjectProperties) (o *types.Object, err
 		o.SetETag(v.ETag)
 	}
 
-	if v.Type != "" {
-		storageClass, err := formatStorageClass(v.Type)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if value := formatStorageClass(v.Type); value != "" {
+		o.SetStorageClass(value)
 	}
 
 	return

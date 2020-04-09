@@ -212,11 +212,9 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetContentType(fi.MimeType)
 	}
 
-	storageClass, err := formatStorageClass(fi.Type)
-	if err != nil {
-		return nil, err
+	if v := formatStorageClass(fi.Type); v != "" {
+		o.SetStorageClass(v)
 	}
-	o.SetStorageClass(storageClass)
 
 	return o, nil
 }
@@ -274,11 +272,9 @@ func (s *Storage) formatFileObject(v qs.ListItem) (o *types.Object, err error) {
 		o.SetETag(v.Hash)
 	}
 
-	storageClass, err := formatStorageClass(v.Type)
-	if err != nil {
-		return nil, err
+	if value := formatStorageClass(v.Type); value != "" {
+		o.SetStorageClass(value)
 	}
-	o.SetStorageClass(storageClass)
 
 	return
 }

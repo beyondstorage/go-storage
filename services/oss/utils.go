@@ -9,7 +9,6 @@ import (
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
 	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
@@ -75,16 +74,16 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 }
 
 // formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) (storageclass.Type, error) {
+func formatStorageClass(in string) storageclass.Type {
 	switch in {
 	case storageClassStandard:
-		return storageclass.Hot, nil
+		return storageclass.Hot
 	case storageClassIA:
-		return storageclass.Warm, nil
+		return storageclass.Warm
 	case storageClassArchive:
-		return storageclass.Cold, nil
+		return storageclass.Cold
 	default:
-		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
+		return ""
 	}
 }
 

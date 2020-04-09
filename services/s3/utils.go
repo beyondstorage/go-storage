@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -78,18 +77,17 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 }
 
 // formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) (storageclass.Type, error) {
+func formatStorageClass(in string) storageclass.Type {
 	switch in {
 	case s3.ObjectStorageClassStandard:
-		return storageclass.Hot, nil
+		return storageclass.Hot
 	case s3.ObjectStorageClassStandardIa:
-		return storageclass.Warm, nil
+		return storageclass.Warm
 	case s3.ObjectStorageClassGlacier:
-		return storageclass.Cold, nil
+		return storageclass.Cold
 	default:
-		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
+		return ""
 	}
-
 }
 
 func formatError(err error) error {

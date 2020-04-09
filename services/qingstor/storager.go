@@ -253,12 +253,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetETag(service.StringValue(output.ETag))
 	}
 
-	if v := service.StringValue(output.XQSStorageClass); v != "" {
-		storageClass, err := formatStorageClass(v)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if v := formatStorageClass(service.StringValue(output.XQSStorageClass)); v != "" {
+		o.SetStorageClass(v)
 	}
 
 	return o, nil
@@ -556,12 +552,8 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *types.Object, err err
 	if v.MimeType != nil {
 		o.SetContentType(service.StringValue(v.MimeType))
 	}
-	if v.StorageClass != nil {
-		storageClass, err := formatStorageClass(service.StringValue(v.StorageClass))
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if value := formatStorageClass(service.StringValue(v.StorageClass)); value != "" {
+		o.SetStorageClass(value)
 	}
 	if v.Etag != nil {
 		o.SetETag(service.StringValue(v.Etag))

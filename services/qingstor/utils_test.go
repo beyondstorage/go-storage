@@ -192,22 +192,18 @@ func TestParseStorageClass(t *testing.T) {
 
 func TestFormatStorageClass(t *testing.T) {
 	tests := []struct {
-		name        string
-		input       string
-		expected    storageclass.Type
-		expectedErr error
+		name     string
+		input    string
+		expected storageclass.Type
 	}{
-		{"hot", storageClassStandard, storageclass.Hot, nil},
-		{"warm", storageClassStandardIA, storageclass.Warm, nil},
-		{"xxxxx", "xxxxx", "", services.ErrCapabilityInsufficient},
+		{"hot", storageClassStandard, storageclass.Hot},
+		{"warm", storageClassStandardIA, storageclass.Warm},
+		{"xxxxx", "xxxxx", ""},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := formatStorageClass(tt.input)
-			if tt.expectedErr != nil {
-				assert.True(t, errors.Is(err, tt.expectedErr))
-			}
+			got := formatStorageClass(tt.input)
 			assert.Equal(t, tt.expected, got)
 		})
 	}

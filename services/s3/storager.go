@@ -247,12 +247,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	if output.ETag != nil {
 		o.SetETag(*output.ETag)
 	}
-	if output.StorageClass != nil {
-		storageClass, err := formatStorageClass(*output.StorageClass)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if v := formatStorageClass(aws.StringValue(output.StorageClass)); v != "" {
+		o.SetStorageClass(v)
 	}
 	return o, nil
 }
@@ -468,12 +464,8 @@ func (s *Storage) formatFileObject(v *s3.Object) (o *types.Object, err error) {
 		ObjectMeta: metadata.NewObjectMeta(),
 	}
 
-	if v.StorageClass != nil {
-		storageClass, err := formatStorageClass(*v.StorageClass)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if value := formatStorageClass(aws.StringValue(v.StorageClass)); value != "" {
+		o.SetStorageClass(value)
 	}
 	if v.ETag != nil {
 		o.SetETag(*v.ETag)

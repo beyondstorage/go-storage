@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/tencentyun/cos-go-sdk-v5"
 
 	"github.com/Xuanwo/storage"
@@ -80,17 +79,17 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 }
 
 // formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) (storageclass.Type, error) {
+func formatStorageClass(in string) storageclass.Type {
 	switch in {
 	case storageClassArchive:
-		return storageclass.Cold, nil
+		return storageclass.Cold
 	case storageClassStandardIA:
-		return storageclass.Warm, nil
+		return storageclass.Warm
 	// cos only return storage class while not standard, we should handle empty string
 	case storageClassStandard, "":
-		return storageclass.Hot, nil
+		return storageclass.Hot
 	default:
-		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
+		return ""
 	}
 }
 

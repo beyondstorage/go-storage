@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	gs "cloud.google.com/go/storage"
-	"github.com/Xuanwo/storage/types/metadata"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 
@@ -85,16 +84,16 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 }
 
 // formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) (storageclass.Type, error) {
+func formatStorageClass(in string) storageclass.Type {
 	switch in {
 	case storageClassStandard:
-		return storageclass.Hot, nil
+		return storageclass.Hot
 	case storageClassNearLine:
-		return storageclass.Warm, nil
+		return storageclass.Warm
 	case storageClassColdLine:
-		return storageclass.Cold, nil
+		return storageclass.Cold
 	default:
-		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
+		return ""
 	}
 }
 
