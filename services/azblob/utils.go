@@ -10,7 +10,6 @@ import (
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
 	ps "github.com/Xuanwo/storage/types/pairs"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -40,8 +39,6 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	if err != nil {
 		return nil, nil, err
 	}
-
-	srv.loose = opt.Loose
 
 	primaryURL, _ := url.Parse(opt.Endpoint.Value().String())
 
@@ -83,16 +80,16 @@ func parseStorageClass(in storageclass.Type) (azblob.AccessTierType, error) {
 }
 
 // formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in azblob.AccessTierType) (storageclass.Type, error) {
+func formatStorageClass(in azblob.AccessTierType) storageclass.Type {
 	switch in {
 	case azblob.AccessTierArchive:
-		return storageclass.Cold, nil
+		return storageclass.Cold
 	case azblob.AccessTierCool:
-		return storageclass.Warm, nil
+		return storageclass.Warm
 	case azblob.AccessTierHot:
-		return storageclass.Hot, nil
+		return storageclass.Hot
 	default:
-		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
+		return ""
 	}
 }
 

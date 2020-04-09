@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -21,7 +20,6 @@ const StreamModeType = os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.Mod
 type Storage struct {
 	// options for this storager.
 	workDir string // workDir dir for all operation.
-	loose   bool
 
 	// All stdlib call will be added here for better unit test.
 	ioCopyBuffer  func(dst io.Writer, src io.Reader, buf []byte) (written int64, err error)
@@ -53,7 +51,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := s.parsePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
@@ -100,7 +98,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = s.formatError("read", err, path)
 	}()
 
-	opt, err := parseStoragePairRead(pairs...)
+	opt, err := s.parsePairRead(pairs...)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +141,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		err = s.formatError("write", err, path)
 	}()
 
-	opt, err := parseStoragePairWrite(pairs...)
+	opt, err := s.parsePairWrite(pairs...)
 	if err != nil {
 		return err
 	}
@@ -336,10 +334,6 @@ func (s *Storage) getDirPath(path string) string {
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
 	if err == nil {
-		return nil
-	}
-
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 

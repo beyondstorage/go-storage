@@ -1,7 +1,6 @@
 package cos
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -24,7 +23,6 @@ type Storage struct {
 	name     string
 	location string
 	workDir  string
-	loose    bool
 }
 
 // String implements Storager.String
@@ -49,7 +47,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := s.parsePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
@@ -112,7 +110,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_prefix", err, prefix)
 	}()
 
-	opt, err := parseStoragePairListPrefix(pairs...)
+	opt, err := s.parsePairListPrefix(pairs...)
 	if err != nil {
 		return err
 	}
@@ -158,7 +156,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = s.formatError("read", err, path)
 	}()
 
-	opt, err := parseStoragePairRead(pairs...)
+	opt, err := s.parsePairRead(pairs...)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +182,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		err = s.formatError("write", err, path)
 	}()
 
-	opt, err := parseStoragePairWrite(pairs...)
+	opt, err := s.parsePairWrite(pairs...)
 	if err != nil {
 		return err
 	}
@@ -223,7 +221,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		err = s.formatError("stat", err, path)
 	}()
 
-	opt, err := parseStoragePairStat(pairs...)
+	opt, err := s.parsePairStat(pairs...)
 	if err != nil {
 		return nil, err
 	}
@@ -264,12 +262,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetETag(output.Header.Get(v))
 	}
 
-	if v := output.Header.Get(storageClassHeader); v != "" {
-		storageClass, err := formatStorageClass(v)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if v := formatStorageClass(output.Header.Get(storageClassHeader)); v != "" {
+		o.SetStorageClass(v)
 	}
 
 	return o, nil
@@ -281,7 +275,7 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("delete", err, path)
 	}()
 
-	opt, err := parseStoragePairDelete(pairs...)
+	opt, err := s.parsePairDelete(pairs...)
 	if err != nil {
 		return err
 	}
@@ -305,10 +299,6 @@ func (s *Storage) getRelPath(path string) string {
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
 	if err == nil {
-		return nil
-	}
-
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
 		return nil
 	}
 
@@ -348,12 +338,8 @@ func (s *Storage) formatFileObject(v cos.Object) (o *types.Object, err error) {
 		o.UpdatedAt = t
 	}
 
-	if v.StorageClass != "" {
-		storageClass, err := formatStorageClass(v.StorageClass)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if value := formatStorageClass(v.StorageClass); value != "" {
+		o.SetStorageClass(value)
 	}
 
 	return o, nil

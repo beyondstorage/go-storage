@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/yunify/qingstor-sdk-go/v3/config"
 	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 	"github.com/yunify/qingstor-sdk-go/v3/service"
@@ -40,8 +39,6 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	if err != nil {
 		return nil, nil, err
 	}
-
-	srv.loose = opt.Loose
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
@@ -132,13 +129,13 @@ func parseStorageClass(in storageclass.Type) (string, error) {
 }
 
 // formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) (storageclass.Type, error) {
+func formatStorageClass(in string) storageclass.Type {
 	switch in {
 	case storageClassStandard, "":
-		return storageclass.Hot, nil
+		return storageclass.Hot
 	case storageClassStandardIA:
-		return storageclass.Warm, nil
+		return storageclass.Warm
 	default:
-		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
+		return ""
 	}
 }

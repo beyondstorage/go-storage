@@ -32,8 +32,6 @@ const (
 	Index = "index"
 	// Location will specify the location for service or storage
 	Location = "location"
-	// Loose will specify whether this service or storage uses loose mode
-	Loose = "loose"
 	// Name will specify the storage name
 	Name = "name"
 	// ObjectFunc will specify what todo with an object
@@ -133,15 +131,6 @@ func WithIndex(v int) *types.Pair {
 func WithLocation(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Location,
-		Value: v,
-	}
-}
-
-// WithLoose will apply loose value to Options
-// This pair is used to specify whether this service or storage uses loose mode
-func WithLoose(v bool) *types.Pair {
-	return &types.Pair{
-		Key:   Loose,
 		Value: v,
 	}
 }

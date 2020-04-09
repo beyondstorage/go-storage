@@ -35,10 +35,6 @@
     "Type": "string",
     "Description": "specify the location for service or storage"
   },
-  "loose": {
-    "Type": "bool",
-    "Description": "specify whether this service or storage uses loose mode"
-  },
   "name": {
     "Type": "string",
     "Description": "specify the storage name"

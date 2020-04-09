@@ -1,7 +1,6 @@
 package oss
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -25,7 +24,6 @@ type Storage struct {
 
 	name    string
 	workDir string
-	loose   bool
 }
 
 // String implements Storager.String
@@ -50,7 +48,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := s.parsePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
@@ -111,7 +109,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_prefix", err, prefix)
 	}()
 
-	opt, err := parseStoragePairListPrefix(pairs...)
+	opt, err := s.parsePairListPrefix(pairs...)
 	if err != nil {
 		return err
 	}
@@ -155,7 +153,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = s.formatError("read", err, path)
 	}()
 
-	opt, err := parseStoragePairWrite(pairs...)
+	opt, err := s.parsePairWrite(pairs...)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +178,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		err = s.formatError("write", err, path)
 	}()
 
-	opt, err := parseStoragePairWrite(pairs...)
+	opt, err := s.parsePairWrite(pairs...)
 	if err != nil {
 		return err
 	}
@@ -254,12 +252,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetContentType(v)
 	}
 
-	if v := output.Get(storageClassHeader); v != "" {
-		storageClass, err := formatStorageClass(v)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if v := formatStorageClass(output.Get(storageClassHeader)); v != "" {
+		o.SetStorageClass(v)
 	}
 
 	return o, nil
@@ -293,10 +287,6 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
-		return nil
-	}
-
 	return &services.StorageError{
 		Op:       op,
 		Err:      formatError(err),
@@ -326,12 +316,8 @@ func (s *Storage) formatFileObject(v oss.ObjectProperties) (o *types.Object, err
 		o.SetETag(v.ETag)
 	}
 
-	if v.Type != "" {
-		storageClass, err := formatStorageClass(v.Type)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if value := formatStorageClass(v.Type); value != "" {
+		o.SetStorageClass(value)
 	}
 
 	return

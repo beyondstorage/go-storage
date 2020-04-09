@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Xuanwo/storage/types/metadata"
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	qs "github.com/qiniu/api.v7/v7/storage"
 
@@ -31,8 +30,6 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	if err != nil {
 		return nil, nil, err
 	}
-
-	srv.loose = opt.Loose
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
@@ -82,16 +79,16 @@ func parseStorageClass(in storageclass.Type) (int, error) {
 }
 
 // formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in int) (storageclass.Type, error) {
+func formatStorageClass(in int) storageclass.Type {
 	switch in {
 	case 0:
-		return storageclass.Hot, nil
+		return storageclass.Hot
 	case 1:
-		return storageclass.Warm, nil
+		return storageclass.Warm
 	case 2:
-		return storageclass.Cold, nil
+		return storageclass.Cold
 	default:
-		return "", services.NewMetadataNotRecognizedError(metadata.ObjectMetaStorageClass, in)
+		return ""
 	}
 }
 

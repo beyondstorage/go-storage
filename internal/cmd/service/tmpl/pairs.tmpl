@@ -4,6 +4,12 @@
 {{- $pn := $name | toPascal }}
 {{- range $k, $v := $data }}
 {{- $pk := $k | toPascal }}
+var pair{{ $pn }}{{ $pk }}Map = map[string]struct{}{
+    {{- range $key, $_ := $v.Pairs }}
+        "{{ $key }}": struct{}{},
+    {{- end }}
+}
+
 type pair{{ $pn }}{{ $pk }} struct {
     // Pre-defined pairs
     {{- if $v.Funcs }}
@@ -19,11 +25,21 @@ type pair{{ $pn }}{{ $pk }} struct {
     {{- end }}
 }
 
-func parse{{ $pn }}Pair{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, error) {
+{{ if eq $pk "New" -}}
+func parse{{ $pn }}Pair
+{{- else -}}
+func (s *{{ $pn }} ) parsePair
+{{- end -}}
+{{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, error) {
     result := &pair{{ $pn }}{{ $pk }}{}
 
     values := make(map[string]interface{})
     for _, v := range opts {
+        {{- if ne $pk "New" }}
+        if _, ok := pair{{ $pn }}{{ $pk }}Map[v.Key]; !ok {
+            return nil, services.NewPairUnsupportedError(v)
+        }
+        {{- end }}
         values[v.Key] = v.Value
     }
 

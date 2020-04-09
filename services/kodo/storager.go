@@ -1,7 +1,6 @@
 package kodo
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,7 +22,6 @@ type Storage struct {
 
 	name    string
 	workDir string
-	loose   bool
 }
 
 // String implements Storager.String
@@ -48,7 +46,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairListDir(pairs...)
+	opt, err := s.parsePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
@@ -100,7 +98,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_prefix", err, prefix)
 	}()
 
-	opt, err := parseStoragePairListPrefix(pairs...)
+	opt, err := s.parsePairListPrefix(pairs...)
 	if err != nil {
 		return err
 	}
@@ -136,7 +134,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = s.formatError("read", err, path)
 	}()
 
-	opt, err := parseStoragePairRead(pairs...)
+	opt, err := s.parsePairRead(pairs...)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +162,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		err = s.formatError("write", err, path)
 	}()
 
-	opt, err := parseStoragePairWrite(pairs...)
+	opt, err := s.parsePairWrite(pairs...)
 	if err != nil {
 		return err
 	}
@@ -214,11 +212,9 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetContentType(fi.MimeType)
 	}
 
-	storageClass, err := formatStorageClass(fi.Type)
-	if err != nil {
-		return nil, err
+	if v := formatStorageClass(fi.Type); v != "" {
+		o.SetStorageClass(v)
 	}
-	o.SetStorageClass(storageClass)
 
 	return o, nil
 }
@@ -251,10 +247,6 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
-		return nil
-	}
-
 	return &services.StorageError{
 		Op:       op,
 		Err:      formatError(err),
@@ -280,11 +272,9 @@ func (s *Storage) formatFileObject(v qs.ListItem) (o *types.Object, err error) {
 		o.SetETag(v.Hash)
 	}
 
-	storageClass, err := formatStorageClass(v.Type)
-	if err != nil {
-		return nil, err
+	if value := formatStorageClass(v.Type); value != "" {
+		o.SetStorageClass(value)
 	}
-	o.SetStorageClass(storageClass)
 
 	return
 }

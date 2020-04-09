@@ -42,7 +42,6 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		client: files.New(cfg),
 
 		workDir: opt.WorkDir,
-		loose:   opt.Loose,
 	}
 
 	return nil, store, nil

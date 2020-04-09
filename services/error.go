@@ -158,27 +158,3 @@ func (e *PairRequiredError) Error() string {
 func (e *PairRequiredError) Unwrap() error {
 	return e.Err
 }
-
-// NewPairConflictError will create a new NewPairConflictError.
-func NewPairConflictError(pairs ...*types.Pair) *PairConflictError {
-	return &PairConflictError{
-		Err:   ErrRestrictionDissatisfied,
-		Pairs: pairs,
-	}
-}
-
-// PairConflictError means this operation has conflict pairs.
-type PairConflictError struct {
-	Err error
-
-	Pairs []*types.Pair
-}
-
-func (e *PairConflictError) Error() string {
-	return fmt.Sprintf("pair conflict, %v: %s", e.Pairs, e.Err.Error())
-}
-
-// Unwrap implements xerrors.Wrapper
-func (e *PairConflictError) Unwrap() error {
-	return e.Err
-}

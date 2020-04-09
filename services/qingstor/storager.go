@@ -1,7 +1,6 @@
 package qingstor
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -26,7 +25,6 @@ type Storage struct {
 
 	// options for this storager.
 	workDir string // workDir dir for all operation.
-	loose   bool
 }
 
 // String implements Storager.String
@@ -53,7 +51,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, _ := parseStoragePairListDir(pairs...)
+	opt, _ := s.parsePairListDir(pairs...)
 
 	marker := ""
 	delimiter := "/"
@@ -117,7 +115,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		err = s.formatError("list_prefix", err, prefix)
 	}()
 
-	opt, _ := parseStoragePairListPrefix(pairs...)
+	opt, _ := s.parsePairListPrefix(pairs...)
 
 	marker := ""
 	limit := 200
@@ -164,7 +162,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = s.formatError("read", err, path)
 	}()
 
-	opt, err := parseStoragePairRead(pairs...)
+	opt, err := s.parsePairRead(pairs...)
 	if err != nil {
 		return
 	}
@@ -191,7 +189,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		err = s.formatError("write", err, path)
 	}()
 
-	opt, err := parseStoragePairWrite(pairs...)
+	opt, err := s.parsePairWrite(pairs...)
 	if err != nil {
 		return
 	}
@@ -255,12 +253,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetETag(service.StringValue(output.ETag))
 	}
 
-	if v := service.StringValue(output.XQSStorageClass); v != "" {
-		storageClass, err := formatStorageClass(v)
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if v := formatStorageClass(service.StringValue(output.XQSStorageClass)); v != "" {
+		o.SetStorageClass(v)
 	}
 
 	return o, nil
@@ -323,7 +317,7 @@ func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 		err = s.formatError("reach", err, path)
 	}()
 
-	opt, err := parseStoragePairReach(pairs...)
+	opt, err := s.parsePairReach(pairs...)
 	if err != nil {
 		return
 	}
@@ -376,7 +370,7 @@ func (s *Storage) ListPrefixSegments(prefix string, pairs ...*types.Pair) (err e
 		err = s.formatError("list_prefix_segments", err, prefix)
 	}()
 
-	opt, err := parseStoragePairListPrefixSegments(pairs...)
+	opt, err := s.parsePairListPrefixSegments(pairs...)
 	if err != nil {
 		return
 	}
@@ -424,7 +418,7 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Se
 		err = s.formatError("init_segments", err, path)
 	}()
 
-	_, err = parseStoragePairInitSegment(pairs...)
+	_, err = s.parsePairInitSegment(pairs...)
 	if err != nil {
 		return
 	}
@@ -450,7 +444,7 @@ func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types
 		err = s.formatError("write_segment", err, seg.Path(), seg.ID())
 	}()
 
-	opt, err := parseStoragePairWriteSegment(pairs...)
+	opt, err := s.parsePairWriteSegment(pairs...)
 	if err != nil {
 		return
 	}
@@ -537,10 +531,6 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	if s.loose && errors.Is(err, services.ErrCapabilityInsufficient) {
-		return nil
-	}
-
 	return &services.StorageError{
 		Op:       op,
 		Err:      formatError(err),
@@ -562,12 +552,8 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *types.Object, err err
 	if v.MimeType != nil {
 		o.SetContentType(service.StringValue(v.MimeType))
 	}
-	if v.StorageClass != nil {
-		storageClass, err := formatStorageClass(service.StringValue(v.StorageClass))
-		if err != nil {
-			return nil, err
-		}
-		o.SetStorageClass(storageClass)
+	if value := formatStorageClass(service.StringValue(v.StorageClass)); value != "" {
+		o.SetStorageClass(value)
 	}
 	if v.Etag != nil {
 		o.SetETag(service.StringValue(v.Etag))
