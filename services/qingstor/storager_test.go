@@ -298,7 +298,7 @@ func TestStorage_InitSegment(t *testing.T) {
 	}
 }
 
-func TestStorage_List(t *testing.T) {
+func TestStorage_ListDir(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -437,7 +437,7 @@ func TestStorage_List(t *testing.T) {
 
 			items := make([]*types.Object, 0)
 
-			err := client.List(path, pairs.WithDirFunc(func(object *types.Object) {
+			err := client.ListDir(path, pairs.WithDirFunc(func(object *types.Object) {
 				items = append(items, object)
 			}), pairs.WithFileFunc(func(object *types.Object) {
 				items = append(items, object)
@@ -448,7 +448,7 @@ func TestStorage_List(t *testing.T) {
 	}
 }
 
-func TestStorage_ListWithObjectFunc(t *testing.T) {
+func TestStorage_ListPrefix(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -474,7 +474,7 @@ func TestStorage_ListWithObjectFunc(t *testing.T) {
 		bucket: mockBucket,
 	}
 
-	err := client.List(path, pairs.WithObjectFunc(func(object *types.Object) {
+	err := client.ListPrefix(path, pairs.WithObjectFunc(func(object *types.Object) {
 		assert.Equal(t, object.ID, key)
 	}))
 	assert.Nil(t, err)
@@ -710,7 +710,7 @@ func TestStorage_WriteSegment(t *testing.T) {
 	})
 }
 
-func TestStorage_ListSegments(t *testing.T) {
+func TestStorage_ListPrefixSegments(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -786,7 +786,7 @@ func TestStorage_ListSegments(t *testing.T) {
 
 			items := make([]segment.Segment, 0)
 
-			err := client.ListSegments(path,
+			err := client.ListPrefixSegments(path,
 				pairs.WithSegmentFunc(func(segment segment.Segment) {
 					items = append(items, segment)
 				}),

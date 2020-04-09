@@ -1,10 +1,12 @@
 {
   "name": "uss",
   "storage": {
-    "list": {
+    "list_dir": {
       "dir_func": false,
-      "file_func": false,
-      "object_func": false
+      "file_func": false
+    },
+    "list_prefix": {
+      "object_func": true
     },
     "new": {
       "credential": true,

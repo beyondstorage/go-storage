@@ -42,24 +42,20 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements Storager.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairList(pairs...)
+	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
 
 	marker := ""
-	delimiter := ""
+	delimiter := "/"
 	rp := s.getAbsPath(path)
-
-	if !opt.HasObjectFunc {
-		delimiter = "/"
-	}
 
 	var output *s3.ListObjectsV2Output
 	for {
@@ -87,7 +83,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 		}
 
-		if opt.HasObjectFunc || opt.HasFileFunc {
+		if opt.HasFileFunc {
 			for _, v := range output.Contents {
 				o := &types.Object{
 					ID:         *v.Key,
@@ -109,13 +105,68 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 					o.SetETag(*v.ETag)
 				}
 
-				if opt.HasObjectFunc {
-					opt.ObjectFunc(o)
-				}
 				if opt.HasFileFunc {
 					opt.FileFunc(o)
 				}
 			}
+		}
+
+		marker = aws.StringValue(output.StartAfter)
+		if aws.BoolValue(output.IsTruncated) {
+			break
+		}
+	}
+	return
+}
+
+// ListPrefix implements Storager.ListPrefix
+func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError("list_prefix", err, prefix)
+	}()
+
+	opt, err := parseStoragePairListPrefix(pairs...)
+	if err != nil {
+		return err
+	}
+
+	marker := ""
+	rp := s.getAbsPath(prefix)
+
+	var output *s3.ListObjectsV2Output
+	for {
+		output, err = s.service.ListObjectsV2(&s3.ListObjectsV2Input{
+			Bucket:     aws.String(s.name),
+			Prefix:     aws.String(rp),
+			MaxKeys:    aws.Int64(1000),
+			StartAfter: aws.String(marker),
+		})
+		if err != nil {
+			return err
+		}
+
+		for _, v := range output.Contents {
+			o := &types.Object{
+				ID:         *v.Key,
+				Name:       s.getRelPath(*v.Key),
+				Type:       types.ObjectTypeFile,
+				Size:       aws.Int64Value(v.Size),
+				UpdatedAt:  aws.TimeValue(v.LastModified),
+				ObjectMeta: metadata.NewObjectMeta(),
+			}
+
+			if v.StorageClass != nil {
+				storageClass, err := formatStorageClass(*v.StorageClass)
+				if err != nil {
+					return err
+				}
+				o.SetStorageClass(storageClass)
+			}
+			if v.ETag != nil {
+				o.SetETag(*v.ETag)
+			}
+
+			opt.ObjectFunc(o)
 		}
 
 		marker = aws.StringValue(output.StartAfter)
@@ -260,13 +311,13 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	return nil
 }
 
-// ListSegments implements Storager.ListSegments
-func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
+// ListPrefixSegments implements Storager.ListPrefixSegments
+func (s *Storage) ListPrefixSegments(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list segments", err, path)
+		err = s.formatError("list_prefix_segments", err, path)
 	}()
 
-	opt, err := parseStoragePairListSegments(pairs...)
+	opt, err := parseStoragePairListPrefixSegments(pairs...)
 	if err != nil {
 		return
 	}
@@ -311,7 +362,7 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 // InitSegment implements Storager.InitSegment
 func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
 	defer func() {
-		err = s.formatError("init segments", err, path)
+		err = s.formatError("init_segment", err, path)
 	}()
 
 	_, err = parseStoragePairInitSegment(pairs...)
@@ -340,7 +391,7 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Se
 // WriteSegment implements Storager.WriteSegment
 func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("write segment", err, seg.Path(), seg.ID())
+		err = s.formatError("write_segment", err, seg.Path(), seg.ID())
 	}()
 
 	opt, err := parseStoragePairWriteSegment(pairs...)
@@ -376,7 +427,7 @@ func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types
 // CompleteSegment implements Storager.CompleteSegment
 func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("complete segment", err, seg.Path(), seg.ID())
+		err = s.formatError("complete_segment", err, seg.Path(), seg.ID())
 	}()
 
 	parts := seg.(*segment.IndexBasedSegment).Parts()
@@ -404,7 +455,7 @@ func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (er
 // AbortSegment implements Storager.AbortSegment
 func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("abort segment", err, seg.Path(), seg.ID())
+		err = s.formatError("abort_segment", err, seg.Path(), seg.ID())
 	}()
 
 	rp := s.getAbsPath(seg.Path())

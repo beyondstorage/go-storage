@@ -48,10 +48,6 @@ type Storager interface {
 	// MetadataWithContext will return current storager's metadata.
 	MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m metadata.StorageMeta, err error)
 
-	// List will return list a specific path.
-	List(path string, pairs ...*types.Pair) (err error)
-	// ListWithContext will return list a specific path.
-	ListWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error)
 	// Read will read the file's data.
 	//
 	// Caller:
@@ -76,31 +72,39 @@ type Storager interface {
 	DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error)
 }
 
-/*
-Servicer can maintain multipart storage services.
+// DirLister is used for directory based storage service to list objects under a dir.
+type DirLister interface {
+	// ListDir will return list a specific dir.
+	ListDir(path string, pairs ...*types.Pair) (err error)
+	// ListDirWithContext will return list a specific path.
+	ListDirWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error)
+}
 
-Implementer can choose to implement this interface or not.
-*/
-type Servicer interface {
-	// String will implement Stringer.
-	String() string
+// PrefixLister is used for prefix based storage service to list objects under a prefix.
+type PrefixLister interface {
+	// ListPrefix will return list a specific dir.
+	ListPrefix(prefix string, pairs ...*types.Pair) (err error)
+	// ListPrefixWithContext will return list a specific path.
+	ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error)
+}
 
-	// List will list all storager instances under this service.
-	List(pairs ...*types.Pair) (err error)
-	// ListWithContext will list all storager instances under this service.
-	ListWithContext(ctx context.Context, pairs ...*types.Pair) (err error)
-	// Get will get a valid storager instance for service.
-	Get(name string, pairs ...*types.Pair) (Storager, error)
-	// GetWithContext will get a valid storager instance for service.
-	GetWithContext(ctx context.Context, name string, pairs ...*types.Pair) (Storager, error)
-	// Create will create a new storager instance.
-	Create(name string, pairs ...*types.Pair) (Storager, error)
-	// CreateWithContext will create a new storager instance.
-	CreateWithContext(ctx context.Context, name string, pairs ...*types.Pair) (Storager, error)
-	// Delete will delete a storager instance.
-	Delete(name string, pairs ...*types.Pair) (err error)
-	// DeleteWithContext will delete a storager instance.
-	DeleteWithContext(ctx context.Context, name string, pairs ...*types.Pair) (err error)
+// DirSegmentsLister is used for directory based storage service to list segments under a dir.
+type DirSegmentsLister interface {
+	// ListDirSegments will list segments via dir.
+	ListDirSegments(path string, pairs ...*types.Pair) (err error)
+	// ListDirSegmentsWithContext will list segments via dir.
+	ListDirSegmentsWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error)
+}
+
+// PrefixSegmentsLister is used for prefix based storage service to list segments under a prefix.
+type PrefixSegmentsLister interface {
+	// ListSegments will list segments.
+	//
+	// Implementer:
+	//   - If prefix == "", services should return all segments.
+	ListPrefixSegments(prefix string, pairs ...*types.Pair) (err error)
+	// ListSegmentsWithContext will list segments.
+	ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error)
 }
 
 // Copier is the interface for Copy.
@@ -147,13 +151,6 @@ type Statistician interface {
 type Segmenter interface {
 	// Segment Operations.
 
-	// ListSegments will list segments.
-	//
-	// Implementer:
-	//   - If path == "/", services should return all segments.
-	ListSegments(path string, pairs ...*types.Pair) (err error)
-	// ListSegmentsWithContext will list segments.
-	ListSegmentsWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error)
 	// InitSegment will init a segment which could be a File after complete.
 	//
 	// Implementer:

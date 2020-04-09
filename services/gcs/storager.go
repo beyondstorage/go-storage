@@ -41,24 +41,20 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements Storager.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairList(pairs...)
+	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
 
-	delimiter := ""
+	delimiter := "/"
 
 	rp := s.getAbsPath(path)
-
-	if !opt.HasObjectFunc {
-		delimiter = "/"
-	}
 
 	for {
 		it := s.bucket.Objects(opt.Context, &gs.Query{
@@ -101,9 +97,38 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 		if opt.HasFileFunc {
 			opt.FileFunc(o)
 		}
-		if opt.HasObjectFunc {
-			opt.ObjectFunc(o)
+	}
+}
+
+// ListPrefix implements Storager.ListPrefix
+func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError("list_prefix", err, prefix)
+	}()
+
+	opt, err := parseStoragePairListPrefix(pairs...)
+	if err != nil {
+		return err
+	}
+
+	rp := s.getAbsPath(prefix)
+
+	for {
+		it := s.bucket.Objects(opt.Context, &gs.Query{Prefix: rp})
+		object, err := it.Next()
+		if err != nil && err == iterator.Done {
+			return nil
 		}
+		if err != nil {
+			return err
+		}
+
+		o, err := s.formatFileObject(object)
+		if err != nil {
+			return err
+		}
+
+		opt.ObjectFunc(o)
 	}
 }
 

@@ -37,24 +37,20 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements Storager.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairList(pairs...)
+	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
 
-	maxListLevel := -1
+	maxListLevel := 1
 
 	rp := s.getAbsPath(path)
-
-	if !opt.HasObjectFunc {
-		maxListLevel = 1
-	}
 
 	ch := make(chan *upyun.FileInfo, 200)
 	defer close(ch)
@@ -93,12 +89,64 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 				o.SetContentType(v.ContentType)
 			}
 
-			if opt.HasObjectFunc {
-				opt.ObjectFunc(o)
-			}
 			if opt.HasFileFunc {
 				opt.FileFunc(o)
 			}
+		}
+	}()
+
+	err = s.bucket.List(&upyun.GetObjectsConfig{
+		Path:         rp,
+		ObjectsChan:  ch,
+		MaxListLevel: maxListLevel,
+	})
+	if err != nil {
+		return err
+	}
+	return
+}
+
+// ListPrefix implements Storager.ListPrefix
+func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError("list_prefix", err, prefix)
+	}()
+
+	opt, err := parseStoragePairListPrefix(pairs...)
+	if err != nil {
+		return err
+	}
+
+	maxListLevel := -1
+
+	rp := s.getAbsPath(prefix)
+
+	ch := make(chan *upyun.FileInfo, 200)
+	defer close(ch)
+
+	go func() {
+		for v := range ch {
+			if v.IsDir {
+				continue
+			}
+
+			o := &types.Object{
+				ID:         v.Name,
+				Name:       s.getRelPath(v.Name),
+				Type:       types.ObjectTypeFile,
+				Size:       v.Size,
+				UpdatedAt:  v.Time,
+				ObjectMeta: metadata.NewObjectMeta(),
+			}
+
+			if v.ETag != "" {
+				o.SetETag(v.ETag)
+			}
+			if v.ContentType != "" {
+				o.SetContentType(v.ContentType)
+			}
+
+			opt.ObjectFunc(o)
 		}
 	}()
 

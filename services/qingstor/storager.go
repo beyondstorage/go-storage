@@ -47,23 +47,19 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements DirLister.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, _ := parseStoragePairList(pairs...)
+	opt, _ := parseStoragePairListDir(pairs...)
 
 	marker := ""
-	delimiter := ""
+	delimiter := "/"
 	limit := 200
 
 	rp := s.getAbsPath(path)
-
-	if !opt.HasObjectFunc {
-		delimiter = "/"
-	}
 
 	var output *service.ListObjectsOutput
 	for {
@@ -90,7 +86,7 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 			}
 		}
 
-		if opt.HasObjectFunc || opt.HasFileFunc {
+		if opt.HasFileFunc {
 			for _, v := range output.Keys {
 				o := &types.Object{
 					ID:         *v.Key,
@@ -115,13 +111,75 @@ func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
 					o.SetETag(service.StringValue(v.Etag))
 				}
 
-				if opt.HasObjectFunc {
-					opt.ObjectFunc(o)
-				}
 				if opt.HasFileFunc {
 					opt.FileFunc(o)
 				}
 			}
+		}
+
+		marker = convert.StringValue(output.NextMarker)
+		if marker == "" {
+			break
+		}
+		if output.HasMore != nil && !*output.HasMore {
+			break
+		}
+		if len(output.Keys) == 0 {
+			break
+		}
+	}
+	return
+}
+
+// ListPrefix implements PrefixLister.ListPrefix
+func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError("list_prefix", err, prefix)
+	}()
+
+	opt, _ := parseStoragePairListPrefix(pairs...)
+
+	marker := ""
+	limit := 200
+
+	rp := s.getAbsPath(prefix)
+
+	var output *service.ListObjectsOutput
+	for {
+		output, err = s.bucket.ListObjects(&service.ListObjectsInput{
+			Limit:  &limit,
+			Marker: &marker,
+			Prefix: &rp,
+		})
+		if err != nil {
+			return
+		}
+
+		for _, v := range output.Keys {
+			o := &types.Object{
+				ID:         *v.Key,
+				Name:       s.getRelPath(*v.Key),
+				Type:       types.ObjectTypeFile,
+				Size:       service.Int64Value(v.Size),
+				UpdatedAt:  convertUnixTimestampToTime(service.IntValue(v.Modified)),
+				ObjectMeta: metadata.NewObjectMeta(),
+			}
+
+			if v.MimeType != nil {
+				o.SetContentType(service.StringValue(v.MimeType))
+			}
+			if v.StorageClass != nil {
+				storageClass, err := formatStorageClass(service.StringValue(v.StorageClass))
+				if err != nil {
+					return err
+				}
+				o.SetStorageClass(storageClass)
+			}
+			if v.Etag != nil {
+				o.SetETag(service.StringValue(v.Etag))
+			}
+
+			opt.ObjectFunc(o)
 		}
 
 		marker = convert.StringValue(output.NextMarker)
@@ -350,13 +408,13 @@ func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic
 	return m, nil
 }
 
-// ListSegments implements Storager.ListSegments
-func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
+// ListPrefixSegments implements Storager.ListPrefixSegments
+func (s *Storage) ListPrefixSegments(prefix string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list segments", err, path)
+		err = s.formatError("list_prefix_segments", err, prefix)
 	}()
 
-	opt, err := parseStoragePairListSegments(pairs...)
+	opt, err := parseStoragePairListPrefixSegments(pairs...)
 	if err != nil {
 		return
 	}
@@ -365,7 +423,7 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 	uploadIDMarker := ""
 	limit := 200
 
-	rp := s.getAbsPath(path)
+	rp := s.getAbsPath(prefix)
 
 	var output *service.ListMultipartUploadsOutput
 	for {
@@ -380,7 +438,7 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range output.Uploads {
-			// TODO: we should handle rel path here.
+			// TODO: we should handle rel prefix here.
 			seg := segment.NewIndexBasedSegment(*v.Key, *v.UploadID)
 
 			opt.SegmentFunc(seg)
@@ -401,7 +459,7 @@ func (s *Storage) ListSegments(path string, pairs ...*types.Pair) (err error) {
 // InitSegment implements Storager.InitSegment
 func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
 	defer func() {
-		err = s.formatError("init segments", err, path)
+		err = s.formatError("init_segments", err, path)
 	}()
 
 	_, err = parseStoragePairInitSegment(pairs...)
@@ -427,7 +485,7 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Se
 // WriteSegment implements Storager.WriteSegment
 func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("write segment", err, seg.Path(), seg.ID())
+		err = s.formatError("write_segment", err, seg.Path(), seg.ID())
 	}()
 
 	opt, err := parseStoragePairWriteSegment(pairs...)
@@ -461,7 +519,7 @@ func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types
 // CompleteSegment implements Storager.CompleteSegment
 func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("complete segment", err, seg.Path(), seg.ID())
+		err = s.formatError("complete_segment", err, seg.Path(), seg.ID())
 	}()
 
 	parts := seg.(*segment.IndexBasedSegment).Parts()
@@ -488,7 +546,7 @@ func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (er
 // AbortSegment implements Storager.AbortSegment
 func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("abort segment", err, seg.Path(), seg.ID())
+		err = s.formatError("abort_segment", err, seg.Path(), seg.ID())
 	}()
 
 	rp := s.getAbsPath(seg.Path())

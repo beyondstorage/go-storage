@@ -47,13 +47,13 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 	return m, nil
 }
 
-// List implements Storager.List
-func (s *Storage) List(path string, pairs ...*types.Pair) (err error) {
+// ListDir implements Storager.ListDir
+func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, path)
+		err = s.formatError("list_dir", err, path)
 	}()
 
-	opt, err := parseStoragePairList(pairs...)
+	opt, err := parseStoragePairListDir(pairs...)
 	if err != nil {
 		return err
 	}
