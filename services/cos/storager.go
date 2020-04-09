@@ -88,40 +88,9 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		if opt.HasFileFunc {
 			for _, v := range resp.Contents {
-
-				o := &types.Object{
-					ID:         v.Key,
-					Name:       s.getRelPath(v.Key),
-					Type:       types.ObjectTypeFile,
-					Size:       int64(v.Size),
-					ObjectMeta: metadata.NewObjectMeta(),
-				}
-
-				// COS returns different value depends on object upload method or
-				// encryption method, so we can't treat this value as content-md5
-				//
-				// ref: https://cloud.tencent.com/document/product/436/7729
-				if v.ETag != "" {
-					o.SetETag(v.ETag)
-				}
-
-				// COS uses ISO8601 format: "2019-05-27T11:26:14.000Z" in List
-				//
-				// ref: https://cloud.tencent.com/document/product/436/7729
-				if v.LastModified != "" {
-					t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
-					if err != nil {
-						return err
-					}
-					o.UpdatedAt = t
-				}
-
-				if v.StorageClass != "" {
-					storageClass, err := formatStorageClass(v.StorageClass)
-					if err != nil {
-						return err
-					}
-					o.SetStorageClass(storageClass)
+				o, err := s.formatFileObject(v)
+				if err != nil {
+					return err
 				}
 
 				opt.FileFunc(o)
@@ -166,39 +135,9 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range resp.Contents {
-			o := &types.Object{
-				ID:         v.Key,
-				Name:       s.getRelPath(v.Key),
-				Type:       types.ObjectTypeFile,
-				Size:       int64(v.Size),
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-
-			// COS returns different value depends on object upload method or
-			// encryption method, so we can't treat this value as content-md5
-			//
-			// ref: https://cloud.tencent.com/document/product/436/7729
-			if v.ETag != "" {
-				o.SetETag(v.ETag)
-			}
-
-			// COS uses ISO8601 format: "2019-05-27T11:26:14.000Z" in List
-			//
-			// ref: https://cloud.tencent.com/document/product/436/7729
-			if v.LastModified != "" {
-				t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
-				if err != nil {
-					return err
-				}
-				o.UpdatedAt = t
-			}
-
-			if v.StorageClass != "" {
-				storageClass, err := formatStorageClass(v.StorageClass)
-				if err != nil {
-					return err
-				}
-				o.SetStorageClass(storageClass)
+			o, err := s.formatFileObject(v)
+			if err != nil {
+				return err
 			}
 
 			opt.ObjectFunc(o)
@@ -379,4 +318,43 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v cos.Object) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Key,
+		Name:       s.getRelPath(v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       int64(v.Size),
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	// COS returns different value depends on object upload method or
+	// encryption method, so we can't treat this value as content-md5
+	//
+	// ref: https://cloud.tencent.com/document/product/436/7729
+	if v.ETag != "" {
+		o.SetETag(v.ETag)
+	}
+
+	// COS uses ISO8601 format: "2019-05-27T11:26:14.000Z" in List
+	//
+	// ref: https://cloud.tencent.com/document/product/436/7729
+	if v.LastModified != "" {
+		t, err := time.Parse("2006-01-02T15:04:05.999Z", v.LastModified)
+		if err != nil {
+			return nil, err
+		}
+		o.UpdatedAt = t
+	}
+
+	if v.StorageClass != "" {
+		storageClass, err := formatStorageClass(v.StorageClass)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
+	}
+
+	return o, nil
 }

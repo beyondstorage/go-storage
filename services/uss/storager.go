@@ -73,25 +73,12 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 				continue
 			}
 
-			o := &types.Object{
-				ID:         v.Name,
-				Name:       s.getRelPath(v.Name),
-				Type:       types.ObjectTypeFile,
-				Size:       v.Size,
-				UpdatedAt:  v.Time,
-				ObjectMeta: metadata.NewObjectMeta(),
+			o, err := s.formatFileObject(v)
+			if err != nil {
+				return
 			}
 
-			if v.ETag != "" {
-				o.SetETag(v.ETag)
-			}
-			if v.ContentType != "" {
-				o.SetContentType(v.ContentType)
-			}
-
-			if opt.HasFileFunc {
-				opt.FileFunc(o)
-			}
+			opt.FileFunc(o)
 		}
 	}()
 
@@ -130,20 +117,9 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 				continue
 			}
 
-			o := &types.Object{
-				ID:         v.Name,
-				Name:       s.getRelPath(v.Name),
-				Type:       types.ObjectTypeFile,
-				Size:       v.Size,
-				UpdatedAt:  v.Time,
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-
-			if v.ETag != "" {
-				o.SetETag(v.ETag)
-			}
-			if v.ContentType != "" {
-				o.SetContentType(v.ContentType)
+			o, err := s.formatFileObject(v)
+			if err != nil {
+				return
 			}
 
 			opt.ObjectFunc(o)
@@ -290,4 +266,24 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v *upyun.FileInfo) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Name,
+		Name:       s.getRelPath(v.Name),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Size,
+		UpdatedAt:  v.Time,
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	if v.ETag != "" {
+		o.SetETag(v.ETag)
+	}
+	if v.ContentType != "" {
+		o.SetContentType(v.ContentType)
+	}
+
+	return o, nil
 }

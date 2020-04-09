@@ -85,29 +85,12 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		if opt.HasFileFunc {
 			for _, v := range output.Contents {
-				o := &types.Object{
-					ID:         *v.Key,
-					Name:       s.getRelPath(*v.Key),
-					Type:       types.ObjectTypeFile,
-					Size:       aws.Int64Value(v.Size),
-					UpdatedAt:  aws.TimeValue(v.LastModified),
-					ObjectMeta: metadata.NewObjectMeta(),
+				o, err := s.formatFileObject(v)
+				if err != nil {
+					return err
 				}
 
-				if v.StorageClass != nil {
-					storageClass, err := formatStorageClass(*v.StorageClass)
-					if err != nil {
-						return err
-					}
-					o.SetStorageClass(storageClass)
-				}
-				if v.ETag != nil {
-					o.SetETag(*v.ETag)
-				}
-
-				if opt.HasFileFunc {
-					opt.FileFunc(o)
-				}
+				opt.FileFunc(o)
 			}
 		}
 
@@ -146,24 +129,9 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range output.Contents {
-			o := &types.Object{
-				ID:         *v.Key,
-				Name:       s.getRelPath(*v.Key),
-				Type:       types.ObjectTypeFile,
-				Size:       aws.Int64Value(v.Size),
-				UpdatedAt:  aws.TimeValue(v.LastModified),
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-
-			if v.StorageClass != nil {
-				storageClass, err := formatStorageClass(*v.StorageClass)
-				if err != nil {
-					return err
-				}
-				o.SetStorageClass(storageClass)
-			}
-			if v.ETag != nil {
-				o.SetETag(*v.ETag)
+			o, err := s.formatFileObject(v)
+			if err != nil {
+				return err
 			}
 
 			opt.ObjectFunc(o)
@@ -494,4 +462,28 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v *s3.Object) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         *v.Key,
+		Name:       s.getRelPath(*v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       aws.Int64Value(v.Size),
+		UpdatedAt:  aws.TimeValue(v.LastModified),
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	if v.StorageClass != nil {
+		storageClass, err := formatStorageClass(*v.StorageClass)
+		if err != nil {
+			return nil, err
+		}
+		o.SetStorageClass(storageClass)
+	}
+	if v.ETag != nil {
+		o.SetETag(*v.ETag)
+	}
+
+	return
 }

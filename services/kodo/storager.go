@@ -78,31 +78,12 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 		if opt.HasFileFunc {
 			for _, v := range entries {
-				o := &types.Object{
-					ID:         v.Key,
-					Name:       s.getRelPath(v.Key),
-					Type:       types.ObjectTypeFile,
-					Size:       v.Fsize,
-					UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
-					ObjectMeta: metadata.NewObjectMeta(),
-				}
-
-				if v.MimeType != "" {
-					o.SetContentType(v.MimeType)
-				}
-				if v.Hash != "" {
-					o.SetETag(v.Hash)
-				}
-
-				storageClass, err := formatStorageClass(v.Type)
+				o, err := s.formatFileObject(v)
 				if err != nil {
 					return err
 				}
-				o.SetStorageClass(storageClass)
 
-				if opt.HasFileFunc {
-					opt.FileFunc(o)
-				}
+				opt.FileFunc(o)
 			}
 		}
 
@@ -134,27 +115,10 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		}
 
 		for _, v := range entries {
-			o := &types.Object{
-				ID:         v.Key,
-				Name:       s.getRelPath(v.Key),
-				Type:       types.ObjectTypeFile,
-				Size:       v.Fsize,
-				UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
-				ObjectMeta: metadata.NewObjectMeta(),
-			}
-
-			if v.MimeType != "" {
-				o.SetContentType(v.MimeType)
-			}
-			if v.Hash != "" {
-				o.SetETag(v.Hash)
-			}
-
-			storageClass, err := formatStorageClass(v.Type)
+			o, err := s.formatFileObject(v)
 			if err != nil {
 				return err
 			}
-			o.SetStorageClass(storageClass)
 
 			opt.ObjectFunc(o)
 		}
@@ -297,4 +261,30 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		Storager: s,
 		Path:     path,
 	}
+}
+
+func (s *Storage) formatFileObject(v qs.ListItem) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Key,
+		Name:       s.getRelPath(v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Fsize,
+		UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
+		ObjectMeta: metadata.NewObjectMeta(),
+	}
+
+	if v.MimeType != "" {
+		o.SetContentType(v.MimeType)
+	}
+	if v.Hash != "" {
+		o.SetETag(v.Hash)
+	}
+
+	storageClass, err := formatStorageClass(v.Type)
+	if err != nil {
+		return nil, err
+	}
+	o.SetStorageClass(storageClass)
+
+	return
 }
