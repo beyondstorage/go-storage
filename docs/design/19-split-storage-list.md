@@ -1,6 +1,6 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: candidate
 updated_at: 2020-04-09
 updates:
   - design/2-use-callback-in-list-operations.md
