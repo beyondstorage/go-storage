@@ -83,6 +83,9 @@ type DirLister interface {
 // PrefixLister is used for prefix based storage service to list objects under a prefix.
 type PrefixLister interface {
 	// ListPrefix will return list a specific dir.
+	//
+	// Caller:
+	//   - prefix SHOULD NOT start with /, and SHOULD relative to workdir.
 	ListPrefix(prefix string, pairs ...*types.Pair) (err error)
 	// ListPrefixWithContext will return list a specific path.
 	ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error)

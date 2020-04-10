@@ -35,7 +35,11 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 		osRename:      os.Rename,
 		osStat:        os.Stat,
 
-		workDir: opt.WorkDir,
+		workDir: "/",
+	}
+
+	if opt.HasWorkDir {
+		store.workDir = opt.WorkDir
 	}
 	return nil, store, nil
 }

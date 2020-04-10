@@ -50,7 +50,7 @@ const (
 	StorageClass = "storage_class"
 	// StoragerFunc will specify what todo with a storager
 	StoragerFunc = "storager_func"
-	// WorkDir will specify the work dir for service or storage, every operation will be relative to this dir
+	// WorkDir will specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
 	WorkDir = "work_dir"
 )
 
@@ -217,7 +217,7 @@ func WithStoragerFunc(v storage.StoragerFunc) *types.Pair {
 }
 
 // WithWorkDir will apply work_dir value to Options
-// This pair is used to specify the work dir for service or storage, every operation will be relative to this dir
+// This pair is used to specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
 func WithWorkDir(v string) *types.Pair {
 	return &types.Pair{
 		Key:   WorkDir,

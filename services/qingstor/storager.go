@@ -516,14 +516,16 @@ func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err e
 	return
 }
 
+// getAbsPath will calculate object storage's abs path
 func (s *Storage) getAbsPath(path string) string {
-	prefix := strings.TrimPrefix(s.workDir, "/") // qsPrefix should not start with "/"
-	return prefix + path                         // qs abs path is the qsPrefix add path (path is not start with "/")
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return prefix + path
 }
 
+// getRelPath will get object storage's rel path.
 func (s *Storage) getRelPath(path string) string {
-	prefix := strings.TrimPrefix(s.workDir, "/") // qsPrefix should not start with "/"
-	return strings.TrimPrefix(path, prefix)      // qs rel path is the path trimmed qsPrefix
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return strings.TrimPrefix(path, prefix)
 }
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
