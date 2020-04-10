@@ -21,6 +21,10 @@
       "name": true,
       "work_dir": false
     },
+    "read": {
+      "offset": false,
+      "size": false
+    },
     "write": {
       "checksum": false,
       "size": true,

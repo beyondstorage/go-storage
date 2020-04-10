@@ -450,7 +450,9 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 }
 
 var pairStorageReadMap = map[string]struct{}{
+	"offset":             struct{}{},
 	"read_callback_func": struct{}{},
+	"size":               struct{}{},
 }
 
 type pairStorageRead struct {
@@ -458,8 +460,12 @@ type pairStorageRead struct {
 	Context context.Context
 
 	// Meta-defined pairs
+	HasOffset           bool
+	Offset              int64
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
+	HasSize             bool
+	Size                int64
 }
 
 func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
@@ -485,10 +491,20 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.Offset]
+	if ok {
+		result.HasOffset = true
+		result.Offset = v.(int64)
+	}
 	v, ok = values[ps.ReadCallbackFunc]
 	if ok {
 		result.HasReadCallbackFunc = true
 		result.ReadCallbackFunc = v.(func([]byte))
+	}
+	v, ok = values[ps.Size]
+	if ok {
+		result.HasSize = true
+		result.Size = v.(int64)
 	}
 
 	return result, nil
