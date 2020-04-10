@@ -142,7 +142,17 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 	rp := s.getAbsPath(path)
 
-	output, err := s.bucket.NewBlockBlobURL(rp).Download(opt.Context, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
+	offset := int64(0)
+	if opt.HasOffset {
+		offset = opt.Offset
+	}
+
+	count := int64(azblob.CountToEnd)
+	if opt.HasSize {
+		count = opt.Size
+	}
+
+	output, err := s.bucket.NewBlockBlobURL(rp).Download(opt.Context, offset, count, azblob.BlobAccessConditions{}, false)
 	if err != nil {
 		return nil, err
 	}
