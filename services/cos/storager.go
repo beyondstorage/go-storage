@@ -29,7 +29,7 @@ type Storage struct {
 func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager cos {Name: %s, WorkDir: %s}",
-		s.name, "/"+s.workDir,
+		s.name, s.workDir,
 	)
 }
 

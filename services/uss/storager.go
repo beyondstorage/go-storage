@@ -24,7 +24,7 @@ type Storage struct {
 // String implements Storager.String
 func (s *Storage) String() string {
 	return fmt.Sprintf("Storager uss {Name: %s, WorkDir: %s}",
-		s.name, "/"+s.workDir)
+		s.name, s.workDir)
 }
 
 // Metadata implements Storager.Metadata

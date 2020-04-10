@@ -28,7 +28,7 @@ type Storage struct {
 func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager kodo {Name: %s, WorkDir: %s}",
-		s.name, "/"+s.workDir,
+		s.name, s.workDir,
 	)
 }
 

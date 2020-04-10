@@ -30,7 +30,7 @@ type Storage struct {
 func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager oss {Name: %s, WorkDir: %s}",
-		s.bucket.BucketName, "/"+s.workDir,
+		s.bucket.BucketName, s.workDir,
 	)
 }
 

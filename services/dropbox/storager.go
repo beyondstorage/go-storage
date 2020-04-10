@@ -26,7 +26,7 @@ type Storage struct {
 func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager dropbox {WorkDir: %s}",
-		"/"+s.workDir,
+		s.workDir,
 	)
 }
 
