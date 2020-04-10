@@ -5,8 +5,11 @@
 {{- range $k, $v := $data }}
 {{- $pk := $k | toPascal }}
 var pair{{ $pn }}{{ $pk }}Map = map[string]struct{}{
+    // Pre-defined pairs
+    "context": struct{}{},
+    // Meta-defined pairs
     {{- range $key, $_ := $v.Pairs }}
-        "{{ $key }}": struct{}{},
+    "{{ $key }}": struct{}{},
     {{- end }}
 }
 
