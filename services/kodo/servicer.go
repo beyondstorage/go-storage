@@ -129,7 +129,11 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		},
 
 		name:    opt.Name,
-		workDir: opt.WorkDir,
+		workDir: "/",
+	}
+
+	if opt.HasWorkDir {
+		store.workDir = opt.WorkDir
 	}
 	return store, nil
 }

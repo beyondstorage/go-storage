@@ -187,13 +187,19 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 	if err != nil {
 		return
 	}
-	return &Storage{
+
+	st := &Storage{
 		bucket:     bucket,
 		config:     bucket.Config,
 		properties: bucket.Properties,
 
-		workDir: opt.WorkDir,
-	}, nil
+		workDir: "/",
+	}
+
+	if opt.HasWorkDir {
+		st.workDir = opt.WorkDir
+	}
+	return st, nil
 }
 
 func (s *Service) detectLocation(name string) (location string, err error) {

@@ -40,7 +40,10 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	}
 	store.bucket = upyun.NewUpYun(cfg)
 	store.name = opt.Name
-	store.workDir = opt.WorkDir
+	store.workDir = "/"
+	if opt.HasWorkDir {
+		store.workDir = opt.WorkDir
+	}
 	return nil, store, nil
 }
 

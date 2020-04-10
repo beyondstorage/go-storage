@@ -30,7 +30,7 @@ type Storage struct {
 func (s *Storage) String() string {
 	return fmt.Sprintf(
 		"Storager oss {Name: %s, WorkDir: %s}",
-		s.bucket.BucketName, "/"+s.workDir,
+		s.bucket.BucketName, s.workDir,
 	)
 }
 
@@ -274,12 +274,16 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	return nil
 }
 
+// getAbsPath will calculate object storage's abs path
 func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return prefix + path
 }
 
+// getRelPath will get object storage's rel path.
 func (s *Storage) getRelPath(path string) string {
-	return strings.TrimPrefix(path, s.workDir+"/")
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return strings.TrimPrefix(path, prefix)
 }
 
 func (s *Storage) formatError(op string, err error, path ...string) error {
