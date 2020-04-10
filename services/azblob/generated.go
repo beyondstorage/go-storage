@@ -28,7 +28,11 @@ var _ services.ServiceError
 // Type is the type for azblob
 const Type = "azblob"
 
-var pairServiceCreateMap = map[string]struct{}{}
+var pairServiceCreateMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairServiceCreate struct {
 	// Pre-defined pairs
@@ -64,7 +68,11 @@ func (s *Service) parsePairCreate(opts ...*types.Pair) (*pairServiceCreate, erro
 	return result, nil
 }
 
-var pairServiceDeleteMap = map[string]struct{}{}
+var pairServiceDeleteMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairServiceDelete struct {
 	// Pre-defined pairs
@@ -100,7 +108,11 @@ func (s *Service) parsePairDelete(opts ...*types.Pair) (*pairServiceDelete, erro
 	return result, nil
 }
 
-var pairServiceGetMap = map[string]struct{}{}
+var pairServiceGetMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairServiceGet struct {
 	// Pre-defined pairs
@@ -137,6 +149,9 @@ func (s *Service) parsePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 }
 
 var pairServiceListMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"storager_func": struct{}{},
 }
 
@@ -183,6 +198,9 @@ func (s *Service) parsePairList(opts ...*types.Pair) (*pairServiceList, error) {
 }
 
 var pairServiceNewMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"credential": struct{}{},
 	"endpoint":   struct{}{},
 }
@@ -234,7 +252,11 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	return result, nil
 }
 
-var pairStorageDeleteMap = map[string]struct{}{}
+var pairStorageDeleteMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairStorageDelete struct {
 	// Pre-defined pairs
@@ -271,6 +293,9 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 }
 
 var pairStorageListDirMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"dir_func":  struct{}{},
 	"file_func": struct{}{},
 }
@@ -324,6 +349,9 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 }
 
 var pairStorageListPrefixMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"object_func": struct{}{},
 }
 
@@ -369,7 +397,11 @@ func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPref
 	return result, nil
 }
 
-var pairStorageMetadataMap = map[string]struct{}{}
+var pairStorageMetadataMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairStorageMetadata struct {
 	// Pre-defined pairs
@@ -406,6 +438,9 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 }
 
 var pairStorageNewMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"name":     struct{}{},
 	"work_dir": struct{}{},
 }
@@ -450,6 +485,9 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 }
 
 var pairStorageReadMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"offset":             struct{}{},
 	"read_callback_func": struct{}{},
 	"size":               struct{}{},
@@ -510,7 +548,11 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	return result, nil
 }
 
-var pairStorageStatMap = map[string]struct{}{}
+var pairStorageStatMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairStorageStat struct {
 	// Pre-defined pairs
@@ -547,6 +589,9 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 }
 
 var pairStorageWriteMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"checksum":           struct{}{},
 	"read_callback_func": struct{}{},
 	"size":               struct{}{},

@@ -28,7 +28,11 @@ var _ services.ServiceError
 // Type is the type for dropbox
 const Type = "dropbox"
 
-var pairServiceNewMap = map[string]struct{}{}
+var pairServiceNewMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairServiceNew struct {
 	// Pre-defined pairs
@@ -61,7 +65,11 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	return result, nil
 }
 
-var pairStorageDeleteMap = map[string]struct{}{}
+var pairStorageDeleteMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairStorageDelete struct {
 	// Pre-defined pairs
@@ -98,6 +106,9 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 }
 
 var pairStorageListDirMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"dir_func":  struct{}{},
 	"file_func": struct{}{},
 }
@@ -150,7 +161,11 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 	return result, nil
 }
 
-var pairStorageMetadataMap = map[string]struct{}{}
+var pairStorageMetadataMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairStorageMetadata struct {
 	// Pre-defined pairs
@@ -187,6 +202,9 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 }
 
 var pairStorageNewMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"credential": struct{}{},
 	"work_dir":   struct{}{},
 }
@@ -231,6 +249,9 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 }
 
 var pairStorageReadMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"read_callback_func": struct{}{},
 	"size":               struct{}{},
 }
@@ -283,7 +304,11 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	return result, nil
 }
 
-var pairStorageStatMap = map[string]struct{}{}
+var pairStorageStatMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
 
 type pairStorageStat struct {
 	// Pre-defined pairs
@@ -320,6 +345,9 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 }
 
 var pairStorageWriteMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
 	"read_callback_func": struct{}{},
 	"size":               struct{}{},
 }
