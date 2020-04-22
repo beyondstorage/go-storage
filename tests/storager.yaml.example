@@ -1,1 +1,3 @@
-STORAGE_TEST_SERVICE_FS: fs:///?work_dir=/path/to/test/dir
+- type: fs
+  options:
+    work_dir: "/path/to/work/dir"
