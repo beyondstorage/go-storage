@@ -6,8 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -22,41 +20,38 @@ import (
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
-const TestPrefix = "STORAGE_TEST_SERVICE_"
+type config struct {
+	Type    string
+	Options map[string]interface{}
+}
 
 func TestStorager(t *testing.T) {
-	services := make(map[string]string)
+	srv := make([]config, 0)
 
 	content, err := ioutil.ReadFile("storager.yaml")
 	if err == nil {
-		err = yaml.Unmarshal(content, &services)
+		err = yaml.Unmarshal(content, &srv)
 		if err != nil {
 			t.Error(err)
 		}
 	}
 
-	env := os.Environ()
-	for _, v := range env {
-		values := strings.SplitN(v, "=", 2)
-
-		if !strings.HasPrefix(values[0], TestPrefix) {
-			continue
+	for _, v := range srv {
+		pairs, err := ps.Parse(v.Options)
+		if err != nil {
+			t.Error(err)
 		}
-
-		services[values[0]] = values[1]
-	}
-
-	for _, v := range services {
-		testStorager(t, v)
+		testStorager(t, v.Type, pairs)
+		testDirLister(t, v.Type, pairs)
 	}
 }
 
-func testStorager(t *testing.T, config string) {
+func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 	Convey("Given a basic Storager", t, func() {
 		var store storage.Storager
 		var err error
 
-		_, store, err = coreutils.Open(config)
+		_, store, err = coreutils.Open(typ, pair...)
 		if err != nil {
 			t.Error(err)
 		}
@@ -86,63 +81,6 @@ func testStorager(t *testing.T, config string) {
 
 			Convey("The metadata should not be empty", func() {
 				So(m, ShouldNotBeEmpty)
-			})
-		})
-
-		Convey("When List an empty dir", func() {
-			called := false
-			fn := types.ObjectFunc(func(_ *types.Object) {
-				called = true
-			})
-
-			err := store.List("", ps.WithFileFunc(fn))
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("The file func should not be called", func() {
-				So(called, ShouldBeFalse)
-			})
-
-		})
-
-		Convey("When List a dir within files", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), size)
-			path := uuid.New().String()
-			err := store.Write(path, r, ps.WithSize(size))
-			if err != nil {
-				t.Error(err)
-			}
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			called := false
-			var obj *types.Object
-			fn := types.ObjectFunc(func(o *types.Object) {
-				called = true
-				obj = o
-
-			})
-			err = store.List("", ps.WithFileFunc(fn))
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("The file func should be called", func() {
-				So(called, ShouldBeTrue)
-			})
-
-			Convey("The name and size should be match", func() {
-				So(obj, ShouldNotBeNil)
-				So(obj.Name, ShouldEqual, path)
-				So(obj.Size, ShouldEqual, size)
 			})
 		})
 
@@ -287,5 +225,81 @@ func testStorager(t *testing.T, config string) {
 				So(o, ShouldBeNil)
 			})
 		})
+	})
+}
+
+func testDirLister(t *testing.T, typ string, pair []*types.Pair) {
+	Convey("Given a dir lister", t, func() {
+		var store storage.Storager
+		var lister storage.DirLister
+		var err error
+
+		_, store, err = coreutils.Open(typ, pair...)
+		if err != nil {
+			t.Error(err)
+		}
+
+		lister, ok := store.(storage.DirLister)
+		if !ok {
+			t.Skip()
+		}
+
+		Convey("When List an empty dir", func() {
+			called := false
+			fn := types.ObjectFunc(func(_ *types.Object) {
+				called = true
+			})
+
+			err := lister.ListDir("", ps.WithFileFunc(fn))
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The file func should not be called", func() {
+				So(called, ShouldBeFalse)
+			})
+
+		})
+
+		Convey("When List a dir within files", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), size)
+			path := uuid.New().String()
+			err := store.Write(path, r, ps.WithSize(size))
+			if err != nil {
+				t.Error(err)
+			}
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			called := false
+			var obj *types.Object
+			fn := types.ObjectFunc(func(o *types.Object) {
+				called = true
+				obj = o
+
+			})
+			err = lister.ListDir("", ps.WithFileFunc(fn))
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The file func should be called", func() {
+				So(called, ShouldBeTrue)
+			})
+
+			Convey("The name and size should be match", func() {
+				So(obj, ShouldNotBeNil)
+				So(obj.Name, ShouldEqual, path)
+				So(obj.Size, ShouldEqual, size)
+			})
+		})
+
 	})
 }
