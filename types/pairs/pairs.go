@@ -224,3 +224,208 @@ func WithWorkDir(v string) *types.Pair {
 		Value: v,
 	}
 }
+
+// Parse will parse a k-v map to pairs slice.
+func Parse(m map[string]interface{}) ([]*types.Pair, error) {
+	pairs := make([]*types.Pair, 0, len(m))
+
+	for k, v := range m {
+		switch k {
+		case Checksum:
+			if _, ok := v.(string); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Checksum,
+					Type:  "string",
+					Value: v,
+				}
+			}
+		case Context:
+			if _, ok := v.(context.Context); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Context,
+					Type:  "context.Context",
+					Value: v,
+				}
+			}
+		case Credential:
+			if _, ok := v.(*credential.Provider); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Credential,
+					Type:  "*credential.Provider",
+					Value: v,
+				}
+			}
+		case DirFunc:
+			if _, ok := v.(types.ObjectFunc); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   DirFunc,
+					Type:  "types.ObjectFunc",
+					Value: v,
+				}
+			}
+		case Endpoint:
+			if _, ok := v.(endpoint.Provider); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Endpoint,
+					Type:  "endpoint.Provider",
+					Value: v,
+				}
+			}
+		case Expire:
+			if _, ok := v.(int); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Expire,
+					Type:  "int",
+					Value: v,
+				}
+			}
+		case FileFunc:
+			if _, ok := v.(types.ObjectFunc); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   FileFunc,
+					Type:  "types.ObjectFunc",
+					Value: v,
+				}
+			}
+		case Index:
+			if _, ok := v.(int); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Index,
+					Type:  "int",
+					Value: v,
+				}
+			}
+		case Location:
+			if _, ok := v.(string); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Location,
+					Type:  "string",
+					Value: v,
+				}
+			}
+		case Name:
+			if _, ok := v.(string); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Name,
+					Type:  "string",
+					Value: v,
+				}
+			}
+		case ObjectFunc:
+			if _, ok := v.(types.ObjectFunc); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   ObjectFunc,
+					Type:  "types.ObjectFunc",
+					Value: v,
+				}
+			}
+		case Offset:
+			if _, ok := v.(int64); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Offset,
+					Type:  "int64",
+					Value: v,
+				}
+			}
+		case Project:
+			if _, ok := v.(string); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Project,
+					Type:  "string",
+					Value: v,
+				}
+			}
+		case ReadCallbackFunc:
+			if _, ok := v.(func([]byte)); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   ReadCallbackFunc,
+					Type:  "func([]byte)",
+					Value: v,
+				}
+			}
+		case SegmentFunc:
+			if _, ok := v.(segment.Func); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   SegmentFunc,
+					Type:  "segment.Func",
+					Value: v,
+				}
+			}
+		case Size:
+			if _, ok := v.(int64); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Size,
+					Type:  "int64",
+					Value: v,
+				}
+			}
+		case StorageClass:
+			if _, ok := v.(storageclass.Type); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   StorageClass,
+					Type:  "storageclass.Type",
+					Value: v,
+				}
+			}
+		case StoragerFunc:
+			if _, ok := v.(storage.StoragerFunc); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   StoragerFunc,
+					Type:  "storage.StoragerFunc",
+					Value: v,
+				}
+			}
+		case WorkDir:
+			if _, ok := v.(string); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   WorkDir,
+					Type:  "string",
+					Value: v,
+				}
+			}
+		default:
+			continue
+		}
+		pairs = append(pairs, &types.Pair{Key: k, Value: v})
+	}
+
+	return pairs, nil
+}
