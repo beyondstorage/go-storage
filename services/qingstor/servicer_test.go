@@ -355,7 +355,6 @@ func TestService_newStorage(t *testing.T) {
 		Config: &config.Config{},
 	}
 	validWorkDir, invalidWorkDir := "/valid/dir/", "invalid/dir"
-	var targetAsErr *services.ServiceError
 	type args struct {
 		pairs []*types.Pair
 	}
@@ -439,7 +438,6 @@ func TestService_newStorage(t *testing.T) {
 			if tt.wantErr || err != nil {
 				assert.Nil(t, gotStore, tt.name)
 				assert.True(t, errors.Is(err, tt.targetErr), tt.name)
-				assert.True(t, errors.As(err, &targetAsErr), tt.name)
 			} else {
 				assert.Equal(t, tt.wantBucket, gotStore.bucket, tt.name)
 				assert.Equal(t, tt.wd, gotStore.workDir, tt.name)
