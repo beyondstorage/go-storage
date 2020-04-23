@@ -48,7 +48,7 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 // ListDir implements Storager.ListDir
 func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list_dir", err, path)
+		err = s.formatError(services.OpListDir, err, path)
 	}()
 
 	opt, err := s.parsePairListDir(pairs...)
@@ -95,7 +95,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 // Read implements Storager.Read
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	defer func() {
-		err = s.formatError("read", err, path)
+		err = s.formatError(services.OpRead, err, path)
 	}()
 
 	opt, err := s.parsePairRead(pairs...)
@@ -138,7 +138,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 // WriteFile implements Storager.WriteFile
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("write", err, path)
+		err = s.formatError(services.OpWrite, err, path)
 	}()
 
 	opt, err := s.parsePairWrite(pairs...)
@@ -183,7 +183,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 // Stat implements Storager.Stat
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	defer func() {
-		err = s.formatError("stat", err, path)
+		err = s.formatError(services.OpStat, err, path)
 	}()
 
 	if path == "-" {
@@ -235,7 +235,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 // Delete implements Storager.Delete
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("delete", err, path)
+		err = s.formatError(services.OpDelete, err, path)
 	}()
 
 	rp := s.getAbsPath(path)
@@ -250,7 +250,7 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 // Copy implements Storager.Copy
 func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("copy", err, src, dst)
+		err = s.formatError(services.OpCopy, err, src, dst)
 	}()
 
 	rs := s.getAbsPath(src)
@@ -284,7 +284,7 @@ func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 // Move implements Storager.Move
 func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("move", err, src, dst)
+		err = s.formatError(services.OpMove, err, src, dst)
 	}()
 
 	rs := s.getAbsPath(src)
@@ -305,7 +305,7 @@ func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 
 func (s *Storage) createDir(path string) (err error) {
 	defer func() {
-		err = s.formatError("create dir", err, path)
+		err = s.formatError("create_dir", err, path)
 	}()
 
 	rp := s.getDirPath(path)

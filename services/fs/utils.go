@@ -11,20 +11,24 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-// New will create a fs client.
-func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+// NewStorager will create Storager only.
+func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
+	return newStorager(pairs...)
+}
+
+// newStorager will create a fs client.
+func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: services.OpNewStorager, Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
-
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, nil, err
+		return
 	}
 
-	store := &Storage{
+	store = &Storage{
 		ioCopyBuffer:  io.CopyBuffer,
 		ioCopyN:       io.CopyN,
 		ioutilReadDir: ioutil.ReadDir,
@@ -41,7 +45,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	if opt.HasWorkDir {
 		store.workDir = opt.WorkDir
 	}
-	return nil, store, nil
+	return
 }
 
 func formatError(err error) error {

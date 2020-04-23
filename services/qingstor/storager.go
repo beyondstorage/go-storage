@@ -48,7 +48,7 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 // ListDir implements DirLister.ListDir
 func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list_dir", err, path)
+		err = s.formatError(services.OpListDir, err, path)
 	}()
 
 	opt, _ := s.parsePairListDir(pairs...)
@@ -112,7 +112,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 // ListPrefix implements PrefixLister.ListPrefix
 func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list_prefix", err, prefix)
+		err = s.formatError(services.OpListPrefix, err, prefix)
 	}()
 
 	opt, _ := s.parsePairListPrefix(pairs...)
@@ -159,7 +159,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 // Read implements Storager.Read
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	defer func() {
-		err = s.formatError("read", err, path)
+		err = s.formatError(services.OpRead, err, path)
 	}()
 
 	opt, err := s.parsePairRead(pairs...)
@@ -186,7 +186,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 // WriteFile implements Storager.WriteFile
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("write", err, path)
+		err = s.formatError(services.OpWrite, err, path)
 	}()
 
 	opt, err := s.parsePairWrite(pairs...)
@@ -225,7 +225,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 // Stat implements Storager.Stat
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	defer func() {
-		err = s.formatError("stat", err, path)
+		err = s.formatError(services.OpStat, err, path)
 	}()
 
 	input := &service.HeadObjectInput{}
@@ -263,7 +263,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 // Delete implements Storager.Delete
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("delete", err, path)
+		err = s.formatError(services.OpDelete, err, path)
 	}()
 
 	rp := s.getAbsPath(path)
@@ -278,7 +278,7 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 // Copy implements Storager.Copy
 func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("copy", err, src, dst)
+		err = s.formatError(services.OpCopy, err, src, dst)
 	}()
 
 	rs := s.getAbsPath(src)
@@ -296,7 +296,7 @@ func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
 // Move implements Storager.Move
 func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("move", err, src, dst)
+		err = s.formatError(services.OpMove, err, src, dst)
 	}()
 
 	rs := s.getAbsPath(src)
@@ -314,7 +314,7 @@ func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
 // Reach implements Storager.Reach
 func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
 	defer func() {
-		err = s.formatError("reach", err, path)
+		err = s.formatError(services.OpReach, err, path)
 	}()
 
 	opt, err := s.parsePairReach(pairs...)
@@ -345,7 +345,7 @@ func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 // Statistical implements Storager.Statistical
 func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic, err error) {
 	defer func() {
-		err = s.formatError("statistical", err)
+		err = s.formatError(services.OpStatistical, err)
 	}()
 
 	m = metadata.NewStorageStatistic()
@@ -367,7 +367,7 @@ func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic
 // ListPrefixSegments implements Storager.ListPrefixSegments
 func (s *Storage) ListPrefixSegments(prefix string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list_prefix_segments", err, prefix)
+		err = s.formatError(services.OpListPrefixSegments, err, prefix)
 	}()
 
 	opt, err := s.parsePairListPrefixSegments(pairs...)
@@ -415,7 +415,7 @@ func (s *Storage) ListPrefixSegments(prefix string, pairs ...*types.Pair) (err e
 // InitSegment implements Storager.InitSegment
 func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
 	defer func() {
-		err = s.formatError("init_segments", err, path)
+		err = s.formatError(services.OpInitSegment, err, path)
 	}()
 
 	_, err = s.parsePairInitSegment(pairs...)
@@ -441,7 +441,7 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Se
 // WriteSegment implements Storager.WriteSegment
 func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("write_segment", err, seg.Path(), seg.ID())
+		err = s.formatError(services.OpWriteSegment, err, seg.Path(), seg.ID())
 	}()
 
 	opt, err := s.parsePairWriteSegment(pairs...)
@@ -475,7 +475,7 @@ func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types
 // CompleteSegment implements Storager.CompleteSegment
 func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("complete_segment", err, seg.Path(), seg.ID())
+		err = s.formatError(services.OpCompleteSegment, err, seg.Path(), seg.ID())
 	}()
 
 	parts := seg.(*segment.IndexBasedSegment).Parts()
@@ -502,7 +502,7 @@ func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (er
 // AbortSegment implements Storager.AbortSegment
 func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("abort_segment", err, seg.Path(), seg.ID())
+		err = s.formatError(services.OpAbortSegment, err, seg.Path(), seg.ID())
 	}()
 
 	rp := s.getAbsPath(seg.Path())

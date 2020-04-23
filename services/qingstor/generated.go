@@ -324,6 +324,80 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	return result, nil
 }
 
+var pairServiceNewServicerMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
+
+type pairServiceNewServicer struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseServicePairNewServicer(opts ...*types.Pair) (*pairServiceNewServicer, error) {
+	result := &pairServiceNewServicer{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+
+	return result, nil
+}
+
+var pairServiceNewStoragerMap = map[string]struct{}{
+	// Pre-defined pairs
+	"context": struct{}{},
+	// Meta-defined pairs
+}
+
+type pairServiceNewStorager struct {
+	// Pre-defined pairs
+	Context context.Context
+
+	// Meta-defined pairs
+}
+
+func parseServicePairNewStorager(opts ...*types.Pair) (*pairServiceNewStorager, error) {
+	result := &pairServiceNewStorager{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Parse pre-defined pairs
+	v, ok = values[ps.Context]
+	if ok {
+		result.Context = v.(context.Context)
+	} else {
+		result.Context = context.Background()
+	}
+
+	// Parse meta-defined pairs
+
+	return result, nil
+}
+
 var pairStorageAbortSegmentMap = map[string]struct{}{
 	// Pre-defined pairs
 	"context": struct{}{},

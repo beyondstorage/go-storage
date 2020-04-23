@@ -1,9 +1,17 @@
 package coreutils
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Xuanwo/storage/types"
+)
+
+var (
+	// ErrServicerNotImplemented will return when service doesn't implement Servicer.
+	ErrServicerNotImplemented = errors.New("servicer not implemented")
+	// ErrStoragerNotImplemented will return when service doesn't implement Storager.
+	ErrStoragerNotImplemented = errors.New("storager not implemented")
 )
 
 // OpenError returned while open related error happens.

@@ -28,13 +28,17 @@ func Test_New(t *testing.T) {
 	accessKey := uuid.New().String()
 	secretKey := uuid.New().String()
 	host := uuid.New().String()
+	name := uuid.New().String()
 	port := 1234
-	srv, _, err := New(
+	srv, store, err := New(
 		pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)),
 		pairs.WithEndpoint(endpoint.NewHTTP(host, port)),
+		pairs.WithLocation("test"),
+		pairs.WithName(name),
 	)
 	assert.NoError(t, err)
 	assert.NotNil(t, srv)
+	assert.NotNil(t, store)
 }
 
 func TestIsBucketNameValid(t *testing.T) {
