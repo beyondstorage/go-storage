@@ -25,7 +25,7 @@ func (s *Service) String() string {
 // List implements Service.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, "")
+		err = s.formatError(services.OpList, err, "")
 	}()
 
 	opt, err := s.parsePairList(pairs...)
@@ -47,7 +47,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 // Get implements Service.Get
 func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
 	defer func() {
-		err = s.formatError("get", err, name)
+		err = s.formatError(services.OpGet, err, name)
 	}()
 
 	store, err := s.newStorage(ps.WithName(name))
@@ -60,7 +60,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, e
 // Create implements Service.Create
 func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
 	defer func() {
-		err = s.formatError("create", err, name)
+		err = s.formatError(services.OpCreate, err, name)
 	}()
 
 	opt, err := s.parsePairCreate(pairs...)
@@ -90,7 +90,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager
 // Delete implements Service.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("delete", err, name)
+		err = s.formatError(services.OpDelete, err, name)
 	}()
 
 	err = s.service.DropBucket(name)
@@ -102,10 +102,6 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 
 // newStorage will create a new client.
 func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
-	defer func() {
-		err = s.formatError("new storage", err, "")
-	}()
-
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
 		return nil, err

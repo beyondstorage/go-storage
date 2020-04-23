@@ -24,7 +24,7 @@ func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
 func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: services.OpNewStorager, Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 

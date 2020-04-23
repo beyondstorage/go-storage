@@ -35,7 +35,7 @@ func (s *Service) String() string {
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list", err, "")
+		err = s.formatError(services.OpList, err, "")
 	}()
 
 	opt, err := s.parsePairList(pairs...)
@@ -77,7 +77,7 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 // Get implements Servicer.Get
 func (s *Service) Get(name string, pairs ...*types.Pair) (store storage.Storager, err error) {
 	defer func() {
-		err = s.formatError("get", err, name)
+		err = s.formatError(services.OpGet, err, name)
 	}()
 
 	opt, err := s.parsePairGet(pairs...)
@@ -104,7 +104,7 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (store storage.Storager
 // Create implements Servicer.Create
 func (s *Service) Create(name string, pairs ...*types.Pair) (store storage.Storager, err error) {
 	defer func() {
-		err = s.formatError("create", err, name)
+		err = s.formatError(services.OpCreate, err, name)
 	}()
 
 	_, err = s.parsePairCreate(pairs...)
@@ -130,7 +130,7 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (store storage.Stora
 // Delete implements Servicer.Delete
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("delete", err, name)
+		err = s.formatError(services.OpDelete, err, name)
 	}()
 
 	opt, err := s.parsePairDelete(pairs...)
@@ -159,10 +159,6 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 }
 
 func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
-	defer func() {
-		err = s.formatError("new storage", err, "")
-	}()
-
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
 		return
@@ -204,7 +200,7 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 
 func (s *Service) detectLocation(name string) (location string, err error) {
 	defer func() {
-		err = s.formatError("detect location", err, "")
+		err = s.formatError("detect_location", err, "")
 	}()
 
 	url := fmt.Sprintf("%s://%s.%s:%d", s.config.Protocol, name, s.config.Host, s.config.Port)

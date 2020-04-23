@@ -44,7 +44,7 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err er
 // ListDir implements Storager.ListDir
 func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list_dir", err, path)
+		err = s.formatError(services.OpListDir, err, path)
 	}()
 
 	opt, err := s.parsePairListDir(pairs...)
@@ -107,7 +107,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 // ListPrefix implements Storager.ListPrefix
 func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("list_prefix", err, prefix)
+		err = s.formatError(services.OpListPrefix, err, prefix)
 	}()
 
 	opt, err := s.parsePairListPrefix(pairs...)
@@ -153,7 +153,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 // Read implements Storager.Read
 func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
 	defer func() {
-		err = s.formatError("read", err, path)
+		err = s.formatError(services.OpRead, err, path)
 	}()
 
 	opt, err := s.parsePairRead(pairs...)
@@ -179,7 +179,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 // Write implements Storager.Write
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("write", err, path)
+		err = s.formatError(services.OpWrite, err, path)
 	}()
 
 	opt, err := s.parsePairWrite(pairs...)
@@ -218,7 +218,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 // Stat implements Storager.Stat
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	defer func() {
-		err = s.formatError("stat", err, path)
+		err = s.formatError(services.OpStat, err, path)
 	}()
 
 	opt, err := s.parsePairStat(pairs...)
@@ -272,7 +272,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 // Delete implements Storager.Delete
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError("delete", err, path)
+		err = s.formatError(services.OpDelete, err, path)
 	}()
 
 	opt, err := s.parsePairDelete(pairs...)

@@ -44,7 +44,7 @@ func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
 func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Op: "new_servicer", Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: services.OpNewServicer, Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -75,7 +75,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Op: "new_storager", Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: services.OpNewStorager, Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
