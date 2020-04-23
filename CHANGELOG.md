@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v1.0.0] - 2020-04-23
+
+### Proposal
+
+- storager, services: Implement proposal 19-split-storage-list (#249) 
+- types, services: Implement proposal 20-remove-loose-mode (#250) 
+
+### Added
+
+- types/pairs: Add description for paris (#238)
+- services/azblob: Add offset and size support for Read (#252) 
+- types/pairs: Add Parse support (#260) 
+
+### Changed
+
+- services/qingstor: Dir support is not needed in stat (#223)
+- services/*: Set content-type as best errort (#234)
+- services/*: Check metadata value before set (#235) 
+- pkg/headers: Move all explicit header keys into const (#236)
+- tests: Refactor integration test (#261) 
+- coreutils, services: Refactor Open related logic (#264)
+
+### Fixed
+
+- services/*: Fix error not handled correctly with empty body (#227)
+- services/qingstor: Fix ListBuckets incomplete (#228)
+- services/*: Fix getAbsPath and getRelPath not handled correctly (#253) 
+- internal/cmd/service: Fix context pair not handled correctly (#254)
+
+
 ## [v0.9.0] - 2020-03-23
 
 ### Proposal
@@ -208,7 +238,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v1.0.0...HEAD
+[v1.0.0]: https://github.com/Xuanwo/storage/compare/v0.9.0...v1.0.0
 [v0.9.0]: https://github.com/Xuanwo/storage/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/Xuanwo/storage/compare/v0.7.2...v0.8.0
 [v0.7.2]: https://github.com/Xuanwo/storage/compare/v0.7.1...v0.7.2

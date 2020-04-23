@@ -20,7 +20,9 @@
 * [16-loose-mode](./design/16-loose-mode.md)
 * [17-proposal-process](./design/17-proposal-process.md)
 * [18-return-segment-interface-instead](./design/18-return-segment-interface-instead.md)
-  
+* [19-split-storage-list](./design/19-split-storage-list.md)
+* [20-remove-loose-mode](./design/20-remove-loose-mode.md)
+
 ## Sepc
 
 * [1-error-handling](./spec/1-error-handling.md)
