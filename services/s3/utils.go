@@ -1,7 +1,6 @@
 package s3
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,8 +17,23 @@ import (
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
-// New will create a new s3 service.
-func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+// New will create both Servicer and Storager.
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+	return newServicerAndStorager(pairs...)
+}
+
+// NewServicer will create Servicer only.
+func NewServicer(pairs ...*types.Pair) (storage.Servicer, error) {
+	return newServicer(pairs...)
+}
+
+// NewStorager will create Storager only.
+func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
+	_, store, err := newServicerAndStorager(pairs...)
+	return store, err
+}
+
+func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	defer func() {
 		if err != nil {
 			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
@@ -28,7 +42,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	cfg := aws.NewConfig()
@@ -40,26 +54,38 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	case credential.ProtocolEnv:
 		cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
 	default:
-		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
+		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	sess, err := session.NewSession(cfg)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	srv := &Service{
+	srv = &Service{
 		service: s3.New(sess),
 	}
+	return
+}
 
-	store, err := srv.newStorage(pairs...)
-	if err != nil {
-		if e := services.NewPairRequiredError(); errors.As(err, &e) {
-			return srv, nil, nil
+// New will create a new s3 service.
+func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
-		return nil, nil, err
+	}()
+
+	srv, err = newServicer(pairs...)
+	if err != nil {
+		return
 	}
-	return srv, store, nil
+
+	store, err = srv.newStorage(pairs...)
+	if err != nil {
+		return
+	}
+	return
 }
 
 // parseStorageClass will parse storageclass.Type into service independent storage class type.

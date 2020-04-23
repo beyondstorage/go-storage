@@ -16,31 +16,61 @@ import (
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
-// New will create a new kodo service.
-func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+// New will create both Servicer and Storager.
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+	return newServicerAndStorager(pairs...)
+}
+
+// NewServicer will create Servicer only.
+func NewServicer(pairs ...*types.Pair) (storage.Servicer, error) {
+	return newServicer(pairs...)
+}
+
+// NewStorager will create Storager only.
+func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
+	_, store, err := newServicerAndStorager(pairs...)
+	return store, err
+}
+
+func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	defer func() {
 		if err != nil {
 			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
-	srv := &Service{}
+	srv = &Service{}
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
+		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	mac := qbox.NewMac(cred[0], cred[1])
 	cfg := &qs.Config{}
 	srv.service = qs.NewBucketManager(mac, cfg)
 
-	store, err := srv.newStorage(pairs...)
+	return
+}
+
+func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
+		}
+	}()
+
+	srv, err = newServicer(pairs...)
+	if err != nil {
+		return
+	}
+
+	store, err = srv.newStorage(pairs...)
 	if err != nil {
 		if e := services.NewPairRequiredError(); errors.As(err, &e) {
 			return srv, nil, nil

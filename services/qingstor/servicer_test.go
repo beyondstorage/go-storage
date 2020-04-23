@@ -27,7 +27,7 @@ func TestService_String(t *testing.T) {
 	accessKey := uuid.New().String()
 	secretKey := uuid.New().String()
 
-	srv, _, err := New(pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)))
+	srv, err := NewServicer(pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)))
 	if err != nil {
 		t.Fatal(err)
 	}

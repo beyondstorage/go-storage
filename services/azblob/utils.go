@@ -1,7 +1,6 @@
 package azblob
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 
@@ -15,7 +14,23 @@ import (
 	"github.com/Azure/azure-storage-blob-go/azblob"
 )
 
-// New will create a new azblob oss service.
+// New will create both Servicer and Storager.
+func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+	return newServicerAndStorager(pairs...)
+}
+
+// NewServicer will create Servicer only.
+func NewServicer(pairs ...*types.Pair) (storage.Servicer, error) {
+	return newServicer(pairs...)
+}
+
+// NewStorager will create Storager only.
+func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
+	_, store, err := newServicerAndStorager(pairs...)
+	return store, err
+}
+
+// newServicer will create a azure blob servicer
 //
 // azblob use different URL to represent different sub services.
 // - ServiceURL's          methods perform operations on a storage account.
@@ -26,43 +41,54 @@ import (
 //      - BlobURL's       methods perform operations on a container's blob regardless of the blob's type.
 //
 // Our Service will store a ServiceURL for operation.
-func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: "new_servicer", Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
-	srv := &Service{}
+	srv = &Service{}
 
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
 	primaryURL, _ := url.Parse(opt.Endpoint.Value().String())
 
 	credProtocol, credValue := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
+		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	cred, err := azblob.NewSharedKeyCredential(credValue[0], credValue[1])
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	p := azblob.NewPipeline(cred, azblob.PipelineOptions{})
 	srv.service = azblob.NewServiceURL(*primaryURL, p)
 
-	store, err := srv.newStorage(pairs...)
-	if err != nil {
-		if e := services.NewPairRequiredError(); errors.As(err, &e) {
-			return srv, nil, nil
+	return srv, nil
+}
+
+func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage, err error) {
+	defer func() {
+		if err != nil {
+			err = &services.InitError{Op: "new_storager", Type: Type, Err: err, Pairs: pairs}
 		}
-		return nil, nil, err
+	}()
+
+	srv, err = newServicer(pairs...)
+	if err != nil {
+		return
 	}
-	return srv, store, nil
+
+	store, err = srv.newStorage(pairs...)
+	if err != nil {
+		return
+	}
+	return
 }
 
 // parseStorageClass will parse storageclass.Type into service independent storage class type.

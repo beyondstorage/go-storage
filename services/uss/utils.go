@@ -13,24 +13,28 @@ import (
 	"github.com/Xuanwo/storage/types"
 )
 
-// New will create a new uss service.
-func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+// NewStorager will create Storager only.
+func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
+	return newStorager(pairs...)
+}
+
+func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 	defer func() {
 		if err != nil {
 			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
-	store := &Storage{}
+	store = &Storage{}
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, nil, err
+		return
 	}
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
-		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
+		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	cfg := &upyun.UpYunConfig{
@@ -44,7 +48,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	if opt.HasWorkDir {
 		store.workDir = opt.WorkDir
 	}
-	return nil, store, nil
+	return
 }
 
 // ref: https://help.upyun.com/knowledge-base/errno/

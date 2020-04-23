@@ -24,6 +24,7 @@ var (
 //
 // Only returned in New
 type InitError struct {
+	Op   string
 	Type string
 	Err  error
 
@@ -31,7 +32,7 @@ type InitError struct {
 }
 
 func (e *InitError) Error() string {
-	return fmt.Sprintf("new %s: %v: %s", e.Type, e.Pairs, e.Err.Error())
+	return fmt.Sprintf("%s %s: %v: %s", e.Type, e.Op, e.Pairs, e.Err.Error())
 }
 
 // Unwrap implements xerrors.Wrapper

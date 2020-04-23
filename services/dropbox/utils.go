@@ -4,19 +4,24 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Xuanwo/storage"
 	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/auth"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
 
-	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 )
 
+// NewStorager will create Storager only.
+func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
+	return newStorager(pairs...)
+}
+
 // New will create a new client.
-func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err error) {
+func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 	defer func() {
 		if err != nil {
 			err = &services.InitError{Type: Type, Err: err, Pairs: pairs}
@@ -25,7 +30,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 
 	opt, err := parseStoragePairNew(pairs...)
 	if err != nil {
-		return nil, nil, err
+		return
 	}
 
 	cfg := dropbox.Config{}
@@ -35,10 +40,10 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	case credential.ProtocolAPIKey:
 		cfg.Token = cred[0]
 	default:
-		return nil, nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
+		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
-	store := &Storage{
+	store = &Storage{
 		client: files.New(cfg),
 
 		workDir: "/",
@@ -47,7 +52,7 @@ func New(pairs ...*types.Pair) (_ storage.Servicer, _ storage.Storager, err erro
 	if opt.HasWorkDir {
 		store.workDir = opt.WorkDir
 	}
-	return nil, store, nil
+	return
 }
 
 // ref: https://www.dropbox.com/developers/documentation/http/documentation

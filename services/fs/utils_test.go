@@ -12,8 +12,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	srv, c, err := New()
-	assert.Nil(t, srv)
+	c, err := NewStorager()
 	assert.NotNil(t, c)
 	assert.NoError(t, err)
 }

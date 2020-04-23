@@ -42,6 +42,7 @@ build_generator: go-bindata
 		&& go build -o ../bin/service ./service \
 		&& go build -o ../bin/pairs ./pairs \
 		&& go build -o ../bin/metadata ./metadata \
+		&& go build -o ../bin/coreutils ./coreutils \
 		&& popd
 	@echo "Done"
 
@@ -76,5 +77,6 @@ tidy:
 
 clean:
 	@echo "clean generated files"
+	@rm coreutils/generated.go
 	@rm services/*/generated.go
 	@echo "Done"

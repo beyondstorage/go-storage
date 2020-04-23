@@ -28,21 +28,21 @@ var _ services.ServiceError
 // Type is the type for fs
 const Type = "fs"
 
-var pairServiceNewMap = map[string]struct{}{
+var pairServiceNewStoragerMap = map[string]struct{}{
 	// Pre-defined pairs
 	"context": struct{}{},
 	// Meta-defined pairs
 }
 
-type pairServiceNew struct {
+type pairServiceNewStorager struct {
 	// Pre-defined pairs
 	Context context.Context
 
 	// Meta-defined pairs
 }
 
-func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
-	result := &pairServiceNew{}
+func parseServicePairNewStorager(opts ...*types.Pair) (*pairServiceNewStorager, error) {
+	result := &pairServiceNewStorager{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {

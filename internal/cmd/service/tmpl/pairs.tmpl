@@ -28,7 +28,7 @@ type pair{{ $pn }}{{ $pk }} struct {
     {{- end }}
 }
 
-{{ if eq $pk "New" -}}
+{{ if hasPrefix $pk "New" -}}
 func parse{{ $pn }}Pair
 {{- else -}}
 func (s *{{ $pn }} ) parsePair
@@ -38,7 +38,7 @@ func (s *{{ $pn }} ) parsePair
 
     values := make(map[string]interface{})
     for _, v := range opts {
-        {{- if ne $pk "New" }}
+        {{- if not (hasPrefix $pk "New") }}
         if _, ok := pair{{ $pn }}{{ $pk }}Map[v.Key]; !ok {
             return nil, services.NewPairUnsupportedError(v)
         }
