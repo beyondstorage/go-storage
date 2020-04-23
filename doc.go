@@ -21,7 +21,7 @@ The most common case to use a Storager service could be following:
 
 1. Init a service.
 
-    _, store, err := coreutils.Open("fs", pairs.WithWorkDir("/tmp"))
+    store, err := coreutils.OpenStorager("fs", pairs.WithWorkDir("/tmp"))
 	if err != nil {
 		log.Fatalf("service init failed: %v", err)
 	}
