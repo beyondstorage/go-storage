@@ -11,7 +11,7 @@ Goals
 
 Details
 
-There two public interfaces: Servicer and Storager. Storager is a fully functional storage client, and Servicer is a
+There two main public interfaces: Servicer and Storager. Storager is a fully functional storage client, and Servicer is a
 manager of Storager instances, which will be useful for services like object storage. For any service, Storager is
 required to implement and Servicer is optional.
 
@@ -28,14 +28,9 @@ The most common case to use a Storager service could be following:
 
 2. Use Storager API to maintain data.
 
-	ch := make(chan *types.Object, 1)
-	defer close(ch)
-
-	err := store.List("prefix", pairs.WithFileFunc(func(*types.Object){
-		ch <- o
-	}))
+	r, err := store.Read("path/to/file")
 	if err != nil {
-		log.Printf("storager listdir failed: %v", err)
+		log.Printf("storager read: %v", err)
 	}
 
 Notes

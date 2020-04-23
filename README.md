@@ -59,7 +59,7 @@ This lib is in heavy development, break changes could be introduced at any time.
 Install will `go get`
 
 ```bash
-go get -u github.com/Xuanwo/storage
+go get github.com/Xuanwo/storage
 ```
 
 Import
@@ -78,14 +78,9 @@ if err != nil {
 }
 
 // Use Storager API to maintain data.
-ch := make(chan *types.Object, 1)
-defer close(ch)
-
-err := store.List("prefix", pairs.WithFileFunc(func(*types.Object){
-    ch <- o
-}))
+r, err := store.Read("path/to/file")
 if err != nil {
-    log.Printf("storager list failed: %v", err)
+    log.Printf("storager read: %v", err)
 }
 ```
 
