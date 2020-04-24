@@ -23,7 +23,7 @@ type Pairs map[string]struct {
 	Description string
 }
 
-//go:generate go-bindata -nometadata -ignore ".*.go" .
+//go:generate go-bindata -nometadata -ignore ".go$" .
 func main() {
 	pairsPath := "pairs.json"
 	content, err := ioutil.ReadFile(pairsPath)

@@ -31,7 +31,7 @@ var (
 			Parse(string(MustAsset("pairs.tmpl"))))
 )
 
-//go:generate go-bindata -nometadata -ignore ".*.go" -prefix tmpl ./tmpl
+//go:generate go-bindata -nometadata -ignore ".go$" -prefix tmpl ./tmpl
 func main() {
 	f, err := os.Create(generatedPath)
 	if err != nil {
