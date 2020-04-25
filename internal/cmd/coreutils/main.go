@@ -30,7 +30,7 @@ type metadata struct {
 	Storage map[string]map[string]bool `json:"storage"`
 }
 
-//go:generate go-bindata -nometadata -ignore ".*.go" -prefix tmpl ./tmpl
+//go:generate go-bindata -nometadata -ignore "\\.go$" -prefix tmpl ./tmpl
 func main() {
 	f, err := os.Create(generatedPath)
 	if err != nil {
