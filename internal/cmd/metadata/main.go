@@ -18,7 +18,7 @@ var (
 			Parse(string(MustAsset("metadata.tmpl"))))
 )
 
-//go:generate go-bindata -nometadata -ignore ".go$" .
+//go:generate go-bindata -nometadata -ignore "\\.go$" .
 func main() {
 	fi, err := ioutil.ReadDir(".")
 	if err != nil {
