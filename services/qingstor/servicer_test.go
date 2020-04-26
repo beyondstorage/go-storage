@@ -11,10 +11,10 @@ import (
 	"bou.ke/monkey"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/qingstor/qingstor-sdk-go/v4/config"
+	qerror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
+	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
-	"github.com/yunify/qingstor-sdk-go/v3/config"
-	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
-	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"

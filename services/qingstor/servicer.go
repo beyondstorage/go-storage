@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/yunify/qingstor-sdk-go/v3/config"
-	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
-	"github.com/yunify/qingstor-sdk-go/v3/service"
+	"github.com/qingstor/qingstor-sdk-go/v4/config"
+	iface "github.com/qingstor/qingstor-sdk-go/v4/interface"
+	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/headers"

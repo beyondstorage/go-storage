@@ -10,9 +10,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/pengsrc/go-shared/convert"
+	qerror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
+	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
-	qerror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
-	"github.com/yunify/qingstor-sdk-go/v3/service"
 
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/pkg/storageclass"

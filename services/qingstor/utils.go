@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/yunify/qingstor-sdk-go/v3/config"
-	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
-	"github.com/yunify/qingstor-sdk-go/v3/service"
+	"github.com/qingstor/qingstor-sdk-go/v4/config"
+	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
+	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"

@@ -148,6 +148,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
+github.com/qingstor/qingstor-sdk-go/v4 v4.0.0 h1:9j+4MhIxhZr3bHkYhVfAVjvsvtwI0I6gB5Xsx6XMPNs=
+github.com/qingstor/qingstor-sdk-go/v4 v4.0.0/go.mod h1:WM7DpsJxaOLCAX1K7R4KOBvzEpM4gfAjyN45IIV6rZ0=
 github.com/qiniu/api.v7/v7 v7.4.1 h1:BnNUBimLk6nrA/mIwsww9yJRupmViSsb1ndLMC7a9OY=
 github.com/qiniu/api.v7/v7 v7.4.1/go.mod h1:VE5oC5rkE1xul0u1S2N0b2Uxq9/6hZzhyqjgK25XDcM=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
@@ -163,8 +165,6 @@ github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20191221060900-c807d39e9045 h1:GTNQ+r
 github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20191221060900-c807d39e9045/go.mod h1:wk2XFUg6egk4tSDNZtXeKfe2G6690UVyt163PuUxBZk=
 github.com/upyun/go-sdk v2.1.0+incompatible h1:OdjXghQ/TVetWV16Pz3C1/SUpjhGBVPr+cLiqZLLyq0=
 github.com/upyun/go-sdk v2.1.0+incompatible/go.mod h1:eu3F5Uz4b9ZE5bE5QsCL6mgSNWRwfj0zpJ9J626HEqs=
-github.com/yunify/qingstor-sdk-go/v3 v3.2.1-0.20200318145652-ad14af5b40e4 h1:4o11/xQbTQTYh/r+WCV3FcKD/CYRuVGulhsrP615fus=
-github.com/yunify/qingstor-sdk-go/v3 v3.2.1-0.20200318145652-ad14af5b40e4/go.mod h1:KciFNuMu6F4WLk9nGwwK69sCGKLCdd9f97ac/wfumS4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

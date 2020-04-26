@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/pengsrc/go-shared/convert"
-	qsconfig "github.com/yunify/qingstor-sdk-go/v3/config"
-	iface "github.com/yunify/qingstor-sdk-go/v3/interface"
-	"github.com/yunify/qingstor-sdk-go/v3/service"
+	qsconfig "github.com/qingstor/qingstor-sdk-go/v4/config"
+	iface "github.com/qingstor/qingstor-sdk-go/v4/interface"
+	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/pkg/segment"
