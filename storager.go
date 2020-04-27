@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 
-	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/metadata"
 )
@@ -91,25 +90,6 @@ type PrefixLister interface {
 	ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error)
 }
 
-// DirSegmentsLister is used for directory based storage service to list segments under a dir.
-type DirSegmentsLister interface {
-	// ListDirSegments will list segments via dir.
-	ListDirSegments(path string, pairs ...*types.Pair) (err error)
-	// ListDirSegmentsWithContext will list segments via dir.
-	ListDirSegmentsWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error)
-}
-
-// PrefixSegmentsLister is used for prefix based storage service to list segments under a prefix.
-type PrefixSegmentsLister interface {
-	// ListSegments will list segments.
-	//
-	// Implementer:
-	//   - If prefix == "", services should return all segments.
-	ListPrefixSegments(prefix string, pairs ...*types.Pair) (err error)
-	// ListSegmentsWithContext will list segments.
-	ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error)
-}
-
 // Copier is the interface for Copy.
 type Copier interface {
 	// Copy will copy an Object or multiple object in the service.
@@ -148,47 +128,4 @@ type Statistician interface {
 	Statistical(pairs ...*types.Pair) (metadata.StorageStatistic, error)
 	// StatisticalWithContext will count service's statistics, such as Size, Count.
 	StatisticalWithContext(ctx context.Context, pairs ...*types.Pair) (metadata.StorageStatistic, error)
-}
-
-// Segmenter is the interface for Segment.
-type Segmenter interface {
-	// Segment Operations.
-
-	// InitSegment will init a segment which could be a File after complete.
-	//
-	// Implementer:
-	//   - MUST maintain whole segment operation runtime data, including part number and any
-	//     other similar things.
-	// Caller:
-	//   - SHOULD call InitSegment before Write, Complete or Abort.
-	InitSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error)
-	// InitSegmentWithContext will init a segment which could be a File after complete.
-	InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error)
-	// WriteSegment will read data into segment.
-	//
-	// Implementer:
-	//   - SHOULD return error while caller call WriteSegment without init.
-	// Caller:
-	//   - SHOULD call InitSegment before WriteSegment.
-	WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error)
-	// WriteSegmentWithContext will read data into segment.
-	WriteSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error)
-	// CompleteSegment will complete a segment and merge them into a File.
-	//
-	// Implementer:
-	//   - SHOULD return error while caller call CompleteSegment without init.
-	// Caller:
-	//   - SHOULD call InitSegment before CompleteSegment.
-	CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error)
-	// CompleteSegmentWithContext will complete a segment and merge them into a File.
-	CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error)
-	// AbortSegment will abort a segment.
-	//
-	// Implementer:
-	//   - SHOULD return error while caller call AbortSegment without init.
-	// Caller:
-	//   - SHOULD call InitSegment before AbortSegment.
-	AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error)
-	// AbortSegmentWithContext will abort a segment.
-	AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error)
 }

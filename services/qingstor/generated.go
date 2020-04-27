@@ -558,25 +558,25 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 	return result, nil
 }
 
-var pairStorageInitSegmentMap = map[string]struct{}{
+var pairStorageInitIndexSegmentMap = map[string]struct{}{
 	// Pre-defined pairs
 	"context": struct{}{},
 	// Meta-defined pairs
 }
 
-type pairStorageInitSegment struct {
+type pairStorageInitIndexSegment struct {
 	// Pre-defined pairs
 	Context context.Context
 
 	// Meta-defined pairs
 }
 
-func (s *Storage) parsePairInitSegment(opts ...*types.Pair) (*pairStorageInitSegment, error) {
-	result := &pairStorageInitSegment{}
+func (s *Storage) parsePairInitIndexSegment(opts ...*types.Pair) (*pairStorageInitIndexSegment, error) {
+	result := &pairStorageInitIndexSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := pairStorageInitSegmentMap[v.Key]; !ok {
+		if _, ok := pairStorageInitIndexSegmentMap[v.Key]; !ok {
 			return nil, services.NewPairUnsupportedError(v)
 		}
 		values[v.Key] = v.Value
@@ -1138,32 +1138,28 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 	return result, nil
 }
 
-var pairStorageWriteSegmentMap = map[string]struct{}{
+var pairStorageWriteIndexSegmentMap = map[string]struct{}{
 	// Pre-defined pairs
 	"context": struct{}{},
 	// Meta-defined pairs
-	"index":              struct{}{},
 	"read_callback_func": struct{}{},
-	"size":               struct{}{},
 }
 
-type pairStorageWriteSegment struct {
+type pairStorageWriteIndexSegment struct {
 	// Pre-defined pairs
 	Context context.Context
 
 	// Meta-defined pairs
-	Index               int
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
-	Size                int64
 }
 
-func (s *Storage) parsePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteSegment, error) {
-	result := &pairStorageWriteSegment{}
+func (s *Storage) parsePairWriteIndexSegment(opts ...*types.Pair) (*pairStorageWriteIndexSegment, error) {
+	result := &pairStorageWriteIndexSegment{}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
-		if _, ok := pairStorageWriteSegmentMap[v.Key]; !ok {
+		if _, ok := pairStorageWriteIndexSegmentMap[v.Key]; !ok {
 			return nil, services.NewPairUnsupportedError(v)
 		}
 		values[v.Key] = v.Value
@@ -1181,24 +1177,10 @@ func (s *Storage) parsePairWriteSegment(opts ...*types.Pair) (*pairStorageWriteS
 	}
 
 	// Parse meta-defined pairs
-	v, ok = values[ps.Index]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.Index)
-	}
-	if ok {
-		result.Index = v.(int)
-	}
 	v, ok = values[ps.ReadCallbackFunc]
 	if ok {
 		result.HasReadCallbackFunc = true
 		result.ReadCallbackFunc = v.(func([]byte))
-	}
-	v, ok = values[ps.Size]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.Size)
-	}
-	if ok {
-		result.Size = v.(int64)
 	}
 
 	return result, nil
@@ -1276,13 +1258,13 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 	return s.Delete(path, pairs...)
 }
 
-// InitSegmentWithContext adds context support for InitSegment.
-func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.InitSegment")
+// InitIndexSegmentWithContext adds context support for InitIndexSegment.
+func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.InitIndexSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.InitSegment(path, pairs...)
+	return s.InitIndexSegment(path, pairs...)
 }
 
 // ListDirWithContext adds context support for ListDir.
@@ -1375,11 +1357,11 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 	return s.Write(path, r, pairs...)
 }
 
-// WriteSegmentWithContext adds context support for WriteSegment.
-func (s *Storage) WriteSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.WriteSegment")
+// WriteIndexSegmentWithContext adds context support for WriteIndexSegment.
+func (s *Storage) WriteIndexSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, index int, size int64, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.storage.WriteIndexSegment")
 	defer span.Finish()
 
 	pairs = append(pairs, ps.WithContext(ctx))
-	return s.WriteSegment(seg, r, pairs...)
+	return s.WriteIndexSegment(seg, r, index, size, pairs...)
 }

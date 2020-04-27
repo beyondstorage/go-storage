@@ -412,13 +412,13 @@ func (s *Storage) ListPrefixSegments(prefix string, pairs ...*types.Pair) (err e
 	return
 }
 
-// InitSegment implements Storager.InitSegment
-func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
+// InitIndexSegment implements Storager.InitIndexSegment
+func (s *Storage) InitIndexSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
 	defer func() {
-		err = s.formatError(services.OpInitSegment, err, path)
+		err = s.formatError(services.OpInitIndexSegment, err, path)
 	}()
 
-	_, err = s.parsePairInitSegment(pairs...)
+	_, err = s.parsePairInitIndexSegment(pairs...)
 	if err != nil {
 		return
 	}
@@ -438,18 +438,18 @@ func (s *Storage) InitSegment(path string, pairs ...*types.Pair) (seg segment.Se
 	return seg, nil
 }
 
-// WriteSegment implements Storager.WriteSegment
-func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error) {
+// WriteIndexSegment implements Storager.WriteIndexSegment
+func (s *Storage) WriteIndexSegment(seg segment.Segment, r io.Reader, index int, size int64, pairs ...*types.Pair) (err error) {
 	defer func() {
-		err = s.formatError(services.OpWriteSegment, err, seg.Path(), seg.ID())
+		err = s.formatError(services.OpWriteIndexSegment, err, seg.Path(), seg.ID())
 	}()
 
-	opt, err := s.parsePairWriteSegment(pairs...)
+	opt, err := s.parsePairWriteIndexSegment(pairs...)
 	if err != nil {
 		return
 	}
 
-	p, err := seg.(*segment.IndexBasedSegment).InsertPart(opt.Index, opt.Size)
+	p, err := seg.(*segment.IndexBasedSegment).InsertPart(index, size)
 	if err != nil {
 		return
 	}
@@ -463,7 +463,7 @@ func (s *Storage) WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types
 	_, err = s.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
 		PartNumber:    service.Int(p.Index),
 		UploadID:      service.String(seg.ID()),
-		ContentLength: &opt.Size,
+		ContentLength: &size,
 		Body:          r,
 	})
 	if err != nil {
