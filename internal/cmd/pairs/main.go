@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/Xuanwo/templateutils"
@@ -18,7 +19,7 @@ var (
 )
 
 // Pairs is the struct for pairs.json
-type Pairs map[string]struct {
+type Pairs map[string]*struct {
 	Type        string
 	Description string
 }
@@ -45,6 +46,10 @@ func main() {
 	err = ioutil.WriteFile(pairsPath, data, 0664)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	for _, v := range pairs {
+		v.Description = strings.ReplaceAll(v.Description, "\n", "\n//")
 	}
 
 	pairsFile, err := os.Create("pairs.go")

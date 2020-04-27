@@ -73,12 +73,14 @@ func TestGetAbsPath(t *testing.T) {
 		expectedPath string
 	}{
 		{"under root", "/", "abc", "abc"},
-		{"under sub dir", "/root/", "abc", "root/abc"},
+		{"under prefix", "/root", "/abc", "root/abc"},
+		{"under prefix ending with /", "/root/", "abc", "root/abc"},
+		{"under unexpected prefix", "//abc", "/def", "/abc/def"},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := Storage{workDir: tt.base[1:]}
+			client := Storage{workDir: tt.base}
 
 			gotPath := client.getAbsPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)
@@ -94,12 +96,14 @@ func TestGetRelPath(t *testing.T) {
 		expectedPath string
 	}{
 		{"under root", "/", "abc", "abc"},
-		{"under sub dir", "/root/", "root/abc", "abc"},
+		{"under prefix", "/root", "root/abc", "/abc"},
+		{"under prefix ending with /", "/root/", "root/abc", "abc"},
+		{"under unexpected prefix", "//abc", "/abc/def", "/def"},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			client := &Storage{workDir: tt.base[1:]}
+			client := &Storage{workDir: tt.base}
 
 			gotPath := client.getRelPath(tt.path)
 			assert.Equal(t, tt.expectedPath, gotPath)

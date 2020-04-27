@@ -73,6 +73,6 @@
   },
   "work_dir": {
     "Type": "string",
-    "Description": "specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set."
+    "Description": "specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set. \n For fs storage service on windows platform, the behavior is undefined."
   }
 }
