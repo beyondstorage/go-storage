@@ -288,7 +288,7 @@ func TestStorage_InitSegment(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		_, err := client.InitSegment(v.path)
+		_, err := client.InitIndexSegment(v.path)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -673,7 +673,7 @@ func TestStorage_WriteSegment(t *testing.T) {
 			assert.Equal(t, id, *input.UploadID)
 		})
 
-		err := client.WriteSegment(seg, nil, pairs.WithSize(100), pairs.WithIndex(0))
+		err := client.WriteIndexSegment(seg, nil, 0, 100)
 		assert.NoError(t, err)
 	})
 }

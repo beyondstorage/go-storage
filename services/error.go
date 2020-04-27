@@ -47,8 +47,8 @@ const (
 
 	// Segment related op
 	OpListPrefixSegments = "list_prefix_segments"
-	OpInitSegment        = "init_segment"
-	OpWriteSegment       = "write_segment"
+	OpInitIndexSegment   = "init_index_segment"
+	OpWriteIndexSegment  = "write_index_segment"
 	OpCompleteSegment    = "complete_segment"
 	OpAbortSegment       = "abort_segment"
 )
