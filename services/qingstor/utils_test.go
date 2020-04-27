@@ -4,15 +4,16 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
+	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types/pairs"
-	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	qserror "github.com/yunify/qingstor-sdk-go/v3/request/errors"
 )
 
 func Test_New(t *testing.T) {
