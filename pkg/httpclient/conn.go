@@ -2,12 +2,8 @@ package httpclient
 
 import (
 	"net"
-	"sync"
 	"time"
 )
-
-// connPool is the pool for httpclient's conn
-var connPool = sync.Pool{New: func() interface{} { return &Conn{} }}
 
 // Conn is a generic stream-oriented network connection.
 type Conn struct {
@@ -24,11 +20,8 @@ func (c *Conn) Read(buf []byte) (n int, err error) {
 	}
 	defer func() {
 		// Clean read timeout so that this will not affect further read
-		// Connection could already be closed, check before set read deadline.
-		if c.Conn != nil {
-			// It's safe to ignore the returning error: even if it don’t return now, it will return via next read.
-			_ = c.SetReadDeadline(time.Time{})
-		}
+		// It's safe to ignore the returning error: even if it don’t return now, it will return via next read.
+		_ = c.SetReadDeadline(time.Time{})
 	}()
 
 	return c.Conn.Read(buf)
@@ -42,11 +35,8 @@ func (c *Conn) Write(buf []byte) (n int, err error) {
 	}
 	defer func() {
 		// Clean read timeout so that this will not affect further write
-		// Connection could already be closed, check before set read deadline.
-		if c.Conn != nil {
-			// It's safe to ignore the returning error: even if it don’t return now, it will return via next write.
-			_ = c.SetWriteDeadline(time.Time{})
-		}
+		// It's safe to ignore the returning error: even if it don’t return now, it will return via next write.
+		_ = c.SetWriteDeadline(time.Time{})
 	}()
 
 	return c.Conn.Write(buf)
@@ -68,7 +58,5 @@ func (c *Conn) Close() error {
 	c.Conn = nil
 	c.readTimeout = 0
 	c.writeTimeout = 0
-	connPool.Put(c)
-
 	return nil
 }

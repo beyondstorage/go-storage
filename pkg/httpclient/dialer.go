@@ -39,10 +39,11 @@ func (d *Dialer) DialContext(ctx context.Context, network, addr string) (net.Con
 		return nil, err
 	}
 
-	conn := connPool.Get().(*Conn)
-	conn.Conn = c
-	conn.readTimeout = d.readTimeout
-	conn.writeTimeout = d.writeTimeout
+	conn := &Conn{
+		Conn:         c,
+		readTimeout:  d.readTimeout,
+		writeTimeout: d.writeTimeout,
+	}
 	return conn, nil
 }
 
