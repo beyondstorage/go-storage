@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/Azure/azure-pipeline-go/pipeline"
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -81,6 +82,16 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 				return pipeline.NewHTTPResponse(r), err
 			}
 		}),
+		// We don't need sdk level retry and we will handle read timeout by ourselves.
+		Retry: azblob.RetryOptions{
+			// Use a fixed back-off retry policy.
+			Policy: 1,
+			// A value of 1 means 1 try and no retries.
+			MaxTries: 1,
+			// Set a long enough timeout to adopt our timeout control.
+			// This value could be adjusted to context deadline if request context has a deadline set.
+			TryTimeout: 720 * time.Hour,
+		},
 	})
 	srv.service = azblob.NewServiceURL(*primaryURL, p)
 
