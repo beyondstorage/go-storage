@@ -7,6 +7,7 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
@@ -28,6 +29,8 @@ const (
 	Expire = "expire"
 	// FileFunc will specify what todo with a file object
 	FileFunc = "file_func"
+	// HTTPClientOptions will sepcify the options for the http client
+	HTTPClientOptions = "http_client_options"
 	// Index will specify the index of this segment
 	Index = "index"
 	// Location will specify the location for service or storage
@@ -114,6 +117,15 @@ func WithExpire(v int) *types.Pair {
 func WithFileFunc(v types.ObjectFunc) *types.Pair {
 	return &types.Pair{
 		Key:   FileFunc,
+		Value: v,
+	}
+}
+
+// WithHTTPClientOptions will apply http_client_options value to Options
+// This pair is used to sepcify the options for the http client
+func WithHTTPClientOptions(v *httpclient.Options) *types.Pair {
+	return &types.Pair{
+		Key:   HTTPClientOptions,
 		Value: v,
 	}
 }
@@ -300,6 +312,16 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 					Err:   ErrPairTypeMismatch,
 					Key:   FileFunc,
 					Type:  "types.ObjectFunc",
+					Value: v,
+				}
+			}
+		case HTTPClientOptions:
+			if _, ok := v.(*httpclient.Options); !ok {
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   HTTPClientOptions,
+					Type:  "*httpclient.Options",
 					Value: v,
 				}
 			}

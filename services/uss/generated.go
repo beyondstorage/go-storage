@@ -10,6 +10,7 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
@@ -24,8 +25,7 @@ var _ segment.Segment
 var _ storage.Storager
 var _ storageclass.Type
 var _ services.ServiceError
-
-// Type is the type for uss
+var _ httpclient.Options // Type is the type for uss
 const Type = "uss"
 
 var pairServiceNewStoragerMap = map[string]struct{}{
@@ -254,19 +254,22 @@ var pairStorageNewMap = map[string]struct{}{
 	// Pre-defined pairs
 	"context": struct{}{},
 	// Meta-defined pairs
-	"credential": struct{}{},
-	"name":       struct{}{},
-	"work_dir":   struct{}{},
+	"credential":          struct{}{},
+	"http_client_options": struct{}{},
+	"name":                struct{}{},
+	"work_dir":            struct{}{},
 }
 
 type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
-	Credential *credential.Provider
-	Name       string
-	HasWorkDir bool
-	WorkDir    string
+	Credential           *credential.Provider
+	HasHTTPClientOptions bool
+	HTTPClientOptions    *httpclient.Options
+	Name                 string
+	HasWorkDir           bool
+	WorkDir              string
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -289,6 +292,11 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	}
 	if ok {
 		result.Credential = v.(*credential.Provider)
+	}
+	v, ok = values[ps.HTTPClientOptions]
+	if ok {
+		result.HasHTTPClientOptions = true
+		result.HTTPClientOptions = v.(*httpclient.Options)
 	}
 	v, ok = values[ps.Name]
 	if !ok {

@@ -6,7 +6,8 @@
     },
     "new": {
       "credential": true,
-      "endpoint": true
+      "endpoint": true,
+      "http_client_options": false
     }
   },
   "storage": {

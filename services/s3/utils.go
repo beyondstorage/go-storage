@@ -11,6 +11,7 @@ import (
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
@@ -56,6 +57,9 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	default:
 		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
+
+	// Set s3 config's http client
+	cfg.HTTPClient = httpclient.New(opt.HTTPClientOptions)
 
 	sess, err := session.NewSession(cfg)
 	if err != nil {

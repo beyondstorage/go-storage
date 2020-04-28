@@ -1,17 +1,20 @@
 package azblob
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
+	"github.com/Azure/azure-pipeline-go/pipeline"
+	"github.com/Azure/azure-storage-blob-go/azblob"
+
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
-
-	"github.com/Azure/azure-storage-blob-go/azblob"
 )
 
 // New will create both Servicer and Storager.
@@ -66,7 +69,19 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		return nil, err
 	}
 
-	p := azblob.NewPipeline(cred, azblob.PipelineOptions{})
+	httpClient := httpclient.New(opt.HTTPClientOptions)
+
+	p := azblob.NewPipeline(cred, azblob.PipelineOptions{
+		HTTPSender: pipeline.FactoryFunc(func(next pipeline.Policy, po *pipeline.PolicyOptions) pipeline.PolicyFunc {
+			return func(ctx context.Context, request pipeline.Request) (pipeline.Response, error) {
+				r, err := httpClient.Do(request.WithContext(ctx))
+				if err != nil {
+					err = pipeline.NewError(err, "HTTP request failed")
+				}
+				return pipeline.NewHTTPResponse(r), err
+			}
+		}),
+	})
 	srv.service = azblob.NewServiceURL(*primaryURL, p)
 
 	return srv, nil

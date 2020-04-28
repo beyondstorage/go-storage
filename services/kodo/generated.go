@@ -10,6 +10,7 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
@@ -24,8 +25,7 @@ var _ segment.Segment
 var _ storage.Storager
 var _ storageclass.Type
 var _ services.ServiceError
-
-// Type is the type for kodo
+var _ httpclient.Options // Type is the type for kodo
 const Type = "kodo"
 
 var pairServiceCreateMap = map[string]struct{}{
@@ -210,7 +210,8 @@ var pairServiceNewMap = map[string]struct{}{
 	// Pre-defined pairs
 	"context": struct{}{},
 	// Meta-defined pairs
-	"credential": struct{}{},
+	"credential":          struct{}{},
+	"http_client_options": struct{}{},
 }
 
 type pairServiceNew struct {
@@ -218,7 +219,9 @@ type pairServiceNew struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	Credential *credential.Provider
+	Credential           *credential.Provider
+	HasHTTPClientOptions bool
+	HTTPClientOptions    *httpclient.Options
 }
 
 func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
@@ -247,6 +250,11 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	}
 	if ok {
 		result.Credential = v.(*credential.Provider)
+	}
+	v, ok = values[ps.HTTPClientOptions]
+	if ok {
+		result.HasHTTPClientOptions = true
+		result.HTTPClientOptions = v.(*httpclient.Options)
 	}
 
 	return result, nil

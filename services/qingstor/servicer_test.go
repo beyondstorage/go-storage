@@ -94,7 +94,7 @@ func TestService_Get(t *testing.T) {
 				Header:     header,
 			}, nil
 		}
-		monkey.PatchInstanceMethod(reflect.TypeOf(srv.noRedirectClient), "Head", fn)
+		monkey.PatchInstanceMethod(reflect.TypeOf(srv.client), "Head", fn)
 
 		// Mock Bucket.
 		mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).DoAndReturn(func(bucketName, inputLocation string) (*service.Bucket, error) {

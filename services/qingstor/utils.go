@@ -3,7 +3,6 @@ package qingstor
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"regexp"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
@@ -42,33 +42,34 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		}
 	}()
 
-	srv = &Service{
-		noRedirectClient: &http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		},
-	}
-
 	opt, err := parseServicePairNew(pairs...)
 	if err != nil {
 		return nil, err
+	}
+
+	srv = &Service{
+		client: httpclient.New(opt.HTTPClientOptions),
 	}
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	if credProtocol != credential.ProtocolHmac {
 		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
+
 	cfg, err := config.New(cred[0], cred[1])
 	if err != nil {
 		return nil, err
 	}
+
+	// Set config's endpoint
 	if opt.HasEndpoint {
 		ep := opt.Endpoint.Value()
 		cfg.Host = ep.Host
 		cfg.Port = ep.Port
 		cfg.Protocol = ep.Protocol
 	}
+	// Set config's http client
+	cfg.Connection = srv.client
 
 	srv.config = cfg
 	srv.service, _ = service.Init(cfg)

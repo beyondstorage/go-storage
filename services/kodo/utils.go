@@ -10,6 +10,7 @@ import (
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
@@ -54,7 +55,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	mac := qbox.NewMac(cred[0], cred[1])
 	cfg := &qs.Config{}
 	srv.service = qs.NewBucketManager(mac, cfg)
-
+	srv.service.Client.Client = httpclient.New(opt.HTTPClientOptions)
 	return
 }
 

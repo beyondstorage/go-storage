@@ -10,6 +10,7 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
@@ -24,8 +25,7 @@ var _ segment.Segment
 var _ storage.Storager
 var _ storageclass.Type
 var _ services.ServiceError
-
-// Type is the type for fs
+var _ httpclient.Options // Type is the type for fs
 const Type = "fs"
 
 var pairServiceNewStoragerMap = map[string]struct{}{

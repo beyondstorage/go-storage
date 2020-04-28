@@ -14,7 +14,8 @@
       "storager_func": true
     },
     "new": {
-      "credential": true
+      "credential": true,
+      "http_client_options": false
     }
   },
   "storage": {

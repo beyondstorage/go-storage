@@ -12,6 +12,7 @@ import (
     "github.com/Xuanwo/storage/pkg/endpoint"
     "github.com/Xuanwo/storage/pkg/credential"
     "github.com/Xuanwo/storage/pkg/storageclass"
+    "github.com/Xuanwo/storage/pkg/httpclient"
     "github.com/Xuanwo/storage/services"
     "github.com/Xuanwo/storage/types"
     ps "github.com/Xuanwo/storage/types/pairs"
@@ -24,3 +25,4 @@ var _ segment.Segment
 var _ storage.Storager
 var _ storageclass.Type
 var _ services.ServiceError
+var _ httpclient.Options

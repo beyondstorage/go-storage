@@ -2,9 +2,8 @@ package cos
 
 import (
 	"fmt"
-	"net/http"
-	"time"
 
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/tencentyun/cos-go-sdk-v5"
 
 	"github.com/Xuanwo/storage"
@@ -50,13 +49,14 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
-	srv.client = &http.Client{
-		Transport: &cos.AuthorizationTransport{
-			SecretID:  cred[0],
-			SecretKey: cred[1],
-		},
-		Timeout: 100 * time.Second,
+	httpClient := httpclient.New(opt.HTTPClientOptions)
+	httpClient.Transport = &cos.AuthorizationTransport{
+		Transport: httpClient.Transport,
+		SecretID:  cred[0],
+		SecretKey: cred[1],
 	}
+
+	srv.client = httpClient
 	srv.service = cos.NewClient(nil, srv.client)
 	return
 }
