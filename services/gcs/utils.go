@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	gs "cloud.google.com/go/storage"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 
@@ -58,6 +59,10 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	default:
 		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
+
+	options = append(options, option.WithHTTPClient(
+		httpclient.New(opt.HTTPClientOptions)),
+	)
 
 	client, err := gs.NewClient(opt.Context, options...)
 	if err != nil {

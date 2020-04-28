@@ -3,6 +3,7 @@ package s3
 import (
 	"fmt"
 
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -56,6 +57,9 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	default:
 		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
+
+	// Set s3 config's http client
+	cfg.HTTPClient = httpclient.New(opt.HTTPClientOptions)
 
 	sess, err := session.NewSession(cfg)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/upyun/go-sdk/upyun"
 
@@ -43,6 +44,8 @@ func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 		Password: cred[1],
 	}
 	store.bucket = upyun.NewUpYun(cfg)
+	// Set http client
+	store.bucket.SetHTTPClient(httpclient.New(opt.HTTPClientOptions))
 	store.name = opt.Name
 	store.workDir = "/"
 	if opt.HasWorkDir {

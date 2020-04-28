@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	qs "github.com/qiniu/api.v7/v7/storage"
 
@@ -54,7 +55,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	mac := qbox.NewMac(cred[0], cred[1])
 	cfg := &qs.Config{}
 	srv.service = qs.NewBucketManager(mac, cfg)
-
+	srv.service.Client.Client = httpclient.New(opt.HTTPClientOptions)
 	return
 }
 

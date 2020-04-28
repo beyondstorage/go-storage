@@ -10,6 +10,7 @@
     },
     "new": {
       "credential": true,
+      "http_client_options": false,
       "name": true,
       "work_dir": false
     }

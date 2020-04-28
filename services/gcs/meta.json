@@ -6,6 +6,7 @@
     },
     "new": {
       "credential": true,
+      "http_client_options": false,
       "project": true
     }
   },

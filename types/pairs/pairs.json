@@ -27,6 +27,10 @@
     "Type": "types.ObjectFunc",
     "Description": "specify what todo with a file object"
   },
+  "http_client_options": {
+    "Type": "*httpclient.Options",
+    "Description": "sepcify the options for the http client"
+  },
   "index": {
     "Type": "int",
     "Description": "specify the index of this segment"

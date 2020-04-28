@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Xuanwo/storage"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/auth"
@@ -33,7 +34,9 @@ func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 		return
 	}
 
-	cfg := dropbox.Config{}
+	cfg := dropbox.Config{
+		Client: httpclient.New(opt.HTTPClientOptions),
+	}
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	switch credProtocol {

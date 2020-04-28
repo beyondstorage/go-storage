@@ -21,7 +21,7 @@ type Service struct {
 	config  *config.Config
 	service iface.Service
 
-	noRedirectClient *http.Client
+	client *http.Client
 }
 
 // String implements Service.String
@@ -205,7 +205,7 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 
 	url := fmt.Sprintf("%s://%s.%s:%d", s.config.Protocol, name, s.config.Host, s.config.Port)
 
-	r, err := s.noRedirectClient.Head(url)
+	r, err := s.client.Head(url)
 	if err != nil {
 		return
 	}
