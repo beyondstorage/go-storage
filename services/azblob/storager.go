@@ -157,7 +157,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		return nil, err
 	}
 
-	r = output.Body(azblob.RetryReaderOptions{})
+	r = output.Response().Body
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
 	}
