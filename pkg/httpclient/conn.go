@@ -54,7 +54,7 @@ func (c *Conn) Close() error {
 		return err
 	}
 
-	// Clear all value and put to connPool
+	// Clear all value
 	c.Conn = nil
 	c.readTimeout = 0
 	c.writeTimeout = 0
