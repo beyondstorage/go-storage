@@ -24,8 +24,11 @@ func (c *Conn) Read(buf []byte) (n int, err error) {
 	}
 	defer func() {
 		// Clean read timeout so that this will not affect further read
-		// It's safe to ignore the returning error: even if it don’t return now, it will return via next read.
-		_ = c.SetReadDeadline(time.Time{})
+		// Connection could already be closed, check before set read deadline.
+		if c.Conn != nil {
+			// It's safe to ignore the returning error: even if it don’t return now, it will return via next read.
+			_ = c.SetReadDeadline(time.Time{})
+		}
 	}()
 
 	return c.Conn.Read(buf)
@@ -39,8 +42,11 @@ func (c *Conn) Write(buf []byte) (n int, err error) {
 	}
 	defer func() {
 		// Clean read timeout so that this will not affect further write
-		// It's safe to ignore the returning error: even if it don’t return now, it will return via next write.
-		_ = c.SetWriteDeadline(time.Time{})
+		// Connection could already be closed, check before set read deadline.
+		if c.Conn != nil {
+			// It's safe to ignore the returning error: even if it don’t return now, it will return via next write.
+			_ = c.SetWriteDeadline(time.Time{})
+		}
 	}()
 
 	return c.Conn.Write(buf)
