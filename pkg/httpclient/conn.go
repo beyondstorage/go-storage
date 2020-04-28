@@ -41,22 +41,3 @@ func (c *Conn) Write(buf []byte) (n int, err error) {
 
 	return c.Conn.Write(buf)
 }
-
-// Close will close the underlying net.Conn and put to conn pool for later reuse.
-func (c *Conn) Close() error {
-	// Prevent double close
-	if c.Conn == nil {
-		return nil
-	}
-
-	err := c.Conn.Close()
-	if err != nil {
-		return err
-	}
-
-	// Clear all value
-	c.Conn = nil
-	c.readTimeout = 0
-	c.writeTimeout = 0
-	return nil
-}

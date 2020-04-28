@@ -37,6 +37,8 @@ func New(o *Options) *http.Client {
 			IdleConnTimeout: 90 * time.Second,
 			// Specify timeout that waiting for server's approve before sending data.
 			ExpectContinueTimeout: time.Second,
+			// Gzip file should not be auto-decompressed
+			DisableCompression: true,
 		},
 		// http client used in storage don't need to follow redirect, return directly.
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
