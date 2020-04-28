@@ -6,12 +6,13 @@ import (
 	"net/http"
 
 	gs "cloud.google.com/go/storage"
-	"github.com/Xuanwo/storage/pkg/httpclient"
+
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"

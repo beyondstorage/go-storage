@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/httpclient"
-	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/auth"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
 
+	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 // NewStorager will create Storager only.

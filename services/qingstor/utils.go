@@ -6,13 +6,13 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/qingstor/qingstor-sdk-go/v4/config"
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"

@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Xuanwo/storage/pkg/httpclient"
-	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/upyun/go-sdk/upyun"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
 // NewStorager will create Storager only.
