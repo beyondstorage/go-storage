@@ -32,7 +32,7 @@
       "segment_func": true
     },
     "new": {
-      "location": true,
+      "location": false,
       "name": true,
       "work_dir": false
     },

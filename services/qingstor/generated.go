@@ -853,10 +853,11 @@ type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
-	Location   string
-	Name       string
-	HasWorkDir bool
-	WorkDir    string
+	HasLocation bool
+	Location    string
+	Name        string
+	HasWorkDir  bool
+	WorkDir     string
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -874,10 +875,8 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Location]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.Location)
-	}
 	if ok {
+		result.HasLocation = true
 		result.Location = v.(string)
 	}
 	v, ok = values[ps.Name]
