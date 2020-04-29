@@ -80,21 +80,14 @@ func (s *Service) Get(name string, pairs ...*types.Pair) (store storage.Storager
 		err = s.formatError(services.OpGet, err, name)
 	}()
 
-	opt, err := s.parsePairGet(pairs...)
+	_, err = s.parsePairGet(pairs...)
 	if err != nil {
 		return
 	}
 
-	location := opt.Location
-	if !opt.HasLocation {
-		location, err = s.detectLocation(name)
-		if err != nil {
-			return
-		}
-	}
-	pairs = append(pairs, ps.WithName(name), ps.WithLocation(location))
+	pairs = append(pairs, ps.WithName(name))
 
-	store, err = s.newStorage(append(pairs, ps.WithName(name))...)
+	store, err = s.newStorage(pairs...)
 	if err != nil {
 		return
 	}
@@ -133,19 +126,12 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 		err = s.formatError(services.OpDelete, err, name)
 	}()
 
-	opt, err := s.parsePairDelete(pairs...)
+	_, err = s.parsePairDelete(pairs...)
 	if err != nil {
 		return
 	}
 
-	location := opt.Location
-	if !opt.HasLocation {
-		location, err = s.detectLocation(name)
-		if err != nil {
-			return
-		}
-	}
-	pairs = append(pairs, ps.WithName(name), ps.WithLocation(location))
+	pairs = append(pairs, ps.WithName(name))
 
 	store, err := s.newStorage(pairs...)
 	if err != nil {
@@ -177,6 +163,14 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 	if !IsBucketNameValid(opt.Name) {
 		err = ErrInvalidBucketName
 		return
+	}
+
+	// Detect location automatically
+	if !opt.HasLocation {
+		opt.Location, err = s.detectLocation(opt.Name)
+		if err != nil {
+			return
+		}
 	}
 
 	bucket, err := s.service.Bucket(opt.Name, opt.Location)
