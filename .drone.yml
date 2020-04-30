@@ -1,0 +1,23 @@
+---
+kind: pipeline
+type: docker
+name: fs
+
+steps:
+  - name: test
+    image: golang
+    commands:
+      - go test
+      - go build
+
+---
+kind: pipeline
+type: docker
+name: qingstor
+
+steps:
+  - name: test
+    image: golang
+    commands:
+      - go test
+      - go build
