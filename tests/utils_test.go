@@ -48,7 +48,6 @@ func loadConfig() []config {
 		if err != nil {
 			log.Fatal("base64 decode config failed")
 		}
-		log.Print(string(content))
 		err = yaml.Unmarshal(content, cfg.Options)
 		if err != nil {
 			log.Fatal("yaml unmarshal config failed")
