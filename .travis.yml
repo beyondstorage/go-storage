@@ -9,7 +9,7 @@ go:
 
 cache:
   directories:
-    - /home/travis/gopath
+    - /home/travis/gopath/pkg
 
 install:
   # code lint tools
