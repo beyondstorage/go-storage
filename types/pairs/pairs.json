@@ -9,7 +9,8 @@
   },
   "credential": {
     "Type": "*credential.Provider",
-    "Description": "specify how to provide credential for service or storage"
+    "Description": "specify how to provide credential for service or storage",
+    "Parser": "credential.Parse"
   },
   "dir_func": {
     "Type": "types.ObjectFunc",
@@ -17,11 +18,13 @@
   },
   "endpoint": {
     "Type": "endpoint.Provider",
-    "Description": "specify how to provide endpoint for service or storage"
+    "Description": "specify how to provide endpoint for service or storage",
+    "Parser": "endpoint.Parse"
   },
   "expire": {
     "Type": "int",
-    "Description": "specify when the url returned by reach will expire"
+    "Description": "specify when the url returned by reach will expire",
+    "Parser": "parseInt"
   },
   "file_func": {
     "Type": "types.ObjectFunc",
@@ -33,7 +36,8 @@
   },
   "index": {
     "Type": "int",
-    "Description": "specify the index of this segment"
+    "Description": "specify the index of this segment",
+    "Parser": "parseInt"
   },
   "location": {
     "Type": "string",
@@ -49,7 +53,8 @@
   },
   "offset": {
     "Type": "int64",
-    "Description": "specify offset for this request, storage will seek to this offset before read"
+    "Description": "specify offset for this request, storage will seek to this offset before read",
+    "Parser": "parseInt64"
   },
   "project": {
     "Type": "string",
@@ -65,7 +70,8 @@
   },
   "size": {
     "Type": "int64",
-    "Description": "specify size for this request, storage will only read limited content data"
+    "Description": "specify size for this request, storage will only read limited content data",
+    "Parser": "parseInt64"
   },
   "storage_class": {
     "Type": "storageclass.Type",

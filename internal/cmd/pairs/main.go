@@ -13,7 +13,7 @@ import (
 
 var (
 	pairsT = template.Must(
-		template.New("meta").
+		template.New("pair").
 			Funcs(templateutils.FuncMap()).
 			Parse(string(MustAsset("pair.tmpl"))))
 )
@@ -22,6 +22,7 @@ var (
 type Pairs map[string]*struct {
 	Type        string
 	Description string
+	Parser      string `json:",omitempty"`
 }
 
 //go:generate go-bindata -nometadata -ignore "\\.go$" .
