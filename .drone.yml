@@ -4,9 +4,17 @@ name: integration_test
 
 steps:
   - name: integration test
-    image: golang
+    image: golang:1.13
+    volumes:
+      - name: go-cache
+        path: /go
     environment:
       STORAGE_TEST_SERVICE_FS:
         from_secret: STORAGE_TEST_SERVICE_FS
     commands:
       - cd tests && go test -race -v ./...
+
+volumes:
+  - name: go-cache
+    host:
+      path: /var/lib/cache/drone/storage/go
