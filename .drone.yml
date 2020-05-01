@@ -1,23 +1,10 @@
 ---
 kind: pipeline
 type: docker
-name: fs
+name: integration_test
 
 steps:
-  - name: test
+  - name: integration test
     image: golang
     commands:
-      - go test
-      - go build
-
----
-kind: pipeline
-type: docker
-name: qingstor
-
-steps:
-  - name: test
-    image: golang
-    commands:
-      - go test
-      - go build
+      - cd tests && go test -race -v ./...
