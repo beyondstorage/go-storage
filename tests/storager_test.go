@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
-	"gopkg.in/yaml.v2"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/coreutils"
@@ -20,21 +19,8 @@ import (
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
-type config struct {
-	Type    string
-	Options map[string]interface{}
-}
-
 func TestStorager(t *testing.T) {
-	srv := make([]config, 0)
-
-	content, err := ioutil.ReadFile("storager.yaml")
-	if err == nil {
-		err = yaml.Unmarshal(content, &srv)
-		if err != nil {
-			t.Error(err)
-		}
-	}
+	srv := loadConfig()
 
 	for _, v := range srv {
 		pairs, err := ps.Parse(v.Options)
@@ -51,7 +37,7 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 		var store storage.Storager
 		var err error
 
-		_, store, err = coreutils.Open(typ, pair...)
+		store, err = coreutils.OpenStorager(typ, pair...)
 		if err != nil {
 			t.Error(err)
 		}
@@ -234,7 +220,7 @@ func testDirLister(t *testing.T, typ string, pair []*types.Pair) {
 		var lister storage.DirLister
 		var err error
 
-		_, store, err = coreutils.Open(typ, pair...)
+		store, err = coreutils.OpenStorager(typ, pair...)
 		if err != nil {
 			t.Error(err)
 		}
