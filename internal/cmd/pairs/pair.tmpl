@@ -37,24 +37,44 @@ func With{{ $pk }}(v {{ $v.Type }}) *types.Pair {
 func Parse(m map[string]interface{}) ([]*types.Pair, error) {
     pairs := make([]*types.Pair, 0, len(m))
 
+    var err error
+
     for k, v := range m {
+        var pv interface{}
         switch k {
 {{- range $k, $v := .Data }}
             case {{ $k | toPascal }}:
-                if _, ok := v.({{ $v.Type }}); !ok {
-                    return nil, &Error{
-                        Op: "parse",
-                        Err: ErrPairTypeMismatch,
-                        Key: {{ $k | toPascal }},
-                        Type: "{{ $v.Type }}",
-                        Value: v,
+                    switch rv := v.(type) {
+                        case {{ $v.Type }}:
+                            pv = rv
+                        {{- if $v.Parser }}
+                        case string:
+                            pv, err = {{$v.Parser}}(rv)
+                            if err != nil {
+                                return nil, &Error{
+                                    Op: "parse",
+                                    Err: err,
+                                    Key: {{ $k | toPascal }},
+                                    Type: "{{ $v.Type }}",
+                                    Value: v,
+                                }
+                            }
+                        {{- end }}
+                        default:
+                            return nil, &Error{
+                                Op: "parse",
+                                Err: ErrPairTypeMismatch,
+                                Key: {{ $k | toPascal }},
+                                Type: "{{ $v.Type }}",
+                                Value: v,
+                            }
                     }
-                }
+
 {{- end }}
             default:
                 continue
         }
-        pairs = append(pairs, &types.Pair{Key: k, Value: v})
+        pairs = append(pairs, &types.Pair{Key: k, Value: pv})
     }
 
     return pairs, nil

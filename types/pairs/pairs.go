@@ -243,10 +243,16 @@ func WithWorkDir(v string) *types.Pair {
 func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 	pairs := make([]*types.Pair, 0, len(m))
 
+	var err error
+
 	for k, v := range m {
+		var pv interface{}
 		switch k {
 		case Checksum:
-			if _, ok := v.(string); !ok {
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -256,7 +262,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Context:
-			if _, ok := v.(context.Context); !ok {
+			switch rv := v.(type) {
+			case context.Context:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -266,7 +275,21 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Credential:
-			if _, ok := v.(*credential.Provider); !ok {
+			switch rv := v.(type) {
+			case *credential.Provider:
+				pv = rv
+			case string:
+				pv, err = credential.Parse(rv)
+				if err != nil {
+					return nil, &Error{
+						Op:    "parse",
+						Err:   err,
+						Key:   Credential,
+						Type:  "*credential.Provider",
+						Value: v,
+					}
+				}
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -276,7 +299,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case DirFunc:
-			if _, ok := v.(types.ObjectFunc); !ok {
+			switch rv := v.(type) {
+			case types.ObjectFunc:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -286,7 +312,21 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Endpoint:
-			if _, ok := v.(endpoint.Provider); !ok {
+			switch rv := v.(type) {
+			case endpoint.Provider:
+				pv = rv
+			case string:
+				pv, err = endpoint.Parse(rv)
+				if err != nil {
+					return nil, &Error{
+						Op:    "parse",
+						Err:   err,
+						Key:   Endpoint,
+						Type:  "endpoint.Provider",
+						Value: v,
+					}
+				}
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -296,7 +336,21 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Expire:
-			if _, ok := v.(int); !ok {
+			switch rv := v.(type) {
+			case int:
+				pv = rv
+			case string:
+				pv, err = parseInt(rv)
+				if err != nil {
+					return nil, &Error{
+						Op:    "parse",
+						Err:   err,
+						Key:   Expire,
+						Type:  "int",
+						Value: v,
+					}
+				}
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -306,7 +360,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case FileFunc:
-			if _, ok := v.(types.ObjectFunc); !ok {
+			switch rv := v.(type) {
+			case types.ObjectFunc:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -316,7 +373,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case HTTPClientOptions:
-			if _, ok := v.(*httpclient.Options); !ok {
+			switch rv := v.(type) {
+			case *httpclient.Options:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -326,7 +386,21 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Index:
-			if _, ok := v.(int); !ok {
+			switch rv := v.(type) {
+			case int:
+				pv = rv
+			case string:
+				pv, err = parseInt(rv)
+				if err != nil {
+					return nil, &Error{
+						Op:    "parse",
+						Err:   err,
+						Key:   Index,
+						Type:  "int",
+						Value: v,
+					}
+				}
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -336,7 +410,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Location:
-			if _, ok := v.(string); !ok {
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -346,7 +423,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Name:
-			if _, ok := v.(string); !ok {
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -356,7 +436,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case ObjectFunc:
-			if _, ok := v.(types.ObjectFunc); !ok {
+			switch rv := v.(type) {
+			case types.ObjectFunc:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -366,7 +449,21 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Offset:
-			if _, ok := v.(int64); !ok {
+			switch rv := v.(type) {
+			case int64:
+				pv = rv
+			case string:
+				pv, err = parseInt64(rv)
+				if err != nil {
+					return nil, &Error{
+						Op:    "parse",
+						Err:   err,
+						Key:   Offset,
+						Type:  "int64",
+						Value: v,
+					}
+				}
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -376,7 +473,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Project:
-			if _, ok := v.(string); !ok {
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -386,7 +486,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case ReadCallbackFunc:
-			if _, ok := v.(func([]byte)); !ok {
+			switch rv := v.(type) {
+			case func([]byte):
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -396,7 +499,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case SegmentFunc:
-			if _, ok := v.(segment.Func); !ok {
+			switch rv := v.(type) {
+			case segment.Func:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -406,7 +512,21 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case Size:
-			if _, ok := v.(int64); !ok {
+			switch rv := v.(type) {
+			case int64:
+				pv = rv
+			case string:
+				pv, err = parseInt64(rv)
+				if err != nil {
+					return nil, &Error{
+						Op:    "parse",
+						Err:   err,
+						Key:   Size,
+						Type:  "int64",
+						Value: v,
+					}
+				}
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -416,7 +536,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case StorageClass:
-			if _, ok := v.(storageclass.Type); !ok {
+			switch rv := v.(type) {
+			case storageclass.Type:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -426,7 +549,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case StoragerFunc:
-			if _, ok := v.(storage.StoragerFunc); !ok {
+			switch rv := v.(type) {
+			case storage.StoragerFunc:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -436,7 +562,10 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 				}
 			}
 		case WorkDir:
-			if _, ok := v.(string); !ok {
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
@@ -448,7 +577,7 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 		default:
 			continue
 		}
-		pairs = append(pairs, &types.Pair{Key: k, Value: v})
+		pairs = append(pairs, &types.Pair{Key: k, Value: pv})
 	}
 
 	return pairs, nil
