@@ -1,3 +1,4 @@
+---
 kind: pipeline
 type: docker
 name: integration_test
@@ -18,3 +19,8 @@ volumes:
   - name: go-cache
     host:
       path: /var/lib/cache/drone/storage/go
+---
+kind: signature
+hmac: c1f2f14f1fdfb9a8887f1c3f6cbd25fd4d4f2e42c9379cdcab2d4f1e85ddfa7f
+
+...
