@@ -7,6 +7,10 @@ go:
   - "1.13"
   - "1.14"
 
+cache:
+  directories:
+    - /home/travis/gopath
+
 install:
   # code lint tools
   - go get -u golang.org/x/lint/golint
