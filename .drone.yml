@@ -1,10 +1,16 @@
----
 kind: pipeline
 type: docker
 name: integration_test
 
 steps:
-  - name: integration test
+  - name: build
     image: golang
+      commands:
+        - cd tests && go build ./...
+  - name: fs integration test
+    image: golang
+    environment:
+      STORAGE_TEST_SERVICE_FS:
+        from_secret: STORAGE_TEST_SERVICE_FS
     commands:
       - cd tests && go test -race -v ./...
