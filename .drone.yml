@@ -3,11 +3,7 @@ type: docker
 name: integration_test
 
 steps:
-  - name: build
-    image: golang
-    commands:
-      - cd tests && go build ./...
-  - name: fs integration test
+  - name: integration test
     image: golang
     environment:
       STORAGE_TEST_SERVICE_FS:

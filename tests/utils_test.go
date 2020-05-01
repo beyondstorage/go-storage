@@ -40,13 +40,15 @@ func loadConfig() []config {
 
 		cfg := config{
 			// STORAGE_TEST_SERVICE_FS => FS => fs
-			Type: strings.ToLower(strings.TrimPrefix(values[0], TestPrefix)),
+			Type:    strings.ToLower(strings.TrimPrefix(values[0], TestPrefix)),
+			Options: make(map[string]interface{}),
 		}
 		// Config via env will be yaml content after base64.
-		content, err := base64.StdEncoding.DecodeString(values[0])
+		content, err := base64.StdEncoding.DecodeString(values[1])
 		if err != nil {
 			log.Fatal("base64 decode config failed")
 		}
+		log.Print(string(content))
 		err = yaml.Unmarshal(content, cfg.Options)
 		if err != nil {
 			log.Fatal("yaml unmarshal config failed")
