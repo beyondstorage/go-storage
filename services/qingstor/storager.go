@@ -10,6 +10,7 @@ import (
 	iface "github.com/qingstor/qingstor-sdk-go/v4/interface"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
+	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/services"
@@ -168,6 +169,11 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	}
 
 	input := &service.GetObjectInput{}
+
+	if opt.HasOffset || opt.HasSize {
+		rs := headers.FormatRange(opt.Offset, opt.Size)
+		input.Range = &rs
+	}
 
 	rp := s.getAbsPath(path)
 

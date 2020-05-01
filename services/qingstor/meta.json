@@ -39,6 +39,10 @@
     "reach": {
       "expire": true
     },
+    "read": {
+      "offset": false,
+      "size": false
+    },
     "write": {
       "checksum": false,
       "size": true,
