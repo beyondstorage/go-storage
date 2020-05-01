@@ -5,8 +5,8 @@ name: integration_test
 steps:
   - name: build
     image: golang
-      commands:
-        - cd tests && go build ./...
+    commands:
+      - cd tests && go build ./...
   - name: fs integration test
     image: golang
     environment:
