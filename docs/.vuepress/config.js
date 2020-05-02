@@ -2,11 +2,6 @@ module.exports = {
     title: 'storage',
     description: 'An application-oriented unified storage layer for Golang.',
     smoothScroll: true,
-    sidebar: [
-        '/',
-        '/page-a',
-        ['/page-b', 'Explicit link text']
-    ],
     plugins: [
         '@vuepress/last-updated',
         '@vuepress/active-header-links',
@@ -21,8 +16,8 @@ module.exports = {
             title: 'storage',
             description: 'An application-oriented unified storage layer for Golang.'
         },
-        '/zh-Hans/': {
-            lang: 'zh-Hans',
+        '/zh-CN/': {
+            lang: 'zh-CN',
             title: 'storage',
             description: '面向应用的 Golang 抽象存储层'
         }
@@ -55,7 +50,7 @@ module.exports = {
                     {text: 'Spec', link: '/spec/', ariaLabel: 'Spec'}
                 ]
             },
-            "/zh-Hans/": {
+            "/zh-CN/": {
                 selectText: '语言',
                 label: '简体中文',
                 ariaLabel: '语言',
@@ -67,9 +62,9 @@ module.exports = {
                     }
                 },
                 nav: [
-                    {text: '服务', link: '/zh-Hans/services/'},
-                    {text: '设计', link: '/zh-Hans/design/'},
-                    {text: '规范', link: '/zh-Hans/spec/'}
+                    {text: '服务', link: '/zh-CN/services/'},
+                    {text: '设计', link: '/zh-CN/design/'},
+                    {text: '规范', link: '/zh-CN/spec/'}
                 ]
             },
         }
