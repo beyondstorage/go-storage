@@ -15,6 +15,18 @@ module.exports = {
             'ga': 'UA-51515330-5'
         }
     ],
+    locales: {
+        '/': {
+            lang: 'en-US',
+            title: 'storage',
+            description: 'An application-oriented unified storage layer for Golang.'
+        },
+        '/zh-Hans/': {
+            lang: 'zh-Hans',
+            title: 'storage',
+            description: '面向应用的 Golang 抽象存储层'
+        }
+    },
     themeConfig: {
         nav: [
             {text: 'Services', link: '/services/'},
@@ -25,5 +37,41 @@ module.exports = {
         repo: 'Xuanwo/storage',
         docsDir: 'docs',
         editLinks: true,
+        locales: {
+            "/": {
+                selectText: 'Languages',
+                label: 'English',
+                ariaLabel: 'Languages',
+                editLinkText: 'Edit this page on GitHub',
+                serviceWorker: {
+                    updatePopup: {
+                        message: "New content is available.",
+                        buttonText: "Refresh"
+                    }
+                },
+                nav: [
+                    {text: 'Services', link: '/services/', ariaLabel: 'Services'},
+                    {text: 'Design', link: '/design/', ariaLabel: 'Design'},
+                    {text: 'Spec', link: '/spec/', ariaLabel: 'Spec'}
+                ]
+            },
+            "/zh-Hans/": {
+                selectText: '语言',
+                label: '简体中文',
+                ariaLabel: '语言',
+                editLinkText: '在 Github 上编辑此页',
+                serviceWorker: {
+                    updatePopup: {
+                        message: "发现新内容可用",
+                        buttonText: "刷新"
+                    }
+                },
+                nav: [
+                    {text: '服务', link: '/zh-Hans/services/'},
+                    {text: '设计', link: '/zh-Hans/design/'},
+                    {text: '规范', link: '/zh-Hans/spec/'}
+                ]
+            },
+        }
     },
 }
