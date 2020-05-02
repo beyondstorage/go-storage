@@ -1,27 +1,27 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-03-06
 deprecates:
   - design/3-support-service-init-via-config-string.md
 ---
 
-# Proposal: Remove config string
+# 建议：删除配置字符串
 
-## Background
+## 二. 背景
 
-[storage](https://github.com/Xuanwo/storage) added config string support in proposal [3-support-service-init-via-config-string](https://github.com/Xuanwo/storage/blob/master/docs/design/3-support-service-init-via-config-string.md), and updated in proposal [9-remove-storager-init](https://github.com/Xuanwo/storage/blob/master/docs/design/9-remove-storager-init.md). These proposals allow users init services like following:
+[存储](https://github.com/Xuanwo/storage) 在提议 [3-support-service-init-via-config-string](https://github.com/Xuanwo/storage/blob/master/docs/design/3-support-service-init-via-config-string.md)中添加了配置字符串支持，并在提议 [9-remove-storager-init](https://github.com/Xuanwo/storage/blob/master/docs/design/9-remove-storager-init.md) 中更新。 这些建议允许用户进入如下服务：
 
 ```go
 srv, store, err := coreutils.Open("fs:///?work_dir=/path/to/dir")
-if err != nil {
-    log.Fatalf("service init failed: %v", err)
-}
+if err != nil vol
+    log。Fatalf("service init failed: %v", err)
+
 ```
 
-With time goes on, and deeper understanding of [storage](https://github.com/Xuanwo/storage)'s configuration, I found `config string` is not a good solution. `config string` does have some benefits: simple string, easy to construct, easy to understand(?).
+随着时间的推移，对 [存储](https://github.com/Xuanwo/storage)的配置有更深刻的理解，我找到 `配置字符串` 不是一个好的解决方案。 `配置字符串` 确实有一些好处：简单字符串，易于构造，易于理解(?)。
 
-However, after some experience on demo project [bard](https://github.com/Xuanwo/bard), which is a paste bin service built upon [storage](https://github.com/Xuanwo/storage), I found the `config string` deeply influences end user side configuration. [bard](https://github.com/Xuanwo/bard)'s config looks like following:
+然而, 在演示项目的一些经验 [bard](https://github.com/Xuanwo/bard), 这是基于 [存储设备的粘贴bin 服务](https://github.com/Xuanwo/storage), 我找到 `配置字符串` 深深影响最终用户侧配置。 [bard](https://github.com/Xuanwo/bard)的配置看起来像以下：
 
 ```yaml
 public_url: http://127.0.0.1:8080
@@ -37,39 +37,39 @@ database:
 storage: "fs:///?work_dir=/tmp/bard/data"
 ```
 
-Every application built upon [storage](https://github.com/Xuanwo/storage) either exposes config string to end user directly or writes a format config function to convert their own config to [storage](https://github.com/Xuanwo/storage) config string. This is unexpected.
+每个应用程序都建立在 [存储](https://github.com/Xuanwo/storage) 上，要么直接暴露配置字符串以结束用户，要么写一个格式配置函数以将他们自己的配置转换为 [存储](https://github.com/Xuanwo/storage) 配置字符串。 这是预料不到的。
 
-Not only that, config string also makes it hard to construct type safe pairs. We need to parse them from string and can't have effective use of existing configuration formats.
+不仅如此，配置字符串还难以构建安全配对。 我们需要从字符串解析它们，无法有效地使用现有的配置格式。
 
-## Proposal
+## 建议
 
-So I propose following changes:
+因此，我提议作如下修改：
 
-- Remove the idea of config string
-- Refactor `Open(cfg string)` to `Open(t string, opt []*types.Pair)`
+- 删除配置字符串的概念
+- 将 `Open(fg 字符串)` 重设为 `Open(t 字符串，选择 []*类型。配对)`
 
-Add a config type `Config` to help developer parse pairs:
+添加配置类型 `配置` 以帮助开发者解析对：
 
 ```go
-type Config struct {
-    Type    string
-    Options map[string]string
+类型 config structt v.
+    Type 字符串
+    选项[string]string
 }
 
-func (c *Config) Parse() (t string, []*types.Pair, error) {}
+func (c*Config) Parse(t 字符串, []*类型.Pair, 错误) {}
 ```
 
-## Rationale
+## 理由
 
-None
+无
 
-## Compatibility
+## 兼容性
 
-Following packages will be affected:
+以下软件包将受到影响：
 
 - `coreutils`
 - `pkg/config`
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。
