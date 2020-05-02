@@ -1,63 +1,41 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: finished
-updated_at: 2020-03-06
-deprecates:
-  - design/3-support-service-init-via-config-string.md
+updated_at: 2020-03-02
+updates:
+  - design/2-use-callback-in-list-operations.md
 ---
 
-# Proposal: Remove config string
+# Proposal: Support both directory and prefix based list
 
 ## Background
 
-[storage](https://github.com/Xuanwo/storage) added config string support in proposal [3-support-service-init-via-config-string](https://github.com/Xuanwo/storage/blob/master/docs/design/3-support-service-init-via-config-string.md), and updated in proposal [9-remove-storager-init](https://github.com/Xuanwo/storage/blob/master/docs/design/9-remove-storager-init.md). These proposals allow users init services like following:
+We removed recursive support in [2-use-callback-in-list-operations](./2-use-callback-in-list-operations.md), and in the same proposal, we outlined that:
 
-```go
-srv, store, err := coreutils.Open("fs:///?work_dir=/path/to/dir")
-if err != nil {
-    log.Fatalf("service init failed: %v", err)
-}
-```
+> Directory based storage will only list one directory, and prefix based storage will only list one prefix without a delimiter.
 
-With time goes on, and deeper understanding of [storage](https://github.com/Xuanwo/storage)'s configuration, I found `config string` is not a good solution. `config string` does have some benefits: simple string, easy to construct, easy to understand(?).
+It's easy for implementation, but doesn't meet demands. There are two main scenarios:
 
-However, after some experience on demo project [bard](https://github.com/Xuanwo/bard), which is a paste bin service built upon [storage](https://github.com/Xuanwo/storage), I found the `config string` deeply influences end user side configuration. [bard](https://github.com/Xuanwo/bard)'s config looks like following:
+- Work with directories on prefix based storage services, like sync files
+- List without delimiters so that we can list faster if we don't care about directories
 
-```yaml
-public_url: http://127.0.0.1:8080
-listen: 127.0.0.1:8080
-
-key: xxxxxxx
-max_file_size: 104857600
-
-database:
-  type: sqlite3
-  connection: "/tmp/bard/db"
-
-storage: "fs:///?work_dir=/tmp/bard/data"
-```
-
-Every application built upon [storage](https://github.com/Xuanwo/storage) either exposes config string to end user directly or writes a format config function to convert their own config to [storage](https://github.com/Xuanwo/storage) config string. This is unexpected.
-
-Not only that, config string also makes it hard to construct type safe pairs. We need to parse them from string and can't have effective use of existing configuration formats.
+As we can see, the former proposal fix the list without delimiters scenario but eliminate the possibility that works with directories on prefix based storage services.
 
 ## Proposal
 
 So I propose following changes:
 
-- Remove the idea of config string
-- Refactor `Open(cfg string)` to `Open(t string, opt []*types.Pair)`
+- Add `ObjectFunc` for prefix based list
+- Treat `FileFunc` and `DirFunc` as directory based list
 
-Add a config type `Config` to help developer parse pairs:
+Storager's behavior will keep following rules:
 
-```go
-type Config struct {
-    Type    string
-    Options map[string]string
-}
+- `ObjectFunc` can't be passed with `FileFunc`
+- `ObjectFunc` can't be passed with `DirFunc`
+- `directory based list support` is required
+- `prefix based list support` is optional
 
-func (c *Config) Parse() (t string, []*types.Pair, error) {}
-```
+And we will do validate in `internal/cmd/service`, so that implementers don't need to check them.
 
 ## Rationale
 
@@ -65,10 +43,7 @@ None
 
 ## Compatibility
 
-Following packages will be affected:
-
-- `coreutils`
-- `pkg/config`
+No breaking changes.
 
 ## Implementation
 
