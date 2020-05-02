@@ -82,13 +82,13 @@ if err != nil {
 
 ## Services
 
-- [azblob](docs/services/azblob.md): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
-- [cos](docs/services/cos.md): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
-- [dropbox](docs/services/dropbox.md): [Dropbox](https://www.dropbox.com)
-- [fs](docs/services/fs.md): Local file system
-- [gcs](docs/services/gcs.md): [Google Cloud Storage](https://cloud.google.com/storage/)
-- [kodo](docs/services/kodo.md): [qiniu kodo](https://www.qiniu.com/products/kodo)
-- [oss](docs/services/oss.md): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
-- [qingstor](docs/services/qingstor.md): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
-- [s3](docs/services/s3.md): [Amazon S3](https://aws.amazon.com/s3/)
-- [uss](docs/services/uss.md): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
+- [azblob](./services/azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [cos](./services/cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
+- [dropbox](./services/dropbox/): [Dropbox](https://www.dropbox.com)
+- [fs](./services/fs/): Local file system
+- [gcs](./services/gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [kodo](./services/kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
+- [oss](./services/oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
+- [qingstor](./services/qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
+- [s3](./services/s3/): [Amazon S3](https://aws.amazon.com/s3/)
+- [uss](./services/uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
