@@ -1,50 +1,50 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-03-02
 updates:
-  - design/2-use-callback-in-list-operations.md
+  - design/2-use-callback-list-operations.md
 ---
 
-# Proposal: Support both directory and prefix based list
+# 建议：支持基于目录和前缀的列表
 
-## Background
+## 二. 背景
 
-We removed recursive support in [2-use-callback-in-list-operations](./2-use-callback-in-list-operations.md), and in the same proposal, we outlined that:
+我们删除了在 [2-use-callback-list-operations](./2-use-callback-in-list-operations.md)中的递归支持，我们在同一建议中概述了：
 
-> Directory based storage will only list one directory, and prefix based storage will only list one prefix without a delimiter.
+> 基于目录的存储将只列出一个目录，而基于前缀的存储将只列出一个没有分隔符的前缀。
 
-It's easy for implementation, but doesn't meet demands. There are two main scenarios:
+它很容易实现，但是不能满足需求。 主要有两种假设情况：
 
-- Work with directories on prefix based storage services, like sync files
-- List without delimiters so that we can list faster if we don't care about directories
+- 与基于前缀的存储服务目录合作，例如同步文件
+- 没有分隔符的列表，这样我们就可以更快地列出目录了
 
-As we can see, the former proposal fix the list without delimiters scenario but eliminate the possibility that works with directories on prefix based storage services.
+我们可以看到， 前一项提案修正了清单，但没有划界器情景，但消除了在基于前缀的存储服务上与目录共用的可能性。
 
-## Proposal
+## 建议
 
-So I propose following changes:
+因此，我提议作如下修改：
 
-- Add `ObjectFunc` for prefix based list
-- Treat `FileFunc` and `DirFunc` as directory based list
+- 为基于列表的前缀添加 `ObjectFunc`
+- 将 `FileFunc` 和 `DirFunc` 视为基于目录的列表
 
-Storager's behavior will keep following rules:
+存储器的行为将遵守规则：
 
-- `ObjectFunc` can't be passed with `FileFunc`
-- `ObjectFunc` can't be passed with `DirFunc`
-- `directory based list support` is required
-- `prefix based list support` is optional
+- `ObjectFunc` 不能传递到 `FileFunc`
+- `ObjectFunc` 无法通过 `DirFunc`
+- `需要基于目录列表的支持`
+- `基于列表的前缀支持` 是可选的
 
-And we will do validate in `internal/cmd/service`, so that implementers don't need to check them.
+我们将在 `内部/cmd/service`中进行验证，所以实现者不需要检查它们。
 
-## Rationale
+## 理由
 
-None
+无
 
-## Compatibility
+## 兼容性
 
-No breaking changes.
+没有中断的更改。
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。
