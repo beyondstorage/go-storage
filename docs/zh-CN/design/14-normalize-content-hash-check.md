@@ -1,49 +1,49 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-03-09
 ---
 
-# Proposal: Normalize content hash check
+# 建议：正常化内容散列检查
 
-## Background
+## 二. 背景
 
-It's very common to do content hash check, especially in syncing files between different services. However, different services don't use the same content hash algorithm. For example:
+进行内容散列检查非常常见，在不同服务之间同步文件时尤其如此。 然而，不同的服务并不使用相同的内容散列算法。 例如：
 
-- Most object storage services use `Content-MD5` header to carry content md5 hash
-- Some object storage services use their only algorithm, like [`kodo` etag hash](https://developer.qiniu.com/kodo/manual/1231/appendix#qiniu-etag)
-- To consumers SaaS cloud storage services always have their own hash algorithm, like [`dropbox` Content Hash](https://www.dropbox.com/developers/reference/content-hash)
+- 大多数对象存储服务使用 `Content-MD5` 头来携带内容 md5 散列项
+- 某些对象存储服务使用其唯一的算法，例如 [`kodo` etag散列](https://developer.qiniu.com/kodo/manual/1231/appendix#qiniu-etag)
+- 对用户 SaaS 云存储服务总是有自己的散列算法，例如 [`dropbox` Content Hash](https://www.dropbox.com/developers/reference/content-hash)
 
-So we need to normalize the content hash check behavior so that we can compare content hash between different services safely and correctly.
+因此，我们需要使内容散列检查行为正常化，以便我们能够安全和正确地比较不同服务之间的内容散列情况。
 
-## Proposal
+## 建议
 
-So I propose following changes:
+因此，我提议作如下修改：
 
-- Standard `content-md5` SHOULD be filled into object metadata `content-md5` in `base64 of 128 bit MD5 digest as per RFC 1864`
-- Non-standard `content-md5` header SHOULD be treated as services self defined content hash
-- Services self defined content hash SHOULD be filled into object metadata `etag` without any modification
-- If service returns `content-md5` only, it should be filled into object metadata `etag` as well.
-- Object metadata `content-md5` CAN be used safely across services
-- Object metadata `etag` CAN only be used in same service
+- 标准 `content-md5` SHOULD 被填入对象元数据 `content-md5` 被填入 `base64 of 128 位 MD5 digest 中，按照RFC 1864`
+- 非标准 `content-md5` 头部被当作服务自定义内容哈希
+- 服务自定义的内容散列将被填入对象元数据 `etag` 而不进行任何修改
+- 如果服务只返回 `content-md5` ，它应该填入对象元数据 `etag`
+- 对象元数据 `content-md5` CAN 安全地跨越服务
+- 对象元数据 `etag` CAN 仅用于同一服务
 
-## Rationale
+## 理由
 
-HTTP Related Standards
+HTTP 相关标准
 
-- [Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content](https://www.rfc-editor.org/rfc/rfc7231)
-- [Hypertext Transfer Protocol (HTTP/1.1): Conditional Requests](https://www.rfc-editor.org/rfc/rfc7232)
-- [Permanent Message Header Field Names](https://www.iana.org/assignments/message-headers/message-headers.xml#perm-headers)
+- [超文本转移协议 (HTTP/1.1): 语法和内容](https://www.rfc-editor.org/rfc/rfc7231)
+- [超文本传输协议 (HTTP/1.1): 条件请求](https://www.rfc-editor.org/rfc/rfc7232)
+- [永久消息头字段名称](https://www.iana.org/assignments/message-headers/message-headers.xml#perm-headers)
 
-Storage Service Reference Document
+存储服务参考文档
 
 - [`kodo` etag hash](https://developer.qiniu.com/kodo/manual/1231/appendix#qiniu-etag)
-- [`dropbox` Content Hash](https://www.dropbox.com/developers/reference/content-hash)
+- [`dropbox` 内容哈希](https://www.dropbox.com/developers/reference/content-hash)
 
-## Compatibility
+## 兼容性
 
-No break changes
+无间断变化
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。
