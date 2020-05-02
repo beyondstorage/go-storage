@@ -1,15 +1,18 @@
-# uss
+# s3
 
-[UPYUN Storage Service](https://www.upyun.com/products/file-storage)
-
-`uss://hmac:<access_key>:<secret_key>/?name=<bucket_name>&work_dir=<prefix>`
+[Amazon S3](https://aws.amazon.com/s3/)
 
 ## Config
 
+### Servicer
+
+| Name         | Required | Comments                          |
+| ------------ | -------- | --------------------------------- |
+| `credential` | Y        | support `hmac` and `env` protocol |
+
 ### Storager
 
-| Name         | Required | Comments                     |
-| ------------ | -------- | ---------------------------- |
-| `credential` | Y        | only support `hmac` protocol |
-| `name`       | Y        | bucket name                  |
-| `work_dir`   | N        | work dir                     |
+| Name       | Required | Comments    |
+| ---------- | -------- | ----------- |
+| `name`     | Y        | bucket name |
+| `work_dir` | N        | work dir    |
