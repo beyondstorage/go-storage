@@ -1,18 +1,21 @@
-# azblob
+# Sevices
 
-[Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+## [azblob](./azblob/)
 
-## Config
+## [cos](./cos/)
 
-### Servicer
+## [dropbox](./dropbox/)
 
-| Name         | Required | Comments                     |
-| ------------ | -------- | ---------------------------- |
-| `credential` | Y        | only support `hmac` protocol |
+## [fs](./fs/)
 
-### Storager
+## [gcs](./gcs/)
 
-| Name       | Required | Comments    |
-| ---------- | -------- | ----------- |
-| `name`     | Y        | bucket name |
-| `work_dir` | N        | work dir    |
+## [kodo](./kodo/)
+
+## [oss](./oss/)
+
+## [qingstor](./qingstor/)
+
+## [s3](./s3/)
+
+## [uss](./uss/)
