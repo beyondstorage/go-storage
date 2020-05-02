@@ -1,169 +1,68 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
-updated_at: 2019-12-23
-updated_by:
-  - design/4-credential-refactor.md
-  - design/9-remove-storager-init.md
-deprecated_by:
-  - design/13-remove-config-string.md
+status: candidate
+updated_at: 2020-04-27
 ---
 
-# Proposal: Support service init via config string
+# Proposal: Split Segmenter
 
 ## Background
 
-This project intents to be a unified storage layer for Golang, but different storage layers' configuration are so different we can't unify them well.
+In proposal [18-return-segment-interface-instead]((./18-return-segment-interface-instead.md)), we introduced `segment.Segmenter` interface, but also introduce a new problem: user don't know which type of segment that service supported.
 
-For posixfs: we only need to specify the workdir. For object storage: we need to specify host, port, protocol, access key id and others.
+In the `Rationale` section of [18-return-segment-interface-instead]((./18-return-segment-interface-instead.md)), we have already discussed two implementations:
 
-We used to support them by type and options, like we did in [qscamel](https://github.com/qingstor/qscamel):
+1. `OffsetBasedSegmenter` vs `IndexBasedSegmenter`
+2. `WriteSegmentViaIndex` vs `WriteSegmentViaOffset`
 
-Every service(endpoint in qscamel) should handle their own options:
+We said:
 
-```go
-type Client struct {
-    BucketName          string `yaml:"bucket_name"`
-    Endpoint            string `yaml:"endpoint"`
-    Region              string `yaml:"region"`
-    AccessKeyID         string `yaml:"access_key_id"`
-    SecretAccessKey     string `yaml:"secret_access_key"`
-    DisableSSL          bool   `yaml:"disable_ssl"`
-    UseAccelerate       bool   `yaml:"use_accelerate"`
-    PathStyle           bool   `yaml:"path_style"`
-    EnableListObjectsV2 bool   `yaml:"enable_list_objects_v2"`
-    EnableSignatureV2   bool   `yaml:"enable_signature_v2"`
-    DisableURICleaning  bool   `yaml:"disable_uri_cleaning"`
+> No.1 implementation's problem is these add too much work for services to support both of them.
 
-    Path string
-
-    client *s3.S3
-}
-
-func New(ctx context.Context, et uint8, hc *http.Client) (c *Client, err error) {
-    ...
-    content, err := yaml.Marshal(e.Options)
-    if err != nil {
-        return
-    }
-    err = yaml.Unmarshal(content, c)
-    if err != nil {
-        return
-    }
-    ...
-}
-```
-
-Developer who want to use this service should handle the type:
-
-```go
-switch t.Src.Type {
-...
-case constants.EndpointS3:
-    src, err = s3.New(ctx, constants.SourceEndpoint, contexts.Client)
-    if err != nil {
-        return
-    }
-...
-default:
-    logrus.Errorf("Type %s is not supported.", t.Src.Type)
-    err = constants.ErrEndpointNotSupported
-    return
-}
-```
-
-User should set them in config directly:
-
-```yaml
-source:
-  type: s3
-  path: "/path/to/source"
-  options:
-    bucket_name: example_bucket
-    endpoint: example_endpoint
-    region: example_region
-    access_key_id: example_access_key_id
-    secret_access_key: example_secret_access_key
-    disable_ssl: false
-    use_accelerate: false
-    path_style: false
-    enable_list_objects_v2: false
-    enable_signature_v2: false
-    disable_uri_cleaning: false
-```
-
-It works, but it doesn't meet our goal. To address this problem, we split endpoint and credential in PR [services: Split endpoint and credential into different pair](https://github.com/Xuanwo/storage/pull/34). In this PR, we can init an object service like:
-
-```go
-srv := qingstor.New()
-err = srv.Init(
-    pairs.WithCredential(credential.NewStatic(accessKey, secretKey)),
-    pairs.WithEndpoint(endpoint.NewStaticFromParsedURL(protocol, host, port)),
-)
-if err != nil {
-    log.Printf("service init failed: %v", err)
-}
-```
-
-It's better, but not enough. We need a general way to init all service like:
-
-```go
-srv := storage.SomeCall(something)
-```
+But maybe this is the way, we can build new segmenter upon this idea.
 
 ## Proposal
 
-So I propose following changes:
+Based on the idea of `OffsetBasedSegmenter` and `IndexBasedSegmenter`, I propose following changes:
 
-### Introduce the concept of "config string"
+Add new interface `IndexSegmenter` that implement following functions:
 
-`config string` is widely used in db connections:
+- `InitIndexSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error)`
+- `WriteIndexSegment(seg segment.Segment, r io.Reader, index int, size int64, pairs ...*types.Pair) (err error)`
+- `CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error)`
+- `AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error)`
 
-mysql: `user:password@/dbname?charset=utf8&parseTime=True&loc=Local` postgres: `host=myhost port=myport user=gorm dbname=gorm password=mypassword` sqlserver: `sqlserver://username:password@localhost:1433?database=dbname`
+Extract `CompleteSegment` and `AbortSegment` into a non-exported interface `segmenter`.
 
-Like we did in URL, we can use different part in a formatted string to represent different meaning.
+Embed `segmenter` into `IndexSegmenter`, `DirSegmentsLister` and `PrefixSegmentsLister`
 
-Config string in storage would be like:
+Remove `Segmenter`
 
-```
-<type>://<config>
-             +
-             |
-             v
-<credential>@<endpoint>/<namespace>?<options>
-     +            +                 +
-     |            +---------+       +----------------------+
-     v                      v                              v
-<protocol>:<data>   <protocol>:<data>         <key>:<value>[&<key>:<value>]
-```
+### Add new interface `IndexSegmenter`
 
-- credential: `<protocol>:<data>`, data's content decided by different credential protocol,static credential could be `static:<access_key>:<secret_key>`.
-- endpoint: `<protocol>:<data>`, data's content decided by different endpoint protocol, qingstor's valid endpoint could be `https:qingstor.com:443`.
-- namespace: namespace is decided by different storage type, for object storage, it could be `<bucket_name>/<prefix>`, for posixfs, it could be `<path>`
-- options: multiple `<key>=<value>` connected with `&`
+It's easy to find out that we don't need to implement an entire new segmenter interface. After introducing `segment.Segmenter` interface, we can reuse already implemented `CompleteSegment` and `AbortSegment`.
 
-So a valid config string could be:
+After this change, the workload for service implementer reduced as the same. If new segment method needs to implemented, we only need to add `OffsetSegmenter`.
 
-- `qingstor://static:<access_key_id>:<secret_access_key>@https:qingstor.com:443/<bucket_name>/<prefix>?zone=pek3b`
-- `fs:///<work_dir>`
+### Extract non-exported interface and embed into others
 
-### Implement functions to support init via type and Config string
+We already added `DirSegmentsLister` and `PrefixSegmentsLister`, but list only interface is not useful, we always need to convert to `Segmenter`. After extracting `CompleteSegment` and `AbortSegment` into a non-exported interface, we can make `DirSegmentsLister` and `PrefixSegmentsLister` more useful.
 
-With de definition of Config string, we can implement functions for more general service initiation.
+### Remove `Segmenter`
 
-We will add following changes in codebase:
+Yes, I know, I introduced an API breaking changes here.
 
-- Add `Open(config string) (Servicer, Storager, error)` function in `coreutils` package. `OpenServicer` and `OpenStorager` will be added for more convenient.
-- Add `config` package in `pkg` to do config string parse.
-- Implement `<service>.New(pairs ...*Pair) (Servicer, error)` function, if service doesn't implement Servicer, implement `<service>.New(pairs ...*Pair) (Storager, error)` instead.
+I'm sorry, but I don't have the time and energy to maintain both v1 and v2 for now. Since [storage](https://github.com/Xuanwo/storage) is nearly no one except me used, I think it's safe to introduce this change here and not break others.
 
-### Remove Init from Servicer interface
+I'm aware the risk, and I will be responsible for this.
 
-With the brand-new support of config string, we can remove Init in Servicer interface.
+## Rationale
+
+None.
 
 ## Compatibility
 
-Storage init logic will be totally refactored.
+All API call related `Segmenter` will be borken.
 
 ## Implementation
 
