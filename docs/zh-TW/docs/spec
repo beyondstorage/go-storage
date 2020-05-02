@@ -1,66 +1,126 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: candidate
-updated_at: 2020-03-18
+status: draft
+updated_at: 2020-02-18
 added_by:
-  - design/17-proposal-process.md
+  - design/11-error-handling.md
 ---
 
-# Spec: Proposal
+# Spec: Error Handling
 
-## Format
+This spec will describe how to handle errors in [storage](https://github.com/Xuanwo/storage).
 
-proposal will be in `markdown` format.
+## Definitions
 
-## Title
+- `error`: program is not running properly
+- `package`: All valid go package in [storage](https://github.com/Xuanwo/storage)
+- `implementer`: People who implement `package`
+- `caller`: People who use/call `package`
 
-proposal's filename will be like following:
+## Error
 
-`<proposal-number>-proposal-name.md`, for example, `16-loose-mode.md`
+From [storage](https://github.com/Xuanwo/storage)'s side, errors can be classified as following:
 
-And they should be referred by `16-loose-mode` or `design/16-loose-mode.md`
+- Expected errors
+- Unexpected errors
 
-## Metadata
+Expected errors are errors that implementer expected. Those errors SHOULD be defined with enough comments and any changes to them should be documented.
 
-Proposal will have metadata as front meta to carry more info.
+Unexpected errors are errors that implementer unexpected. Those errors COULD be changed or disappeared while dependence upgraded and no changelog for them.
 
-Take [3-support-service-init-via-config-string](../design/3-support-service-init-via-config-string.md) as example:
+Error should always represent as a struct which carries contextual error information. Depends on package implementation, package could have more than one error struct.
 
-```yaml
----
-author: Xuanwo <github@xuanwo.io>
-status: finished
-updated_at: 2019-12-23
-updated_by:
-  - design/4-credential-refactor.md
-  - design/9-remove-storager-init.md
-deprecated_by:
-  - design/13-remove-config-string.md
----
+```go
+type Error struct {
+    Op  string
+    Err error
+
+    ContextA string
+    ContextB structB
+    ...
+}
 ```
 
-`auther`, `status` and `updated_at` are required.
+- `Op` means in which operation this error triggered.
+- `Err` carries underlying error
+  - For expected error, the related error SHOULD be used directly
+  - For unexpected error, the error SHOULD be passed as is or warped
+- `ContextX` carries contextual error information, every error context struct should implement `String() string`
 
-`auther` should be in format: `Name <Email>`
+Every error struct SHOULD implement following methods:
 
-If this proposal affects other proposals, `updated_by`, `updates`, `deprecated_by`, `deprecates` and so on should also be added.
+- `Error() string`
+- `Unwrap() error`
 
-## Status
+String returned in `Error()` SHOULD be in the same format:
 
-Proposal has following status: `draft`, `candidate`, `finished`.
+`{Op}: {ContextA}, {ContextB}: {Err}`
 
-- Proposal just created, but not implemented: `draft`
-- Proposal implemented but doesn't have final confirmation: `candidate`
-- Proposal has been included in a minor version: `finished`
+`Unwrap` SHOULD always return underlying error without any operation.
 
-So when we send a PR, we should set this proposal to `draft`.
+## Implementer
 
-After we implemented a proposal, we should set this proposal to `candidate`, at this stage, we can update our implementation based on actual feedback.
+This section will describe error handling on package implementer side.
 
-When we decide to have a minor release, we should take all `candidate` proposal into consideration. Dissatisfied proposal will be removed, and accepted proposals will be marked into `finished`.
+- Expected error belongs to the package who declared, only this package CAN return this error
+- Implementers CAN panic while they make sure this operation can't move on or this operation will affect or destroy data and SHOULD NOT recover
 
-After a proposal marked `finished`, we can't change it's content anymore (metadata could also be changed if updated). We need to submit a new proposal to change some proposal's behavior.
+## Caller
 
-## Code
+This section will describe error handling on package caller side.
 
-Related code should be sub directory with the proposal number.
+- Caller SHOULD only check package's expected error and don't check errors returned by package's imported libs
+- [storage](https://github.com/Xuanwo/storage)'s package CAN panic while operations can't move on, caller SHOULD recover them by self
+
+## Example
+
+Expected errors
+
+```go
+var (
+    // ErrUnsupportedProtocol will return if protocol is unsupported.
+    ErrUnsupportedProtocol = errors.New("unsupported protocol")
+    // ErrInvalidValue means value is invalid.
+    ErrInvalidValue = errors.New("invalid value")
+)
+```
+
+Error struct
+
+```go
+// Error represents error related to endpoint.
+type Error struct {
+    Op string
+    Err error
+
+    Protocol string
+    Values   []string
+}
+
+func (e *Error) Error() string {
+    if e.Values == nil {
+        return fmt.Sprintf("%s: %s: %s", e.Op, e.Protocol, e.Err.Error())
+    }
+    return fmt.Sprintf("%s: %s, %s: %s", e.Op, e.Protocol, e.Values, e.Err.Error())
+}
+
+// Unwrap implements xerrors.Wrapper
+func (e *Error) Unwrap() error {
+    return e.Err
+}
+```
+
+Expected error occurs
+
+```go
+err = &Error{"parse", s[0], nil, ErrUnsupportedProtocol}
+```
+
+Unexpected error occurs
+
+```go
+port, err := strconv.ParseInt(s[2], 10, 64)
+if err != nil {
+    return nil, &Error{"parse", ProtocolHTTP, s[1:], err}
+}
+```
