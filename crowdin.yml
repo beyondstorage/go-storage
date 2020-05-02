@@ -1,3 +1,5 @@
+commit_message: '[ci skip] i18n: Translate %original_file_name% to %language%'
+append_commit_message: false
 files:
   - source: /docs/**/*.md
     translation: /docs/%locale%/%original_path%
