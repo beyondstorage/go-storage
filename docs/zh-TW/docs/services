@@ -1,14 +1,15 @@
-# s3
+# qingstor
 
-[Amazon S3](https://aws.amazon.com/s3/)
+[QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
 
 ## Config
 
 ### Servicer
 
-| Name         | Required | Comments                          |
-| ------------ | -------- | --------------------------------- |
-| `credential` | Y        | support `hmac` and `env` protocol |
+| Name         | Required | Comments                     |
+| ------------ | -------- | ---------------------------- |
+| `credential` | Y        | only support `hmac` protocol |
+| `endpoint`   | Y        |                              |
 
 ### Storager
 
