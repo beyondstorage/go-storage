@@ -2,17 +2,17 @@
 
 [qiniu kodo](https://www.qiniu.com/products/kodo)
 
-## Config
+## 配置
 
-### Servicer
+### 服务
 
-| Name         | Required | Comments                     |
-| ------------ | -------- | ---------------------------- |
-| `credential` | Y        | only support `hmac` protocol |
+| 名称   | 必填 | 评论            |
+| ---- | -- | ------------- |
+| `凭据` | Y  | 仅支持 `hmac` 协议 |
 
-### Storager
+### 存储器
 
-| Name       | Required | Comments    |
-| ---------- | -------- | ----------- |
-| `name`     | Y        | bucket name |
-| `work_dir` | N        | work dir    |
+| 名称     | 必填 | 评论   |
+| ------ | -- | ---- |
+| `名称`   | Y  | 桶名称  |
+| `工作目录` | N  | 工作目录 |
