@@ -1,123 +1,123 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-01-16
 updates:
   - design/3-support-service-init-via-config-string.md
 ---
 
-# Proposal: Remove Storager Init
+# 建议：删除存储器Init
 
-## Background
+## 二. 背景
 
-In commit [storager: All API now use relative path instead](https://github.com/Xuanwo/storage/commit/1cb485ec1f64d59cff19414005f9f602b3721cef), we first added `Init` functions in `Storager` API.
+提交 [存储器：所有 API 现在使用相对路径而不是](https://github.com/Xuanwo/storage/commit/1cb485ec1f64d59cff19414005f9f602b3721cef)，我们首先添加 `Init` 函数在 `存储器` API。
 
-We add this function to address `Storager` init problem: we need to configure the Storager. For example: we need to set `WorkDir` (used to be `Base`) for all Storager.
+我们添加此函数来解决 `Storager` init 问题：我们需要配置Storager。 例如：我们需要为所有存储器设置 `WorkDir` (过去是 `Basel`)。
 
-So our interface turns into:
+因此，我们的接口转向：
 
 ```go
-// Init will init storager itself.
+// Init 将嵌入存储器本身。
 //
-// Caller:
-//   - Init MUST be called after created.
-Init(pairs ...*types.Pair) (err error)
-// InitWithContext will init storager itself.
-InitWithContext(ctx context.Context, pairs ...*types.Pair) (err error)
+// 呼叫者:
+// - Init MUST 创建后被调用。
+Init(配对...*类型。配对) (错误)
+// InitWidContext 将会嵌入存储器本身。
+InitWidext(ctx 上下文)。上下文，对...*类型。配对) (错误)
 ```
 
-Our init logic is include three parts:
+我们内部逻辑包括三个部分：
 
 ```go
-// 1. Create a new Servicer
-srv, err = azblob.New(opt...)
-if err != nil {
+// 1. 创建一个新服务
+srv, err = azblob。新建(opt...)
+如果是err != nil {
     return
 }
-name, prefix := namespace.ParseObjectStorage(ns)
-// 2. Get a Storager form Servicer
-store, err = srv.Get(name)
-if err != nil {
+名称, 前缀 := 命名空间.ParseObjectStorage(ns)
+// 2. 获取一个 Storager 表单服务
+商店，err = srv。Get(name)
+如果err != nil {
     return
 }
-// 3. Init Storager with pairs.
-err = store.Init(pairs.WithWorkDir(prefix))
-if err != nil {
+// 3。 配对的Init Storager。
+err = 商店。Init(pairs.WewWorkDir(前缀))
+如果err != nil {
     return
 }
 ```
 
-If there is no Servicer here, init logic will turn into two parts:
+如果这里没有服务人员，那么init 逻辑将会变成两个部分：
 
 ```go
-store = fs.New()
-path := namespace.ParseLocalFS(ns)
-err = store.Init(pairs.WithWorkDir(path))
-if err != nil {
+存储 = fs。新()
+路径 := 命名空间.ParseLocalFS(ns)
+err = store。Init(pairs.WewWorkDir(路径))
+如果err != nil {
     return
 }
 ```
 
-It looks like we solve the init problem for Storager, but not really.  There are following problems.
+看起来我们解决存储器的 init 问题，但不是真的。  有以下问题。
 
-- `Init` is only used in `coreutils`
+- `Init` 仅用于 `core utils`
 
-If an API only used in internal packages, why should we export it?
+如果一个 API 仅用于内部包，我们为什么要导出它？
 
-- Only `WorkDir` supported, and hard to add more pairs
+- 只支持 `WorkDir` ，很难添加更多对。
 
-For now, we hardcoded `store.Init(pairs.WithWorkDir(path))` in `coreutils`. Firstly, how to add more pairs? Then, it's expensive to do this in `Init` if only `WorkDir` needed.
+现在，我们已硬码 `商店。Init(pairs.WewWorkDir(路径))` in `core utils`. 首先，如何添加更多的配对？ 然后，如果只有 `WorkDir` 需要的话，在 `Init` 中做这件事是昂贵的。
 
-- All `Storager` implement the same interface with the same way.
+- 所有 `Storager` 以同样方式实现相同的接口。
 
-If implementation is the same, we don't need to export it as an interface.
+如果实现是相同的，我们不需要将其导出为一个接口。
 
-- `Init` can be called times and may cause concurrent problems
+- `Init` 可以调用时间并可能导致并发问题
 
-Users can change `WorkDir` during `List`, which is not allowed.
+用户可以在 `邮件列表`期间更改 `WorkDir` ，不被允许。
 
-## Proposal
+## 建议
 
-So I propose following changes:
+因此，我提议作如下修改：
 
-- Merge `Init` and `newStorage` to `Storager.init(pairs ...*types.Pair)`
-- Refactor `New` to `New(pairs ...*types.Pair) (srv *Service, store *Storage, err error)`
-- Add `Init` related pairs to `Servicer`'s `Get` and `New`
-- Refactor config string option handles
+- 将 `Init` 和 `新存储` 合并到 `Storager.init(配对...*类型)。配对)`
+- 将 `新设` 重设为 `新设(配对...*类型)。配对) (srv *Service, store *Storage, err error)`
+- 添加 `Init` 关联到 `Servicer`的 `获取` 和 `新的`
+- 重整配置字符串选项句柄。
 
-## Rationale
+## 理由
 
-### Refactor config string option handles
+### 重整配置字符串选项句柄。
 
-Config string used to be like:
+配置字符串类似：
 
 `qingstor://hmac:<access_key>:<secret_key>@<protocol>:<host>:<port>/<bucket_name>/<prefix>`
 
-The original design expect to reach a balance between user input and config string parse. Let's take following two styles into consideration:
+最初的设计预计会在用户输入和配置字符串解析之间达到平衡。 让我们考虑以下两种方式：
 
 - `fs://?work_dir=/path/to/dir` and `azblob://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 - `fs:///path/to/dir` and `azblob://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
 
-It's obvious the 2nd style has fewer user input, proposal [3-support-service-init-via-config-string](./3-support-service-init-via-config-string.md) has the same idea. However, this style introduces problem between different kinds of services.
+很明显，第二种风格的用户输入较少。提议 [3-support-service-init-via-config-string](./3-support-service-init-via-config-string.md) 具有相同的想法。 然而，这种风格在不同类型的服务之间造成了问题。
 
 - `fs:///path/to/dir`
 - `azblob://hmac:<access_key>:<secret_key>`
 - `azblob://hmac:<access_key>:<secret_key>/<bucket_name>`
 - `azblob://hmac:<access_key>:<secret_key>/<bucket_name>/<prefix>`
 
-We need service type in order to distinguish `/path/to/dir` and `/<bucket_name>/<prefix>`, this makes config string parser hard to implement, and we have to add concept like `namespace` so that we can defer this work in `coreutils`.
+我们需要服务类型来区分 `/path/to/dir` and `/<bucket_name>/<prefix>`这使配置字符串解析器难以实现。 我们必须添加诸如 `命名空间` 之类的概念，以便我们可以在 `核心工具`中推迟这项工作。
 
-Back to the first style, how about delegating this work to end users?
+回到第一种风格，如何将此工作委托给最终用户？
 
 - `fs://?work_dir=/path/to/dir`
-- `azblob://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
+- `zblob://hmac:<access_key>:<secret_key>?name=<bucket_name>&work_dir=<prefix>`
 
-Now, both `name` and `work_dir` can be parsed without service type.
+现在， `name` and `work_dir` 都可以在没有服务类型的情况下解析。
 
-## Compatibility
+## 兼容性
 
-Users who call services `New` or `Init` directly will facing breaking changes.
+呼叫服务 `新` 或 `Init` 的用户将直接面临破损的更改。
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。
