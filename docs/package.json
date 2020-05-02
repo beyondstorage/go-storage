@@ -1,5 +1,7 @@
 {
   "devDependencies": {
+    "@vuepress/plugin-active-header-links": "^1.4.1",
+    "@vuepress/plugin-google-analytics": "^1.4.1",
     "vuepress": "^1.4.1"
   },
   "scripts": {
