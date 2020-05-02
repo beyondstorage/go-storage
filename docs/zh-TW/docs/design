@@ -1,48 +1,106 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: finished
-updated_at: 2020-03-18
+updated_at: 2020-01-03
 ---
 
-# Proposal: Proposal process
+# Proposal: Normalize Metadata
 
 ## Background
 
-[storage](https://github.com/Xuanwo/storage)'s development is proposal driven. We need to explain why and how we make changes to [storage](https://github.com/Xuanwo/storage) so that we can understand why we are at here.
+Metadata is being chaos.
+
+Currently, we have following metadata:
+
+```go
+const (
+    Checksum = "checksum"
+    Class    = "class"
+    Count    = "count"
+    Expire   = "expire"
+    Host     = "host"
+    Location = "location"
+    Size     = "size"
+    Type     = "type"
+    WorkDir  = "work_dir"
+)
+```
+
+In order to unify different value name across services, we have a virtual name map:
+
+- checksum -> Content-MD5
+- type -> Content-Type
+- class -> x-qs-storage-class, x-amz-storage-class...
+- size -> bucket's size
+- count -> bucket's count
+- location -> bucket's location or zone
+
+After more values prompt to struct value, these name map could confuse end users:
+
+- `object.Size` or `object.GetSize()` ?
+- `object.Type` or `object.GetType()` ?
+- Different services could use different hash algorithm, how to distinguish them?
 
 ## Proposal
 
-So I propose following process procedure:
+So I propose following changes:
 
-**Simple changes**
+### Split storage meta and object meta
 
-- Send PR directly.
+- Use a `map[string]interface{}` to replace `Metadata`, and generate functions on `Storage` directly.
+- Rename `metadata.Storage` to `metadata.StorageMeta`
+- Add `metadata.ObjectMeta`
+- Add `metadata.StorageStatistic`
+- Split `metadata.json` into `object_meta.json`, `storage_meta.json` and `storage_statistic.json`
+- Refactor `metadata` code generator
+- Make `SetXXX` return itself, so we can call them like a chain:
 
-**BUG Fix**
+    ```go
+    m := metadata.NewObjectMeta().
+        SetContentType("application/json").
+        SetStorageClass("cool").
+        SetETag("xxxxx")
+    ```
 
-- Create an issue
-- Send a related PR to resolve it
+### Normalize metadata's name
 
-**Big changes**
+We should normalize metadata name in following ways:
 
-- Create an issue
-- Send a PR with proposal
-- Implement proposal
+**If this metadata has been output as `Object` struct value, ignore them.**
 
-All steps do not need to be done by the same person. For example, issue could be created by user A, and proposal written by user B, and implemented by user C.
+**If this metadata defined in [Message Headers](https://www.iana.org/assignments/message-headers/message-headers.xhtml), use the normative style.**
 
-Changes level could be increased while needed. For example, user A sends an one line simple change, but it found out that we need a whole refactor on this package. At this time, we will need to follow the **Big changes** procedure.
+For example, `content-md5`.
 
-Proposal's spec will be presented in spec [2-proposal](../spec/2-proposal.md).
+*As HTTP/2 has been approved in [rfc7540](https://tools.ietf.org/html/rfc7540), we will use the lower case style of header.*
+
+**If this metadata is a private meta, use the most common usage case.**
+
+For example, `x-qs-storage-class` and `x-amz-storage-class` should be meta `storage-class`.
+
+### Normalize metadata's value
+
+Those meta value should also be normalized: every service should convert their own meta to storage shared meta.
+
+For example, Amazon S3 have following storage class: `STANDARD`, `REDUCED_REDUNDANCY`, `STANDARD_IA`, `ONEZONE_IA`, `GLACIER`, `DEEP_ARCHIVE` and so on.
+
+In Azure Storage, they have different `AccessTier`: `AccessTierHot`, `AccessTierCool`, `AccessTierArchive`.
+
+We need to handle all of them:
+
+- Store them as meta: `storage-class`
+- Convert to storage shared meta while fetch from service
+- Convert to service private meta while updating
 
 ## Rationale
 
-None
+None.
 
 ## Compatibility
 
-None
+- Metadata's name and value could be changed.
+- Storage will return different metadata type.
 
 ## Implementation
 
-No code related changes.
+Most of the work would be done by the author of this proposal.
