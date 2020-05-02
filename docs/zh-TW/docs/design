@@ -1,44 +1,48 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: candidate
-updated_at: 2020-04-09
-updates:
-  - design/2-use-callback-in-list-operations.md
-deprecates:
-  - design/12-support-both-directory-and-prefix-based-list.md
+status: finished
+updated_at: 2020-03-18
 ---
 
-# Proposal: Split storage list
+# Proposal: Proposal process
 
 ## Background
 
-proposal [support both directory and prefix based list](./12-support-both-directory-and-prefix-based-list.md) has been proved to be a failure by practice. In this proposal, we introduce `ObjectFunc` for prefix based list support, and add many restriction for the usage of `FileFunc`, `DirFunc` and `ObjectFunc`. The problem is user don't know whether this storage service is prefix based or directory based. So they always fallback to the directory based list method which is not suffcient for object storage service.
+[storage](https://github.com/Xuanwo/storage)'s development is proposal driven. We need to explain why and how we make changes to [storage](https://github.com/Xuanwo/storage) so that we can understand why we are at here.
 
 ## Proposal
 
-So I propose following changes:
+So I propose following process procedure:
 
-- Split `List` into `ListDir` and `ListPrefix`
-- Remove `List` from `Storager`
-- Add interface `DirLister` for `ListDir`
-- Add interface `PrefixLister` for `ListPrefix`
+**Simple changes**
 
-So user need to assert to interface `DirLister` to use `ListDir`.
+- Send PR directly.
 
-At the same time, we should:
+**BUG Fix**
 
-- Rename `ListSegments` to `ListPrefixSegments` to match prefix changes
-- Remove `ListSegments` from `Segmenter`
-- Add interface `PrefixSegmentsLister` for `ListSegments`
+- Create an issue
+- Send a related PR to resolve it
+
+**Big changes**
+
+- Create an issue
+- Send a PR with proposal
+- Implement proposal
+
+All steps do not need to be done by the same person. For example, issue could be created by user A, and proposal written by user B, and implemented by user C.
+
+Changes level could be increased while needed. For example, user A sends an one line simple change, but it found out that we need a whole refactor on this package. At this time, we will need to follow the **Big changes** procedure.
+
+Proposal's spec will be presented in spec [2-proposal](../spec/2-proposal.md).
 
 ## Rationale
 
-None.
+None
 
 ## Compatibility
 
-All API call to `List` will be broken.
+None
 
 ## Implementation
 
-Most of the work would be done by the author of this proposal.
+No code related changes.
