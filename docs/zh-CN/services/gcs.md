@@ -1,19 +1,19 @@
 # gcs
 
-[Google Cloud Storage](https://cloud.google.com/storage/)
+[谷歌云存储](https://cloud.google.com/storage/)
 
-## Config
+## 配置
 
-### Servicer
+### 服务
 
-| Name         | Required | Comments                        |
-| ------------ | -------- | ------------------------------- |
-| `credential` | Y        | only support `api_key` protocol |
+| 名称   | 必填 | 评论               |
+| ---- | -- | ---------------- |
+| `凭据` | Y  | 仅支持 `api_key` 协议 |
 
-### Storager
+### 存储器
 
-| Name         | Required | Comments                |
-| ------------ | -------- | ----------------------- |
-| `name`       | Y        | bucket name             |
-| `work_dir`   | N        | work dir                |
-| `project_id` | Y        | google cloud project id |
+| 名称     | 必填 | 评论       |
+| ------ | -- | -------- |
+| `名称`   | Y  | 桶名称      |
+| `工作目录` | N  | 工作目录     |
+| `项目ID` | Y  | 谷歌云项目 id |
