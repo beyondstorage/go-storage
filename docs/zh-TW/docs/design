@@ -1,96 +1,87 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: finished
-updated_at: 2020-01-03
+updated_at: 2020-03-12
 ---
 
-# Proposal: Normalize Metadata
+# Proposal: Loose mode
 
 ## Background
 
-Metadata is being chaos.
+Current [storage](https://github.com/Xuanwo/storage)'s pair handle behavior is inconsistent.
 
-Currently, we have following metadata:
+In all `parseStoragePairXXX` functions, we will ignore not supported pairs via only pick supported one:
 
 ```go
-const (
-    Checksum = "checksum"
-    Class    = "class"
-    Count    = "count"
-    Expire   = "expire"
-    Host     = "host"
-    Location = "location"
-    Size     = "size"
-    Type     = "type"
-    WorkDir  = "work_dir"
-)
+v, ok = values[ps.DirFunc]
+if ok {
+    result.HasDirFunc = true
+    result.DirFunc = v.(types.ObjectFunc)
+}
 ```
 
-In order to unify different value name across services, we have a virtual name map:
+But in other pair related logic, like `storage_class` support, we also returned errors:
 
-- checksum -> Content-MD5
-- type -> Content-Type
-- class -> x-qs-storage-class, x-amz-storage-class...
-- size -> bucket's size
-- count -> bucket's count
-- location -> bucket's location or zone
+```go
+func parseStorageClass(in storageclass.Type) (string, error) {
+    switch in {
+    case storageclass.Hot:
+        return storageClassStandard, nil
+    case storageclass.Warm:
+        return storageClassStandardIA, nil
+    default:
+        return "", &services.PairError{
+            Op:    "parse storage class",
+            Err:   services.ErrStorageClassNotSupported,
+            Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
+        }
+    }
+}
+```
 
-After more values prompt to struct value, these name map could confuse end users:
-
-- `object.Size` or `object.GetSize()` ?
-- `object.Type` or `object.GetType()` ?
-- Different services could use different hash algorithm, how to distinguish them?
+So users could be confused how we handle our compatibility related issues.
 
 ## Proposal
 
-So I propose following changes:
+So I propose that all a `loose` mode for all services. `loose` mode will be `off` as default, and services will return error when they reach incompatible place. And when `loose` is on, all incompatible error will be ignored.
 
-### Split storage meta and object meta
+For example:
 
-- Use a `map[string]interface{}` to replace `Metadata`, and generate functions on `Storage` directly.
-- Rename `metadata.Storage` to `metadata.StorageMeta`
-- Add `metadata.ObjectMeta`
-- Add `metadata.StorageStatistic`
-- Split `metadata.json` into `object_meta.json`, `storage_meta.json` and `storage_statistic.json`
-- Refactor `metadata` code generator
-- Make `SetXXX` return itself, so we can call them like a chain:
+We have a Storager who doesn't support `Size` pair in `Read`.
 
-    ```go
-    m := metadata.NewObjectMeta().
-        SetContentType("application/json").
-        SetStorageClass("cool").
-        SetETag("xxxxx")
-    ```
+`loose` on: This error will be ignored. `loose` off: Storager returns a compatibility related error.
 
-### Normalize metadata's name
+Currently, we mixed compatibility error and other pair related error in `PairError`. We will add two different error: `ErrCapabilityInsufficient` and `ErrRestrictionDissatisfied`.
 
-We should normalize metadata name in following ways:
+`ErrCapabilityInsufficient` means this service doesn't have this capability, and `ErrRestrictionDissatisfied` means this operation doesn't meat service's restriction. `ErrCapabilityInsufficient` could be ignored safely if you don't care much about service behavior consistency, and will be ignored in loose mode.
 
-**If this metadata has been output as `Object` struct value, ignore them.**
+Based on these errors, we will have new error structs like `PairRequiredError` to carry error contexts:
 
-**If this metadata defined in [Message Headers](https://www.iana.org/assignments/message-headers/message-headers.xhtml), use the normative style.**
+```go
+// NewPairRequiredError will create a new PairRequiredError.
+func NewPairRequiredError(keys ...string) *PairRequiredError {
+    return &PairRequiredError{
+        Err:  ErrRestrictionDissatisfied,
+        Keys: keys,
+    }
+}
 
-For example, `content-md5`.
+// PairRequiredError means this operation has required pair but missing.
+type PairRequiredError struct {
+    Err error
 
-*As HTTP/2 has been approved in [rfc7540](https://tools.ietf.org/html/rfc7540), we will use the lower case style of header.*
+    Keys []string
+}
 
-**If this metadata is a private meta, use the most common usage case.**
+func (e *PairRequiredError) Error() string {
+    return fmt.Sprintf("pair required, %v: %s", e.Keys, e.Err.Error())
+}
 
-For example, `x-qs-storage-class` and `x-amz-storage-class` should be meta `storage-class`.
-
-### Normalize metadata's value
-
-Those meta value should also be normalized: every service should convert their own meta to storage shared meta.
-
-For example, Amazon S3 have following storage class: `STANDARD`, `REDUCED_REDUNDANCY`, `STANDARD_IA`, `ONEZONE_IA`, `GLACIER`, `DEEP_ARCHIVE` and so on.
-
-In Azure Storage, they have different `AccessTier`: `AccessTierHot`, `AccessTierCool`, `AccessTierArchive`.
-
-We need to handle all of them:
-
-- Store them as meta: `storage-class`
-- Convert to storage shared meta while fetch from service
-- Convert to service private meta while updating
+// Unwrap implements xerrors.Wrapper
+func (e *PairRequiredError) Unwrap() error {
+    return e.Err
+}
+```
 
 ## Rationale
 
@@ -98,8 +89,9 @@ None.
 
 ## Compatibility
 
-- Metadata's name and value could be changed.
-- Storage will return different metadata type.
+- More `ErrCapabilityInsufficient` could be returned as `loose` mode will be on as default
+- Some error could be returned as other error structs instead of `PairError`
+- `PairError` will be removed
 
 ## Implementation
 
