@@ -1,152 +1,170 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status: finished
-updated_at: 2019-12-26
-updates:
-  - design/3-support-service-init-via-config-string.md
+updated_at: 2019-12-23
+updated_by:
+  - design/4-credential-refactor.md
+  - design/9-remove-storager-init.md
+deprecated_by:
+  - design/13-remove-config-string.md
 ---
 
-# Proposal: Credential refactor
+# Proposal: Support service init via config string
 
 ## Background
 
-Credential is the most import part to connect a Storage service.
+This project intents to be a unified storage layer for Golang, but different storage layers' configuration are so different we can't unify them well.
 
-Current implement use a `credential.Provider` interface to output value:
+For posixfs: we only need to specify the workdir. For object storage: we need to specify host, port, protocol, access key id and others.
+
+We used to support them by type and options, like we did in [qscamel](https://github.com/qingstor/qscamel):
+
+Every service(endpoint in qscamel) should handle their own options:
 
 ```go
-type Provider interface {
-    Value() Value
+type Client struct {
+    BucketName          string `yaml:"bucket_name"`
+    Endpoint            string `yaml:"endpoint"`
+    Region              string `yaml:"region"`
+    AccessKeyID         string `yaml:"access_key_id"`
+    SecretAccessKey     string `yaml:"secret_access_key"`
+    DisableSSL          bool   `yaml:"disable_ssl"`
+    UseAccelerate       bool   `yaml:"use_accelerate"`
+    PathStyle           bool   `yaml:"path_style"`
+    EnableListObjectsV2 bool   `yaml:"enable_list_objects_v2"`
+    EnableSignatureV2   bool   `yaml:"enable_signature_v2"`
+    DisableURICleaning  bool   `yaml:"disable_uri_cleaning"`
+
+    Path string
+
+    client *s3.S3
 }
 
-type Value struct {
-    AccessKey string
-    SecretKey string
+func New(ctx context.Context, et uint8, hc *http.Client) (c *Client, err error) {
+    ...
+    content, err := yaml.Marshal(e.Options)
+    if err != nil {
+        return
+    }
+    err = yaml.Unmarshal(content, c)
+    if err != nil {
+        return
+    }
+    ...
 }
 ```
 
-We only implement `static` protocol for Provider.
+Developer who want to use this service should handle the type:
 
-This implement inspired from aws: different credence are different ways to retrieve access key and secret key. However, this idea not works for every service. For Google: different credence are different ways to retrieve oauth2 tokens.
+```go
+switch t.Src.Type {
+...
+case constants.EndpointS3:
+    src, err = s3.New(ctx, constants.SourceEndpoint, contexts.Client)
+    if err != nil {
+        return
+    }
+...
+default:
+    logrus.Errorf("Type %s is not supported.", t.Src.Type)
+    err = constants.ErrEndpointNotSupported
+    return
+}
+```
 
-As a unified storage layer, we need to find a way to eliminate those inconsistencies.
+User should set them in config directly:
+
+```yaml
+source:
+  type: s3
+  path: "/path/to/source"
+  options:
+    bucket_name: example_bucket
+    endpoint: example_endpoint
+    region: example_region
+    access_key_id: example_access_key_id
+    secret_access_key: example_secret_access_key
+    disable_ssl: false
+    use_accelerate: false
+    path_style: false
+    enable_list_objects_v2: false
+    enable_signature_v2: false
+    disable_uri_cleaning: false
+```
+
+It works, but it doesn't meet our goal. To address this problem, we split endpoint and credential in PR [services: Split endpoint and credential into different pair](https://github.com/Xuanwo/storage/pull/34). In this PR, we can init an object service like:
+
+```go
+srv := qingstor.New()
+err = srv.Init(
+    pairs.WithCredential(credential.NewStatic(accessKey, secretKey)),
+    pairs.WithEndpoint(endpoint.NewStaticFromParsedURL(protocol, host, port)),
+)
+if err != nil {
+    log.Printf("service init failed: %v", err)
+}
+```
+
+It's better, but not enough. We need a general way to init all service like:
+
+```go
+srv := storage.SomeCall(something)
+```
 
 ## Proposal
 
-Refactor `credential.Provider` to following:
+So I propose following changes:
 
-```go
-type Provider struct {
-    protocol string
-    args     []string
-}
+### Introduce the concept of "config string"
 
-func (p *Provider) Protocol() string {
-    return p.protocol
-}
+`config string` is widely used in db connections:
 
-func (p *Provider) Value() []string {
-    return p.args
-}
+mysql: `user:password@/dbname?charset=utf8&parseTime=True&loc=Local` postgres: `host=myhost port=myport user=gorm dbname=gorm password=mypassword` sqlserver: `sqlserver://username:password@localhost:1433?database=dbname`
+
+Like we did in URL, we can use different part in a formatted string to represent different meaning.
+
+Config string in storage would be like:
+
+```
+<type>://<config>
+             +
+             |
+             v
+<credential>@<endpoint>/<namespace>?<options>
+     +            +                 +
+     |            +---------+       +----------------------+
+     v                      v                              v
+<protocol>:<data>   <protocol>:<data>         <key>:<value>[&<key>:<value>]
 ```
 
-User need to check credential's protocol before use them, and credential detail will be stored in `p.args` which can be retrieved via `p.Value()`.
+- credential: `<protocol>:<data>`, data's content decided by different credential protocol,static credential could be `static:<access_key>:<secret_key>`.
+- endpoint: `<protocol>:<data>`, data's content decided by different endpoint protocol, qingstor's valid endpoint could be `https:qingstor.com:443`.
+- namespace: namespace is decided by different storage type, for object storage, it could be `<bucket_name>/<prefix>`, for posixfs, it could be `<path>`
+- options: multiple `<key>=<value>` connected with `&`
 
-Service who support only one credential protocol could be:
+So a valid config string could be:
 
-```go
-credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-if credProtocol != credential.ProtocolHmac {
-    return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-}
-// Init service related config via credential values.
-cfg, err := config.New(cred[0], cred[1])
-```
+- `qingstor://static:<access_key_id>:<secret_access_key>@https:qingstor.com:443/<bucket_name>/<prefix>?zone=pek3b`
+- `fs:///<work_dir>`
 
-Service who support more than one protocol could be:
+### Implement functions to support init via type and Config string
 
-```go
-cfg := aws.NewConfig()
+With de definition of Config string, we can implement functions for more general service initiation.
 
-credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-switch credProtocol {
-case credential.ProtocolHmac:
-    cfg = cfg.WithCredentials(credentials.NewStaticCredentials(cred[0], cred[1], ""))
-case credential.ProtocolEnv:
-    cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
-default:
-    return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
-}
-```
+We will add following changes in codebase:
 
-To implement a new protocol, develop should do following things.
+- Add `Open(config string) (Servicer, Storager, error)` function in `coreutils` package. `OpenServicer` and `OpenStorager` will be added for more convenient.
+- Add `config` package in `pkg` to do config string parse.
+- Implement `<service>.New(pairs ...*Pair) (Servicer, error)` function, if service doesn't implement Servicer, implement `<service>.New(pairs ...*Pair) (Storager, error)` instead.
 
-- Add const in the format `Protocol<Name>` like `ProtocolEnv`
-- Add comments for `Protocol<Name>`, describe clearly that how to use the value
-- Implement init function `New<Name>(value ...string) (*Provider, error)` and `MustNew<Name>(value ...string) (*Provider, error)`
-- Add `Protocol<Name>` into `credential.Parse` switch case
-- Add unit test cases
+### Remove Init from Servicer interface
 
-## Rationale
-
-AWS use a provider to get access key and secret key from static, file and env.
-
-```go
-type Credentials struct {
-    creds        Value
-    forceRefresh bool
-
-    m sync.RWMutex
-
-    provider Provider
-}
-
-type Value struct {
-    // AWS Access key ID
-    AccessKeyID string
-
-    // AWS Secret Access Key
-    SecretAccessKey string
-
-    // AWS Session Token
-    SessionToken string
-
-    // Provider used to get credentials
-    ProviderName string
-}
-
-type Provider interface {
-    // Retrieve returns nil if it successfully retrieved the value.
-    // Error is returned if the value were not obtainable, or empty.
-    Retrieve() (Value, error)
-
-    // IsExpired returns if the credentials are no longer valid, and need
-    // to be retrieved.
-    IsExpired() bool
-}
-```
-
-Google has the same provider design but for oauth2 token:
-
-```go
-type Credentials struct {
-    ProjectID   string // may be empty
-    TokenSource oauth2.TokenSource
-
-    // JSON contains the raw bytes from a JSON credentials file.
-    // This field may be nil if authentication is provided by the
-    // environment and not with a credentials file, e.g. when code is
-    // running on Google Cloud Platform.
-    JSON []byte
-}
-```
+With the brand-new support of config string, we can remove Init in Servicer interface.
 
 ## Compatibility
 
-Changes only introduce into `credential` package, credential's config string will be affected, no other changes in public interface.
+Storage init logic will be totally refactored.
 
 ## Implementation
 
 Most of the work would be done by the author of this proposal.
-
-In order to avoid misunderstanding between protocol `access key / secret key with hmac` and `api key`(they are both static keys), we rename current `static` protocol to `hmac`. No so inaccurate, but more clear.
