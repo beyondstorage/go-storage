@@ -1,44 +1,45 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2019-12-26
 updates:
   - design/3-support-service-init-via-config-string.md
 ---
 
-# Proposal: Credential refactor
+# 提议：重新考虑全权证书
 
-## Background
+## 二. 背景
 
-Credential is the most import part to connect a Storage service.
+凭据是连接存储服务的大部分导入部分。
 
-Current implement use a `credential.Provider` interface to output value:
+当前实现使用 `凭据。提供器` 输出值的接口：
 
 ```go
-type Provider interface {
-    Value() Value
+类型提供器接口 然后
+    Value() 值
 }
 
-type Value struct {
-    AccessKey string
-    SecretKey string
+类型值结构变化。
+    AccessKey 字符串
+    SecretKey 字符串
 }
 ```
 
-We only implement `static` protocol for Provider.
+我们只为提供商执行 `静态` 协议。
 
-This implement inspired from aws: different credence are different ways to retrieve access key and secret key. However, this idea not works for every service. For Google: different credence are different ways to retrieve oauth2 tokens.
+这个实现灵敏度来自爪子：不同的信任度是检索访问密钥和秘密密钥的不同方式。 然而，这种想法并不适用于每个服务。 对于谷歌：获取oauth2令牌的方式不同的可信度。
 
-As a unified storage layer, we need to find a way to eliminate those inconsistencies.
+作为一个统一的储存层，我们需要设法消除这些不一致之处。
 
-## Proposal
+## 建议
 
-Refactor `credential.Provider` to following:
+重新因素 `凭据。提供` 到以下：
 
 ```go
-type Provider struct {
-    protocol string
-    args     []string
+输入提供商结构
+    
+ 协议字符串
+    args []string
 }
 
 func (p *Provider) Protocol() string {
@@ -50,58 +51,58 @@ func (p *Provider) Value() []string {
 }
 ```
 
-User need to check credential's protocol before use them, and credential detail will be stored in `p.args` which can be retrieved via `p.Value()`.
+用户在使用证书之前需要检查证书的协议，凭据详细信息将存储在 `p. rgs` 可以通过 `获取。Value()`.
 
-Service who support only one credential protocol could be:
+只支持一项凭据协议的服务可以是：
 
 ```go
-credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-if credProtocol != credential.ProtocolHmac {
-    return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
+credprotocacy, cred := opt.全权证书。Protocol(), opt.全权证书。Value()
+如果信用协议 != 凭据。ProtocolHmac 然后
+    return nil, fmt.Errorf(错误消息，s, 凭据)。错误不支持的协议)
 }
-// Init service related config via credential values.
-cfg, err := config.New(cred[0], cred[1])
+// 与凭据值相关的服务配置。
+cfg, err := config.新 (red[0], cred[1])
 ```
 
-Service who support more than one protocol could be:
+支持多个协议的服务可以是：
 
 ```go
-cfg := aws.NewConfig()
+cfg := aws。NewConfig()
 
-credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-switch credProtocol {
-case credential.ProtocolHmac:
-    cfg = cfg.WithCredentials(credentials.NewStaticCredentials(cred[0], cred[1], ""))
+credProtocol, cred := opt.全权证书。Protocol(), opt.全权证书。Value()
+切换信用协议。
+案例凭据。ProtocolHmac:
+    cfg = cfg.全权证书审查报告。新 StaticCredentials(red[0], cred[1], ""))
 case credential.ProtocolEnv:
-    cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
-default:
-    return nil, fmt.Errorf(errorMessage, s, credential.ErrUnsupportedProtocol)
+    cfg = cfg.全权证书审查报告。NewEnvCredentials())
+默认值：
+    返回 nil, fmt。Errorf(错误消息，s, 凭据)。ErrUnsupportedProtocol)
 }
 ```
 
-To implement a new protocol, develop should do following things.
+为了执行一项新的议定书，应按照事物进行发展。
 
-- Add const in the format `Protocol<Name>` like `ProtocolEnv`
-- Add comments for `Protocol<Name>`, describe clearly that how to use the value
-- Implement init function `New<Name>(value ...string) (*Provider, error)` and `MustNew<Name>(value ...string) (*Provider, error)`
-- Add `Protocol<Name>` into `credential.Parse` switch case
-- Add unit test cases
+- 在格式 `协议<Name>` 中添加组合。 `ProtocolEnv`
+- 为 `协议<Name>`添加注释，明确描述如何使用值
+- 实现init 函数 `新<Name>(值 ...字符串) (*提供者，错误)` 和 `新建<Name>(值 ...字符串) (*提供者，错误)`
+- 添加 `协议<Name>` 到 `凭据。解析` 切换大小写
+- 添加单元测试实例
 
-## Rationale
+## 理由
 
-AWS use a provider to get access key and secret key from static, file and env.
+AWS 使用提供商获取静态、 文件和环境中的密钥和密钥。
 
 ```go
-type Credentials struct {
-    creds        Value
-    forceRefresh bool
+键入凭据结构
+    credit value
+    force刷新布尔
 
-    m sync.RWMutex
+    m sync。 WMutex
 
-    provider Provider
+    providers Provider
 }
 
-type Value struct {
+type Value struct 哇，
     // AWS Access key ID
     AccessKeyID string
 
@@ -111,42 +112,42 @@ type Value struct {
     // AWS Session Token
     SessionToken string
 
-    // Provider used to get credentials
-    ProviderName string
+    // Provider used to get 凭据
+    Provider name string
 }
 
-type Provider interface {
-    // Retrieve returns nil if it successfully retrieved the value.
-    // Error is returned if the value were not obtainable, or empty.
-    Retrieve() (Value, error)
+type Provider interface
+    // Retrieve retrieve 返回 nil 如果它成功检索到了值的话。
+    // 如果该值无法获取或为空则返回错误。
+    检索() (值, 错误)
 
-    // IsExpired returns if the credentials are no longer valid, and need
-    // to be retrieved.
+    // 离线返回，如果凭据不再有效，则需要
+    // 才能检索。
     IsExpired() bool
 }
 ```
 
-Google has the same provider design but for oauth2 token:
+谷歌有相同的提供商设计，但对于oauth2令牌：
 
 ```go
-type Credentials struct {
-    ProjectID   string // may be empty
-    TokenSource oauth2.TokenSource
+输入凭据结构
+    ProjectID字符串// 可能是空的
+    TokenSource oauth2。令牌源
 
-    // JSON contains the raw bytes from a JSON credentials file.
-    // This field may be nil if authentication is provided by the
-    // environment and not with a credentials file, e.g. when code is
-    // running on Google Cloud Platform.
+    // JSON 包含一个 JSON 凭据文件的原始字节。
+    // 如果认证是由
+    // 环境提供的，而不是凭据文件，此字段可能为零。 当代码是
+    // 在 Google 云平台上运行。
     JSON []byte
 }
 ```
 
-## Compatibility
+## 兼容性
 
-Changes only introduce into `credential` package, credential's config string will be affected, no other changes in public interface.
+只对 `凭据` 包进行更改，凭据的配置字符串将受到影响，公共接口中没有其他更改。
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。
 
-In order to avoid misunderstanding between protocol `access key / secret key with hmac` and `api key`(they are both static keys), we rename current `static` protocol to `hmac`. No so inaccurate, but more clear.
+为了避免协议 `使用Hmac` 和 `api 键`之间的误解(它们都是静态键)， 我们将当前的 `静态` 协议重命名为 `hmac` 没有这样不准确，但更加清楚。
