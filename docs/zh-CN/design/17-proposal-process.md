@@ -1,48 +1,48 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-03-18
 ---
 
-# Proposal: Proposal process
+# 提议：提案过程
 
-## Background
+## 二. 背景
 
-[storage](https://github.com/Xuanwo/storage)'s development is proposal driven. We need to explain why and how we make changes to [storage](https://github.com/Xuanwo/storage) so that we can understand why we are at here.
+[存储](https://github.com/Xuanwo/storage)的开发是提案驱动的。 我们需要解释为什么和如何更改 [存储](https://github.com/Xuanwo/storage) ，以便我们能够理解我们在这里的原因。
 
-## Proposal
+## 建议
 
-So I propose following process procedure:
+因此，我提议以下程序：
 
-**Simple changes**
+**简单更改**
 
-- Send PR directly.
+- 直接发送 PR
 
-**BUG Fix**
+**BUG 修复**
 
-- Create an issue
-- Send a related PR to resolve it
+- 创建一个问题
+- 发送一个相关的 PR 解析它
 
-**Big changes**
+**大更改**
 
-- Create an issue
-- Send a PR with proposal
-- Implement proposal
+- 创建一个问题
+- 发送带有提案的 PR
+- 执行提议
 
-All steps do not need to be done by the same person. For example, issue could be created by user A, and proposal written by user B, and implemented by user C.
+所有步骤都不必由同一人进行。 例如，用户A可以创建问题，用户B也可以提出建议，用户C也可以执行。
 
-Changes level could be increased while needed. For example, user A sends an one line simple change, but it found out that we need a whole refactor on this package. At this time, we will need to follow the **Big changes** procedure.
+可在需要时提高变化水平。 例如，用户A发送了一条简单的更改，但它发现我们需要对这个软件包进行整套的重整。 此时，我们将需要遵循 **大规模更改** 程序。
 
-Proposal's spec will be presented in spec [2-proposal](../spec/2-proposal.md).
+建议书的速度将以速度 [2-提议](../spec/2-proposal.md) 表示。
 
-## Rationale
+## 理由
 
-None
+无
 
-## Compatibility
+## 兼容性
 
-None
+无
 
-## Implementation
+## 二． 执行情况
 
-No code related changes.
+没有与代码相关的更改。
