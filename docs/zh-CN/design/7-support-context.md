@@ -1,172 +1,172 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-01-08
 ---
 
-# Proposal: Support context
+# 提议：支助情况
 
-## Background
+## 二. 背景
 
-context has been widely used in Golang, more and more project rely on context to carry deadline, cancellation or other values, including gRPC, opentracing, GCS SDK and so on.
+Golang广泛使用了上下文，越来越多的项目依靠上下文来完成最后期限。 取消或其他价值，包括gRPC、任选、GCS SDK等。
 
-Add context support for [storage](https://github.com/Xuanwo/storage) will make it a production ready storage layer for real world:
+为 [存储](https://github.com/Xuanwo/storage) 添加上下文支持将使它成为一个为实体世界准备好的存储层：
 
-- Allow set deadline for operation
-- Support request cancellation
-- Support tracing
+- 允许设置操作截止日期
+- 取消客服请求
+- 支持跟踪
 - ...
 
-## Proposal
+## 建议
 
-So I propose following changes:
+因此，我提议作如下修改：
 
-- Add context pair support for every public API
-- Add `ReadWithContext` style method for every public API
-- `ReadWithContext` call `Read` with `Context` pair
-- `Read` use `Context` via parsed pair
+- 为每个公共API添加环境配对支持
+- 为每个公共的 API 添加 `ReadWContext` 样式方法
+- `读取在Context` 调用 `读取` 含有 `上下文` 配对
+- `通过配对 读取` 使用 `Context`
 
-More detailed changes described as following:
+以下是更详细的变化：
 
-### Add context pair support for every public API
+### 为每个公共API添加环境配对支持
 
-We treat `context` as pre-defined pairs for API, and make sure `context` is provided in generated code:
+我们将 `上下文` 作为预定义的 API 对，请确认 `上下文` 是在生成的代码中提供的：
 
 ```go
-v, ok = values[pairs.Context]
-if ok {
-    result.Context = v.(context.Context)
-} else {
-    result.Context = context.Background()
+v, ok = values[pairs.如果没关系，则
+
+    结果。上下文=v.(上下文)。上下文有
+其他
+    结果。context = contextBackground()
 }
 ```
 
-If there is `context` in pairs, we will use the `context`, or we will create a new one.
+如果对应的 `上下文` ，我们将使用 `上下文`，否则我们将创建一个新的上下文.
 
-This section will change `internal/cmd/meta`.
+本节将更改 `内部/cmd/meta`。
 
-### Add `ReadWithContext` style method for every public API
+### 为每个公共的 API 添加 `ReadWContext` 样式方法
 
-Add `XxxWithContext` API for every method, for example:
+为每种方法添加 `XxxWContext` API , 例如:
 
 ```go
-type Mover interface {
-    Move(src, dst string, pairs ...*types.Pair) (err error)
+输入 Mover 界面
+    Movement(src, dst string, pairs ...*types.配对) (错误)
 }
 ```
 
-will turn into:
+将转到：
 
 ```go
-type Mover interface {
-    Move(src, dst string, pairs ...*types.Pair) (err error)
-    MoveWithContext(ctx context.Context, src, dst string, pairs ...*types.Pair) (err error)
+输入 Mover 界面
+    Movement(src, dst string, pairs ...*types.配对) (err 错误)
+    移动内容(ctx context上下文，src，dst字符串，对...*类型。配对) (错误)
 }
 ```
 
-This operation will be executed by hand. We don't have too many interfaces here, so no bother to write a tool.
+这项行动将由手工执行。 我们在这里没有太多的接口，所以没有别的东西来写一个工具。
 
-### Generate XxxWithContext API for services
+### 为服务生成 XxxWContext API
 
-Let's generate code to archive this.
+让我们生成代码来存档。
 
-First of all, we need to add `...*types.Pair` for every API to carry context, this will affect two APIs:
+首先，我们需要添加 `...*类型。配对` 让每一个 API 携带上下文，这将影响两个API：
 
-- `Metadata`
-- `Statistical`
+- `元数据`
+- `统计`
 
-Not needed, but also make sense: they both could call API.
+他们不需要，但也有意义：他们都可以叫作API。
 
-Then, we need to generate `XxxWithContext` API, so that implementers don't need to care about that.
+然后，我们需要生成 `XxxWiContext` API，这样实现者就不需要关心它。
 
-In generated code, we will do following things:
+在生成的代码中，我们将做以下事情：
 
 ```go
-func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-    span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.Storager.Read")
-    defer span.Finish()
+func (s *存储) ReadWeltext(ctx context上下文，路径字符串，对...*类型。Pair) (r io.读者更近，错误) 电子邮件：
+    span, ctx := opentration。StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/qingstor.存储器。阅读")
+    延迟间隔。Finish()
 
-    pairs = append(pairs, ps.WithContext(ctx))
-    return s.Read(path, pairs...)
+    配对 = append(pairs, ps.Welcome (ctx))
+    返回 s.读取(路径，对等...)
 }
 ```
 
-### Services should handle context
+### 服务应处理上下文内容
 
-Service should use context from parsed pairs:
+服务应使用解析对应的环境：
 
 ```go
-it := s.bucket.Objects(context.TODO(), &gs.Query{
+it := s.bucket对象(context.TODO(), &gs.Query{
     Prefix: rp,
 })
 ```
 
-should be updated to:
+应该更新到：
 
 ```go
-it := s.bucket.Objects(opt.Context, &gs.Query{
+it := s.bucket对象(选定)上下文， &gs.Query{
     Prefix: rp,
 })
 ```
 
-## Rationale
+## 理由
 
-Other implement could be following:
+其它执行方式可以如下：
 
-- Add ctx in API, and add `XXXWithoutContext` API support
-- Add ctx in API, and let users who don't care context to use `context.TODO()`
-- Add context pair support and don't touch public interface
+- 在 API 中添加 ctx 并添加 `XXXWOUTContext` API 支持
+- 在 API 中添加 ctx ，让不关心上下文的用户使用 `上下文TODO()`
+- 添加环境配对支持且不触摸公共接口
 
-### Add ctx in API, and add `XXXWithoutContext` API support
+### 在 API 中添加 ctx 并添加 `XXXWOUTContext` API 支持
 
-Interface will be like following:
+接口将如下所示：
 
 ```go
-type Mover interface {
-    Move(ctx context.Context, src, dst string, pairs ...*types.Pair) (err error)
-    MoveWithoutContext(src, dst string, pairs ...*types.Pair) (err error)
+输入 Mover 界面
+    移动 (ctx 上下文)。上下文，src，dst字符串，对...*类型。配对(错误)
+    移动退出(src, dst 字符串, 配对...*类型。配对) (错误)
 }
 ```
 
-First of all, this change is a break change, every API call need to be refactored.
+首先，此更改是一个间歇性更改，每次API调用都需要重新设定。
 
-Then, it's obvious that `MoveWithoutContext` is longer than `MoveWithContext`.
+然后，很明显， `移动退出上下文` 比移动上下文</code> 长了 `移动上下文`
 
-The most important thing is the thought behind API design: **Fair**.
+最重要的事情是API设计背后的思考： **公平**。
 
-There are two kinds of developers here: some of them need context support, others don't care about it.
+这里有两种开发者：其中一些需要上下文支持，另一些则不关心它。
 
-Design in the proposal is friendly for both of them:
+建议中的设计对两者都是友好的：
 
-- people who need context support should use `XxxWithContext` or add context pair in `Xxx` call, they know what they are doing.
-- people who don't need context support can write code happily without any idea about context.
+- 需要上下文支持的人应该使用 `XxxWiContext` 或在 `Xxx` 中添加上下文配对，他们知道他们在做什么。
+- 不需要上下文支持的人可以在没有任何关于上下文的想法的情况下愉快地编写代码。
 
-However, this design is not fair for people who don't need context support. They need to use API like `MoveWithoutContext` although they don't care about context.
+然而，这种设计对于不需要上下文支持的人来说是不公平的。 他们需要使用 API，如 `MoveWeWoutContext` ，尽管他们不关心上下文了。
 
-### Add ctx in API, and let users who don't care context to use `context.TODO()`
+### 在 API 中添加 ctx ，让不关心上下文的用户使用 `上下文TODO()`
 
-Similar reason as described in the previous chapter.
+前一章所述的类似理由。
 
-### Add context pair support and don't touch public interface
+### 添加环境配对支持且不触摸公共接口
 
-Looks fine, but a bit inconvenient. This design makes it hard to add tracing support. People need to wrap code like:
+看起来没问题，但有点不便。 这个设计使得很难添加追踪支持。 人们需要把代码换成：
 
 ```go
-func ReadWithContext(ctx context.Context, s *Storage, path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-    span, ctx := opentracing.StartSpanFromContext(ctx, "Read")
+func ReadWeltext(ctx context)。上下文，s *存储，路径字符串，对 ...*类型。Pair) (r io.读者更近，错误) 电子邮件：
+    span, ctx := opentration。StartSpanFromContext(ctx, "Read")
     defer span.Finish()
 
-    pairs = append(pairs, ps.WithContext(ctx))
-    return s.Read(path, pairs...)
+    配对 = append(pairs, ps.Welcome (ctx))
+    返回 s.读取(路径，对等...)
 }
 ```
 
-Why not let us do it ourselves?
+为什么不让我们自己这样做？
 
-## Compatibility
+## 兼容性
 
-No break changes
+无间断变化
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。
