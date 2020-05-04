@@ -1,11 +1,11 @@
 # fs
 
-Local file system
+本地文件系统
 
-## Config
+## 配置
 
-### Storager
+### 存储器
 
-| Name       | Required | Comments |
-| ---------- | -------- | -------- |
-| `work_dir` | N        | work dir |
+| 名称     | 必填 | 评论   |
+| ------ | -- | ---- |
+| `工作目录` | N  | 工作目录 |
