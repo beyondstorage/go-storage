@@ -3,8 +3,6 @@ Package metadata intend to provide all available metadata.
 */
 package metadata
 
-//go:generate ../../internal/bin/metadata
-
 // StorageMeta is the static metadata for StorageMeta.
 type StorageMeta struct {
 	Name    string
