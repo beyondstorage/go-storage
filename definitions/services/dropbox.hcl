@@ -1,22 +1,18 @@
 name = "dropbox"
 
-service {
-}
-
 storage {
+
   op "list_dir" {
-    optional = ["dir_func","file_func"]
+    optional = ["dir_func", "file_func"]
   }
   op "new" {
     required = ["credential"]
-    optional = ["work_dir","http_client_options"]
+    optional = ["http_client_options", "work_dir"]
   }
   op "read" {
-    required = null
     optional = ["size"]
   }
   op "write" {
-    required = null
     optional = ["size"]
   }
 }

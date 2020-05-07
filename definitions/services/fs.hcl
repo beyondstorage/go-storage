@@ -1,11 +1,9 @@
 name = "fs"
 
-service {
-}
-
 storage {
+
   op "list_dir" {
-    optional = ["dir_func","file_func"]
+    optional = ["dir_func", "file_func"]
   }
   op "new" {
     optional = ["work_dir"]
@@ -14,7 +12,6 @@ storage {
     optional = ["offset", "size"]
   }
   op "write" {
-    required = null
     optional = ["size"]
   }
 }

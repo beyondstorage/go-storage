@@ -2,34 +2,34 @@ name = "s3"
 
 service {
 
+  op "create" {
+    required = ["location"]
+  }
   op "delete" {
-    required = null
     optional = ["location"]
   }
   op "get" {
-    required = null
     optional = ["location"]
   }
   op "list" {
     required = ["storager_func"]
-    optional = null
   }
   op "new" {
     required = ["credential"]
     optional = ["endpoint", "http_client_options"]
   }
-  op "create" {
-    required = ["location"]
-    optional = null
-  }
 }
 
 storage {
+
   op "list_dir" {
-    optional = ["dir_func","file_func"]
+    optional = ["dir_func", "file_func"]
   }
   op "list_prefix" {
     required = ["object_func"]
+  }
+  op "list_prefix_segments" {
+    required = ["segment_func"]
   }
   op "new" {
     required = ["name"]
@@ -38,9 +38,5 @@ storage {
   op "write" {
     required = ["size"]
     optional = ["checksum", "storage_class"]
-  }
-  op "list_prefix_segments" {
-    required = ["segment_func"]
-    optional = null
   }
 }

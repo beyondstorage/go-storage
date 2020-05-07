@@ -48,21 +48,32 @@ const Type = "{{ .Name }}"
     {{- range $_, $v := $data.Op }}
         {{- $pk := $v.Op | toPascal }}
         var pair{{ $pn }}{{ $pk }}Map = map[string]struct{}{
-        // Meta-defined pairs
+        // Required pairs
         {{- range $v := $v.Required }}
             "{{ $v }}": struct{}{},
         {{- end }}
+        // Optional pairs
         {{- range $v := $v.Optional }}
+            "{{ $v }}": struct{}{},
+        {{- end }}
+        // Generated pairs
+        {{- range $v := $v.Generated }}
             "{{ $v }}": struct{}{},
         {{- end }}
         }
 
         type pair{{ $pn }}{{ $pk }} struct {
-        // Meta-defined pairs
+        // Required pairs
         {{- range $_, $key := $v.Required }}
             {{ $key | toPascal }}    {{ (index $typeMap $key) }}
         {{- end }}
+        // Optional pairs
         {{- range $_, $key := $v.Optional }}
+            Has{{ $key | toPascal }} bool
+            {{ $key | toPascal }}    {{ (index $typeMap $key) }}
+        {{- end }}
+        // Generated pairs
+        {{- range $_, $key := $v.Generated }}
             Has{{ $key | toPascal }} bool
             {{ $key | toPascal }}    {{ (index $typeMap $key) }}
         {{- end }}
@@ -89,24 +100,34 @@ const Type = "{{ .Name }}"
         var v interface{}
         var ok bool
 
-        // Parse meta-defined pairs
+        // Handle required pairs
         {{- range $_, $key := $v.Required }}
-            {{- $pkey := $key | toPascal }}
-            v, ok = values[ps.{{ $pkey }}]
-            if !ok {
-                return nil, services.NewPairRequiredError(ps.{{ $pkey }})
-            }
-            if ok {
-                result.{{ $pkey }} = v.({{ (index $typeMap $key) }})
-            }
+        {{- $pkey := $key | toPascal }}
+        v, ok = values[ps.{{ $pkey }}]
+        if !ok {
+            return nil, services.NewPairRequiredError(ps.{{ $pkey }})
+        }
+        if ok {
+            result.{{ $pkey }} = v.({{ (index $typeMap $key) }})
+        }
         {{- end }}
+        // Handle optional pairs
         {{- range $_, $key := $v.Optional }}
-            {{- $pkey := $key | toPascal }}
-            v, ok = values[ps.{{ $pkey }}]
-            if ok {
+        {{- $pkey := $key | toPascal }}
+        v, ok = values[ps.{{ $pkey }}]
+        if ok {
             result.Has{{ $pkey }} = true
             result.{{ $pkey }} = v.({{ index $typeMap $key }})
-            }
+        }
+        {{- end }}
+        // Handle generated pairs
+        {{- range $_, $key := $v.Generated }}
+        {{- $pkey := $key | toPascal }}
+        v, ok = values[ps.{{ $pkey }}]
+        if ok {
+            result.Has{{ $pkey }} = true
+            result.{{ $pkey }} = v.({{ index $typeMap $key }})
+        }
         {{- end }}
 
         return result, nil

@@ -4,11 +4,9 @@ service {
 
   op "create" {
     required = ["location"]
-    optional = null
   }
   op "list" {
     required = ["storager_func"]
-    optional = null
   }
   op "new" {
     required = ["credential"]
@@ -17,8 +15,9 @@ service {
 }
 
 storage {
+
   op "list_dir" {
-    optional = ["dir_func","file_func"]
+    optional = ["dir_func", "file_func"]
   }
   op "list_prefix" {
     required = ["object_func"]

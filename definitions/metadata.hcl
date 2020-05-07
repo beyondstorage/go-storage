@@ -1,18 +1,17 @@
+
 object_meta "content-md5" {
-  type = "string"
+  type         = "string"
   display_name = "ContentMD5"
 }
-
 object_meta "content-type" {
   type = "string"
 }
-
 object_meta "etag" {
-  type = "string"
+  type         = "string"
   display_name = "ETag"
 }
 object_meta "storage-class" {
-  type = "storageclass.Type"
+  type       = "storageclass.Type"
   zero_value = "\"\""
 }
 
