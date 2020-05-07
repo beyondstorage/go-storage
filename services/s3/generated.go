@@ -309,6 +309,42 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	return result, nil
 }
 
+// CreateWithContext adds context support for Create.
+func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Create")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.Create(name, pairs...)
+}
+
+// DeleteWithContext adds context support for Delete.
+func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Delete")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.Delete(name, pairs...)
+}
+
+// GetWithContext adds context support for Get.
+func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Get")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.Get(name, pairs...)
+}
+
+// ListWithContext adds context support for List.
+func (s *Service) ListWithContext(ctx context.Context, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.List")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.List(pairs...)
+}
+
 var pairStorageAbortSegmentMap = map[string]struct{}{
 	// Meta-defined pairs
 	"context": struct{}{},
@@ -401,58 +437,9 @@ func (s *Storage) parsePairCompleteSegment(opts ...*types.Pair) (*pairStorageCom
 	return result, nil
 }
 
-var pairStorageCreateMap = map[string]struct{}{
-	// Meta-defined pairs
-	"location": struct{}{},
-	"context":  struct{}{},
-}
-
-type pairStorageCreate struct {
-	// Pre-defined pairs
-
-	// Meta-defined pairs
-	Location   string
-	HasContext bool
-	Context    context.Context
-}
-
-func (s *Storage) parsePairCreate(opts ...*types.Pair) (*pairStorageCreate, error) {
-	result := &pairStorageCreate{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := pairStorageCreateMap[v.Key]; !ok {
-			return nil, services.NewPairUnsupportedError(v)
-		}
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Parse pre-defined pairs
-
-	// Parse meta-defined pairs
-	v, ok = values[ps.Location]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.Location)
-	}
-	if ok {
-		result.Location = v.(string)
-	}
-	v, ok = values[ps.Context]
-	if ok {
-		result.HasContext = true
-		result.Context = v.(context.Context)
-	}
-
-	return result, nil
-}
-
 var pairStorageDeleteMap = map[string]struct{}{
 	// Meta-defined pairs
-	"context":  struct{}{},
-	"location": struct{}{},
+	"context": struct{}{},
 }
 
 type pairStorageDelete struct {
@@ -460,10 +447,8 @@ type pairStorageDelete struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasContext  bool
-	Context     context.Context
-	HasLocation bool
-	Location    string
+	HasContext bool
+	Context    context.Context
 }
 
 func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
@@ -493,58 +478,6 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 	if ok {
 		result.HasContext = true
 		result.Context = v.(context.Context)
-	}
-	v, ok = values[ps.Location]
-	if ok {
-		result.HasLocation = true
-		result.Location = v.(string)
-	}
-
-	return result, nil
-}
-
-var pairStorageGetMap = map[string]struct{}{
-	// Meta-defined pairs
-	"context":  struct{}{},
-	"location": struct{}{},
-}
-
-type pairStorageGet struct {
-	// Pre-defined pairs
-
-	// Meta-defined pairs
-	HasContext  bool
-	Context     context.Context
-	HasLocation bool
-	Location    string
-}
-
-func (s *Storage) parsePairGet(opts ...*types.Pair) (*pairStorageGet, error) {
-	result := &pairStorageGet{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := pairStorageGetMap[v.Key]; !ok {
-			return nil, services.NewPairUnsupportedError(v)
-		}
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Parse pre-defined pairs
-
-	// Parse meta-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.HasContext = true
-		result.Context = v.(context.Context)
-	}
-	v, ok = values[ps.Location]
-	if ok {
-		result.HasLocation = true
-		result.Location = v.(string)
 	}
 
 	return result, nil
@@ -596,57 +529,11 @@ func (s *Storage) parsePairInitIndexSegment(opts ...*types.Pair) (*pairStorageIn
 	return result, nil
 }
 
-var pairStorageListMap = map[string]struct{}{
-	// Meta-defined pairs
-	"storager_func": struct{}{},
-	"context":       struct{}{},
-}
-
-type pairStorageList struct {
-	// Pre-defined pairs
-
-	// Meta-defined pairs
-	StoragerFunc storage.StoragerFunc
-	HasContext   bool
-	Context      context.Context
-}
-
-func (s *Storage) parsePairList(opts ...*types.Pair) (*pairStorageList, error) {
-	result := &pairStorageList{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := pairStorageListMap[v.Key]; !ok {
-			return nil, services.NewPairUnsupportedError(v)
-		}
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Parse pre-defined pairs
-
-	// Parse meta-defined pairs
-	v, ok = values[ps.StoragerFunc]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.StoragerFunc)
-	}
-	if ok {
-		result.StoragerFunc = v.(storage.StoragerFunc)
-	}
-	v, ok = values[ps.Context]
-	if ok {
-		result.HasContext = true
-		result.Context = v.(context.Context)
-	}
-
-	return result, nil
-}
-
 var pairStorageListDirMap = map[string]struct{}{
 	// Meta-defined pairs
-	"context": struct{}{},
+	"context":   struct{}{},
+	"dir_func":  struct{}{},
+	"file_func": struct{}{},
 }
 
 type pairStorageListDir struct {
@@ -654,8 +541,12 @@ type pairStorageListDir struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasContext bool
-	Context    context.Context
+	HasContext  bool
+	Context     context.Context
+	HasDirFunc  bool
+	DirFunc     types.ObjectFunc
+	HasFileFunc bool
+	FileFunc    types.ObjectFunc
 }
 
 func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
@@ -686,13 +577,24 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 		result.HasContext = true
 		result.Context = v.(context.Context)
 	}
+	v, ok = values[ps.DirFunc]
+	if ok {
+		result.HasDirFunc = true
+		result.DirFunc = v.(types.ObjectFunc)
+	}
+	v, ok = values[ps.FileFunc]
+	if ok {
+		result.HasFileFunc = true
+		result.FileFunc = v.(types.ObjectFunc)
+	}
 
 	return result, nil
 }
 
 var pairStorageListPrefixMap = map[string]struct{}{
 	// Meta-defined pairs
-	"context": struct{}{},
+	"object_func": struct{}{},
+	"context":     struct{}{},
 }
 
 type pairStorageListPrefix struct {
@@ -700,6 +602,7 @@ type pairStorageListPrefix struct {
 	Context context.Context
 
 	// Meta-defined pairs
+	ObjectFunc types.ObjectFunc
 	HasContext bool
 	Context    context.Context
 }
@@ -727,6 +630,13 @@ func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPref
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.ObjectFunc]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.ObjectFunc)
+	}
+	if ok {
+		result.ObjectFunc = v.(types.ObjectFunc)
+	}
 	v, ok = values[ps.Context]
 	if ok {
 		result.HasContext = true
@@ -839,23 +749,20 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 
 var pairStorageNewMap = map[string]struct{}{
 	// Meta-defined pairs
-	"credential":          struct{}{},
-	"context":             struct{}{},
-	"endpoint":            struct{}{},
-	"http_client_options": struct{}{},
+	"name":     struct{}{},
+	"context":  struct{}{},
+	"work_dir": struct{}{},
 }
 
 type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
-	Credential           *credential.Provider
-	HasContext           bool
-	Context              context.Context
-	HasEndpoint          bool
-	Endpoint             endpoint.Provider
-	HasHTTPClientOptions bool
-	HTTPClientOptions    *httpclient.Options
+	Name       string
+	HasContext bool
+	Context    context.Context
+	HasWorkDir bool
+	WorkDir    string
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -872,27 +779,22 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse pre-defined pairs
 
 	// Parse meta-defined pairs
-	v, ok = values[ps.Credential]
+	v, ok = values[ps.Name]
 	if !ok {
-		return nil, services.NewPairRequiredError(ps.Credential)
+		return nil, services.NewPairRequiredError(ps.Name)
 	}
 	if ok {
-		result.Credential = v.(*credential.Provider)
+		result.Name = v.(string)
 	}
 	v, ok = values[ps.Context]
 	if ok {
 		result.HasContext = true
 		result.Context = v.(context.Context)
 	}
-	v, ok = values[ps.Endpoint]
+	v, ok = values[ps.WorkDir]
 	if ok {
-		result.HasEndpoint = true
-		result.Endpoint = v.(endpoint.Provider)
-	}
-	v, ok = values[ps.HTTPClientOptions]
-	if ok {
-		result.HasHTTPClientOptions = true
-		result.HTTPClientOptions = v.(*httpclient.Options)
+		result.HasWorkDir = true
+		result.WorkDir = v.(string)
 	}
 
 	return result, nil
@@ -1104,114 +1006,6 @@ func (s *Storage) parsePairWriteIndexSegment(opts ...*types.Pair) (*pairStorageW
 	}
 
 	return result, nil
-}
-
-// AbortSegmentWithContext adds context support for AbortSegment.
-func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.AbortSegment")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.AbortSegment(seg, pairs...)
-}
-
-// CompleteSegmentWithContext adds context support for CompleteSegment.
-func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.CompleteSegment")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.CompleteSegment(seg, pairs...)
-}
-
-// DeleteWithContext adds context support for Delete.
-func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Delete")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Delete(path, pairs...)
-}
-
-// InitIndexSegmentWithContext adds context support for InitIndexSegment.
-func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.InitIndexSegment")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.InitIndexSegment(path, pairs...)
-}
-
-// ListDirWithContext adds context support for ListDir.
-func (s *Storage) ListDirWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.ListDir")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.ListDir(path, pairs...)
-}
-
-// ListPrefixWithContext adds context support for ListPrefix.
-func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.ListPrefix")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.ListPrefix(prefix, pairs...)
-}
-
-// ListPrefixSegmentsWithContext adds context support for ListPrefixSegments.
-func (s *Storage) ListPrefixSegmentsWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.ListPrefixSegments")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.ListPrefixSegments(path, pairs...)
-}
-
-// MetadataWithContext adds context support for Metadata.
-func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Metadata")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Metadata(pairs...)
-}
-
-// ReadWithContext adds context support for Read.
-func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Read")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Read(path, pairs...)
-}
-
-// StatWithContext adds context support for Stat.
-func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Stat")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Stat(path, pairs...)
-}
-
-// WriteWithContext adds context support for Write.
-func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.Write")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Write(path, r, pairs...)
-}
-
-// WriteIndexSegmentWithContext adds context support for WriteIndexSegment.
-func (s *Storage) WriteIndexSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, index int, size int64, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/s3.service.WriteIndexSegment")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.WriteIndexSegment(seg, r, index, size, pairs...)
 }
 
 // AbortSegmentWithContext adds context support for AbortSegment.

@@ -14,13 +14,15 @@ service {
 
 storage {
 
-  op "list" {
-    required = ["storager_func"]
-    optional = null
+  op "list_dir" {
+    optional = ["dir_func","file_func"]
+  }
+  op "list_prefix" {
+    required = ["object_func"]
   }
   op "new" {
-    required = ["credential", "project"]
-    optional = ["http_client_options"]
+    required = ["name"]
+    optional = ["work_dir"]
   }
   op "write" {
     required = ["size"]

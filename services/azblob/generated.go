@@ -285,6 +285,42 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 	return result, nil
 }
 
+// CreateWithContext adds context support for Create.
+func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.Create")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.Create(name, pairs...)
+}
+
+// DeleteWithContext adds context support for Delete.
+func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.Delete")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.Delete(name, pairs...)
+}
+
+// GetWithContext adds context support for Get.
+func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*types.Pair) (st storage.Storager, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.Get")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.Get(name, pairs...)
+}
+
+// ListWithContext adds context support for List.
+func (s *Service) ListWithContext(ctx context.Context, pairs ...*types.Pair) (err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.List")
+	defer span.Finish()
+
+	pairs = append(pairs, ps.WithContext(ctx))
+	return s.List(pairs...)
+}
+
 var pairStorageDeleteMap = map[string]struct{}{
 	// Meta-defined pairs
 	"context": struct{}{},
@@ -331,57 +367,11 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 	return result, nil
 }
 
-var pairStorageListMap = map[string]struct{}{
-	// Meta-defined pairs
-	"storager_func": struct{}{},
-	"context":       struct{}{},
-}
-
-type pairStorageList struct {
-	// Pre-defined pairs
-
-	// Meta-defined pairs
-	StoragerFunc storage.StoragerFunc
-	HasContext   bool
-	Context      context.Context
-}
-
-func (s *Storage) parsePairList(opts ...*types.Pair) (*pairStorageList, error) {
-	result := &pairStorageList{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := pairStorageListMap[v.Key]; !ok {
-			return nil, services.NewPairUnsupportedError(v)
-		}
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Parse pre-defined pairs
-
-	// Parse meta-defined pairs
-	v, ok = values[ps.StoragerFunc]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.StoragerFunc)
-	}
-	if ok {
-		result.StoragerFunc = v.(storage.StoragerFunc)
-	}
-	v, ok = values[ps.Context]
-	if ok {
-		result.HasContext = true
-		result.Context = v.(context.Context)
-	}
-
-	return result, nil
-}
-
 var pairStorageListDirMap = map[string]struct{}{
 	// Meta-defined pairs
-	"context": struct{}{},
+	"context":   struct{}{},
+	"dir_func":  struct{}{},
+	"file_func": struct{}{},
 }
 
 type pairStorageListDir struct {
@@ -389,8 +379,12 @@ type pairStorageListDir struct {
 	Context context.Context
 
 	// Meta-defined pairs
-	HasContext bool
-	Context    context.Context
+	HasContext  bool
+	Context     context.Context
+	HasDirFunc  bool
+	DirFunc     types.ObjectFunc
+	HasFileFunc bool
+	FileFunc    types.ObjectFunc
 }
 
 func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
@@ -421,13 +415,24 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 		result.HasContext = true
 		result.Context = v.(context.Context)
 	}
+	v, ok = values[ps.DirFunc]
+	if ok {
+		result.HasDirFunc = true
+		result.DirFunc = v.(types.ObjectFunc)
+	}
+	v, ok = values[ps.FileFunc]
+	if ok {
+		result.HasFileFunc = true
+		result.FileFunc = v.(types.ObjectFunc)
+	}
 
 	return result, nil
 }
 
 var pairStorageListPrefixMap = map[string]struct{}{
 	// Meta-defined pairs
-	"context": struct{}{},
+	"object_func": struct{}{},
+	"context":     struct{}{},
 }
 
 type pairStorageListPrefix struct {
@@ -435,6 +440,7 @@ type pairStorageListPrefix struct {
 	Context context.Context
 
 	// Meta-defined pairs
+	ObjectFunc types.ObjectFunc
 	HasContext bool
 	Context    context.Context
 }
@@ -462,6 +468,13 @@ func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPref
 	}
 
 	// Parse meta-defined pairs
+	v, ok = values[ps.ObjectFunc]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.ObjectFunc)
+	}
+	if ok {
+		result.ObjectFunc = v.(types.ObjectFunc)
+	}
 	v, ok = values[ps.Context]
 	if ok {
 		result.HasContext = true
@@ -519,22 +532,20 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 
 var pairStorageNewMap = map[string]struct{}{
 	// Meta-defined pairs
-	"credential":          struct{}{},
-	"endpoint":            struct{}{},
-	"context":             struct{}{},
-	"http_client_options": struct{}{},
+	"name":     struct{}{},
+	"context":  struct{}{},
+	"work_dir": struct{}{},
 }
 
 type pairStorageNew struct {
 	// Pre-defined pairs
 
 	// Meta-defined pairs
-	Credential           *credential.Provider
-	Endpoint             endpoint.Provider
-	HasContext           bool
-	Context              context.Context
-	HasHTTPClientOptions bool
-	HTTPClientOptions    *httpclient.Options
+	Name       string
+	HasContext bool
+	Context    context.Context
+	HasWorkDir bool
+	WorkDir    string
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -551,29 +562,22 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Parse pre-defined pairs
 
 	// Parse meta-defined pairs
-	v, ok = values[ps.Credential]
+	v, ok = values[ps.Name]
 	if !ok {
-		return nil, services.NewPairRequiredError(ps.Credential)
+		return nil, services.NewPairRequiredError(ps.Name)
 	}
 	if ok {
-		result.Credential = v.(*credential.Provider)
-	}
-	v, ok = values[ps.Endpoint]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.Endpoint)
-	}
-	if ok {
-		result.Endpoint = v.(endpoint.Provider)
+		result.Name = v.(string)
 	}
 	v, ok = values[ps.Context]
 	if ok {
 		result.HasContext = true
 		result.Context = v.(context.Context)
 	}
-	v, ok = values[ps.HTTPClientOptions]
+	v, ok = values[ps.WorkDir]
 	if ok {
-		result.HasHTTPClientOptions = true
-		result.HTTPClientOptions = v.(*httpclient.Options)
+		result.HasWorkDir = true
+		result.WorkDir = v.(string)
 	}
 
 	return result, nil
@@ -582,7 +586,9 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 var pairStorageReadMap = map[string]struct{}{
 	// Meta-defined pairs
 	"context":            struct{}{},
+	"offset":             struct{}{},
 	"read_callback_func": struct{}{},
+	"size":               struct{}{},
 }
 
 type pairStorageRead struct {
@@ -592,8 +598,12 @@ type pairStorageRead struct {
 	// Meta-defined pairs
 	HasContext          bool
 	Context             context.Context
+	HasOffset           bool
+	Offset              int64
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
+	HasSize             bool
+	Size                int64
 }
 
 func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
@@ -624,10 +634,20 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 		result.HasContext = true
 		result.Context = v.(context.Context)
 	}
+	v, ok = values[ps.Offset]
+	if ok {
+		result.HasOffset = true
+		result.Offset = v.(int64)
+	}
 	v, ok = values[ps.ReadCallbackFunc]
 	if ok {
 		result.HasReadCallbackFunc = true
 		result.ReadCallbackFunc = v.(func([]byte))
+	}
+	v, ok = values[ps.Size]
+	if ok {
+		result.HasSize = true
+		result.Size = v.(int64)
 	}
 
 	return result, nil
@@ -756,69 +776,6 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 	}
 
 	return result, nil
-}
-
-// DeleteWithContext adds context support for Delete.
-func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.Delete")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Delete(path, pairs...)
-}
-
-// ListDirWithContext adds context support for ListDir.
-func (s *Storage) ListDirWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.ListDir")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.ListDir(path, pairs...)
-}
-
-// ListPrefixWithContext adds context support for ListPrefix.
-func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.ListPrefix")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.ListPrefix(prefix, pairs...)
-}
-
-// MetadataWithContext adds context support for Metadata.
-func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.Metadata")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Metadata(pairs...)
-}
-
-// ReadWithContext adds context support for Read.
-func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.Read")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Read(path, pairs...)
-}
-
-// StatWithContext adds context support for Stat.
-func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.Stat")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Stat(path, pairs...)
-}
-
-// WriteWithContext adds context support for Write.
-func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/azblob.service.Write")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Write(path, r, pairs...)
 }
 
 // DeleteWithContext adds context support for Delete.

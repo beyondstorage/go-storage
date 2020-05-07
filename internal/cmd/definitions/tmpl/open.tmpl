@@ -13,8 +13,10 @@ type openFunc func(opt ...*types.Pair) (srv storage.Servicer, store storage.Stor
 
 var openFuncMap = map[string]openFunc{
 {{- range $_, $meta := .Service }}
+    {{- if $meta.Service }}
     {{- if and $meta.Service.Op $meta.Storage.Op }}
         {{ $meta.Name }}.Type: {{ $meta.Name }}.New,
+    {{- end }}
     {{- end }}
 {{- end }}
 }
@@ -23,8 +25,10 @@ type openServicerFunc func(opt ...*types.Pair) (srv storage.Servicer, err error)
 
 var openServicerFuncMap = map[string]openServicerFunc{
 {{- range $_, $meta := .Service }}
-    {{- if $meta.Service.Op }}
-        {{ $meta.Name }}.Type: {{ $meta.Name }}.NewServicer,
+    {{- if $meta.Service }}
+        {{- if $meta.Service.Op }}
+            {{ $meta.Name }}.Type: {{ $meta.Name }}.NewServicer,
+        {{- end }}
     {{- end }}
 {{- end }}
 }

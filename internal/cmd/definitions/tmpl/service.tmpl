@@ -32,9 +32,12 @@ var _ httpclient.Options
 // Type is the type for {{ .Name }}
 const Type = "{{ .Name }}"
 
-{{- template "pairs" makeSlice "service" .Service .TypeMap }}
+{{- if .Service }}
+    {{- template "pairs" makeSlice "service" .Service .TypeMap }}
+    {{- template "context_func" makeSlice "service" .Service .Name }}
+{{- end }}
+
 {{- template "pairs" makeSlice "storage" .Storage .TypeMap }}
-{{- template "context_func" makeSlice "service" .Storage .Name }}
 {{- template "context_func" makeSlice "storage" .Storage .Name }}
 
 {{- define "pairs" }}

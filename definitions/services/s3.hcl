@@ -25,26 +25,15 @@ service {
 }
 
 storage {
-
-  op "delete" {
-    required = null
-    optional = ["location"]
+  op "list_dir" {
+    optional = ["dir_func","file_func"]
   }
-  op "get" {
-    required = null
-    optional = ["location"]
-  }
-  op "list" {
-    required = ["storager_func"]
-    optional = null
+  op "list_prefix" {
+    required = ["object_func"]
   }
   op "new" {
-    required = ["credential"]
-    optional = ["endpoint", "http_client_options"]
-  }
-  op "create" {
-    required = ["location"]
-    optional = null
+    required = ["name"]
+    optional = ["work_dir"]
   }
   op "list_prefix_segments" {
     required = ["segment_func"]

@@ -129,28 +129,31 @@ func parse() (data *Data) {
 		servicerFuncs, storagerFuncs := parseFunc(srv.Name, "servicer"), parseFunc(srv.Name, "storager")
 
 		// Register funcs into service
-		for _, v := range srv.Service.Op {
-			if fn, ok := servicerFuncs[v.Op]; ok {
-				fn.hasPair = true
-				v.Func = fn
+		if srv.Service != nil {
+			for _, v := range srv.Service.Op {
+				if fn, ok := servicerFuncs[v.Op]; ok {
+					fn.hasPair = true
+					v.Func = fn
+				}
+			}
+
+			// Add missing pairs into service
+			for k, v := range servicerFuncs {
+				if v.hasPair {
+					continue
+				}
+				srv.Service.Op = append(srv.Service.Op, &Op{
+					Op:   k,
+					Func: v,
+				})
 			}
 		}
+
 		for _, v := range srv.Storage.Op {
 			if fn, ok := storagerFuncs[v.Op]; ok {
 				fn.hasPair = true
 				v.Func = fn
 			}
-		}
-
-		// Add missing pairs into service
-		for k, v := range servicerFuncs {
-			if v.hasPair {
-				continue
-			}
-			srv.Service.Op = append(srv.Service.Op, &Op{
-				Op:   k,
-				Func: v,
-			})
 		}
 		for k, v := range storagerFuncs {
 			if v.hasPair {
@@ -170,13 +173,16 @@ func parse() (data *Data) {
 		// Create type map
 		srv.TypeMap = data.TypeMap
 
-		for _, v := range srv.Service.Op {
-			sort.Strings(v.Optional)
-			sort.Strings(v.Required)
+		if srv.Service != nil {
+			for _, v := range srv.Service.Op {
+				sort.Strings(v.Optional)
+				sort.Strings(v.Required)
+			}
+			sort.Slice(srv.Service.Op, func(i, j int) bool {
+				return srv.Service.Op[i].Op < srv.Service.Op[j].Op
+			})
 		}
-		sort.Slice(srv.Service.Op, func(i, j int) bool {
-			return srv.Service.Op[i].Op < srv.Service.Op[j].Op
-		})
+
 		for _, v := range srv.Storage.Op {
 			sort.Strings(v.Optional)
 			sort.Strings(v.Required)
@@ -192,6 +198,10 @@ func parse() (data *Data) {
 }
 
 func injectReadCallbackFunc(ops *Ops) {
+	if ops == nil {
+		return
+	}
+
 	for _, op := range ops.Op {
 		fn := op.Func
 		if fn == nil {
@@ -205,6 +215,10 @@ func injectReadCallbackFunc(ops *Ops) {
 }
 
 func injectContext(ops *Ops) {
+	if ops == nil {
+		return
+	}
+
 	for _, op := range ops.Op {
 		op.Optional = append(op.Optional, "context")
 	}

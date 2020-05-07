@@ -18,7 +18,7 @@ storage {
     optional = ["dir_func","file_func"]
   }
   op "list_prefix" {
-    required = "object_func"
+    required = ["object_func"]
   }
   op "new" {
     required = ["name"]
