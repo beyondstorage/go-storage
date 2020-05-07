@@ -37,9 +37,6 @@ var pairServiceCreateMap = map[string]struct{}{
 }
 
 type pairServiceCreate struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	Location   string
 	HasContext bool
@@ -59,14 +56,6 @@ func (s *Service) parsePairCreate(opts ...*types.Pair) (*pairServiceCreate, erro
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Location]
@@ -92,9 +81,6 @@ var pairServiceDeleteMap = map[string]struct{}{
 }
 
 type pairServiceDelete struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext  bool
 	Context     context.Context
@@ -115,14 +101,6 @@ func (s *Service) parsePairDelete(opts ...*types.Pair) (*pairServiceDelete, erro
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
@@ -146,9 +124,6 @@ var pairServiceGetMap = map[string]struct{}{
 }
 
 type pairServiceGet struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext  bool
 	Context     context.Context
@@ -169,14 +144,6 @@ func (s *Service) parsePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
@@ -200,9 +167,6 @@ var pairServiceListMap = map[string]struct{}{
 }
 
 type pairServiceList struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	StoragerFunc storage.StoragerFunc
 	HasContext   bool
@@ -222,14 +186,6 @@ func (s *Service) parsePairList(opts ...*types.Pair) (*pairServiceList, error) {
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.StoragerFunc]
@@ -257,8 +213,6 @@ var pairServiceNewMap = map[string]struct{}{
 }
 
 type pairServiceNew struct {
-	// Pre-defined pairs
-
 	// Meta-defined pairs
 	Credential           *credential.Provider
 	HasContext           bool
@@ -279,8 +233,6 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Credential]
@@ -351,9 +303,6 @@ var pairStorageAbortSegmentMap = map[string]struct{}{
 }
 
 type pairStorageAbortSegment struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext bool
 	Context    context.Context
@@ -373,14 +322,6 @@ func (s *Storage) parsePairAbortSegment(opts ...*types.Pair) (*pairStorageAbortS
 	var v interface{}
 	var ok bool
 
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
 	if ok {
@@ -397,9 +338,6 @@ var pairStorageCompleteSegmentMap = map[string]struct{}{
 }
 
 type pairStorageCompleteSegment struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext bool
 	Context    context.Context
@@ -419,14 +357,6 @@ func (s *Storage) parsePairCompleteSegment(opts ...*types.Pair) (*pairStorageCom
 	var v interface{}
 	var ok bool
 
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
 	if ok {
@@ -443,9 +373,6 @@ var pairStorageDeleteMap = map[string]struct{}{
 }
 
 type pairStorageDelete struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext bool
 	Context    context.Context
@@ -465,14 +392,6 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 	var v interface{}
 	var ok bool
 
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
 	if ok {
@@ -489,9 +408,6 @@ var pairStorageInitIndexSegmentMap = map[string]struct{}{
 }
 
 type pairStorageInitIndexSegment struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext bool
 	Context    context.Context
@@ -511,14 +427,6 @@ func (s *Storage) parsePairInitIndexSegment(opts ...*types.Pair) (*pairStorageIn
 	var v interface{}
 	var ok bool
 
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
 	if ok {
@@ -537,9 +445,6 @@ var pairStorageListDirMap = map[string]struct{}{
 }
 
 type pairStorageListDir struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext  bool
 	Context     context.Context
@@ -562,14 +467,6 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
@@ -598,9 +495,6 @@ var pairStorageListPrefixMap = map[string]struct{}{
 }
 
 type pairStorageListPrefix struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	ObjectFunc types.ObjectFunc
 	HasContext bool
@@ -620,14 +514,6 @@ func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPref
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.ObjectFunc]
@@ -653,9 +539,6 @@ var pairStorageListPrefixSegmentsMap = map[string]struct{}{
 }
 
 type pairStorageListPrefixSegments struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	SegmentFunc segment.Func
 	HasContext  bool
@@ -675,14 +558,6 @@ func (s *Storage) parsePairListPrefixSegments(opts ...*types.Pair) (*pairStorage
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.SegmentFunc]
@@ -707,9 +582,6 @@ var pairStorageMetadataMap = map[string]struct{}{
 }
 
 type pairStorageMetadata struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext bool
 	Context    context.Context
@@ -729,14 +601,6 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 	var v interface{}
 	var ok bool
 
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
 	if ok {
@@ -755,8 +619,6 @@ var pairStorageNewMap = map[string]struct{}{
 }
 
 type pairStorageNew struct {
-	// Pre-defined pairs
-
 	// Meta-defined pairs
 	Name       string
 	HasContext bool
@@ -775,8 +637,6 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Name]
@@ -807,9 +667,6 @@ var pairStorageReadMap = map[string]struct{}{
 }
 
 type pairStorageRead struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext          bool
 	Context             context.Context
@@ -830,14 +687,6 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
@@ -860,9 +709,6 @@ var pairStorageStatMap = map[string]struct{}{
 }
 
 type pairStorageStat struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext bool
 	Context    context.Context
@@ -882,14 +728,6 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 	var v interface{}
 	var ok bool
 
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]
 	if ok {
@@ -902,19 +740,24 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 
 var pairStorageWriteMap = map[string]struct{}{
 	// Meta-defined pairs
+	"size":               struct{}{},
+	"checksum":           struct{}{},
 	"context":            struct{}{},
 	"read_callback_func": struct{}{},
+	"storage_class":      struct{}{},
 }
 
 type pairStorageWrite struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
+	Size                int64
+	HasChecksum         bool
+	Checksum            string
 	HasContext          bool
 	Context             context.Context
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
+	HasStorageClass     bool
+	StorageClass        storageclass.Type
 }
 
 func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
@@ -931,15 +774,19 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 	var v interface{}
 	var ok bool
 
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
-
 	// Parse meta-defined pairs
+	v, ok = values[ps.Size]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.Size)
+	}
+	if ok {
+		result.Size = v.(int64)
+	}
+	v, ok = values[ps.Checksum]
+	if ok {
+		result.HasChecksum = true
+		result.Checksum = v.(string)
+	}
 	v, ok = values[ps.Context]
 	if ok {
 		result.HasContext = true
@@ -949,6 +796,11 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 	if ok {
 		result.HasReadCallbackFunc = true
 		result.ReadCallbackFunc = v.(func([]byte))
+	}
+	v, ok = values[ps.StorageClass]
+	if ok {
+		result.HasStorageClass = true
+		result.StorageClass = v.(storageclass.Type)
 	}
 
 	return result, nil
@@ -961,9 +813,6 @@ var pairStorageWriteIndexSegmentMap = map[string]struct{}{
 }
 
 type pairStorageWriteIndexSegment struct {
-	// Pre-defined pairs
-	Context context.Context
-
 	// Meta-defined pairs
 	HasContext          bool
 	Context             context.Context
@@ -984,14 +833,6 @@ func (s *Storage) parsePairWriteIndexSegment(opts ...*types.Pair) (*pairStorageW
 
 	var v interface{}
 	var ok bool
-
-	// Parse pre-defined pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	} else {
-		result.Context = context.Background()
-	}
 
 	// Parse meta-defined pairs
 	v, ok = values[ps.Context]

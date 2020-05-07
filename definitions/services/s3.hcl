@@ -35,6 +35,10 @@ storage {
     required = ["name"]
     optional = ["work_dir"]
   }
+  op "write" {
+    required = ["size"]
+    optional = ["checksum", "storage_class"]
+  }
   op "list_prefix_segments" {
     required = ["segment_func"]
     optional = null

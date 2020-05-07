@@ -58,11 +58,6 @@ const Type = "{{ .Name }}"
         }
 
         type pair{{ $pn }}{{ $pk }} struct {
-        // Pre-defined pairs
-        {{- if $v.Func }}
-            Context context.Context
-        {{- end }}
-
         // Meta-defined pairs
         {{- range $_, $key := $v.Required }}
             {{ $key | toPascal }}    {{ (index $typeMap $key) }}
@@ -93,16 +88,6 @@ const Type = "{{ .Name }}"
 
         var v interface{}
         var ok bool
-
-        // Parse pre-defined pairs
-        {{- if $v.Func }}
-            v, ok = values[ps.Context]
-            if ok {
-            result.Context = v.(context.Context)
-            } else {
-            result.Context = context.Background()
-            }
-        {{- end }}
 
         // Parse meta-defined pairs
         {{- range $_, $key := $v.Required }}
