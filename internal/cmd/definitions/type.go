@@ -4,17 +4,20 @@ import (
 	"sort"
 )
 
+// Data is the biggest container for all definitions.
 type Data struct {
-	Pairs   []*Pair `hcl:"pair,block"`
-	TypeMap map[string]string
-
+	// data from definitions
+	Pairs            []*Pair     `hcl:"pair,block"`
 	ObjectMeta       []*Metadata `hcl:"object_meta,block"`
 	StorageMeta      []*Metadata `hcl:"storage_meta,block"`
 	StorageStatistic []*Metadata `hcl:"storage_statistic,block"`
+	Service          []*Service
 
-	Service []*Service
+	// data from runtime
+	TypeMap map[string]string
 }
 
+// Sort will sort the data.
 func (o *Data) Sort() {
 	sort.Slice(o.Pairs, func(i, j int) bool {
 		return o.Pairs[i].Name < o.Pairs[j].Name
@@ -38,12 +41,14 @@ func (o *Data) Sort() {
 	})
 }
 
+// ExportPairs will export pairs container for hcl encode.
 func (o *Data) ExportPairs() interface{} {
 	return struct {
 		Pairs []*Pair `hcl:"pair,block"`
 	}{o.Pairs}
 }
 
+// ExportMetadata will export metadata container for hcl encode.
 func (o *Data) ExportMetadata() interface{} {
 	return struct {
 		ObjectMeta       []*Metadata `hcl:"object_meta,block"`
@@ -56,22 +61,7 @@ func (o *Data) ExportMetadata() interface{} {
 	}
 }
 
-type Pair struct {
-	Name        string `hcl:",label"`
-	Type        string `hcl:"type"`
-	Description string `hcl:"description,optional"`
-	Parser      string `hcl:"parser,optional"`
-
-	GeneratedDescription string
-}
-
-type Metadata struct {
-	Name        string `hcl:",label"`
-	Type        string `hcl:"type"`
-	DisplayName string `hcl:"display_name,optional"`
-	ZeroValue   string `hcl:"zero_value,optional"`
-}
-
+// Service is the service definition.
 type Service struct {
 	Name    string `hcl:"name"`
 	Service *Ops   `hcl:"service,block"`
@@ -80,6 +70,7 @@ type Service struct {
 	TypeMap map[string]string
 }
 
+// Sort will sort the service.
 func (o *Service) Sort() {
 	if o.Service != nil {
 		o.Service.Sort()
@@ -89,21 +80,42 @@ func (o *Service) Sort() {
 	}
 }
 
+// Pair is the pair definition.
+type Pair struct {
+	Name        string `hcl:",label"`
+	Type        string `hcl:"type"`
+	Description string `hcl:"description,optional"`
+	Parser      string `hcl:"parser,optional"`
+
+	GeneratedDescription string // Description that generated from description
+}
+
+// Metadata is the metadata definition.
+type Metadata struct {
+	Name        string `hcl:",label"`
+	Type        string `hcl:"type"`
+	DisplayName string `hcl:"display_name,optional"`
+	ZeroValue   string `hcl:"zero_value,optional"`
+}
+
+// Ops contains all ops under a namespace.
 type Ops struct {
 	Op []*Op `hcl:"op,block"`
 }
 
+// Sort will sort the ops.
 func (o *Ops) Sort() {
 	for _, v := range o.Op {
 		v.Sort()
 	}
 	sort.Slice(o.Op, func(i, j int) bool {
-		return o.Op[i].Op < o.Op[j].Op
+		return o.Op[i].Name < o.Op[j].Name
 	})
 }
 
+// Op means an operation definition.
 type Op struct {
-	Op       string   `hcl:",label"`
+	Name     string   `hcl:",label"`
 	Required []string `hcl:"required,optional"`
 	Optional []string `hcl:"optional,optional"`
 
@@ -111,11 +123,13 @@ type Op struct {
 	Func      *Func    // Function related to this op
 }
 
+// Sort will sort the operation
 func (o *Op) Sort() {
 	sort.Strings(o.Optional)
 	sort.Strings(o.Required)
 }
 
+// Func is the function related the op.
 type Func struct {
 	Parent     string // Old method name: "AbortSegment"
 	Receiver   string // Receiver's name: "s *Storage"

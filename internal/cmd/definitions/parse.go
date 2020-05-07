@@ -139,7 +139,7 @@ func parseService(filePath string) *Service {
 	// Register funcs into service
 	if srv.Service != nil {
 		for _, v := range srv.Service.Op {
-			if fn, ok := servicerFuncs[v.Op]; ok {
+			if fn, ok := servicerFuncs[v.Name]; ok {
 				fn.hasPair = true
 				v.Func = fn
 			}
@@ -151,14 +151,14 @@ func parseService(filePath string) *Service {
 				continue
 			}
 			srv.Service.Op = append(srv.Service.Op, &Op{
-				Op:   k,
+				Name: k,
 				Func: v,
 			})
 		}
 	}
 
 	for _, v := range srv.Storage.Op {
-		if fn, ok := storagerFuncs[v.Op]; ok {
+		if fn, ok := storagerFuncs[v.Name]; ok {
 			fn.hasPair = true
 			v.Func = fn
 		}
@@ -168,7 +168,7 @@ func parseService(filePath string) *Service {
 			continue
 		}
 		srv.Storage.Op = append(srv.Storage.Op, &Op{
-			Op:   k,
+			Name: k,
 			Func: v,
 		})
 	}

@@ -46,7 +46,7 @@ const Type = "{{ .Name }}"
     {{- $typeMap := index . 2 }}
 
     {{- range $_, $v := $data.Op }}
-        {{- $pk := $v.Op | toPascal }}
+        {{- $pk := $v.Name | toPascal }}
         var pair{{ $pn }}{{ $pk }}Map = map[string]struct{}{
         // Required pairs
         {{- range $v := $v.Required }}

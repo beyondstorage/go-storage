@@ -12,64 +12,45 @@ import (
 //go:generate go-bindata -nometadata -ignore "\\.go$" -prefix tmpl ./tmpl
 
 var (
-	metadataT = template.Must(
-		template.New("metadata").
-			Funcs(templateutils.FuncMap()).
-			Parse(string(MustAsset("metadata.tmpl"))))
-	pairT = template.Must(
-		template.New("pair").
-			Funcs(templateutils.FuncMap()).
-			Parse(string(MustAsset("pair.tmpl"))))
-	serviceT = template.Must(
-		template.New("service").
-			Funcs(templateutils.FuncMap()).
-			Parse(string(MustAsset("service.tmpl"))))
-	openT = template.Must(
-		template.New("open").
-			Funcs(templateutils.FuncMap()).
-			Parse(string(MustAsset("open.tmpl"))))
+	metadataT = newTmpl("metadata")
+	pairT     = newTmpl("pair")
+	serviceT  = newTmpl("service")
+	openT     = newTmpl("open")
 )
 
 func generate(data *Data) {
-	var err error
-
 	// Metadata generate
-	file, err := os.Create("../types/metadata/generated.go")
-	if err != nil {
-		log.Fatalf("generate: %v", err)
-	}
-	err = metadataT.Execute(file, data)
-	if err != nil {
-		log.Fatal(err)
-	}
+	generateT(metadataT, "../types/metadata/generated.go", data)
 
 	// Pair generate
-	file, err = os.Create("../types/pairs/generated.go")
-	if err != nil {
-		log.Fatalf("generate: %v", err)
-	}
-	err = pairT.Execute(file, data)
-	if err != nil {
-		log.Fatal(err)
-	}
+	generateT(pairT, "../types/pairs/generated.go", data)
 
+	// Service generate
 	for _, v := range data.Service {
-		file, err = os.Create(fmt.Sprintf("../services/%s/generated.go", v.Name))
-		if err != nil {
-			log.Fatalf("generate: %v", err)
-		}
-		err = serviceT.Execute(file, v)
-		if err != nil {
-			log.Fatal(err)
-		}
+		fp := fmt.Sprintf("../services/%s/generated.go", v.Name)
+		generateT(serviceT, fp, v)
 	}
 
-	file, err = os.Create("../coreutils/generated.go")
+	// Coreutils generate
+	generateT(openT, "../coreutils/generated.go", data)
+}
+
+func generateT(tmpl *template.Template, filePath string, data interface{}) {
+	errorMsg := fmt.Sprintf("generate template %s to %s", tmpl.Name(), filePath) + ": %v"
+
+	file, err := os.Create(filePath)
 	if err != nil {
-		log.Fatalf("generate: %v", err)
+		log.Fatalf(errorMsg, err)
 	}
-	err = openT.Execute(file, data)
+	err = tmpl.Execute(file, data)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf(errorMsg, err)
 	}
+}
+
+func newTmpl(name string) *template.Template {
+	return template.Must(
+		template.New(name).
+			Funcs(templateutils.FuncMap()).
+			Parse(string(MustAsset(name + ".tmpl"))))
 }
