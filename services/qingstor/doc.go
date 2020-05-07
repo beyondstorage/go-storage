@@ -3,5 +3,4 @@ Package qingstor provided support for qingstor object storage (https://www.qingc
 */
 package qingstor
 
-//go:generate ../../internal/bin/service
 //go:generate mockgen -package qingstor -destination mock_test.go github.com/qingstor/qingstor-sdk-go/v4/interface Service,Bucket
