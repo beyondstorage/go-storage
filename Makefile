@@ -74,6 +74,5 @@ tidy:
 
 clean:
 	@echo "clean generated files"
-	@rm coreutils/generated.go
-	@rm services/*/generated.go
+	@find . -type f -name 'generated.go' -delete
 	@echo "Done"
