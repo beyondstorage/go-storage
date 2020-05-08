@@ -19,14 +19,17 @@ var (
 )
 
 func generate(data *Data) {
-	// Metadata generate
+	data.Handle()
+	data.Sort()
+
+	// Metas generate
 	generateT(metadataT, "../types/metadata/generated.go", data)
 
 	// Pair generate
 	generateT(pairT, "../types/pairs/generated.go", data)
 
 	// Service generate
-	for _, v := range data.Service {
+	for _, v := range data.Services {
 		fp := fmt.Sprintf("../services/%s/generated.go", v.Name)
 		generateT(serviceT, fp, v)
 	}
