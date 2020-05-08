@@ -30,12 +30,15 @@ var _ httpclient.Options
 // Type is the type for qingstor
 const Type = "qingstor"
 
+// Service available pairs.
+const ()
+
 var pairServiceCreateMap = map[string]struct{}{
 	// Required pairs
-	"location": struct{}{},
+	ps.Location: struct{}{},
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairServiceCreate struct {
@@ -83,9 +86,9 @@ func (s *Service) parsePairCreate(opts ...*types.Pair) (*pairServiceCreate, erro
 var pairServiceDeleteMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	"location": struct{}{},
+	ps.Location: struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairServiceDelete struct {
@@ -132,9 +135,9 @@ func (s *Service) parsePairDelete(opts ...*types.Pair) (*pairServiceDelete, erro
 var pairServiceGetMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	"location": struct{}{},
+	ps.Location: struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairServiceGet struct {
@@ -180,11 +183,11 @@ func (s *Service) parsePairGet(opts ...*types.Pair) (*pairServiceGet, error) {
 
 var pairServiceListMap = map[string]struct{}{
 	// Required pairs
-	"storager_func": struct{}{},
+	ps.StoragerFunc: struct{}{},
 	// Optional pairs
-	"location": struct{}{},
+	ps.Location: struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairServiceList struct {
@@ -238,12 +241,12 @@ func (s *Service) parsePairList(opts ...*types.Pair) (*pairServiceList, error) {
 
 var pairServiceNewMap = map[string]struct{}{
 	// Required pairs
-	"credential": struct{}{},
+	ps.Credential: struct{}{},
 	// Optional pairs
-	"endpoint":            struct{}{},
-	"http_client_options": struct{}{},
+	ps.Endpoint:          struct{}{},
+	ps.HTTPClientOptions: struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairServiceNew struct {
@@ -339,7 +342,7 @@ var pairStorageAbortSegmentMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageAbortSegment struct {
@@ -380,7 +383,7 @@ var pairStorageCompleteSegmentMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageCompleteSegment struct {
@@ -421,7 +424,7 @@ var pairStorageCopyMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageCopy struct {
@@ -462,7 +465,7 @@ var pairStorageDeleteMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageDelete struct {
@@ -503,7 +506,7 @@ var pairStorageInitIndexSegmentMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageInitIndexSegment struct {
@@ -543,10 +546,10 @@ func (s *Storage) parsePairInitIndexSegment(opts ...*types.Pair) (*pairStorageIn
 var pairStorageListDirMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	"dir_func":  struct{}{},
-	"file_func": struct{}{},
+	ps.DirFunc:  struct{}{},
+	ps.FileFunc: struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageListDir struct {
@@ -599,10 +602,10 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 
 var pairStorageListPrefixMap = map[string]struct{}{
 	// Required pairs
-	"object_func": struct{}{},
+	ps.ObjectFunc: struct{}{},
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageListPrefix struct {
@@ -650,9 +653,9 @@ func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPref
 var pairStorageListPrefixSegmentsMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	"segment_func": struct{}{},
+	ps.SegmentFunc: struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageListPrefixSegments struct {
@@ -700,7 +703,7 @@ var pairStorageMetadataMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageMetadata struct {
@@ -741,7 +744,7 @@ var pairStorageMoveMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageMove struct {
@@ -780,12 +783,12 @@ func (s *Storage) parsePairMove(opts ...*types.Pair) (*pairStorageMove, error) {
 
 var pairStorageNewMap = map[string]struct{}{
 	// Required pairs
-	"name": struct{}{},
+	ps.Name: struct{}{},
 	// Optional pairs
-	"location": struct{}{},
-	"work_dir": struct{}{},
+	ps.Location: struct{}{},
+	ps.WorkDir:  struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageNew struct {
@@ -843,10 +846,10 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 
 var pairStorageReachMap = map[string]struct{}{
 	// Required pairs
-	"expire": struct{}{},
+	ps.Expire: struct{}{},
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageReach struct {
@@ -894,11 +897,11 @@ func (s *Storage) parsePairReach(opts ...*types.Pair) (*pairStorageReach, error)
 var pairStorageReadMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	"offset": struct{}{},
-	"size":   struct{}{},
+	ps.Offset: struct{}{},
+	ps.Size:   struct{}{},
 	// Generated pairs
-	"read_callback_func": struct{}{},
-	"context":            struct{}{},
+	ps.ReadCallbackFunc: struct{}{},
+	ps.Context:          struct{}{},
 }
 
 type pairStorageRead struct {
@@ -960,7 +963,7 @@ var pairStorageStatMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageStat struct {
@@ -1001,7 +1004,7 @@ var pairStorageStatisticalMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageStatistical struct {
@@ -1040,13 +1043,13 @@ func (s *Storage) parsePairStatistical(opts ...*types.Pair) (*pairStorageStatist
 
 var pairStorageWriteMap = map[string]struct{}{
 	// Required pairs
-	"size": struct{}{},
+	ps.Size: struct{}{},
 	// Optional pairs
-	"checksum":      struct{}{},
-	"storage_class": struct{}{},
+	ps.Checksum:     struct{}{},
+	ps.StorageClass: struct{}{},
 	// Generated pairs
-	"read_callback_func": struct{}{},
-	"context":            struct{}{},
+	ps.ReadCallbackFunc: struct{}{},
+	ps.Context:          struct{}{},
 }
 
 type pairStorageWrite struct {
@@ -1116,8 +1119,8 @@ var pairStorageWriteIndexSegmentMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"read_callback_func": struct{}{},
-	"context":            struct{}{},
+	ps.ReadCallbackFunc: struct{}{},
+	ps.Context:          struct{}{},
 }
 
 type pairStorageWriteIndexSegment struct {

@@ -18,6 +18,7 @@ type Data struct {
 	serviceSpec []*ServiceSpec
 }
 
+// Handle will do post actions before generate
 func (d *Data) Handle() {
 	for _, v := range d.Pairs {
 		v.Handle()
@@ -27,6 +28,7 @@ func (d *Data) Handle() {
 	}
 }
 
+// Sort will sort the data
 func (d *Data) Sort() {
 	for _, v := range d.Services {
 		v.Sort()
@@ -42,6 +44,7 @@ type Service struct {
 	Metas   *Metas
 }
 
+// Handle will do post actions before generate
 func (srv *Service) Handle() {
 	servicerFuncs, storagerFuncs := parseFunc(srv.Name, "servicer"), parseFunc(srv.Name, "storager")
 
@@ -91,6 +94,7 @@ func (srv *Service) Handle() {
 	return
 }
 
+// Sort will sort the data
 func (srv *Service) Sort() {
 	sort.Slice(srv.Service, func(i, j int) bool {
 		return srv.Service[i].Name < srv.Service[j].Name
@@ -114,25 +118,30 @@ type Pair struct {
 	Description string `hcl:"description,optional"`
 	Parser      string `hcl:"parser,optional"`
 
+	Global               bool
 	GeneratedDescription string // Description that generated from description
 }
 
+// Handle will do post actions before generate
 func (p *Pair) Handle() {
 	p.GeneratedDescription = strings.ReplaceAll(p.Description, "\n", "\n//")
 }
 
+// Metas carries all metadata used in services.
 type Metas struct {
 	ObjectMeta       map[string]*Metadata
 	StorageMeta      map[string]*Metadata
 	StorageStatistic map[string]*Metadata
 }
 
-// Metas is the metadata definition.
+// Metadata is the metadata definition.
 type Metadata struct {
 	Name        string `hcl:",label"`
 	Type        string `hcl:"type"`
 	DisplayName string `hcl:"display_name,optional"`
 	ZeroValue   string `hcl:"zero_value,optional"`
+
+	Global bool
 }
 
 // Op means an operation definition.
@@ -163,20 +172,24 @@ type Func struct {
 	hasPair bool
 }
 
+// MetaSpec is the data parsed from HCL.
 type MetaSpec struct {
 	ObjectMeta       []*Metadata `hcl:"object_meta,block"`
 	StorageMeta      []*Metadata `hcl:"storage_meta,block"`
 	StorageStatistic []*Metadata `hcl:"storage_statistic,block"`
 }
 
+// PairSpec is the data parsed from HCL.
 type PairSpec struct {
 	Pairs []*Pair `hcl:"pair,block"`
 }
 
+// NamespaceSpec is the data parsed from HCL.
 type NamespaceSpec struct {
 	Op []*Op `hcl:"op,block"`
 }
 
+// ServiceSpec is the data parsed from HCL.
 type ServiceSpec struct {
 	Name    string         `hcl:"name"`
 	Service *NamespaceSpec `hcl:"service,block"`
@@ -185,7 +198,8 @@ type ServiceSpec struct {
 	Metas   *MetaSpec      `hcl:"metas,block"`
 }
 
-func (d *Data) FormatPairs(p *PairSpec) map[string]*Pair {
+// FormatPairs will format pairs for pair spec
+func (d *Data) FormatPairs(p *PairSpec, global bool) map[string]*Pair {
 	if p == nil {
 		return nil
 	}
@@ -193,12 +207,15 @@ func (d *Data) FormatPairs(p *PairSpec) map[string]*Pair {
 	m := make(map[string]*Pair)
 	for _, v := range p.Pairs {
 		v := v
+
+		v.Global = global
 		m[v.Name] = v
 	}
 	return m
 }
 
-func (d *Data) FormatMeta(m *MetaSpec) *Metas {
+// FormatMeta will format metas for meta spec
+func (d *Data) FormatMeta(m *MetaSpec, global bool) *Metas {
 	if m == nil {
 		return &Metas{}
 	}
@@ -207,30 +224,37 @@ func (d *Data) FormatMeta(m *MetaSpec) *Metas {
 	meta.ObjectMeta = make(map[string]*Metadata)
 	for _, v := range m.ObjectMeta {
 		v := v
+
+		v.Global = global
 		meta.ObjectMeta[v.Name] = v
 	}
 
 	meta.StorageMeta = make(map[string]*Metadata)
 	for _, v := range m.StorageMeta {
 		v := v
+
+		v.Global = global
 		meta.StorageMeta[v.Name] = v
 	}
 
 	meta.StorageStatistic = make(map[string]*Metadata)
 	for _, v := range m.StorageStatistic {
 		v := v
+
+		v.Global = global
 		meta.StorageStatistic[v.Name] = v
 	}
 
 	return meta
 }
 
+// FormatService will format services from service spec
 func (d *Data) FormatService(s *ServiceSpec) *Service {
 	srv := &Service{
 		Name:    s.Name,
 		Storage: s.Storage.Op,
-		Pairs:   mergePairs(d.Pairs, d.FormatPairs(s.Pairs)),
-		Metas:   mergeMetas(d.Metas, d.FormatMeta(s.Metas)),
+		Pairs:   mergePairs(d.Pairs, d.FormatPairs(s.Pairs, false)),
+		Metas:   mergeMetas(d.Metas, d.FormatMeta(s.Metas, false)),
 	}
 	if s.Service != nil {
 		srv.Service = s.Service.Op
@@ -238,14 +262,15 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 	return srv
 }
 
+// FormatData will format the whole data.
 func FormatData(p *PairSpec, m *MetaSpec, s []*ServiceSpec) *Data {
 	data := &Data{
 		pairSpec:    p,
 		metaSpec:    m,
 		serviceSpec: s,
 	}
-	data.Pairs = data.FormatPairs(p)
-	data.Metas = data.FormatMeta(m)
+	data.Pairs = data.FormatPairs(p, true)
+	data.Metas = data.FormatMeta(m, true)
 
 	for _, v := range s {
 		data.Services = append(data.Services, data.FormatService(v))

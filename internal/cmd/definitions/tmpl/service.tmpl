@@ -30,6 +30,31 @@ var _ httpclient.Options
 // Type is the type for {{ .Name }}
 const Type = "{{ .Name }}"
 
+// Service available pairs.
+const (
+{{- range $_, $v := .Pairs }}
+    {{- if not $v.Global }}
+    {{- $pname := $v.Name | toPascal }}
+    // {{ $pname }} will {{ $v.GeneratedDescription }}
+    Pair{{ $pname }} = "{{ $.Name }}_{{ $v.Name }}"
+    {{- end }}
+{{- end }}
+)
+
+{{- range $_, $v := .Pairs }}
+{{- if not $v.Global }}
+{{- $pname := $v.Name | toPascal }}
+// With{{ $pname }} will apply {{ $v.Name }} value to Options
+// This pair is used to {{ $v.GeneratedDescription }}
+func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
+        return &types.Pair{
+        Key: {{ $pname }},
+        Value: v,
+    }
+}
+{{- end }}
+{{- end }}
+
 {{- if .Service }}
     {{- template "pairs" makeSlice "service" .Service .Pairs }}
     {{- template "context_func" makeSlice "service" .Service .Name }}
@@ -37,6 +62,16 @@ const Type = "{{ .Name }}"
 
 {{- template "pairs" makeSlice "storage" .Storage .Pairs }}
 {{- template "context_func" makeSlice "storage" .Storage .Name }}
+
+{{- define "pair_name" }}
+    {{- $key := index . 0 -}}
+    {{- $pairs := index . 1 -}}
+    {{- if (index $pairs $key).Global -}}
+        ps.{{- $key | toPascal -}}
+    {{- else -}}
+        Pair{{- $key | toPascal -}}
+    {{- end -}}
+{{- end }}
 
 {{- define "pairs" }}
     {{- $pn := index . 0 | toPascal }}
@@ -48,15 +83,15 @@ const Type = "{{ .Name }}"
         var pair{{ $pn }}{{ $pk }}Map = map[string]struct{}{
         // Required pairs
         {{- range $v := $v.Required }}
-            "{{ $v }}": struct{}{},
+            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
         {{- end }}
         // Optional pairs
         {{- range $v := $v.Optional }}
-            "{{ $v }}": struct{}{},
+            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
         {{- end }}
         // Generated pairs
         {{- range $v := $v.Generated }}
-            "{{ $v }}": struct{}{},
+            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
         {{- end }}
         }
 
@@ -101,9 +136,9 @@ const Type = "{{ .Name }}"
         // Handle required pairs
         {{- range $_, $key := $v.Required }}
         {{- $pkey := $key | toPascal }}
-        v, ok = values[ps.{{ $pkey }}]
+        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
         if !ok {
-            return nil, services.NewPairRequiredError(ps.{{ $pkey }})
+            return nil, services.NewPairRequiredError({{- template "pair_name" makeSlice $key $pairs -}})
         }
         if ok {
             result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
@@ -112,7 +147,7 @@ const Type = "{{ .Name }}"
         // Handle optional pairs
         {{- range $_, $key := $v.Optional }}
         {{- $pkey := $key | toPascal }}
-        v, ok = values[ps.{{ $pkey }}]
+        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
         if ok {
             result.Has{{ $pkey }} = true
             result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
@@ -121,7 +156,7 @@ const Type = "{{ .Name }}"
         // Handle generated pairs
         {{- range $_, $key := $v.Generated }}
         {{- $pkey := $key | toPascal }}
-        v, ok = values[ps.{{ $pkey }}]
+        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
         if ok {
             result.Has{{ $pkey }} = true
             result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})

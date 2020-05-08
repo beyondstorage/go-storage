@@ -30,11 +30,14 @@ var _ httpclient.Options
 // Type is the type for dropbox
 const Type = "dropbox"
 
+// Service available pairs.
+const ()
+
 var pairStorageDeleteMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageDelete struct {
@@ -74,10 +77,10 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 var pairStorageListDirMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	"dir_func":  struct{}{},
-	"file_func": struct{}{},
+	ps.DirFunc:  struct{}{},
+	ps.FileFunc: struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageListDir struct {
@@ -132,7 +135,7 @@ var pairStorageMetadataMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageMetadata struct {
@@ -171,12 +174,12 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 
 var pairStorageNewMap = map[string]struct{}{
 	// Required pairs
-	"credential": struct{}{},
+	ps.Credential: struct{}{},
 	// Optional pairs
-	"http_client_options": struct{}{},
-	"work_dir":            struct{}{},
+	ps.HTTPClientOptions: struct{}{},
+	ps.WorkDir:           struct{}{},
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageNew struct {
@@ -235,10 +238,10 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 var pairStorageReadMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	"size": struct{}{},
+	ps.Size: struct{}{},
 	// Generated pairs
-	"read_callback_func": struct{}{},
-	"context":            struct{}{},
+	ps.ReadCallbackFunc: struct{}{},
+	ps.Context:          struct{}{},
 }
 
 type pairStorageRead struct {
@@ -293,7 +296,7 @@ var pairStorageStatMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	"context": struct{}{},
+	ps.Context: struct{}{},
 }
 
 type pairStorageStat struct {
@@ -333,10 +336,10 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 var pairStorageWriteMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	"size": struct{}{},
+	ps.Size: struct{}{},
 	// Generated pairs
-	"read_callback_func": struct{}{},
-	"context":            struct{}{},
+	ps.ReadCallbackFunc: struct{}{},
+	ps.Context:          struct{}{},
 }
 
 type pairStorageWrite struct {
