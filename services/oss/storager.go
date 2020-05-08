@@ -17,8 +17,6 @@ import (
 )
 
 // Storage is the aliyun object storage service.
-//
-
 type Storage struct {
 	bucket *oss.Bucket
 

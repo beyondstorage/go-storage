@@ -13,7 +13,7 @@ import (
 func format(data *Data) {
 	// Generate pairs
 	hf := hclwrite.NewEmptyFile()
-	gohcl.EncodeIntoBody(data.ExportPairs(), hf.Body())
+	gohcl.EncodeIntoBody(data.pairSpec, hf.Body())
 
 	formatBody(hf.Body())
 
@@ -25,7 +25,7 @@ func format(data *Data) {
 
 	// Generate metadata
 	hf = hclwrite.NewEmptyFile()
-	gohcl.EncodeIntoBody(data.ExportMetadata(), hf.Body())
+	gohcl.EncodeIntoBody(data.metaSpec, hf.Body())
 
 	formatBody(hf.Body())
 
@@ -36,7 +36,7 @@ func format(data *Data) {
 	}
 
 	// Generate services
-	for _, v := range data.Service {
+	for _, v := range data.serviceSpec {
 		filePath := fmt.Sprintf("services/%s.hcl", v.Name)
 
 		hf = hclwrite.NewEmptyFile()

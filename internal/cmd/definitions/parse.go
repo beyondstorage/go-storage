@@ -22,37 +22,30 @@ const (
 )
 
 func parse() (data *Data) {
-	data = &Data{}
-
 	// Parse pairs
+	pairSpec := &PairSpec{}
 	content, err := ioutil.ReadFile(pairPath)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
-	err = parseHCL(content, pairPath, data)
+	err = parseHCL(content, pairPath, pairSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
-	for _, v := range data.Pairs {
-		v.GeneratedDescription = strings.ReplaceAll(v.Description, "\n", "\n//")
-	}
-
-	data.TypeMap = make(map[string]string)
-	for _, v := range data.Pairs {
-		data.TypeMap[v.Name] = v.Type
-	}
 
 	// Parse metadata
+	metaSpec := &MetaSpec{}
 	content, err = ioutil.ReadFile(metadataPath)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
-	err = parseHCL(content, metadataPath, data)
+	err = parseHCL(content, metadataPath, metaSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
 
 	// Parse service
+	serviceSpecs := make([]*ServiceSpec, 0)
 	files, err := ioutil.ReadDir("services")
 	if err != nil {
 		log.Fatalf("parse: %v", err)
@@ -62,24 +55,27 @@ func parse() (data *Data) {
 			continue
 		}
 
-		srv := parseService("services/" + v.Name())
+		filePath := "services/" + v.Name()
+		content, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			log.Fatalf("parse: %v", err)
+		}
 
-		// Create type map
-		srv.TypeMap = data.TypeMap
+		srv := &ServiceSpec{}
+		err = parseHCL(content, filePath, srv)
+		if err != nil {
+			log.Fatalf("parse: %v", err)
+		}
 
-		data.Service = append(data.Service, srv)
+		serviceSpecs = append(serviceSpecs, srv)
 	}
 
-	data.Sort()
-	return
+	data = FormatData(pairSpec, metaSpec, serviceSpecs)
+	return data
 }
 
-func injectReadCallbackFunc(ops *Ops) {
-	if ops == nil {
-		return
-	}
-
-	for _, op := range ops.Op {
+func injectReadCallbackFunc(ops []*Op) {
+	for _, op := range ops {
 		fn := op.Func
 		if fn == nil {
 			continue
@@ -91,12 +87,8 @@ func injectReadCallbackFunc(ops *Ops) {
 	}
 }
 
-func injectContext(ops *Ops) {
-	if ops == nil {
-		return
-	}
-
-	for _, op := range ops.Op {
+func injectContext(ops []*Op) {
+	for _, op := range ops {
 		op.Generated = append(op.Generated, "context")
 	}
 }
@@ -120,65 +112,6 @@ func parseHCL(src []byte, filename string, in interface{}) (err error) {
 	}
 
 	return nil
-}
-
-func parseService(filePath string) *Service {
-	content, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		log.Fatalf("parse: %v", err)
-	}
-
-	srv := &Service{}
-	err = parseHCL(content, filePath, srv)
-	if err != nil {
-		log.Fatalf("parse: %v", err)
-	}
-
-	servicerFuncs, storagerFuncs := parseFunc(srv.Name, "servicer"), parseFunc(srv.Name, "storager")
-
-	// Register funcs into service
-	if srv.Service != nil {
-		for _, v := range srv.Service.Op {
-			if fn, ok := servicerFuncs[v.Op]; ok {
-				fn.hasPair = true
-				v.Func = fn
-			}
-		}
-
-		// Add missing pairs into service
-		for k, v := range servicerFuncs {
-			if v.hasPair {
-				continue
-			}
-			srv.Service.Op = append(srv.Service.Op, &Op{
-				Op:   k,
-				Func: v,
-			})
-		}
-	}
-
-	for _, v := range srv.Storage.Op {
-		if fn, ok := storagerFuncs[v.Op]; ok {
-			fn.hasPair = true
-			v.Func = fn
-		}
-	}
-	for k, v := range storagerFuncs {
-		if v.hasPair {
-			continue
-		}
-		srv.Storage.Op = append(srv.Storage.Op, &Op{
-			Op:   k,
-			Func: v,
-		})
-	}
-
-	// Inject paris
-	injectReadCallbackFunc(srv.Storage)
-	injectContext(srv.Service)
-	injectContext(srv.Storage)
-
-	return srv
 }
 
 func parseFunc(service, name string) map[string]*Func {

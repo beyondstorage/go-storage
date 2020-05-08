@@ -2,9 +2,9 @@
 package coreutils
 
 import (
-"github.com/Xuanwo/storage"
-"github.com/Xuanwo/storage/types"
-{{- range $_, $srv := .Service }}
+    "github.com/Xuanwo/storage"
+    "github.com/Xuanwo/storage/types"
+{{- range $_, $srv := .Services }}
     "github.com/Xuanwo/storage/services/{{ $srv.Name }}"
 {{- end }}
 )
@@ -12,11 +12,9 @@ import (
 type openFunc func(opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error)
 
 var openFuncMap = map[string]openFunc{
-{{- range $_, $meta := .Service }}
-    {{- if $meta.Service }}
-    {{- if and $meta.Service.Op $meta.Storage.Op }}
+{{- range $_, $meta := .Services }}
+    {{- if and $meta.Service $meta.Storage }}
         {{ $meta.Name }}.Type: {{ $meta.Name }}.New,
-    {{- end }}
     {{- end }}
 {{- end }}
 }
@@ -24,11 +22,9 @@ var openFuncMap = map[string]openFunc{
 type openServicerFunc func(opt ...*types.Pair) (srv storage.Servicer, err error)
 
 var openServicerFuncMap = map[string]openServicerFunc{
-{{- range $_, $meta := .Service }}
+{{- range $_, $meta := .Services }}
     {{- if $meta.Service }}
-        {{- if $meta.Service.Op }}
-            {{ $meta.Name }}.Type: {{ $meta.Name }}.NewServicer,
-        {{- end }}
+        {{ $meta.Name }}.Type: {{ $meta.Name }}.NewServicer,
     {{- end }}
 {{- end }}
 }
@@ -36,8 +32,8 @@ var openServicerFuncMap = map[string]openServicerFunc{
 type openStoragerFunc func(opt ...*types.Pair) (store storage.Storager, err error)
 
 var openStoragerFuncMap = map[string]openStoragerFunc{
-{{- range $_, $meta := .Service }}
-    {{- if $meta.Storage.Op }}
+{{- range $_, $meta := .Services }}
+    {{- if $meta.Storage }}
         {{ $meta.Name }}.Type: {{ $meta.Name }}.NewStorager,
     {{- end }}
 {{- end }}

@@ -9,14 +9,14 @@ var _ storageclass.Type
 
 // All available metadata.
 const (
-    {{- template "metadata_const" makeSlice "object_meta" .ObjectMeta }}
-    {{- template "metadata_const" makeSlice "storage_meta" .StorageMeta }}
-    {{- template "metadata_const" makeSlice "storage_statistic" .StorageStatistic }}
+    {{- template "metadata_const" makeSlice "object_meta" .Metas.ObjectMeta }}
+    {{- template "metadata_const" makeSlice "storage_meta" .Metas.StorageMeta }}
+    {{- template "metadata_const" makeSlice "storage_statistic" .Metas.StorageStatistic }}
 )
 
-{{- template "metadata_body" makeSlice "object_meta" .ObjectMeta }}
-{{- template "metadata_body" makeSlice "storage_meta" .StorageMeta }}
-{{- template "metadata_body" makeSlice "storage_statistic" .StorageStatistic }}
+{{- template "metadata_body" makeSlice "object_meta" .Metas.ObjectMeta }}
+{{- template "metadata_body" makeSlice "storage_meta" .Metas.StorageMeta }}
+{{- template "metadata_body" makeSlice "storage_statistic" .Metas.StorageStatistic }}
 
 {{define "metadata_const"}}
     {{- $name := index . 0}}

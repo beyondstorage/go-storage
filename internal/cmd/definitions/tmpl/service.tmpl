@@ -2,24 +2,22 @@
 package {{ .Name }}
 
 import (
-"context"
-"io"
+    "context"
+    "io"
 
-"github.com/opentracing/opentracing-go"
+    "github.com/opentracing/opentracing-go"
 
-"github.com/Xuanwo/storage"
-"github.com/Xuanwo/storage/pkg/segment"
-"github.com/Xuanwo/storage/pkg/endpoint"
-"github.com/Xuanwo/storage/pkg/credential"
-"github.com/Xuanwo/storage/pkg/storageclass"
-"github.com/Xuanwo/storage/pkg/httpclient"
-"github.com/Xuanwo/storage/services"
-"github.com/Xuanwo/storage/types"
-ps "github.com/Xuanwo/storage/types/pairs"
-"github.com/Xuanwo/storage/types/metadata"
+    "github.com/Xuanwo/storage"
+    "github.com/Xuanwo/storage/pkg/segment"
+    "github.com/Xuanwo/storage/pkg/endpoint"
+    "github.com/Xuanwo/storage/pkg/credential"
+    "github.com/Xuanwo/storage/pkg/storageclass"
+    "github.com/Xuanwo/storage/pkg/httpclient"
+    "github.com/Xuanwo/storage/services"
+    "github.com/Xuanwo/storage/types"
+    ps "github.com/Xuanwo/storage/types/pairs"
+    "github.com/Xuanwo/storage/types/metadata"
 )
-
-{{- $Data := . }}
 
 var _ credential.Provider
 var _ endpoint.Provider
@@ -32,50 +30,85 @@ var _ httpclient.Options
 // Type is the type for {{ .Name }}
 const Type = "{{ .Name }}"
 
+// Service available pairs.
+const (
+{{- range $_, $v := .Pairs }}
+    {{- if not $v.Global }}
+    {{- $pname := $v.Name | toPascal }}
+    // {{ $pname }} will {{ $v.GeneratedDescription }}
+    Pair{{ $pname }} = "{{ $.Name }}_{{ $v.Name }}"
+    {{- end }}
+{{- end }}
+)
+
+{{- range $_, $v := .Pairs }}
+{{- if not $v.Global }}
+{{- $pname := $v.Name | toPascal }}
+// With{{ $pname }} will apply {{ $v.Name }} value to Options
+// This pair is used to {{ $v.GeneratedDescription }}
+func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
+        return &types.Pair{
+        Key: {{ $pname }},
+        Value: v,
+    }
+}
+{{- end }}
+{{- end }}
+
 {{- if .Service }}
-    {{- template "pairs" makeSlice "service" .Service .TypeMap }}
+    {{- template "pairs" makeSlice "service" .Service .Pairs }}
     {{- template "context_func" makeSlice "service" .Service .Name }}
 {{- end }}
 
-{{- template "pairs" makeSlice "storage" .Storage .TypeMap }}
+{{- template "pairs" makeSlice "storage" .Storage .Pairs }}
 {{- template "context_func" makeSlice "storage" .Storage .Name }}
+
+{{- define "pair_name" }}
+    {{- $key := index . 0 -}}
+    {{- $pairs := index . 1 -}}
+    {{- if (index $pairs $key).Global -}}
+        ps.{{- $key | toPascal -}}
+    {{- else -}}
+        Pair{{- $key | toPascal -}}
+    {{- end -}}
+{{- end }}
 
 {{- define "pairs" }}
     {{- $pn := index . 0 | toPascal }}
     {{- $data := index . 1 }}
-    {{- $typeMap := index . 2 }}
+    {{- $pairs := index . 2 }}
 
-    {{- range $_, $v := $data.Op }}
-        {{- $pk := $v.Op | toPascal }}
+    {{- range $_, $v := $data }}
+        {{- $pk := $v.Name | toPascal }}
         var pair{{ $pn }}{{ $pk }}Map = map[string]struct{}{
         // Required pairs
         {{- range $v := $v.Required }}
-            "{{ $v }}": struct{}{},
+            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
         {{- end }}
         // Optional pairs
         {{- range $v := $v.Optional }}
-            "{{ $v }}": struct{}{},
+            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
         {{- end }}
         // Generated pairs
         {{- range $v := $v.Generated }}
-            "{{ $v }}": struct{}{},
+            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
         {{- end }}
         }
 
         type pair{{ $pn }}{{ $pk }} struct {
         // Required pairs
         {{- range $_, $key := $v.Required }}
-            {{ $key | toPascal }}    {{ (index $typeMap $key) }}
+            {{ $key | toPascal }}    {{ (index $pairs $key).Type }}
         {{- end }}
         // Optional pairs
         {{- range $_, $key := $v.Optional }}
             Has{{ $key | toPascal }} bool
-            {{ $key | toPascal }}    {{ (index $typeMap $key) }}
+            {{ $key | toPascal }}    {{ (index $pairs $key).Type }}
         {{- end }}
         // Generated pairs
         {{- range $_, $key := $v.Generated }}
             Has{{ $key | toPascal }} bool
-            {{ $key | toPascal }}    {{ (index $typeMap $key) }}
+            {{ $key | toPascal }}    {{ (index $pairs $key).Type }}
         {{- end }}
         }
 
@@ -103,30 +136,30 @@ const Type = "{{ .Name }}"
         // Handle required pairs
         {{- range $_, $key := $v.Required }}
         {{- $pkey := $key | toPascal }}
-        v, ok = values[ps.{{ $pkey }}]
+        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
         if !ok {
-            return nil, services.NewPairRequiredError(ps.{{ $pkey }})
+            return nil, services.NewPairRequiredError({{- template "pair_name" makeSlice $key $pairs -}})
         }
         if ok {
-            result.{{ $pkey }} = v.({{ (index $typeMap $key) }})
+            result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
         }
         {{- end }}
         // Handle optional pairs
         {{- range $_, $key := $v.Optional }}
         {{- $pkey := $key | toPascal }}
-        v, ok = values[ps.{{ $pkey }}]
+        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
         if ok {
             result.Has{{ $pkey }} = true
-            result.{{ $pkey }} = v.({{ index $typeMap $key }})
+            result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
         }
         {{- end }}
         // Handle generated pairs
         {{- range $_, $key := $v.Generated }}
         {{- $pkey := $key | toPascal }}
-        v, ok = values[ps.{{ $pkey }}]
+        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
         if ok {
             result.Has{{ $pkey }} = true
-            result.{{ $pkey }} = v.({{ index $typeMap $key }})
+            result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
         }
         {{- end }}
 
@@ -140,7 +173,7 @@ const Type = "{{ .Name }}"
     {{- $pn := $name | toPascal }}
     {{- $data := index . 1 }}
     {{- $serviceName := index . 2}}
-    {{- range $_, $v := $data.Op }}
+    {{- range $_, $v := $data }}
         {{ $fn := $v.Func }}
         {{- if $fn }}
             {{- if $fn.HasContext }}
