@@ -189,6 +189,9 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 	if opt.HasWorkDir {
 		st.workDir = opt.WorkDir
 	}
+	if opt.HasDisableURICleaning {
+		st.config.DisableURICleaning = opt.DisableURICleaning
+	}
 	return st, nil
 }
 
