@@ -25,12 +25,12 @@ func format(data *Data) {
 
 	// Generate metadata
 	hf = hclwrite.NewEmptyFile()
-	gohcl.EncodeIntoBody(data.metaSpec, hf.Body())
+	gohcl.EncodeIntoBody(data.infoSpec, hf.Body())
 
 	formatBody(hf.Body())
 
 	content = hclwrite.Format(hf.Bytes())
-	err = ioutil.WriteFile(metadataPath, content, 0644)
+	err = ioutil.WriteFile(infoPath, content, 0644)
 	if err != nil {
 		log.Fatalf("format: %v", err)
 	}

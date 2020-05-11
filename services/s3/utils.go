@@ -12,7 +12,6 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -92,33 +91,16 @@ func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage,
 	return
 }
 
-// parseStorageClass will parse storageclass.Type into service independent storage class type.
-func parseStorageClass(in storageclass.Type) (string, error) {
-	switch in {
-	case storageclass.Hot:
-		return s3.ObjectStorageClassStandard, nil
-	case storageclass.Warm:
-		return s3.ObjectStorageClassStandardIa, nil
-	case storageclass.Cold:
-		return s3.ObjectStorageClassGlacier, nil
-	default:
-		return "", services.NewPairUnsupportedError(ps.WithStorageClass(in))
-	}
-}
-
-// formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) storageclass.Type {
-	switch in {
-	case s3.ObjectStorageClassStandard:
-		return storageclass.Hot
-	case s3.ObjectStorageClassStandardIa:
-		return storageclass.Warm
-	case s3.ObjectStorageClassGlacier:
-		return storageclass.Cold
-	default:
-		return ""
-	}
-}
+// All available storage classes are listed here.
+const (
+	StorageClassStandard           = s3.ObjectStorageClassStandard
+	StorageClassReducedRedundancy  = s3.ObjectStorageClassReducedRedundancy
+	StorageClassGlacier            = s3.ObjectStorageClassGlacier
+	StorageClassStandardIa         = s3.ObjectStorageClassStandardIa
+	StorageClassOnezoneIa          = s3.ObjectStorageClassOnezoneIa
+	StorageClassIntelligentTiering = s3.ObjectStorageClassIntelligentTiering
+	StorageClassDeepArchive        = s3.ObjectStorageClassDeepArchive
+)
 
 func formatError(err error) error {
 	e, ok := err.(awserr.RequestFailure)

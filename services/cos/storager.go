@@ -12,7 +12,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // Storage is the cos object storage service.
@@ -34,8 +34,8 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	m = metadata.NewStorageMeta()
+func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
+	m = info.NewStorageMeta()
 	m.Name = s.name
 	m.WorkDir = s.workDir
 	return m, nil
@@ -77,7 +77,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 					ID:         v,
 					Name:       s.getRelPath(v),
 					Type:       types.ObjectTypeDir,
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				}
 
 				opt.DirFunc(o)
@@ -198,11 +198,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		putOptions.ContentMD5 = opt.Checksum
 	}
 	if opt.HasStorageClass {
-		storageClass, err := parseStorageClass(opt.StorageClass)
-		if err != nil {
-			return err
-		}
-		putOptions.XCosStorageClass = storageClass
+		putOptions.XCosStorageClass = opt.StorageClass
 	}
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
@@ -238,7 +234,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		Name:       path,
 		Type:       types.ObjectTypeFile,
 		Size:       output.ContentLength,
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	// COS uses RFC1123 format in HEAD
@@ -262,8 +258,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetETag(output.Header.Get(v))
 	}
 
-	if v := formatStorageClass(output.Header.Get(storageClassHeader)); v != "" {
-		o.SetStorageClass(v)
+	if v := output.Header.Get(storageClassHeader); v != "" {
+		setStorageClass(o.ObjectMeta, v)
 	}
 
 	return o, nil
@@ -320,7 +316,7 @@ func (s *Storage) formatFileObject(v cos.Object) (o *types.Object, err error) {
 		Name:       s.getRelPath(v.Key),
 		Type:       types.ObjectTypeFile,
 		Size:       int64(v.Size),
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	// COS returns different value depends on object upload method or
@@ -342,8 +338,8 @@ func (s *Storage) formatFileObject(v cos.Object) (o *types.Object, err error) {
 		o.UpdatedAt = t
 	}
 
-	if value := formatStorageClass(v.StorageClass); value != "" {
-		o.SetStorageClass(value)
+	if value := v.StorageClass; value != "" {
+		setStorageClass(o.ObjectMeta, value)
 	}
 
 	return o, nil

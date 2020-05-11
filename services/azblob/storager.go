@@ -10,7 +10,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // Storage is the azblob service client.
@@ -30,8 +30,8 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	m = metadata.NewStorageMeta()
+func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
+	m = info.NewStorageMeta()
 	m.Name = s.name
 	m.WorkDir = s.workDir
 	return m, nil
@@ -214,7 +214,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		Type:       types.ObjectTypeFile,
 		Size:       output.ContentLength(),
 		UpdatedAt:  output.LastModified(),
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	if v := string(output.ETag()); v != "" {
@@ -226,8 +226,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	if v := output.ContentMD5(); len(v) > 0 {
 		o.SetContentMD5(base64.StdEncoding.EncodeToString(v))
 	}
-	if v := formatStorageClass(azblob.AccessTierType(output.AccessTier())); v != "" {
-		o.SetStorageClass(v)
+	if v := StorageClass(output.AccessTier()); v != "" {
+		setStorageClass(o.ObjectMeta, v)
 	}
 
 	return o, nil
@@ -285,7 +285,7 @@ func (s *Storage) formatFileObject(v azblob.BlobItem) (o *types.Object, err erro
 		Name:       s.getRelPath(v.Name),
 		Type:       types.ObjectTypeFile,
 		UpdatedAt:  v.Properties.LastModified,
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	o.SetETag(string(v.Properties.Etag))
@@ -299,8 +299,8 @@ func (s *Storage) formatFileObject(v azblob.BlobItem) (o *types.Object, err erro
 	if len(v.Properties.ContentMD5) > 0 {
 		o.SetContentMD5(base64.StdEncoding.EncodeToString(v.Properties.ContentMD5))
 	}
-	if value := formatStorageClass(v.Properties.AccessTier); value != "" {
-		o.SetStorageClass(value)
+	if value := v.Properties.AccessTier; value != "" {
+		setStorageClass(o.ObjectMeta, StorageClass(value))
 	}
 
 	return o, nil
@@ -312,7 +312,7 @@ func (s *Storage) formatDirObject(v azblob.BlobPrefix) (o *types.Object) {
 		Name:       s.getRelPath(v.Name),
 		Type:       types.ObjectTypeDir,
 		Size:       0,
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	return o

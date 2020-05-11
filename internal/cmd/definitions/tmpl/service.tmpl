@@ -11,19 +11,17 @@ import (
     "github.com/Xuanwo/storage/pkg/segment"
     "github.com/Xuanwo/storage/pkg/endpoint"
     "github.com/Xuanwo/storage/pkg/credential"
-    "github.com/Xuanwo/storage/pkg/storageclass"
     "github.com/Xuanwo/storage/pkg/httpclient"
     "github.com/Xuanwo/storage/services"
     "github.com/Xuanwo/storage/types"
     ps "github.com/Xuanwo/storage/types/pairs"
-    "github.com/Xuanwo/storage/types/metadata"
+    "github.com/Xuanwo/storage/types/info"
 )
 
 var _ credential.Provider
 var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
-var _ storageclass.Type
 var _ services.ServiceError
 var _ httpclient.Options
 
@@ -41,6 +39,19 @@ const (
 {{- end }}
 )
 
+// Service available infos.
+const (
+{{- range $_, $v := .Infos }}
+    {{- if not $v.Global }}
+    {{- $pname := $v.Name | toPascal }}
+    {{- if $v.DisplayName }}
+        {{- $pname = $v.DisplayName }}
+    {{- end }}
+    Info{{ $v.Scope | toPascal }}{{ $v.Category | toPascal }}{{ $pname }} = "{{ $.Name }}-{{ $v.Name }}"
+    {{- end }}
+{{- end }}
+)
+
 {{- range $_, $v := .Pairs }}
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
@@ -48,12 +59,41 @@ const (
 // This pair is used to {{ $v.GeneratedDescription }}
 func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
         return &types.Pair{
-        Key: {{ $pname }},
+        Key: Pair{{ $pname }},
         Value: v,
     }
 }
 {{- end }}
 {{- end }}
+
+
+{{- range $_, $v := .Infos }}
+    {{- if not $v.Global }}
+    {{ $pname := $v.Name | toPascal }}
+    {{- if $v.DisplayName }}
+        {{ $pname = $v.DisplayName }}
+    {{- end }}
+    {{ $serviceName := printf "%s%s" ($v.Scope | toPascal) ($v.Category | toPascal) }}
+    // Get{{ $pname }} will get {{ $v.Name }} value from metadata.
+    func Get{{ $pname }}(m info.{{ $serviceName }}) ({{ $v.Type }}, bool)  {
+    v, ok := m.Get(Info{{ $serviceName }}{{ $pname }})
+    if !ok {
+    {{- if $v.ZeroValue }}
+        return {{ $v.ZeroValue }}, false
+    {{- else }}
+        return {{ $v.Type | zeroValue }}, false
+    {{- end }}
+    }
+    return v.({{ $v.Type }}), true
+    }
+
+    // set{{ $v.Name }} will set {{ $v.Name }} value into metadata.
+    func set{{ $pname }}(m info.{{ $serviceName }}, v {{ $v.Type }}) info.{{ $serviceName }} {
+    return m.Set(Info{{ $serviceName }}{{ $pname }}, v)
+    }
+    {{- end }}
+{{- end }}
+
 
 {{- if .Service }}
     {{- template "pairs" makeSlice "service" .Service .Pairs }}

@@ -37,3 +37,17 @@ storage {
     optional = ["checksum", "storage_class"]
   }
 }
+
+pairs {
+
+  pair "storage_class" {
+    type = "string"
+  }
+}
+
+infos {
+
+  info "object" "meta" "storage-class" {
+    type = "string"
+  }
+}

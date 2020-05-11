@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // StoragerFunc will handle a storager.
@@ -43,9 +43,9 @@ type Storager interface {
 	//   - Metadata SHOULD only return static data without API call or with a cache.
 	// Caller:
 	//   - Metadata SHOULD be cheap.
-	Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error)
+	Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error)
 	// MetadataWithContext will return current storager's metadata.
-	MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m metadata.StorageMeta, err error)
+	MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m info.StorageMeta, err error)
 
 	// Read will read the file's data.
 	//
@@ -125,7 +125,7 @@ type Statistician interface {
 	//   - Statistical SHOULD only return dynamic data like Size, Count.
 	// Caller:
 	//   - Statistical call COULD be expensive.
-	Statistical(pairs ...*types.Pair) (metadata.StorageStatistic, error)
+	Statistical(pairs ...*types.Pair) (info.StorageStatistic, error)
 	// StatisticalWithContext will count service's statistics, such as Size, Count.
-	StatisticalWithContext(ctx context.Context, pairs ...*types.Pair) (metadata.StorageStatistic, error)
+	StatisticalWithContext(ctx context.Context, pairs ...*types.Pair) (info.StorageStatistic, error)
 }

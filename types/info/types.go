@@ -1,7 +1,7 @@
 /*
-Package metadata intend to provide all available metadata.
+Package info intend to provide all available info from storage/object.
 */
-package metadata
+package info
 
 // StorageMeta is the static metadata for StorageMeta.
 type StorageMeta struct {
@@ -40,4 +40,19 @@ func NewObjectMeta() ObjectMeta {
 	return ObjectMeta{
 		m: make(map[string]interface{}),
 	}
+}
+
+// Get will get meta from object meta.
+func (m ObjectMeta) Get(key string) (interface{}, bool) {
+	v, ok := m.m[key]
+	if !ok {
+		return nil, false
+	}
+	return v, true
+}
+
+// Set will get meta from object meta.
+func (m ObjectMeta) Set(key string, value interface{}) ObjectMeta {
+	m.m[key] = value
+	return m
 }

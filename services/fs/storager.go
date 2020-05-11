@@ -10,7 +10,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/mime"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // StreamModeType is the stream mode type.
@@ -39,8 +39,8 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	m = metadata.NewStorageMeta()
+func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
+	m = info.NewStorageMeta()
 	m.WorkDir = s.workDir
 	return m, nil
 }
@@ -69,7 +69,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 			Name:       filepath.Join(path, v.Name()),
 			Size:       v.Size(),
 			UpdatedAt:  v.ModTime(),
-			ObjectMeta: metadata.NewObjectMeta(),
+			ObjectMeta: info.NewObjectMeta(),
 		}
 
 		if v.IsDir() {
@@ -192,7 +192,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 			Name:       "-",
 			Type:       types.ObjectTypeStream,
 			Size:       0,
-			ObjectMeta: metadata.NewObjectMeta(),
+			ObjectMeta: info.NewObjectMeta(),
 		}, nil
 	}
 
@@ -208,7 +208,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		Name:       path,
 		Size:       fi.Size(),
 		UpdatedAt:  fi.ModTime(),
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	if fi.IsDir() {

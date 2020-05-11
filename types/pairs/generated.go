@@ -9,7 +9,6 @@ import (
 	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/types"
 )
 
@@ -49,8 +48,6 @@ const (
 	SegmentFunc = "segment_func"
 	// Size will specify size for this request, storage will only read limited content data
 	Size = "size"
-	// StorageClass will specify checksum for this request, could be used as storage class
-	StorageClass = "storage_class"
 	// StoragerFunc will specify what todo with a storager
 	StoragerFunc = "storager_func"
 	// WorkDir will specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
@@ -207,15 +204,6 @@ func WithSegmentFunc(v segment.Func) *types.Pair {
 func WithSize(v int64) *types.Pair {
 	return &types.Pair{
 		Key:   Size,
-		Value: v,
-	}
-}
-
-// WithStorageClass will apply storage_class value to Options
-// This pair is used to specify checksum for this request, could be used as storage class
-func WithStorageClass(v storageclass.Type) *types.Pair {
-	return &types.Pair{
-		Key:   StorageClass,
 		Value: v,
 	}
 }
@@ -532,19 +520,6 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 					Err:   ErrPairTypeMismatch,
 					Key:   Size,
 					Type:  "int64",
-					Value: v,
-				}
-			}
-		case StorageClass:
-			switch rv := v.(type) {
-			case storageclass.Type:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   StorageClass,
-					Type:  "storageclass.Type",
 					Value: v,
 				}
 			}

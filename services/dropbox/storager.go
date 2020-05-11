@@ -12,7 +12,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // Storage is the dropbox client.
@@ -31,8 +31,8 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	m = metadata.NewStorageMeta()
+func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
+	m = info.NewStorageMeta()
 	m.WorkDir = s.workDir
 	m.Name = ""
 
@@ -69,7 +69,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 					Name:       filepath.Join(path, meta.Name),
 					Size:       int64(meta.Size),
 					UpdatedAt:  meta.ServerModified,
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				}
 
 				if meta.ContentHash != "" {
@@ -84,7 +84,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 					ID:         meta.Id,
 					Type:       types.ObjectTypeDir,
 					Name:       filepath.Join(path, meta.Name),
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				}
 
 				if opt.HasDirFunc {
@@ -203,7 +203,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 			Name:       filepath.Join(path, meta.Name),
 			Size:       int64(meta.Size),
 			UpdatedAt:  meta.ServerModified,
-			ObjectMeta: metadata.NewObjectMeta(),
+			ObjectMeta: info.NewObjectMeta(),
 		}
 
 		if meta.ContentHash != "" {
@@ -216,7 +216,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 			ID:         meta.Id,
 			Type:       types.ObjectTypeDir,
 			Name:       filepath.Join(path, meta.Name),
-			ObjectMeta: metadata.NewObjectMeta(),
+			ObjectMeta: info.NewObjectMeta(),
 		}
 
 		return o, nil

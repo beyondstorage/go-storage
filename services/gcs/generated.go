@@ -12,10 +12,9 @@ import (
 	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
@@ -23,7 +22,6 @@ var _ credential.Provider
 var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
-var _ storageclass.Type
 var _ services.ServiceError
 var _ httpclient.Options
 
@@ -31,7 +29,38 @@ var _ httpclient.Options
 const Type = "gcs"
 
 // Service available pairs.
-const ()
+const (
+	// StorageClass will
+	PairStorageClass = "gcs_storage_class"
+)
+
+// Service available infos.
+const (
+	InfoObjectMetaStorageClass = "gcs-storage-class"
+)
+
+// WithStorageClass will apply storage_class value to Options
+// This pair is used to
+func WithStorageClass(v string) *types.Pair {
+	return &types.Pair{
+		Key:   PairStorageClass,
+		Value: v,
+	}
+}
+
+// GetStorageClass will get storage-class value from metadata.
+func GetStorageClass(m info.ObjectMeta) (string, bool) {
+	v, ok := m.Get(InfoObjectMetaStorageClass)
+	if !ok {
+		return "", false
+	}
+	return v.(string), true
+}
+
+// setstorage-class will set storage-class value into metadata.
+func setStorageClass(m info.ObjectMeta, v string) info.ObjectMeta {
+	return m.Set(InfoObjectMetaStorageClass, v)
+}
 
 var pairServiceCreateMap = map[string]struct{}{
 	// Required pairs
@@ -644,8 +673,8 @@ var pairStorageWriteMap = map[string]struct{}{
 	// Required pairs
 	ps.Size: struct{}{},
 	// Optional pairs
-	ps.Checksum:     struct{}{},
-	ps.StorageClass: struct{}{},
+	ps.Checksum:      struct{}{},
+	PairStorageClass: struct{}{},
 	// Generated pairs
 	ps.ReadCallbackFunc: struct{}{},
 	ps.Context:          struct{}{},
@@ -658,7 +687,7 @@ type pairStorageWrite struct {
 	HasChecksum     bool
 	Checksum        string
 	HasStorageClass bool
-	StorageClass    storageclass.Type
+	StorageClass    string
 	// Generated pairs
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
@@ -694,10 +723,10 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 		result.HasChecksum = true
 		result.Checksum = v.(string)
 	}
-	v, ok = values[ps.StorageClass]
+	v, ok = values[PairStorageClass]
 	if ok {
 		result.HasStorageClass = true
-		result.StorageClass = v.(storageclass.Type)
+		result.StorageClass = v.(string)
 	}
 	// Handle generated pairs
 	v, ok = values[ps.ReadCallbackFunc]
@@ -742,7 +771,7 @@ func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pair
 }
 
 // MetadataWithContext adds context support for Metadata.
-func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
+func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m info.StorageMeta, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/gcs.storage.Metadata")
 	defer span.Finish()
 

@@ -11,7 +11,6 @@ import (
 
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/endpoint"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types/pairs"
 )
@@ -173,47 +172,5 @@ func TestHandleQingStorError(t *testing.T) {
 				assert.True(t, errors.Is(formatError(tt.input), tt.expected))
 			})
 		}
-	}
-}
-
-func TestParseStorageClass(t *testing.T) {
-	tests := []struct {
-		name        string
-		input       storageclass.Type
-		expected    string
-		expectedErr error
-	}{
-		{"hot", storageclass.Hot, storageClassStandard, nil},
-		{"warm", storageclass.Warm, storageClassStandardIA, nil},
-		{"xxxxx", "xxxx", "", services.ErrCapabilityInsufficient},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseStorageClass(tt.input)
-			if tt.expectedErr != nil {
-				assert.True(t, errors.Is(err, tt.expectedErr))
-			}
-			assert.Equal(t, tt.expected, got)
-		})
-	}
-}
-
-func TestFormatStorageClass(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    string
-		expected storageclass.Type
-	}{
-		{"hot", storageClassStandard, storageclass.Hot},
-		{"warm", storageClassStandardIA, storageclass.Warm},
-		{"xxxxx", "xxxxx", ""},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := formatStorageClass(tt.input)
-			assert.Equal(t, tt.expected, got)
-		})
 	}
 }

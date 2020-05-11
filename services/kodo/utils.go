@@ -11,7 +11,6 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -88,40 +87,13 @@ func convertUnixTimestampToTime(v int64) time.Time {
 	return time.Unix(v, 0)
 }
 
+// All available storage classes are listed here.
 const (
 	// ref: https://developer.qiniu.com/kodo/api/3710/chtype
-	storageClassStandard   = 0
-	storageClassStandardIA = 1
-	storageClassArchive    = 2
+	StorageClassStandard   = 0
+	StorageClassStandardIA = 1
+	StorageClassArchive    = 2
 )
-
-// parseStorageClass will parse storageclass.Type into service independent storage class type.
-func parseStorageClass(in storageclass.Type) (int, error) {
-	switch in {
-	case storageclass.Hot:
-		return storageClassStandard, nil
-	case storageclass.Warm:
-		return storageClassStandardIA, nil
-	case storageclass.Cold:
-		return storageClassArchive, nil
-	default:
-		return 0, services.NewPairUnsupportedError(ps.WithStorageClass(in))
-	}
-}
-
-// formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in int) storageclass.Type {
-	switch in {
-	case 0:
-		return storageclass.Hot
-	case 1:
-		return storageclass.Warm
-	case 2:
-		return storageclass.Cold
-	default:
-		return ""
-	}
-}
 
 // ref: https://developer.qiniu.com/kodo/api/3928/error-responses
 func formatError(err error) error {

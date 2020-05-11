@@ -12,7 +12,6 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -117,33 +116,16 @@ func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage,
 	return
 }
 
-// parseStorageClass will parse storageclass.Type into service independent storage class type.
-func parseStorageClass(in storageclass.Type) (azblob.AccessTierType, error) {
-	switch in {
-	case storageclass.Cold:
-		return azblob.AccessTierArchive, nil
-	case storageclass.Hot:
-		return azblob.AccessTierHot, nil
-	case storageclass.Warm:
-		return azblob.AccessTierCool, nil
-	default:
-		return "", services.NewPairUnsupportedError(ps.WithStorageClass(in))
-	}
-}
+// StorageClass is the storage class used in storage lib.
+type StorageClass azblob.AccessTierType
 
-// formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in azblob.AccessTierType) storageclass.Type {
-	switch in {
-	case azblob.AccessTierArchive:
-		return storageclass.Cold
-	case azblob.AccessTierCool:
-		return storageclass.Warm
-	case azblob.AccessTierHot:
-		return storageclass.Hot
-	default:
-		return ""
-	}
-}
+// All available storage classes are listed here.
+const (
+	StorageClassArchive = azblob.AccessTierArchive
+	StorageClassCool    = azblob.AccessTierCool
+	StorageClassHot     = azblob.AccessTierHot
+	StorageClassNone    = azblob.AccessTierNone
+)
 
 // ref: https://docs.microsoft.com/en-us/rest/api/storageservices/status-and-error-codes2
 func formatError(err error) error {

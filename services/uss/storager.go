@@ -10,7 +10,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // Storage is the uss service.
@@ -28,8 +28,8 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	m = metadata.NewStorageMeta()
+func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
+	m = info.NewStorageMeta()
 	m.Name = s.name
 	m.WorkDir = s.workDir
 	return m, nil
@@ -64,7 +64,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 					ID:         v.Name,
 					Name:       s.getRelPath(v.Name),
 					Type:       types.ObjectTypeDir,
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				}
 
 				opt.DirFunc(o)
@@ -212,7 +212,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		Type:       types.ObjectTypeFile,
 		Size:       output.Size,
 		UpdatedAt:  output.Time,
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 	if output.ETag != "" {
 		o.SetETag(output.ETag)
@@ -273,7 +273,7 @@ func (s *Storage) formatFileObject(v *upyun.FileInfo) (o *types.Object, err erro
 		Type:       types.ObjectTypeFile,
 		Size:       v.Size,
 		UpdatedAt:  v.Time,
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	if v.ETag != "" {

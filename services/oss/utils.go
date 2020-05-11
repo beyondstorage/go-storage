@@ -9,7 +9,6 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -81,43 +80,16 @@ func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage,
 	return srv, store, nil
 }
 
+// All available storage classes are listed here.
 const (
 	// ref: https://www.alibabacloud.com/help/doc-detail/31984.htm
 	storageClassHeader = "x-oss-storage-class"
 
 	// ref: https://www.alibabacloud.com/help/doc-detail/51374.htm
-	storageClassStandard = "STANDARD"
-	storageClassIA       = "IA"
-	storageClassArchive  = "Archive"
+	StorageClassStandard = "STANDARD"
+	StorageClassIA       = "IA"
+	StorageClassArchive  = "Archive"
 )
-
-// parseStorageClass will parse storageclass.Type into service independent storage class type.
-func parseStorageClass(in storageclass.Type) (string, error) {
-	switch in {
-	case storageclass.Hot:
-		return storageClassStandard, nil
-	case storageclass.Warm:
-		return storageClassIA, nil
-	case storageclass.Cold:
-		return storageClassArchive, nil
-	default:
-		return "", services.NewPairUnsupportedError(ps.WithStorageClass(in))
-	}
-}
-
-// formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) storageclass.Type {
-	switch in {
-	case storageClassStandard:
-		return storageclass.Hot
-	case storageClassIA:
-		return storageclass.Warm
-	case storageClassArchive:
-		return storageclass.Cold
-	default:
-		return ""
-	}
-}
 
 func formatError(err error) error {
 	switch e := err.(type) {
