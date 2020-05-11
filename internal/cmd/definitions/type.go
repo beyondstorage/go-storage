@@ -30,8 +30,33 @@ func (d *Data) Handle() {
 
 // Sort will sort the data
 func (d *Data) Sort() {
+	sort.Slice(d.Infos, func(i, j int) bool {
+		return compareInfo(d.Infos[i], d.Infos[j])
+	})
+
 	for _, v := range d.Services {
 		v.Sort()
+	}
+
+	sort.Slice(d.pairSpec.Pairs, func(i, j int) bool {
+		x, y := d.pairSpec.Pairs[i], d.pairSpec.Pairs[j]
+		return x.Name < y.Name
+	})
+	sort.Slice(d.infoSpec.Infos, func(i, j int) bool {
+		return compareInfo(d.infoSpec.Infos[i], d.infoSpec.Infos[j])
+	})
+	for _, v := range d.serviceSpec {
+		if v.Pairs != nil {
+			sort.Slice(v.Pairs.Pairs, func(i, j int) bool {
+				x, y := v.Pairs.Pairs[i], v.Pairs.Pairs[j]
+				return x.Name < y.Name
+			})
+		}
+		if v.Infos != nil {
+			sort.Slice(v.Infos.Infos, func(i, j int) bool {
+				return compareInfo(v.Infos.Infos[i], v.Infos.Infos[j])
+			})
+		}
 	}
 }
 
@@ -96,6 +121,10 @@ func (srv *Service) Handle() {
 
 // Sort will sort the data
 func (srv *Service) Sort() {
+	sort.Slice(srv.Infos, func(i, j int) bool {
+		return compareInfo(srv.Infos[i], srv.Infos[j])
+	})
+
 	sort.Slice(srv.Service, func(i, j int) bool {
 		return srv.Service[i].Name < srv.Service[j].Name
 	})
@@ -281,4 +310,14 @@ func mergeInfos(a, b []*Info) []*Info {
 	}
 
 	return fn(a, b)
+}
+
+func compareInfo(x, y *Info) bool {
+	if x.Scope != y.Scope {
+		return x.Scope < y.Scope
+	}
+	if x.Category != y.Category {
+		return x.Category < y.Category
+	}
+	return x.Name < y.Name
 }
