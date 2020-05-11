@@ -12,10 +12,9 @@ import (
 	"github.com/Xuanwo/storage/pkg/endpoint"
 	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
@@ -23,7 +22,6 @@ var _ credential.Provider
 var _ endpoint.Provider
 var _ segment.Segment
 var _ storage.Storager
-var _ storageclass.Type
 var _ services.ServiceError
 var _ httpclient.Options
 
@@ -31,6 +29,9 @@ var _ httpclient.Options
 const Type = "fs"
 
 // Service available pairs.
+const ()
+
+// Service available infos.
 const ()
 
 var pairStorageCopyMap = map[string]struct{}{
@@ -491,7 +492,7 @@ func (s *Storage) ListDirWithContext(ctx context.Context, path string, pairs ...
 }
 
 // MetadataWithContext adds context support for Metadata.
-func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
+func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m info.StorageMeta, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.Metadata")
 	defer span.Finish()
 

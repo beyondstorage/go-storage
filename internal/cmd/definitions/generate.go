@@ -12,10 +12,10 @@ import (
 //go:generate go-bindata -nometadata -ignore "\\.go$" -prefix tmpl ./tmpl
 
 var (
-	metadataT = newTmpl("metadata")
-	pairT     = newTmpl("pair")
-	serviceT  = newTmpl("service")
-	openT     = newTmpl("open")
+	infoT    = newTmpl("info")
+	pairT    = newTmpl("pair")
+	serviceT = newTmpl("service")
+	openT    = newTmpl("open")
 )
 
 func generate(data *Data) {
@@ -23,7 +23,7 @@ func generate(data *Data) {
 	data.Sort()
 
 	// Metas generate
-	generateT(metadataT, "../types/metadata/generated.go", data)
+	generateT(infoT, "../types/info/generated.go", data)
 
 	// Pair generate
 	generateT(pairT, "../types/pairs/generated.go", data)

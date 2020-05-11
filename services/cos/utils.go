@@ -8,7 +8,6 @@ import (
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -81,43 +80,15 @@ func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage,
 	return
 }
 
+// All available storage classes are listed here.
 const (
 	// ref: https://cloud.tencent.com/document/product/436/7745
 	storageClassHeader = "x-cos-storage-class"
 
-	storageClassStandard   = "STANDARD"
-	storageClassStandardIA = "STANDARD_IA"
-	storageClassArchive    = "ARCHIVE"
+	StorageClassStandard   = "STANDARD"
+	StorageClassStandardIA = "STANDARD_IA"
+	StorageClassArchive    = "ARCHIVE"
 )
-
-// parseStorageClass will parse storageclass.Type into service independent storage class type.
-func parseStorageClass(in storageclass.Type) (string, error) {
-	switch in {
-	case storageclass.Cold:
-		return storageClassArchive, nil
-	case storageclass.Hot:
-		return storageClassStandard, nil
-	case storageclass.Warm:
-		return storageClassStandardIA, nil
-	default:
-		return "", services.NewPairUnsupportedError(ps.WithStorageClass(in))
-	}
-}
-
-// formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) storageclass.Type {
-	switch in {
-	case storageClassArchive:
-		return storageclass.Cold
-	case storageClassStandardIA:
-		return storageclass.Warm
-	// cos only return storage class while not standard, we should handle empty string
-	case storageClassStandard, "":
-		return storageclass.Hot
-	default:
-		return ""
-	}
-}
 
 // ref: https://www.qcloud.com/document/product/436/7730
 func formatError(err error) error {

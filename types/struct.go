@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // ObjectType is the type for object, under layer type is string.
@@ -46,7 +46,7 @@ type Object struct {
 	//
 	// - All storage services can provide this value in same way.
 	// - User need to access this value.
-	metadata.ObjectMeta
+	info.ObjectMeta
 }
 
 // ObjectFunc will handle an ObjectMeta.

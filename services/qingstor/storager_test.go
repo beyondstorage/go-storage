@@ -15,10 +15,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 	"github.com/Xuanwo/storage/types/pairs"
 )
 
@@ -327,11 +326,10 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					ID:   keys[0],
-					Name: keys[0],
-					Type: types.ObjectTypeFile,
-					ObjectMeta: metadata.NewObjectMeta().
-						SetStorageClass(storageclass.Hot),
+					ID:         keys[0],
+					Name:       keys[0],
+					Type:       types.ObjectTypeFile,
+					ObjectMeta: info.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -350,7 +348,7 @@ func TestStorage_ListDir(t *testing.T) {
 					ID:         keys[2],
 					Name:       keys[2],
 					Type:       types.ObjectTypeDir,
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -378,12 +376,11 @@ func TestStorage_ListDir(t *testing.T) {
 				HasMore: service.Bool(false),
 				Keys: []*service.KeyType{
 					{
-						Key:          service.String(keys[5]),
-						MimeType:     service.String("application/json"),
-						StorageClass: service.String("STANDARD"),
-						Etag:         service.String("xxxxx"),
-						Size:         service.Int64(1233),
-						Modified:     service.Int(1233),
+						Key:      service.String(keys[5]),
+						MimeType: service.String("application/json"),
+						Etag:     service.String("xxxxx"),
+						Size:     service.Int64(1233),
+						Modified: service.Int(1233),
 					},
 				},
 			},
@@ -394,9 +391,8 @@ func TestStorage_ListDir(t *testing.T) {
 					Type:      types.ObjectTypeFile,
 					Size:      1233,
 					UpdatedAt: time.Unix(1233, 0),
-					ObjectMeta: metadata.NewObjectMeta().
+					ObjectMeta: info.NewObjectMeta().
 						SetContentType("application/json").
-						SetStorageClass(storageclass.Hot).
 						SetETag("xxxxx"),
 				},
 			},
@@ -604,9 +600,9 @@ func TestStorage_Stat(t *testing.T) {
 			checkSum, ok := o.GetETag()
 			assert.True(t, ok)
 			assert.Equal(t, "test_etag", checkSum)
-			storageClass, ok := o.GetStorageClass()
+			storageClass, ok := GetStorageClass(o.ObjectMeta)
 			assert.True(t, ok)
-			assert.Equal(t, storageclass.Hot, storageClass)
+			assert.Equal(t, StorageClassStandard, storageClass)
 		}
 	}
 }

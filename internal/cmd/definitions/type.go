@@ -9,12 +9,12 @@ import (
 // Data is the biggest cqontainer for all definitions.
 type Data struct {
 	Pairs    map[string]*Pair
-	Metas    *Metas
+	Infos    []*Info
 	Services []*Service
 
 	// Store all specs for encoding
 	pairSpec    *PairSpec
-	metaSpec    *MetaSpec
+	infoSpec    *InfoSpec
 	serviceSpec []*ServiceSpec
 }
 
@@ -41,7 +41,7 @@ type Service struct {
 	Service []*Op
 	Storage []*Op
 	Pairs   map[string]*Pair
-	Metas   *Metas
+	Infos   []*Info
 }
 
 // Handle will do post actions before generate
@@ -127,15 +127,10 @@ func (p *Pair) Handle() {
 	p.GeneratedDescription = strings.ReplaceAll(p.Description, "\n", "\n//")
 }
 
-// Metas carries all metadata used in services.
-type Metas struct {
-	ObjectMeta       map[string]*Metadata
-	StorageMeta      map[string]*Metadata
-	StorageStatistic map[string]*Metadata
-}
-
-// Metadata is the metadata definition.
-type Metadata struct {
+// Info is the metadata definition.
+type Info struct {
+	Scope       string `hcl:",label"`
+	Category    string `hcl:",label"`
 	Name        string `hcl:",label"`
 	Type        string `hcl:"type"`
 	DisplayName string `hcl:"display_name,optional"`
@@ -172,11 +167,9 @@ type Func struct {
 	hasPair bool
 }
 
-// MetaSpec is the data parsed from HCL.
-type MetaSpec struct {
-	ObjectMeta       []*Metadata `hcl:"object_meta,block"`
-	StorageMeta      []*Metadata `hcl:"storage_meta,block"`
-	StorageStatistic []*Metadata `hcl:"storage_statistic,block"`
+// InfoSpec is the data parsed from HCL.
+type InfoSpec struct {
+	Infos []*Info `hcl:"info,block"`
 }
 
 // PairSpec is the data parsed from HCL.
@@ -195,7 +188,7 @@ type ServiceSpec struct {
 	Service *NamespaceSpec `hcl:"service,block"`
 	Storage *NamespaceSpec `hcl:"storage,block"`
 	Pairs   *PairSpec      `hcl:"pairs,block"`
-	Metas   *MetaSpec      `hcl:"metas,block"`
+	Infos   *InfoSpec      `hcl:"infos,block"`
 }
 
 // FormatPairs will format pairs for pair spec
@@ -214,38 +207,21 @@ func (d *Data) FormatPairs(p *PairSpec, global bool) map[string]*Pair {
 	return m
 }
 
-// FormatMeta will format metas for meta spec
-func (d *Data) FormatMeta(m *MetaSpec, global bool) *Metas {
+// FormatInfos will format metas for meta spec
+func (d *Data) FormatInfos(m *InfoSpec, global bool) []*Info {
 	if m == nil {
-		return &Metas{}
+		return nil
 	}
 
-	meta := &Metas{}
-	meta.ObjectMeta = make(map[string]*Metadata)
-	for _, v := range m.ObjectMeta {
+	is := make([]*Info, 0, len(m.Infos))
+	for _, v := range m.Infos {
 		v := v
 
 		v.Global = global
-		meta.ObjectMeta[v.Name] = v
+		is = append(is, v)
 	}
 
-	meta.StorageMeta = make(map[string]*Metadata)
-	for _, v := range m.StorageMeta {
-		v := v
-
-		v.Global = global
-		meta.StorageMeta[v.Name] = v
-	}
-
-	meta.StorageStatistic = make(map[string]*Metadata)
-	for _, v := range m.StorageStatistic {
-		v := v
-
-		v.Global = global
-		meta.StorageStatistic[v.Name] = v
-	}
-
-	return meta
+	return is
 }
 
 // FormatService will format services from service spec
@@ -254,7 +230,7 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 		Name:    s.Name,
 		Storage: s.Storage.Op,
 		Pairs:   mergePairs(d.Pairs, d.FormatPairs(s.Pairs, false)),
-		Metas:   mergeMetas(d.Metas, d.FormatMeta(s.Metas, false)),
+		Infos:   mergeInfos(d.Infos, d.FormatInfos(s.Infos, false)),
 	}
 	if s.Service != nil {
 		srv.Service = s.Service.Op
@@ -263,14 +239,14 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 }
 
 // FormatData will format the whole data.
-func FormatData(p *PairSpec, m *MetaSpec, s []*ServiceSpec) *Data {
+func FormatData(p *PairSpec, m *InfoSpec, s []*ServiceSpec) *Data {
 	data := &Data{
 		pairSpec:    p,
-		metaSpec:    m,
+		infoSpec:    m,
 		serviceSpec: s,
 	}
 	data.Pairs = data.FormatPairs(p, true)
-	data.Metas = data.FormatMeta(m, true)
+	data.Infos = data.FormatInfos(m, true)
 
 	for _, v := range s {
 		data.Services = append(data.Services, data.FormatService(v))
@@ -292,25 +268,17 @@ func mergePairs(ms ...map[string]*Pair) map[string]*Pair {
 	return ans
 }
 
-func mergeMetas(a, b *Metas) *Metas {
-	fn := func(ms ...map[string]*Metadata) map[string]*Metadata {
-		ans := make(map[string]*Metadata)
+func mergeInfos(a, b []*Info) []*Info {
+	fn := func(ms ...[]*Info) []*Info {
+		ans := make([]*Info, 0)
 		for _, m := range ms {
-			for k, v := range m {
-				if _, ok := ans[k]; ok {
-					log.Fatalf("metadata conflict: %s", k)
-				}
+			for _, v := range m {
 				v := v
-				ans[k] = v
+				ans = append(ans, v)
 			}
 		}
 		return ans
 	}
 
-	m := &Metas{
-		ObjectMeta:       fn(a.ObjectMeta, b.ObjectMeta),
-		StorageMeta:      fn(a.StorageMeta, b.StorageMeta),
-		StorageStatistic: fn(a.StorageStatistic, b.StorageStatistic),
-	}
-	return m
+	return fn(a, b)
 }

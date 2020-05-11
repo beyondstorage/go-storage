@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"bou.ke/monkey"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -97,7 +97,7 @@ func TestStorage_Stat(t *testing.T) {
 				Type:       types.ObjectTypeFile,
 				Size:       1234,
 				UpdatedAt:  nowTime,
-				ObjectMeta: metadata.NewObjectMeta(),
+				ObjectMeta: info.NewObjectMeta(),
 			},
 		},
 		{
@@ -114,7 +114,7 @@ func TestStorage_Stat(t *testing.T) {
 				Name:       "dir",
 				Type:       types.ObjectTypeDir,
 				UpdatedAt:  nowTime,
-				ObjectMeta: metadata.NewObjectMeta(),
+				ObjectMeta: info.NewObjectMeta(),
 			},
 		},
 		{
@@ -131,7 +131,7 @@ func TestStorage_Stat(t *testing.T) {
 				Name:       "stream",
 				Type:       types.ObjectTypeStream,
 				UpdatedAt:  nowTime,
-				ObjectMeta: metadata.NewObjectMeta(),
+				ObjectMeta: info.NewObjectMeta(),
 			},
 		},
 		{
@@ -142,7 +142,7 @@ func TestStorage_Stat(t *testing.T) {
 				ID:         "-",
 				Name:       "-",
 				Type:       types.ObjectTypeStream,
-				ObjectMeta: metadata.NewObjectMeta(),
+				ObjectMeta: info.NewObjectMeta(),
 			},
 		},
 		{
@@ -159,7 +159,7 @@ func TestStorage_Stat(t *testing.T) {
 				Name:       "invalid",
 				Type:       types.ObjectTypeInvalid,
 				UpdatedAt:  nowTime,
-				ObjectMeta: metadata.NewObjectMeta(),
+				ObjectMeta: info.NewObjectMeta(),
 			},
 		},
 		{
@@ -409,7 +409,7 @@ func TestStorage_ListDir(t *testing.T) {
 					Type:       types.ObjectTypeFile,
 					Size:       1234,
 					UpdatedAt:  time.Unix(1, 0),
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -431,7 +431,7 @@ func TestStorage_ListDir(t *testing.T) {
 					Type:       types.ObjectTypeFile,
 					Size:       1234,
 					UpdatedAt:  time.Unix(1, 0),
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -453,7 +453,7 @@ func TestStorage_ListDir(t *testing.T) {
 					Type:       types.ObjectTypeDir,
 					Size:       0,
 					UpdatedAt:  time.Unix(1, 0),
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				},
 			},
 			nil,
@@ -475,7 +475,7 @@ func TestStorage_ListDir(t *testing.T) {
 					Type:       types.ObjectTypeDir,
 					Size:       0,
 					UpdatedAt:  time.Unix(1, 0),
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				},
 			},
 			nil,

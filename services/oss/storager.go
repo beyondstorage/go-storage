@@ -13,7 +13,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // Storage is the aliyun object storage service.
@@ -33,8 +33,8 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	m = metadata.NewStorageMeta()
+func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
+	m = info.NewStorageMeta()
 	m.Name = s.bucket.BucketName
 	m.WorkDir = s.workDir
 	return m, nil
@@ -75,7 +75,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 					ID:         v,
 					Name:       s.getRelPath(v),
 					Type:       types.ObjectTypeDir,
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				}
 
 				opt.DirFunc(o)
@@ -220,7 +220,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		ID:         rp,
 		Name:       path,
 		Type:       types.ObjectTypeFile,
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	if v := output.Get(headers.ContentLength); v != "" {
@@ -250,8 +250,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetContentType(v)
 	}
 
-	if v := formatStorageClass(output.Get(storageClassHeader)); v != "" {
-		o.SetStorageClass(v)
+	if v := output.Get(storageClassHeader); v != "" {
+		setStorageClass(o.ObjectMeta, v)
 	}
 
 	return o, nil
@@ -304,7 +304,7 @@ func (s *Storage) formatFileObject(v oss.ObjectProperties) (o *types.Object, err
 		Type:       types.ObjectTypeFile,
 		Size:       v.Size,
 		UpdatedAt:  v.LastModified,
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	if v.Type != "" {
@@ -318,9 +318,8 @@ func (s *Storage) formatFileObject(v oss.ObjectProperties) (o *types.Object, err
 		o.SetETag(v.ETag)
 	}
 
-	if value := formatStorageClass(v.Type); value != "" {
-		o.SetStorageClass(value)
+	if value := v.Type; value != "" {
+		setStorageClass(o.ObjectMeta, value)
 	}
-
 	return
 }

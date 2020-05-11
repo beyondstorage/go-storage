@@ -73,10 +73,6 @@ pair "size" {
   description = "specify size for this request, storage will only read limited content data"
   parser      = "parseInt64"
 }
-pair "storage_class" {
-  type        = "storageclass.Type"
-  description = "specify checksum for this request, could be used as storage class"
-}
 pair "storager_func" {
   type        = "storage.StoragerFunc"
   description = "specify what todo with a storager"

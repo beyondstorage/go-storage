@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	pairPath     = "pairs.hcl"
-	metadataPath = "metadata.hcl"
+	pairPath = "pairs.hcl"
+	infoPath = "infos.hcl"
 )
 
 func parse() (data *Data) {
@@ -34,12 +34,12 @@ func parse() (data *Data) {
 	}
 
 	// Parse metadata
-	metaSpec := &MetaSpec{}
-	content, err = ioutil.ReadFile(metadataPath)
+	metaSpec := &InfoSpec{}
+	content, err = ioutil.ReadFile(infoPath)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
-	err = parseHCL(content, metadataPath, metaSpec)
+	err = parseHCL(content, infoPath, metaSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}

@@ -13,7 +13,6 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -139,31 +138,8 @@ func convertUnixTimestampToTime(v int) time.Time {
 	return time.Unix(int64(v), 0)
 }
 
+// All available storage classes are listed here.
 const (
-	storageClassStandard   = "STANDARD"
-	storageClassStandardIA = "STANDARD_IA"
+	StorageClassStandard   = "STANDARD"
+	StorageClassStandardIA = "STANDARD_IA"
 )
-
-// parseStorageClass will parse storageclass.Type into service independent storage class type.
-func parseStorageClass(in storageclass.Type) (string, error) {
-	switch in {
-	case storageclass.Hot:
-		return storageClassStandard, nil
-	case storageclass.Warm:
-		return storageClassStandardIA, nil
-	default:
-		return "", services.NewPairUnsupportedError(ps.WithStorageClass(in))
-	}
-}
-
-// formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) storageclass.Type {
-	switch in {
-	case storageClassStandard, "":
-		return storageclass.Hot
-	case storageClassStandardIA:
-		return storageclass.Warm
-	default:
-		return ""
-	}
-}

@@ -13,7 +13,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // Storage is the s3 object storage service.
@@ -33,8 +33,8 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	m = metadata.NewStorageMeta()
+func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
+	m = info.NewStorageMeta()
 	m.Name = s.name
 	m.WorkDir = s.workDir
 	return m, nil
@@ -74,7 +74,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 					ID:         *v.Prefix,
 					Name:       s.getRelPath(*v.Prefix),
 					Type:       types.ObjectTypeDir,
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				}
 
 				opt.DirFunc(o)
@@ -199,11 +199,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		input.ContentMD5 = &opt.Checksum
 	}
 	if opt.HasStorageClass {
-		storageClass, err := parseStorageClass(opt.StorageClass)
-		if err != nil {
-			return err
-		}
-		input.StorageClass = &storageClass
+		input.StorageClass = &opt.StorageClass
 	}
 
 	_, err = s.service.PutObject(input)
@@ -238,7 +234,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		Type:       types.ObjectTypeFile,
 		Size:       aws.Int64Value(output.ContentLength),
 		UpdatedAt:  aws.TimeValue(output.LastModified),
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	if output.ContentType != nil {
@@ -247,8 +243,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	if output.ETag != nil {
 		o.SetETag(*output.ETag)
 	}
-	if v := formatStorageClass(aws.StringValue(output.StorageClass)); v != "" {
-		o.SetStorageClass(v)
+	if v := aws.StringValue(output.StorageClass); v != "" {
+		setStorageClass(o.ObjectMeta, v)
 	}
 	return o, nil
 }
@@ -465,11 +461,11 @@ func (s *Storage) formatFileObject(v *s3.Object) (o *types.Object, err error) {
 		Type:       types.ObjectTypeFile,
 		Size:       aws.Int64Value(v.Size),
 		UpdatedAt:  aws.TimeValue(v.LastModified),
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
-	if value := formatStorageClass(aws.StringValue(v.StorageClass)); value != "" {
-		o.SetStorageClass(value)
+	if value := aws.StringValue(v.StorageClass); value != "" {
+		setStorageClass(o.ObjectMeta, value)
 	}
 	if v.ETag != nil {
 		o.SetETag(*v.ETag)

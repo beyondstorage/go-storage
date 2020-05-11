@@ -13,7 +13,6 @@ import (
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
 	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/pkg/storageclass"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
@@ -96,39 +95,13 @@ func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage,
 	return srv, store, nil
 }
 
+// All available storage classes are listed here.
 const (
-	storageClassStandard = "STANDARD"
-	storageClassNearLine = "NEARLINE"
-	storageClassColdLine = "COLDLINE"
+	StorageClassStandard = "STANDARD"
+	StorageClassNearLine = "NEARLINE"
+	StorageClassColdLine = "COLDLINE"
+	StorageClassArchive  = "ARCHIVE"
 )
-
-// parseStorageClass will parse storageclass.Type into service independent storage class type.
-func parseStorageClass(in storageclass.Type) (string, error) {
-	switch in {
-	case storageclass.Hot:
-		return storageClassStandard, nil
-	case storageclass.Warm:
-		return storageClassNearLine, nil
-	case storageclass.Cold:
-		return storageClassColdLine, nil
-	default:
-		return "", services.NewPairUnsupportedError(ps.WithStorageClass(in))
-	}
-}
-
-// formatStorageClass will format service independent storage class type into storageclass.Type.
-func formatStorageClass(in string) storageclass.Type {
-	switch in {
-	case storageClassStandard:
-		return storageclass.Hot
-	case storageClassNearLine:
-		return storageclass.Warm
-	case storageClassColdLine:
-		return storageclass.Cold
-	default:
-		return ""
-	}
-}
 
 // ref: https://cloud.google.com/storage/docs/json_api/v1/status-codes
 func formatError(err error) error {

@@ -15,7 +15,7 @@ import (
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/metadata"
+	"github.com/Xuanwo/storage/types/info"
 )
 
 // Storage is the qingstor object storage client.
@@ -38,8 +38,8 @@ func (s *Storage) String() string {
 }
 
 // Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m metadata.StorageMeta, err error) {
-	m = metadata.NewStorageMeta()
+func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
+	m = info.NewStorageMeta()
 	m.Name = *s.properties.BucketName
 	m.WorkDir = s.workDir
 	m.SetLocation(*s.properties.Zone)
@@ -78,7 +78,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 					ID:         *v,
 					Name:       s.getRelPath(*v),
 					Type:       types.ObjectTypeDir,
-					ObjectMeta: metadata.NewObjectMeta(),
+					ObjectMeta: info.NewObjectMeta(),
 				}
 
 				opt.DirFunc(o)
@@ -212,11 +212,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 		input.ContentMD5 = &opt.Checksum
 	}
 	if opt.HasStorageClass {
-		storageClass, err := parseStorageClass(opt.StorageClass)
-		if err != nil {
-			return err
-		}
-		input.XQSStorageClass = service.String(storageClass)
+		input.XQSStorageClass = service.String(opt.StorageClass)
 	}
 
 	rp := s.getAbsPath(path)
@@ -249,7 +245,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		Type:       types.ObjectTypeFile,
 		Size:       service.Int64Value(output.ContentLength),
 		UpdatedAt:  service.TimeValue(output.LastModified),
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	if output.ContentType != nil {
@@ -259,8 +255,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		o.SetETag(service.StringValue(output.ETag))
 	}
 
-	if v := formatStorageClass(service.StringValue(output.XQSStorageClass)); v != "" {
-		o.SetStorageClass(v)
+	if v := service.StringValue(output.XQSStorageClass); v != "" {
+		setStorageClass(o.ObjectMeta, v)
 	}
 
 	return o, nil
@@ -349,12 +345,12 @@ func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err erro
 }
 
 // Statistical implements Storager.Statistical
-func (s *Storage) Statistical(pairs ...*types.Pair) (m metadata.StorageStatistic, err error) {
+func (s *Storage) Statistical(pairs ...*types.Pair) (m info.StorageStatistic, err error) {
 	defer func() {
 		err = s.formatError(services.OpStatistical, err)
 	}()
 
-	m = metadata.NewStorageStatistic()
+	m = info.NewStorageStatistic()
 
 	output, err := s.bucket.GetStatistics()
 	if err != nil {
@@ -554,14 +550,14 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *types.Object, err err
 		Type:       types.ObjectTypeFile,
 		Size:       service.Int64Value(v.Size),
 		UpdatedAt:  convertUnixTimestampToTime(service.IntValue(v.Modified)),
-		ObjectMeta: metadata.NewObjectMeta(),
+		ObjectMeta: info.NewObjectMeta(),
 	}
 
 	if v.MimeType != nil {
 		o.SetContentType(service.StringValue(v.MimeType))
 	}
-	if value := formatStorageClass(service.StringValue(v.StorageClass)); value != "" {
-		o.SetStorageClass(value)
+	if value := service.StringValue(v.StorageClass); value != "" {
+		setStorageClass(o.ObjectMeta, value)
 	}
 	if v.Etag != nil {
 		o.SetETag(service.StringValue(v.Etag))
