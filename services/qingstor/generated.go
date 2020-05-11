@@ -30,6 +30,8 @@ const Type = "qingstor"
 
 // Service available pairs.
 const (
+	// DisableURICleaning will
+	PairDisableURICleaning = "qingstor_disable_uri_cleaning"
 	// StorageClass will
 	PairStorageClass = "qingstor_storage_class"
 )
@@ -38,6 +40,15 @@ const (
 const (
 	InfoObjectMetaStorageClass = "qingstor-storage-class"
 )
+
+// WithDisableURICleaning will apply disable_uri_cleaning value to Options
+// This pair is used to
+func WithDisableURICleaning(v bool) *types.Pair {
+	return &types.Pair{
+		Key:   PairDisableURICleaning,
+		Value: v,
+	}
+}
 
 // WithStorageClass will apply storage_class value to Options
 // This pair is used to
@@ -814,8 +825,9 @@ var pairStorageNewMap = map[string]struct{}{
 	// Required pairs
 	ps.Name: struct{}{},
 	// Optional pairs
-	ps.Location: struct{}{},
-	ps.WorkDir:  struct{}{},
+	PairDisableURICleaning: struct{}{},
+	ps.Location:            struct{}{},
+	ps.WorkDir:             struct{}{},
 	// Generated pairs
 	ps.Context: struct{}{},
 }
@@ -824,10 +836,12 @@ type pairStorageNew struct {
 	// Required pairs
 	Name string
 	// Optional pairs
-	HasLocation bool
-	Location    string
-	HasWorkDir  bool
-	WorkDir     string
+	HasDisableURICleaning bool
+	DisableURICleaning    bool
+	HasLocation           bool
+	Location              string
+	HasWorkDir            bool
+	WorkDir               string
 	// Generated pairs
 	HasContext bool
 	Context    context.Context
@@ -853,6 +867,11 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 		result.Name = v.(string)
 	}
 	// Handle optional pairs
+	v, ok = values[PairDisableURICleaning]
+	if ok {
+		result.HasDisableURICleaning = true
+		result.DisableURICleaning = v.(bool)
+	}
 	v, ok = values[ps.Location]
 	if ok {
 		result.HasLocation = true

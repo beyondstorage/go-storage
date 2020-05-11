@@ -34,7 +34,7 @@ storage {
   }
   op "new" {
     required = ["name"]
-    optional = ["location", "work_dir"]
+    optional = ["disable_uri_cleaning", "location", "work_dir"]
   }
   op "reach" {
     required = ["expire"]
@@ -50,6 +50,9 @@ storage {
 
 pairs {
 
+  pair "disable_uri_cleaning" {
+    type = "bool"
+  }
   pair "storage_class" {
     type = "string"
   }
