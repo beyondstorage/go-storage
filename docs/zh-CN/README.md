@@ -68,7 +68,7 @@ if err != nil {
 }
 
 // 使用 Storager API 来维护数据。
-r, err := store。Read("path/to/file")
+r, err := store.Read("path/to/file")
 if err != nil {
     log.Printf("storager read: %v", err)
 }
