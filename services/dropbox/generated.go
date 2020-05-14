@@ -177,23 +177,23 @@ var pairStorageNewMap = map[string]struct{}{
 	// Required pairs
 	ps.Credential: struct{}{},
 	// Optional pairs
-	ps.HTTPClientOptions: struct{}{},
-	ps.WorkDir:           struct{}{},
+	ps.WorkDir: struct{}{},
 	// Generated pairs
-	ps.Context: struct{}{},
+	ps.Context:           struct{}{},
+	ps.HTTPClientOptions: struct{}{},
 }
 
 type pairStorageNew struct {
 	// Required pairs
 	Credential *credential.Provider
 	// Optional pairs
+	HasWorkDir bool
+	WorkDir    string
+	// Generated pairs
+	HasContext           bool
+	Context              context.Context
 	HasHTTPClientOptions bool
 	HTTPClientOptions    *httpclient.Options
-	HasWorkDir           bool
-	WorkDir              string
-	// Generated pairs
-	HasContext bool
-	Context    context.Context
 }
 
 func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
@@ -216,11 +216,6 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 		result.Credential = v.(*credential.Provider)
 	}
 	// Handle optional pairs
-	v, ok = values[ps.HTTPClientOptions]
-	if ok {
-		result.HasHTTPClientOptions = true
-		result.HTTPClientOptions = v.(*httpclient.Options)
-	}
 	v, ok = values[ps.WorkDir]
 	if ok {
 		result.HasWorkDir = true
@@ -231,6 +226,11 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	if ok {
 		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	v, ok = values[ps.HTTPClientOptions]
+	if ok {
+		result.HasHTTPClientOptions = true
+		result.HTTPClientOptions = v.(*httpclient.Options)
 	}
 
 	return result, nil

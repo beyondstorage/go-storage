@@ -116,6 +116,7 @@ func (srv *Service) Handle() {
 	injectReadCallbackFunc(srv.Storage)
 	injectContext(srv.Service)
 	injectContext(srv.Storage)
+	injectHTTPClientOptions(srv)
 	return
 }
 

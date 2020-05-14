@@ -7,7 +7,6 @@ service {
   }
   op "new" {
     required = ["credential", "project"]
-    optional = ["http_client_options"]
   }
 }
 
