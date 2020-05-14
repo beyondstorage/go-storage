@@ -15,62 +15,62 @@
 ### 服务级别
 
 - 使用相同的 API 对存储服务进行基本操作
-  - 列表：列出所有正在使用的存储器
-  - 获取：通过名称获取存储器
-  - 创建：创建一个存储器
-  - 删除：删除存储器
+  - List: 列出所有 Storager
+  - Get: 通过名称获取 Storager
+  - Create: 创建一个 Storager
+  - Delete: 删除一个 Storager
 
-### 存储器级别
+### 存储级别
 
-- 使用相同的 API 的所有存储服务的基本操作
-  - 阅读：读取文件内容
-  - 写入：将内容写入文件
-  - 列表：目录或前缀下的文件列表
-  - 状态：获取文件的元数据
-  - 删除：删除一个文件
-  - 元数据：获取存储服务的元数据
-- 具有相同API的已实现存储服务的高级操作
-  - 复制：复制文件
-  - 移动：移动一个文件
-  - 达到：生成一个公共可访问的 url
-  - 统计：获取存储服务的统计
-  - 部分：对部分、卡片、多部分的充分支持
+- 使用相同的 API 对存储服务进行基本操作
+  - Read: 读取文件内容
+  - Write: 将内容写入文件
+  - List: 列取一个目录或者前缀下的文件
+  - Stat: 获取文件的元数据
+  - Delete: 删除一个文件
+  - Metadata: 获取存储服务的元数据
+- 使用相同的 API 对存储服务进行高级操作
+  - Copy: 复制一个文件
+  - Move: 移动一个文件
+  - Reach: 生成一个可公开访问的 URL
+  - Statistical: 获取存储服务的统计数据
+  - Segment: 对分块/分段的完整支持
 
 ### 文件级别
 
 - 元数据
-  - 内容长度 / 大小：通过 [RFC 2616](https://tools.ietf.org/html/rfc2616) 完全支持
-  - 内容MD5 / ETag：通过 [提议完全支持](docs/design/14-normalize-content-hash-check.md)
-  - 内容类型：通过 [RFC 2616 获得完全支持](https://tools.ietf.org/html/rfc2616)
-  - 存储类别：通过 [提议完全支持](docs/design/8-normalize-metadata-storage-class.md)
+  - Content Length / Size: 通过 [RFC 2616](https://tools.ietf.org/html/rfc2616) 实现完整支持
+  - Content MD5 / ETag: 通过 [proposal](docs/design/14-normalize-content-hash-check.md) 实现完整支持
+  - Content Type: 通过 [RFC 2616](https://tools.ietf.org/html/rfc2616) 实现完整支持
+  - Storage Class: 通过 [proposal](docs/design/8-normalize-metadata-storage-class.md) 实现完整支持
 
 ## 安装
 
-安装 `将获得`
+通过 `go get` 安装
 
 ```bash
-去获取 github.com/Xuanwo/存储
+go get github.com/Xuanwo/storage
 ```
 
-导入
+Import
 
 ```go
-导入 "github.com/Xuanwo/storage"
+import "github.com/Xuanwo/storage"
 ```
 
 ## 快速开始
 
 ```go
 // 初始化服务。
-store, err := coreutils.OpenStorager("fs", 配对。WewWorkDir("/tmp"))
-如果是err != nil 。
-    log。Fatalf("服务失败: %v", 错误)
+store, err := coreutils.OpenStorager("fs", pairs.WithWorkDir("/tmp"))
+if err != nil {
+    log.Fatalf("service init failed: %v", err)
 }
 
 // 使用 Storager API 来维护数据。
-r, err := store。读取("path/to/file")
-如果是err != nil 。
-    log。Printf("存储器读取： %v", 错误)
+r, err := store。Read("path/to/file")
+if err != nil {
+    log.Printf("storager read: %v", err)
 }
 ```
 
