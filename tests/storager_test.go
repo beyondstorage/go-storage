@@ -27,7 +27,7 @@ func TestStorager(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		t.Logf("Start test for %s", v.Type)
+		println("Start test for ", v.Type)
 		testStorager(t, v.Type, pairs)
 		testDirLister(t, v.Type, pairs)
 	}
