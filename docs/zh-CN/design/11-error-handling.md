@@ -10,7 +10,7 @@ adds:
 
 ## Background
 
-[storage](https://github.com/Xuanwo/storage) intends to be a production ready storage layer, and error handling is one of the most important parts.
+[storage][] intends to be a production ready storage layer, and error handling is one of the most important parts.
 
 While facing an error, user should be capable to do following things:
 
@@ -24,10 +24,10 @@ In order to provide those capabilities, we should return error with contextual i
 
 So I propose following changes:
 
-- Add spec [spec: error handling](../spec/1-error-handling.md) to normalize error handling across the whole lib
+- Add spec [spec: error handling][] to normalize error handling across the whole lib
 - All error handling related code should be refactored
 
-Take package `segment` as example, as described in [spec: error handling](../spec/1-error-handling.md), we will have an `Error` struct to carry contextual information:
+Take package `segment` as example, as described in [spec: error handling][], we will have an `Error` struct to carry contextual information:
 
 ```go
 type SegError struct {
@@ -101,8 +101,11 @@ if err != nil && errors.As(err, &e) {
 
 ## Compatibility
 
-Error returned by [storage](https://github.com/Xuanwo/storage) could be changed.
+Error returned by [storage][] could be changed.
 
 ## Implementation
 
 Most of the work would be done by the author of this proposal.
+
+[storage]: https://github.com/Xuanwo/storage
+[spec: error handling]: ../spec/1-error-handling.md

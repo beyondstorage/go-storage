@@ -10,7 +10,7 @@ updates:
 
 ## Background
 
-We removed recursive support in [2-use-callback-in-list-operations](./2-use-callback-in-list-operations.md), and in the same proposal, we outlined that:
+We removed recursive support in [2-use-callback-in-list-operations][], and in the same proposal, we outlined that:
 
 > Directory based storage will only list one directory, and prefix based storage will only list one prefix without a delimiter.
 
@@ -48,3 +48,5 @@ No breaking changes.
 ## Implementation
 
 Most of the work would be done by the author of this proposal.
+
+[2-use-callback-in-list-operations]: ./2-use-callback-in-list-operations.md

@@ -24,7 +24,7 @@ And they should be referred by `16-loose-mode` or `design/16-loose-mode.md`
 
 Proposal will have metadata as front meta to carry more info.
 
-Take [3-support-service-init-via-config-string](../design/3-support-service-init-via-config-string.md) as example:
+Take [3-support-service-init-via-config-string][] as example:
 
 ```yaml
 ---
@@ -64,3 +64,5 @@ After a proposal marked `finished`, we can't change it's content anymore (metada
 ## Code
 
 Related code should be sub directory with the proposal number.
+
+[3-support-service-init-via-config-string]: ../design/3-support-service-init-via-config-string.md

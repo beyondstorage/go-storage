@@ -8,7 +8,7 @@ updated_at: 2020-03-23
 
 ## Background
 
-[storage](https://github.com/Xuanwo/storage) added segment support from the first release. Since then, the segment related API comes into following:
+[storage][] added segment support from the first release. Since then, the segment related API comes into following:
 
 ```go
 type Segmenter interface {
@@ -98,7 +98,7 @@ Firstly, return segment ID is a BUG. In order to distinguish a multipart upload,
 
 Secondly, only returning segment ID enforce us to handle the inconsistency between local and remote.
 
-It works for `init->write->complete`, but what happened if we tried to abort all segments? We need to `list->abort`. The `abort` func is `AbortSegment(id string, pairs ...*types.Pair) (err error)`. We have to get the corresponding path of this segment id from the local segment map, but they are empty, because they are not initiated by [storage](https://github.com/Xuanwo/storage). In order to solve this problem, we have to update local segment map while `list`:
+It works for `init->write->complete`, but what happened if we tried to abort all segments? We need to `list->abort`. The `abort` func is `AbortSegment(id string, pairs ...*types.Pair) (err error)`. We have to get the corresponding path of this segment id from the local segment map, but they are empty, because they are not initiated by [storage][]. In order to solve this problem, we have to update local segment map while `list`:
 
 ```go
 for _, v := range output.Uploads {
@@ -124,3 +124,5 @@ All segments related API has been changed.
 ## Implementation
 
 Most of the work would be done by the author of this proposal.
+
+[storage]: https://github.com/Xuanwo/storage

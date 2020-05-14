@@ -31,8 +31,8 @@ So I propose following changes:
 
 HTTP Related Standards
 
-- [Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content](https://www.rfc-editor.org/rfc/rfc7231)
-- [Hypertext Transfer Protocol (HTTP/1.1): Conditional Requests](https://www.rfc-editor.org/rfc/rfc7232)
+- [Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content][]
+- [Hypertext Transfer Protocol (HTTP/1.1): Conditional Requests][]
 - [Permanent Message Header Field Names](https://www.iana.org/assignments/message-headers/message-headers.xml#perm-headers)
 
 Storage Service Reference Document
@@ -47,3 +47,6 @@ No break changes
 ## Implementation
 
 Most of the work would be done by the author of this proposal.
+
+[Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content]: https://www.rfc-editor.org/rfc/rfc7231
+[Hypertext Transfer Protocol (HTTP/1.1): Conditional Requests]: https://www.rfc-editor.org/rfc/rfc7232

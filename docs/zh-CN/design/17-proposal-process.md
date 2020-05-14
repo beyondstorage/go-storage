@@ -8,7 +8,7 @@ updated_at: 2020-03-18
 
 ## Background
 
-[storage](https://github.com/Xuanwo/storage)'s development is proposal driven. We need to explain why and how we make changes to [storage](https://github.com/Xuanwo/storage) so that we can understand why we are at here.
+[storage][]'s development is proposal driven. We need to explain why and how we make changes to [storage][] so that we can understand why we are at here.
 
 ## Proposal
 
@@ -33,7 +33,7 @@ All steps do not need to be done by the same person. For example, issue could be
 
 Changes level could be increased while needed. For example, user A sends an one line simple change, but it found out that we need a whole refactor on this package. At this time, we will need to follow the **Big changes** procedure.
 
-Proposal's spec will be presented in spec [2-proposal](../spec/2-proposal.md).
+Proposal's spec will be presented in spec [2-proposal][].
 
 ## Rationale
 
@@ -46,3 +46,6 @@ None
 ## Implementation
 
 No code related changes.
+
+[storage]: https://github.com/Xuanwo/storage
+[2-proposal]: ../spec/2-proposal.md

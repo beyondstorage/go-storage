@@ -8,7 +8,7 @@ updated_at: 2020-03-12
 
 ## Background
 
-Current [storage](https://github.com/Xuanwo/storage)'s pair handle behavior is inconsistent.
+Current [storage][]'s pair handle behavior is inconsistent.
 
 In all `parseStoragePairXXX` functions, we will ignore not supported pairs via only pick supported one:
 
@@ -96,3 +96,5 @@ None.
 ## Implementation
 
 Most of the work would be done by the author of this proposal.
+
+[storage]: https://github.com/Xuanwo/storage

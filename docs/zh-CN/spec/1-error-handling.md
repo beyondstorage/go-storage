@@ -8,18 +8,18 @@ added_by:
 
 # Spec: Error Handling
 
-This spec will describe how to handle errors in [storage](https://github.com/Xuanwo/storage).
+This spec will describe how to handle errors in [storage][].
 
 ## Definitions
 
 - `error`: program is not running properly
-- `package`: All valid go package in [storage](https://github.com/Xuanwo/storage)
+- `package`: All valid go package in [storage][]
 - `implementer`: People who implement `package`
 - `caller`: People who use/call `package`
 
 ## Error
 
-From [storage](https://github.com/Xuanwo/storage)'s side, errors can be classified as following:
+From [storage][]'s side, errors can be classified as following:
 
 - Expected errors
 - Unexpected errors
@@ -70,7 +70,7 @@ This section will describe error handling on package implementer side.
 This section will describe error handling on package caller side.
 
 - Caller SHOULD only check package's expected error and don't check errors returned by package's imported libs
-- [storage](https://github.com/Xuanwo/storage)'s package CAN panic while operations can't move on, caller SHOULD recover them by self
+- [storage][]'s package CAN panic while operations can't move on, caller SHOULD recover them by self
 
 ## Example
 
@@ -124,3 +124,5 @@ if err != nil {
     return nil, &Error{"parse", ProtocolHTTP, s[1:], err}
 }
 ```
+
+[storage]: https://github.com/Xuanwo/storage
