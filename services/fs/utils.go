@@ -45,6 +45,12 @@ func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 	if opt.HasWorkDir {
 		store.workDir = opt.WorkDir
 	}
+
+	// Check and create work dir
+	err = store.osMkdirAll(store.workDir, 0755)
+	if err != nil {
+		return nil, err
+	}
 	return
 }
 
