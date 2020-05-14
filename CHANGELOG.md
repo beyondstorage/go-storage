@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v1.1.0] - 2020-05-14
+
+### Proposal
+
+- services, design: Propose and implement 21-split-segmenter (#270)
+
+### Added
+
+- types/pairs: Add more comment for work dir
+- pkg/httpclient: Add stream-oriented http client support (#274)
+- services/qingstor: Detect bucket location automatically (#278)
+- ci: Setup drone for integration test (#282)
+- services/qingstor: Allow read with offset and size (#283)
+- services: Add service level pair support (#311)
+- services/*: Add service level storage class support (#313)
+- services/qingstor: Add disable uri cleaning support (#314)
+
+### Changed
+
+- types/pairs: Allow parse from plain string value (#281)
+- docs: Use vuepress instead (#286)
+- docs: Import user experience (#287)
+- docs: Get ready for i18n docs (#289)
+- docs: Add crowdin support for i18n (#290)
+- *: Refactor definitions generator (#303)
+- definitions: Auto inject http_client_options for all services (#321)
+
+### Fixed
+
+- internal/cmd: Fix -ignore flag in go generate matches unexpected files (#268)
+- services/azblob: Fix context deadline exceeded while reading (#275)
+- pkg/httpclient: Fix connection closed while writing or reading (#305)
+
 ## [v1.0.0] - 2020-04-23
 
 ### Proposal
@@ -238,7 +271,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v1.1.0...HEAD
+[v1.1.0]: https://github.com/Xuanwo/storage/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/Xuanwo/storage/compare/v0.9.0...v1.0.0
 [v0.9.0]: https://github.com/Xuanwo/storage/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/Xuanwo/storage/compare/v0.7.2...v0.8.0
