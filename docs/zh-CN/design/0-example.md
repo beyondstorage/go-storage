@@ -1,20 +1,20 @@
 ---
 author: Xuanwo <github@xuanwo.io>
 status:
-  - draft
-  - candidate
-  - finished
+  - 草稿
+  - 候选项
+  - 完成
 updated_at: 2019-11-15
 ---
 
-# Proposal: <proposal name>
+# 提议： <proposal name>
 
-## Background<proposal's background>
+## 二. 背景<proposal's background>
 
-## Proposal<proposal's content>
+## 建议<proposal's content>
 
-## Rationale<proposal's rationale content, other implementations>
+## 理由<proposal's rationale content, other implementations>
 
-## Compatibility<proposal's compatibility statement>
+## 兼容性<proposal's compatibility statement>
 
-## Implementation<proposal's implementation>
+## 二． 执行情况<proposal's implementation>

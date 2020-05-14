@@ -1,59 +1,60 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-03-23
 ---
 
-# Proposal: Return segment interface instead
+# 建议：返回段接口
 
-## Background
+## 二. 背景
 
-[storage](https://github.com/Xuanwo/storage) added segment support from the first release. Since then, the segment related API comes into following:
+[从第一次发布中存储](https://github.com/Xuanwo/storage) 个已添加的片段支持。 自那时以来，相关的 API 部分出现在以下方面：
 
 ```go
-type Segmenter interface {
-    ListSegments(path string, pairs ...*types.Pair) (err error)
-    InitSegment(path string, pairs ...*types.Pair) (id string, err error)
-    WriteSegment(id string, offset, size int64, r io.Reader, pairs ...*types.Pair) (err error)
-    CompleteSegment(id string, pairs ...*types.Pair) (err error)
-    AbortSegment(id string, pairs ...*types.Pair) (err error)
+键入Segmenter interprete v.
+    ListSegments(路径字符串, 对...*类型)配对) (错误)
+    InitSegment(路径字符串，对...*类型。配对) (id 字符串，错误)
+    写入部分(id 字符串，偏移，大小，int64，r io)。读者, 配对 ...*类型。配对) (err 错误)
+    CompleteSegment(id 字符串，对...*类型。配对) (err 错误)
+    中止 (id 字符串, 对 ...*类型。配对) (错误)
 }
 ```
 
-And the data flow looks like:
+数据流看起来很好：
 
 ```text
-                                                        +----------------+
-                                                        |                |
-                                                 +------>    Complete    |
-                                                 |      |                |
-                                                 |      +----------------+
+                                                        +------------------------+
+                                                        | |
+                                                 +------>    完成 |
+                                                 | | | |
+                                                 | +-------------------------+
                                                  |
-       +------------+         +-------------+    |
-       |            |         |             |    |
-       |    Init    +-------->+    Write    +----+
-       |            |         |             |    |
-       +------------+         +-------------+    |
+       +-------------------------+ | 
+ + --------------+ |
+       | | | | |
+       | Init +-------->+ Write +----+
+       | | | | | | | | | |
+       +------------+ +-------------+ |
                                                  |
-                                                 |      +-------------+
-                                                 |      |             |
-                                                 +------>    Abort    |
-                                                        |             |
+                                                 | +-------------+
+                                                 | | |
+                                                 +------>    中止|
+                                                        |
                                                         +-------------+
 ```
 
-In this implementation, we use a method called: `offset based segment`. User needs to split segment into different part via offset, and check integrity by offset and size. But most object storage services use `index based segment` via `PartNumber`, and it's hard to convert from `offset based` to `index based`, we need to make sure every part has the same size.
+在这个执行中，我们使用一个被调用的方法： `偏移部分`。 用户需要通过抵销将部分分割成不同的部分，并通过偏移和大小检查完整性。 但大多数对象存储服务使用 `基于索引的部分` 通过 `PartNumber`, 并且很难从 `偏移量转换为` 到 `基于`的索引， 我们需要确保每个部分都有同样的规模。
 
-So we need to find a way to support both `offset based` and `index based` segment.
+因此我们需要找到一种方式来支持基于 `偏移的` 和 `索引基于` 部分。
 
-## Proposal
+## 建议
 
-So I propose returning segment interface instead of segment id.
+因此，我提议返回部分接口而不是段号。
 
-Instead of returning a segment ID, we should return a `segment.Segment` interface:
+我们应该返回一个 ID 区块，而不是返回 `区块。段` 接口：
 
 ```go
-type Segment interface {
+请输入Segment interface volume
     String() string
 
     ID() string
@@ -61,66 +62,66 @@ type Segment interface {
 }
 ```
 
-Developers can implement their own segment logic by them self or use the builtin index based segment.
+开发者可以自行实现他们自己的区段逻辑，或使用基于内置的区段。
 
-The `Segmenter` could be changed into:
+`段` 可以更改为:
 
 ```go
-type Segmenter interface {
-    ListSegments(path string, pairs ...*types.Pair) (err error)
-    InitSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error)
-    WriteSegment(seg segment.Segment, r io.Reader, pairs ...*types.Pair) (err error)
-    CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error)
-    AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error)
+键入Segmenter interprete v.
+    ListSegments(路径字符串, 对...*类型)配对) (错误)
+    InitSegment(路径字符串，对...*类型。Pair) (seg segment.片段，err 错误)
+    WrteSegment(seg 片段)。Segment, r io.读者, 配对 ...*类型。Pair) (err error)
+    CompleteSegment(seg segment.片段，对...*类型。配对) (错误)
+    中止 segment(seg区段).片段，对...*类型。配对) (错误)
 }
 ```
 
-`segment.Segment` will be generated by services, and can't be changed outside.
+`段段` 将由服务生成，不能在外部更改。
 
-## Rationale
+## 理由
 
-### Index based segmenter VS Offset based segmenter
+### 基于分片段的 VS 偏移索引值
 
-Index based segment needs `index` and `size` to mark a part, and offset based segment needs `offset` and `size`. They can't convert between without same part size. But it's hard to let user use the same part size in all write segment call.
+Index based segment needs `index` and `size` to mark a part, and offset based segment needs `offset` and `size`. 他们不能在没有相同部分大小的情况下转换。 但很难让用户在所有写部分通话中使用相同的部件大小。
 
-In order to implement them both, we need to treat `size`, `offset` or `index` as a `Pair`, services can decide which one to use.
+为了实现它们，我们需要处理 `大小`， `偏移` 或 `索引` 为 `配对`, 服务可以决定使用哪一个。
 
-There are other implementations here:
+这里还有其他实现方式：
 
-1. `OffsetBasedSegmenter` vs `IndexBasedSegmenter`
+1. `偏移BasedSegmenter` vs `IndexBasedSegmenter`
 2. `WriteSegmentViaIndex` vs `WriteSegmentViaOffset`
 
-No.1 implementation's problem is these add too much work for services to support both of them. The problems for No.2 implementation is different segment logic needs different `init` and `abort` support, only support different `write` is not enough. And this also add too much work for implementing `Segmenter`.
+不.1 执行的问题是，这些问题使得服务部门的工作量过多，不足以支助这两种服务。 未解决的问题 实现是不同的段逻辑需要不同的 `init` 和 `中止` 支持 仅支持不同的 `写入` 是不够的。 这也增加了太多的工作来实现 `段`。
 
-### Segment interface instead of segment id
+### 段接口而不是段 id
 
-Firstly, return segment ID is a BUG. In order to distinguish a multipart upload, we need `upload_id` and `object_key`. It's possible that we have same `upload_id` for different `object_key`.
+首先，返回部分ID是一个BUG。 为了区分多部分上传，我们需要 `upload_id` 和 `object_key`。 我们可能对不同的 `object_key` 有相同的 `upload_id`。
 
-Secondly, only returning segment ID enforce us to handle the inconsistency between local and remote.
+第二，只有返回的部分ID才能迫使我们处理当地与偏远地区之间的不一致问题。
 
-It works for `init->write->complete`, but what happened if we tried to abort all segments? We need to `list->abort`. The `abort` func is `AbortSegment(id string, pairs ...*types.Pair) (err error)`. We have to get the corresponding path of this segment id from the local segment map, but they are empty, because they are not initiated by [storage](https://github.com/Xuanwo/storage). In order to solve this problem, we have to update local segment map while `list`:
+它适用于 `init->写入->完成`, 但如果我们试图中止所有部分会发生什么？ 我们需要 `列表 ->中止`。 `中止` 真菌是 `中止片段( id 字符串，对...*类型)配对) (错误)`。 我们必须从局部地图获取此段ID的相应路径。 但它们是空的，因为它们不是由 [存储](https://github.com/Xuanwo/storage) 发起的。 为了解决这个问题，我们必须更新本地段地图，而 `邮件列表`：
 
 ```go
-for _, v := range output.Uploads {
-    seg := segment.NewSegment(*v.Key, *v.UploadID, 0)
+为 _, v = 范围输出。上传者:
+    seg := 部分。NepSegment(*v.注如果选项，上传 ID，0)
 
-    if opt.HasSegmentFunc {
+HasSegmentFunc {
         opt.SegmentFunc(seg)
     }
 
     s.segmentLock.Lock()
-    // Update client's segments.
-    s.segments[seg.ID] = seg
-    s.segmentLock.Unlock()
+    // 更新客户端部分。
+    s.sects[seg.ID] = seg
+    s.segmentlock.Unlock()
 }
 ```
 
-This problem can be solved via return a segment interface. After this change, user can identify a segment by them self, and local segment map is not needed any more.
+这个问题可以通过返回一个分段接口来解决。 更改后，用户可以自己识别一个区段，局部地图已不再需要。
 
-## Compatibility
+## 兼容性
 
-All segments related API has been changed.
+所有关联的 API 部分都已更改。
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。

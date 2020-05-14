@@ -1,12 +1,12 @@
-# dropbox
+# 投放箱
 
 [Dropbox](https://www.dropbox.com)
 
-## Config
+## 配置
 
-### Storager
+### 存储器
 
-| Name         | Required | Comments                        |
-| ------------ | -------- | ------------------------------- |
-| `credential` | Y        | only support `api_key` protocol |
-| `work_dir`   | N        | work dir                        |
+| 名称     | 必填 | 评论               |
+| ------ | -- | ---------------- |
+| `凭据`   | Y  | 仅支持 `api_key` 协议 |
+| `工作目录` | N  | 工作目录             |

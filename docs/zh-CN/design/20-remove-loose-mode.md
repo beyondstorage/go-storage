@@ -1,31 +1,31 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: 草稿
 updated_at: 2020-04-09
 ---
 
-# Proposal: Remove loose mode
+# 建议：删除松散模式
 
-## Background
+## 二. 背景
 
-In order to resolve the problem of pair handle behavior is inconsistent, we introduce loose mode in proposal [16-loose-mode](./16-loose-mode.md). However, enabling the loose mode introduces more problems.
+为了解决配对句柄行为的问题不一致，我们在提议 [16-松散模式](./16-loose-mode.md) 中引入了松散模式。 然而，启用松散模式会带来更多问题。
 
-First, we need to figure out issue [error could be returned too early while in loose mode](https://github.com/Xuanwo/storage/issues/233). We have check whether the error can be ignored in loose mode.
+首先，我们需要找出问题 [错误可能在松散模式下退回太早了](https://github.com/Xuanwo/storage/issues/233)。 我们已经检查了是否可以在松散模式中忽略错误。
 
-Then, nearly no people want the API call move on when the behavior is inconsistent. Any inconsistent behavior should be handled with returning error.
+然后，当行为不一致时，几乎没有人想要调用 API 任何不一致的行为都应该与返回的错误一起处理。
 
-## Proposal
+## 建议
 
-So I proposal to remove loose mode and return error for all inconsistent behavior.
+所以我建议删除松散模式和返回所有不一致行为的错误。
 
-## Rationale
+## 理由
 
-None.
+无。
 
-## Compatibility
+## 兼容性
 
-Loose mode has been removed
+松散模式已被删除
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。

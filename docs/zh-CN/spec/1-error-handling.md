@@ -1,126 +1,126 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: draft
+status: 草稿
 updated_at: 2020-02-18
 added_by:
-  - design/11-error-handling.md
+  - 设计/11错误处理.md
 ---
 
-# Spec: Error Handling
+# 旁观：错误处理
 
-This spec will describe how to handle errors in [storage](https://github.com/Xuanwo/storage).
+这个速度将描述如何处理 [存储](https://github.com/Xuanwo/storage) 中的错误。
 
-## Definitions
+## 定 义
 
-- `error`: program is not running properly
-- `package`: All valid go package in [storage](https://github.com/Xuanwo/storage)
-- `implementer`: People who implement `package`
-- `caller`: People who use/call `package`
+- `错误`: 程序运行不正确
+- `包`: 所有有效的插件在 [存储](https://github.com/Xuanwo/storage) 中
+- `实现者`: 执行 `包`
+- `通话者`: 使用/调用 `包`
 
-## Error
+## 错误
 
-From [storage](https://github.com/Xuanwo/storage)'s side, errors can be classified as following:
+从 [存储](https://github.com/Xuanwo/storage)的错误可以归类为以下类型：
 
-- Expected errors
-- Unexpected errors
+- 预期错误
+- 意外错误
 
-Expected errors are errors that implementer expected. Those errors SHOULD be defined with enough comments and any changes to them should be documented.
+预期的错误是实现者预期的错误。 对这些错误的定义应有足够的评论，对它们的任何改动都应记录在案。
 
-Unexpected errors are errors that implementer unexpected. Those errors COULD be changed or disappeared while dependence upgraded and no changelog for them.
+意外的错误是实现者无法预料的错误。 这些错误在依赖性提升且没有更新的情况下会被改变或消失。
 
-Error should always represent as a struct which carries contextual error information. Depends on package implementation, package could have more than one error struct.
+错误应该始终作为一个结构来表示，它会带有上下文错误信息。 依赖于软件包实现。软件包可能有一个以上的错误。
 
 ```go
-type Error struct {
-    Op  string
-    Err error
+类型错误结构如下：
+    Op 字符串
+    Err 错误
 
-    ContextA string
-    ContextB structB
-    ...
+    ContextA 字符串
+    ContextB structextB
+...
 }
 ```
 
-- `Op` means in which operation this error triggered.
-- `Err` carries underlying error
-  - For expected error, the related error SHOULD be used directly
-  - For unexpected error, the error SHOULD be passed as is or warped
-- `ContextX` carries contextual error information, every error context struct should implement `String() string`
+- `Op` 是指触发此错误的操作。
+- `错误` 带有潜在错误
+  - 对于预期的错误，相关错误将直接使用
+  - 对于意外的错误，应按照或改写传递错误
+- `ContextX` 带有上下文错误信息，每个上下文都应该实现 `String() 字符串`
 
-Every error struct SHOULD implement following methods:
+每个错误构建SHOULD 实现以下方法：
 
-- `Error() string`
+- `Error() 字符串`
 - `Unwrap() error`
 
-String returned in `Error()` SHOULD be in the same format:
+返回了 `Error()` SHOULD 格式相同：
 
 `{Op}: {ContextA}, {ContextB}: {Err}`
 
-`Unwrap` SHOULD always return underlying error without any operation.
+`打开` SHOULD 总是返回没有任何操作的潜在错误。
 
-## Implementer
+## 实现
 
-This section will describe error handling on package implementer side.
+本节将描述软件包实现者侧的处理错误。
 
-- Expected error belongs to the package who declared, only this package CAN return this error
-- Implementers CAN panic while they make sure this operation can't move on or this operation will affect or destroy data and SHOULD NOT recover
+- 预计错误属于已声明的软件包，只有这个软件包CAN返回了这个错误
+- 实现者在确保此操作无法继续或此操作会影响或销毁数据且无法恢复时恐慌。
 
-## Caller
+## 呼叫者
 
-This section will describe error handling on package caller side.
+本节将描述处理包调用方块时出现的错误。
 
-- Caller SHOULD only check package's expected error and don't check errors returned by package's imported libs
-- [storage](https://github.com/Xuanwo/storage)'s package CAN panic while operations can't move on, caller SHOULD recover them by self
+- 呼叫者SHOULD 只检查包的预期错误，不检查通过包导入的标签返回的错误
+- [存储](https://github.com/Xuanwo/storage)的软件包 CAN 恐慌，操作无法继续，召唤SHOULD 自行恢复
 
-## Example
+## 示例
 
-Expected errors
+预期错误
 
 ```go
 var (
-    // ErrUnsupportedProtocol will return if protocol is unsupported.
-    ErrUnsupportedProtocol = errors.New("unsupported protocol")
-    // ErrInvalidValue means value is invalid.
-    ErrInvalidValue = errors.New("invalid value")
+    // 错误不支持的协议将返回协议。
+    ErrUnsupportedProtocol = errors.新("不支持的协议")
+    // 错误值表示值无效。
+    ErrinvalidValue = 错误。新("无效值")
 )
 ```
 
-Error struct
+结构错误
 
 ```go
-// Error represents error related to endpoint.
-type Error struct {
-    Op string
-    Err error
+// 错误表示与端点相关的错误。
+类型错误结构是否为
+    Op 字符串
+    Err 错误
 
-    Protocol string
-    Values   []string
+    协议字符串
+    值 []字符串
 }
 
-func (e *Error) Error() string {
-    if e.Values == nil {
-        return fmt.Sprintf("%s: %s: %s", e.Op, e.Protocol, e.Err.Error())
+func (ae *Error) Error() 字符串否
+    if e.values == nil 。
+        return fmt。Sprintf("%s: %s: %s", e.Op, e.Protocol, e.ErrError())
     }
-    return fmt.Sprintf("%s: %s, %s: %s", e.Op, e.Protocol, e.Values, e.Err.Error())
+    返回 fmt。Sprintf("%s: %s, %s: %s", e.Op, e.Protocol, e.数值，e.ErrError())
 }
 
-// Unwrap implements xerrors.Wrapper
-func (e *Error) Unwrap() error {
-    return e.Err
+// 卸载实现x错误。包装器
+真空(e *Error) Unwrawrawraw() 错误。
+    返回 e。错误
 }
 ```
 
-Expected error occurs
+预计发生错误
 
 ```go
 err = &Error{"parse", s[0], nil, ErrUnsupportedProtocol}
 ```
 
-Unexpected error occurs
+发生意外错误
 
 ```go
-port, err := strconv.ParseInt(s[2], 10, 64)
-if err != nil {
+端口，err := strconv.ParseInt(s[2], 10, 64)
+if err != nil 。
     return nil, &Error{"parse", ProtocolHTTP, s[1:], err}
 }
 ```

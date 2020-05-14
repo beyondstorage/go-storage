@@ -1,211 +1,211 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-01-13
 ---
 
-# Proposal: Normalize metadata storage class
+# 建议：规范元数据存储类
 
-## Background
+## 二. 背景
 
-> Simple introduce about `storage class`
+> 关于 `存储类的简单介绍`
 > 
-> Storage services usually offer different storage class for different use cases. - For hot data which frequently accessed, service does optimization for low latency and high throughput performance. - For cold data which accessed one or two times over years, service does optimization for durability and low cost.
+> 存储服务通常为不同的使用情况提供不同的存储类。 - 对于经常访问的热数据来说，服务可以优化低延迟和高通量性能。 - 对于多年来访问过一两次的冷数据来说，服务能够优化耐久性和低成本。
 > 
-> Services will mark different storage class in object metadata.
+> 服务将在对象元数据中标记不同的存储类别。
 
-As described in proposal [6-normalize-metadata](https://github.com/Xuanwo/storage/blob/master/docs/design/6-normalize-metadata.md), storage class is a meta that has not been standardized. We need to normalize it so that we can use them across different services.
+如提议 [6－规范化元数据](https://github.com/Xuanwo/storage/blob/master/docs/design/6-normalize-metadata.md)所述，存储类是一个尚未标准化的元数据。 我们需要使它正常化，以便我们能够在不同的服务中使用它们。
 
-We have following problems to address:
+我们有以下问题要解决：
 
-### Different name
+### 不同的名称
 
-Different services may have different name.
+不同的服务名称可能不同。
 
-As a private metadata, services may assign them in private headers:
+作为私人元数据，服务部门可以将它们分配给私人头部：
 
-- `qingstor` use `x-qs-storage-class` to carry the `storage-class`
-- `s3` use `x-amz-storage-class` to carry the `storage-class`
+- `qingstor` 使用 `x-qs-storage-class` 携带 `storage-class`
+- `s3` 使用 `x-amz-storage-class` 携带 `storage-class`
 
-Even storage class itself is not a common usage:
+即使存储等级本身也不是常见的用法：
 
-- `azblob` use `AccessTier` to represent different storage class
+- `zblob` 使用 `AccessTier` 表示不同的存储类
 
-### Different value
+### 不同的值
 
-It's obvious different provider won't use the same meaning value.
+它明显不同的提供者不会使用相同的含义。
 
-- `s3` uses `Standard`, `Standard-IA`, `Intelligent-Tiering`, `Glacier` and so on.
-- `azblob` uses `Hot`, `Cool` and `Archive`.
-- `gcs` uses `Standard`, `Nearline` and `Coldline`.
+- `s3` 使用 `Standard`, `Standard-IA`, `Intelligent-Tiering`, `冰川` 等等。
+- `zblob` 使用 `热门`, `酷` 和 `归档`.
+- `gcs` 使用 `Standard`, `附近` 和 `Coldline`.
 - ...
 
-Almost every provider has its own set of storage class values.
+几乎每个提供者都有自己的存储类别值。
 
-### Different TTFB
+### 不同的TTFB
 
-> TTFB: Time to first byte
+> TTFB：第一个字节的时间
 
-Different storage class means different under layer storage media or algorithm which provides different warrant about TTFB.
+不同的存储等级在图层存储介质或提供不同的TTFB授权证的算法下是不同的。
 
-- `s3`: `Standard` TTFB maybe milliseconds while `Glacier` needs `select minutes or hours`
-- `gcs`: All storage class provides the same latency
-- `kodo`: `Archive` needs another API call to restore the files
-- `cos`: `Archvie` needs to submit application to restore the files
+- `s3`: `Standard` TTFB might be 毫秒，而 `冰川` 需要 `选择分钟或小时`
+- `gcs`: 所有存储类都提供相同的延迟时间
+- `kodo`: `存档` 需要另一个 API 来还原文件
+- `cos`: `Archvie` 需要提交应用程序以恢复文件
 - ...
 
-We need to overcome those differences.
+我们需要克服这些分歧。
 
-## Proposal
+## 建议
 
-So I propose following changes:
+因此，我提议作如下修改：
 
-### Normalize name
+### 正常化名称
 
-Metadata for `storage class`'s name will be normalized to `storage-class`.
+`存储类`的元数据 </code> 的名称将正常化为 `存储类`。
 
-### Add global storage class set
+### 添加全局存储类集
 
-Add `Hot`, `Warm`, `Cold` storage classes as a global storage class set across storage services.
+添加 `Hot`, `Warm`, `冷` 存储类作为跨存储服务集合的全局存储类。
 
-`Hot` is used for frequently accessed data.
+`热门` 用于经常访问的数据。
 
- - All service supports this kind of storage class
- - All services' default storage class
- - If a service doesn't have an idea for storage class, it provides `Hot` storage class
+ - 所有服务支持这种存储类
+ - 所有服务的默认存储类
+ - 如果某项服务对存储类没有任何想法，它将提供 `热` 存储类
 
-`Warm` is used for infrequent access data, maybe accessed several times a month.
+`暖` 用于不经常访问的数据，也许每月访问数次。
 
- - Higher latency and lower performance compared to `Hot`
- - `Read` operation requires extra fees (depend on services)
+ - 与 `热点相比，延迟率更高，性能更低`
+ - `读取` 操作需要额外费用 (取决于服务)
 
-`Cold` is used for archiving data which maybe accessed one or two times a year.
+`冷` 用于存档可能每年访问一两次的数据。
 
-- `Cold` only support write operation
-- Depends on services' implementations, `Cold`, a.k.a, `Archive` storage class may need extra time (minutes to hours, except `gcs`) or extra API (`kodo`) even manual application (`cos`). So we will not add extra support to read `Cold` data, just return the error.
+- `冷` 只支持写入操作
+- 取决于服务的实现, `冷`, a.k. , `存档` 存储类可能需要额外的时间 (分钟到小时) 除了 `gcs`或额外的 API (`kodo`) 甚至手动应用程序(`cos`). 所以我们不会为阅读 `冷` 数据添加额外支持，只需返回错误。
 
-In conclusion:
+最后：
 
-- `Hot` will be mapped to service's fastest/default storage class
-- `Warm` will be infrequent access storage class for service
-- `Cold` will be the archive storage class for service
+- `热门` 将被映射到服务的最快/默认存储类
+- `温暖` 将是服务中不常见的访问存储类
+- `冷` 将是用于服务的归档存储类
 
-For example:
+例如：
 
-- s3 `Standard` == `Hot`
-- s3 `Standard` == `Warm`
-- s3 `Glacier` == `Cold`
+- s3 `标准` == `热点`
+- s3 `标准` == `暖`
+- s3 `冰川` == `寒冷`
 
-### Service behavior spec
+### 服务行为速度
 
-- Read storage class from pairs, service need to parse from global storage class
-- Write storage class to metadata, service need to format into global storage class
-- Meet unsupported storage class while parsing from global storage class, return `ErrStorageClassNotSupported` with service name and storage class name is services have more than one storage class
-- Meet unsupported storage class while formatting into global storage class, return `ErrStorageClassNotSupported` with service name and storage class name
+- 从配对读取存储类，服务需要从全局存储类解析
+- 将存储类写入元数据，服务需要格式化成全局存储类
+- 从全局存储类解析时遇到不支持的存储类， 返回 `错误StorageClassNotsupported` 服务名称和存储类名称不止一个存储类
+- 在格式化为全局存储类时满足不支持的存储类，返回 `错误存储类支持` 服务名称和存储类名称
 
-## Rationale
+## 理由
 
-### Services storage classes
+### 服务存储类
 
 #### azblob
 
 ref: https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-storage-tiers
 
-- Hot: Optimized for storing data that is accessed frequently.
-- Cool: Optimized for storing data that is infrequently accessed and stored for at least 30 days.
-- Archive: Optimized for storing data that is rarely accessed and stored for at least 180 days with flexible latency requirements (on the order of hours).
+- 热: 优化存储经常访问的数据。
+- 冷却：优化储存不经常存取和储存至少30天的数据。
+- 存档：优化储存很少存取和储存至少180天、灵活延迟要求（按小时排列）的数据。
 
-#### cos
+#### 牛座
 
 ref: https://cloud.tencent.com/document/product/436/33417
 
-- Standard: COS Standard is an object storage service with high reliability, availability, and performance.Its low latency and high throughput make it well suitable for the use cases involving lots of hotspot files or frequent data access.
-- Standard_IA: COS Infrequent Access (COS Standard_IA) provides object storage services featuring high reliability and low storage cost and access latency. It offers lowered pricing for storage and keeps the first-byte access time within milliseconds, ensuring that data can be fast retrieved with no wait required. However, data retrieval incurs fees. It is suitable for business scenarios where the access frequency is low (e.g., once or twice per month).
-- Archive: Archive Storage is a highly reliable object storage service that has ultra-low storage cost and long-term data retention. Featuring the lowest storage price, Archive Storage needs a longer time to read data and is suitable for archived data that needs to be stored for a long time.
+- 标准：COS 标准是一种可靠性、可用性和性能高的对象存储服务。其延迟率低和通过率高使得它很适合使用大量热点文件或经常数据存取的情况。
+- Standard_IA：COS 不经常访问 (COS Standard_IA) 提供物体储存服务，其特点是可靠性高，储存成本低，存取延迟。 它提供了降低的存储定价，并将第一字节访问时间保持在毫秒内，确保数据能够在无需等待的情况下快速检索。 但是，数据检索要费用。 它适合于存取频率较低的业务情景(例如每月一次或两次)。
+- 存档：存档存储是一个非常可靠的物体存储服务，具有超低的存储成本和长期数据保留。 描述最低的存储价格， 存档存储需要更长时间才能读取数据，并适合于存档的需要长期储存的数据。
 
-#### dropbox
+#### 投放箱
 
-None
+无
 
 #### fs
 
-None
+无
 
 #### gcs
 
-ref: https://cloud.google.com/storage/docs/storage-classes
+ref: https://cloud.google.com/storage/docs/storage-class
 
-- Standard: Standard Storage is best for data that is frequently accessed ("hot" data) and/or stored for only brief periods of time.
-- Nearline: Nearline Storage is a low-cost, highly durable storage service for storing infrequently accessed data. Nearline Storage is a better choice than Standard Storage in scenarios where slightly lower availability, a 30-day minimum storage duration, and costs for data access are acceptable trade-offs for lowered at-rest storage costs.
-- Coldline: Coldline Storage is a very-low-cost, highly durable storage service for storing infrequently accessed data. Coldline Storage is a better choice than Standard Storage or Nearline Storage in scenarios where slightly lower availability, a 90-day minimum storage duration, and higher costs for data access are acceptable trade-offs for lowered at-rest storage costs.
-- Archive: Archive Storage is the lowest-cost, highly durable storage service for data archiving, online backup, and disaster recovery. Unlike the "coldest" storage services offered by other Cloud providers, your data is available within milliseconds, not hours or days.
+- 标准：标准存储最适合于经常访问的数据(“热”数据)和/或只储存短暂时间。
+- 近线：近线存储是一种低成本、高度耐用的存储服务，用于存储不经常访问的数据。 在可用性稍低的情况下，近线存储比标准存储更好的选择。 a 30天最低储存期限和数据存取费用是可接受的减让，可用于减低休息时间储存费用。
+- Coldline：Coldline Storage 是一种非常低成本、高度耐久的存储服务，用于存储不经常访问的数据。 在可用性稍低的情况下，Coldline Storage 是比标准存储或近线存储更好的选择。 最低90天储存期限和更高的数据存取费用是减低休息时间储存费用的可以接受的折衷办法。
+- 档案：档案储存是用于数据存档、在线备份和灾后恢复的成本最低、高度持久的储存服务。 不同于其他云端提供商提供的“coldest”存储服务，您的数据可以在毫秒内提供，而不是在小时或天内。
 
 #### kodo
 
 ref: https://developer.qiniu.com/kodo/api/3710/chtype
 
 - STANDARD (0, 标准存储)
-- STANDARD_IA (1, 低频存储)
-- ARCHIVE (2, 归档存储)
+- STANDARD_IA (1，每秒)
+- ARCHIVE (2，每秒)
 
 #### oss
 
-ref: https://www.alibabacloud.com/help/doc-detail/51374.htm
+ref： https://www.alibabacloud.com/help/doc-detail/51374.htm
 
-- Standard: OSS Standard storage provides highly reliable, highly available, and high-performance object storage services that support frequent data access. The high-throughput and low-latency service response capability of OSS can effectively support access to hot data. Standard storage is ideal for storing images for social networking and sharing, and storing data for audio and video applications, large websites, and big data analytics.
-- IA: OSS IA storage is suitable for storing long-lived, but less frequently accessed data (an average of once or twice per month). IA storage offers a storage unit price lower than that of Standard storage, and is suitable for long-term backup of various mobile apps, smart device data, and enterprise data. It also supports real-time data access. Objects of the IA storage class have a minimum storage period.
-- Archive: OSS Archive storage has the lowest price among the three storage classes. It is suitable for long-term (at least half a year) storage of data that is infrequently accessed. The data may take about one minute to restore before it can be read. This storage option is suitable for data such as archival data, medical images, scientific materials, and video footage.
+- 标准：开放源码软件标准存储提供了高度可靠、高度可用和高性能的目标存储服务，支持经常获取数据。 开放源码软件的高通量和低延迟服务反应能力能够有效地支持获取热数据。 标准存储是存储用于社交网络和分享的图像的理想方式。 并储存用于视听应用、大型网站和大型数据分析的数据。
+- IA：开放源码软件IA 储存适合于储存寿命长但较少使用的数据(平均每月一次或两次)。 IA 存储设备价格低于标准存储设备。 适合于长期备份各种移动应用、智能设备数据和企业数据。 它还支持实时数据访问。 IA级存储对象具有最小存储时间。
+- 存档：开放源码软件存档存储在三个储存类别中价格最低。 它适合长期（至少半年）储存不经常查阅的数据。 数据可能需要约一分钟才能恢复，然后才能读取。 这种储存办法适合于诸如档案数据、医疗图像、科学材料和录像带等数据。
 
 #### qingstor
 
 ref: https://www.qingcloud.com/products/qingstor/
 
-- Standard
-- Standard_IA
+- 标准的
+- 标准IA
 
 #### s3
 
 ref: https://docs.aws.amazon.com/AmazonS3/latest/dev/storage-class-intro.html
 
-- STANDARD: Frequently accessed data
-- STANDARD_IA: Long-lived, infrequently accessed data
-- INTELLIGENT_TIERING: Long-lived data with changing or unknown access patterns
-- ONEZONE_IA: Long-lived, infrequently accessed, non-critical data
-- GLACIER:  Long-term data archiving with retrieval times ranging from minutes to hours
-- DEEP_ARCHIVE: Archiving rarely accessed data with a default retrieval time of 12 hours
+- STANDARD：经常访问的数据
+- STANDARD_IA：长寿、不经常访问的数据
+- INTELIGENT_TIERING: 带有变化或未知访问模式的长寿数据
+- ONEZONE_IA：寿命长、存取频率、非关键数据
+- GLACIER：长期数据存档，检索时间从分钟到小时不等。
+- DEEP_ARCHIVE：存档数据很少，默认检索时间为12小时
 
 #### uss
 
-Not GA
+不是 GA
 
-### Why `Hot`, `Warm` and `Cold`?
+### 为什么 `Hot`, `暖` 和 `寒冷`？
 
-Service provider always wraps their product into fancy names, we need to figure out the core value. Instead of answering `Why`, I prefer `Why not`.
+服务提供商总是将其产品包装成精美的名称，我们需要找出核心值。 我不想回答 `为什么`, 我喜欢 `为什么不`。
 
-#### Why not `Standard`?
+#### 为什么没有 `标准`？
 
-Yes, `Standard` are both widely used, 6/7 services picked `Standard` for their default storage class.
+是的， `标准` 都被广泛使用，6/7服务选择 `标准` 为他们的默认存储等级。
 
-However, I don't know what `Standard` for. As a newbie without any idea of storage class, how can I realize `Standard` is for frequently accessed data in 10 seconds? What's `Standard`? Are there any non-`Standard`?
+然而，我不知道什么 `标准` 作为一个没有任何存储类信息的新手，我怎么能认识到 `Standard` 在 10 秒内被经常访问的数据？ 什么是 `标准`？ 是否有 -`标准`？
 
-From my point of view, others picked this name just because `S3` picked it. It's a `Standard` for `Amazon Web Services`.
+从我的角度来看，其他人只是因为 `S3` 挑选了这个名字。 它是 `亚马逊网络服务的 <code>标准`</code>。
 
-#### Why not `Nearline`?
+#### 为什么不在 `附近`？
 
-`Nearline` has a long history which dates back to [IBM 3850 Mass Storage System (MSS) tape library in 1974](https://en.wikipedia.org/wiki/Nearline_storage). For developers in the 2020s, fewer and fewer of them know about this idea except for those who focus on storage.
+`附近` 历史悠久，可追溯到 [IBM 3850 质量存储系统磁带库1974年](https://en.wikipedia.org/wiki/Nearline_storage) 对2020年的开发者来说，除了那些以存储为重点的人外，他们对这个想法的了解越来越少。
 
-As an application-oriented unified storage layer, it makes more sense to let users choose their data type instead of storage type.
+作为一个面向应用程序的统一存储层，让用户选择他们的数据类型而不是存储类型更加合理。
 
-In conclusion:
+最后：
 
-`Hot`, `Warm` and `Cold` are clear, no confusion, understandable.
+`热门`, `暖` 和 `寒冷` 是清楚的，没有混淆的，可以理解。
 
-Needless to say, they are much shorter :-)
+不用说，它们要短得多：-)
 
-## Compatibility
+## 兼容性
 
-All API call with storage class will be affected.
+所有带有存储类的 API 调用将受到影响。
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。

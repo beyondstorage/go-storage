@@ -1,66 +1,66 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: candidate
+status: 候选项
 updated_at: 2020-03-18
 added_by:
-  - design/17-proposal-process.md
+  - 本记录包括中文发言的译文。
 ---
 
-# Spec: Proposal
+# 观感：建议
 
-## Format
+## 格式
 
-proposal will be in `markdown` format.
+建议将使用 `markdown` 格式。
 
-## Title
+## 标题
 
-proposal's filename will be like following:
+提案的文件名将如下所示：
 
-`<proposal-number>-proposal-name.md`, for example, `16-loose-mode.md`
+`<proposal-number>-proposal-name.md`, 例如 `16-loose-mode.md`
 
-And they should be referred by `16-loose-mode` or `design/16-loose-mode.md`
+他们应该通过 `16个松散模式` 或 `design/16-loose-mode.md`
 
-## Metadata
+## 元数据
 
-Proposal will have metadata as front meta to carry more info.
+建议中的元数据将作为预设元数据来传输更多信息。
 
-Take [3-support-service-init-via-config-string](../design/3-support-service-init-via-config-string.md) as example:
+举 [3-support-service-init-via-config-string](../design/3-support-service-init-via-config-string.md) 作为示例：
 
 ```yaml
 ---
-author: Xuanwo <github@xuanwo.io>
-status: finished
-updated_at: 2019-12-23
-updated_by:
-  - design/4-credential-refactor.md
+作者：Xuanwo <github@xuanwo.io>
+状态：完成
+updated_at： 2019-12-23
+updated_by
+  - design/4-credit al-refacture. d
   - design/9-remove-storager-init.md
-deprecated_by:
+已弃用：
   - design/13-remove-config-string.md
----
+-
 ```
 
-`auther`, `status` and `updated_at` are required.
+`auther`, `状态` 和 `更新 _at` 是必需的。
 
-`auther` should be in format: `Name <Email>`
+`自动` 格式应该为： `名称 <Email>`
 
-If this proposal affects other proposals, `updated_by`, `updates`, `deprecated_by`, `deprecates` and so on should also be added.
+如果此建议影响到其他建议， `updated_by`, `updated`, `废弃的`, `废弃的` 等也应该添加。
 
-## Status
+## 状态
 
-Proposal has following status: `draft`, `candidate`, `finished`.
+提案具有以下状态： `草稿`, `候选`, `已完成`。
 
-- Proposal just created, but not implemented: `draft`
-- Proposal implemented but doesn't have final confirmation: `candidate`
-- Proposal has been included in a minor version: `finished`
+- 提案刚刚创建，但尚未实现： `草稿`
+- 提案已执行，但没有最后确认： `候选项`
+- 提议已包含在一个次要版本中： `已完成`
 
-So when we send a PR, we should set this proposal to `draft`.
+因此，当我们发送了一个评论时，我们应该将此建议设置为 `草稿`。
 
-After we implemented a proposal, we should set this proposal to `candidate`, at this stage, we can update our implementation based on actual feedback.
+在我们执行了一项建议之后，我们应该将此建议设置为 `个候选`在现阶段，我们可以根据实际反馈更新我们的执行情况。
 
-When we decide to have a minor release, we should take all `candidate` proposal into consideration. Dissatisfied proposal will be removed, and accepted proposals will be marked into `finished`.
+当我们决定稍微释放时，我们应该考虑所有 `候选` 提案。 不满意的建议将被删除，接受的建议将被标记为 `完成`。
 
-After a proposal marked `finished`, we can't change it's content anymore (metadata could also be changed if updated). We need to submit a new proposal to change some proposal's behavior.
+在标记为 `的提议完成了`后，我们不能再更改它的内容(如果更新，元数据也可以更改)。 我们需要提出一项新的建议，以改变某些提案的行为。
 
-## Code
+## 代码
 
-Related code should be sub directory with the proposal number.
+相关的代码应该是带提案号的子目录。

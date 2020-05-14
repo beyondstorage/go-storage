@@ -1,10 +1,10 @@
-# Sevices
+# 塞维茨州
 
 ## [azblob](./azblob/)
 
-## [cos](./cos/)
+## [牛座](./cos/)
 
-## [dropbox](./dropbox/)
+## [投放箱](./dropbox/)
 
 ## [fs](./fs/)
 

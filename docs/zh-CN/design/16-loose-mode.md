@@ -1,98 +1,99 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-03-12
 ---
 
-# Proposal: Loose mode
+# 建议：松散模式
 
-## Background
+## 二. 背景
 
-Current [storage](https://github.com/Xuanwo/storage)'s pair handle behavior is inconsistent.
+当前 [存储](https://github.com/Xuanwo/storage)的配对处理行为是不一致的。
 
-In all `parseStoragePairXXX` functions, we will ignore not supported pairs via only pick supported one:
+在所有 `parseStoragePairXXX` 函数中，我们将只通过选择支持的函数忽略不支持对：
 
 ```go
 v, ok = values[ps.DirFunc]
-if ok {
-    result.HasDirFunc = true
-    result.DirFunc = v.(types.ObjectFunc)
+如果没关系，
+    结果。HasDirFunc = true
+    结果。DirFunc = v.(类型)。对象函数)
 }
 ```
 
-But in other pair related logic, like `storage_class` support, we also returned errors:
+但在其他对相关的逻辑中，例如 `storage_class` 支持，我们也返回了错误：
 
 ```go
-func parseStorageClass(in storageclass.Type) (string, error) {
+func parseStorageClass(in storageclassType) (string, error) {
     switch in {
-    case storageclass.Hot:
-        return storageClassStandard, nil
-    case storageclass.Warm:
-        return storageClassStandardIA, nil
-    default:
-        return "", &services.PairError{
+    case storageclass.热:
+        返回 storageClassStandard, nil
+    cases storageclass.警告：
+        返回 storageClassStandardIA, nil
+    默认值：
+        返回 ""， &服务。PairError{
             Op:    "parse storage class",
-            Err:   services.ErrStorageClassNotSupported,
-            Pairs: []*types.Pair{{Key: ps.StorageClass, Value: in}},
+            Err:   services.错误储存类支持,
+            配对: []*类型。配对 {Key: ps存储分类，值：in}，
         }
-    }
+
 }
 ```
 
-So users could be confused how we handle our compatibility related issues.
+所以用户可能会混淆我们如何处理与兼容性相关的问题。
 
-## Proposal
+## 建议
 
-So I propose that all a `loose` mode for all services. `loose` mode will be `off` as default, and services will return error when they reach incompatible place. And when `loose` is on, all incompatible error will be ignored.
+所以我提议所有服务都要有 `个松散的` 模式。 `loose` mode will be `off` as default, and services will return error when they reach incompatible place. 当 `溢出` 开启时，所有不兼容的错误都将被忽略。
 
-For example:
+例如：
 
-We have a Storager who doesn't support `Size` pair in `Read`.
+我们有一个 Storager 不支持 `大小` 对 `读取`。
 
-`loose` on: This error will be ignored. `loose` off: Storager returns a compatibility related error.
+`丢失` on : 此错误将被忽略. `松散` off: Storager 返回一个兼容性相关错误。
 
-Currently, we mixed compatibility error and other pair related error in `PairError`. We will add two different error: `ErrCapabilityInsufficient` and `ErrRestrictionDissatisfied`.
+目前，我们在 `配对错误` 中混合了兼容性错误和其他配对相关错误。 我们将添加两个不同的错误： `错误能力不足` and `错误限制不满意`。
 
-`ErrCapabilityInsufficient` means this service doesn't have this capability, and `ErrRestrictionDissatisfied` means this operation doesn't meat service's restriction. `ErrCapabilityInsufficient` could be ignored safely if you don't care much about service behavior consistency, and will be ignored in loose mode.
+`错误能力不足` 意味着此服务不具备此功能， `错误限制不满意` 表示此操作不会限制服务。 `错误能力不足` 可能会被安全忽略，如果您对服务行为一致性不关心很多，并且会在松散模式下被忽略。
 
-Based on these errors, we will have new error structs like `PairRequiredError` to carry error contexts:
+基于这些错误，我们将会有新的错误结构，例如 `配对错误` 来传递错误环境：
 
 ```go
-// NewPairRequiredError will create a new PairRequiredError.
-func NewPairRequiredError(keys ...string) *PairRequiredError {
-    return &PairRequiredError{
+// NewPairRequired Error 将创建一个新的配对错误.
+func NewPairRequired Error(key...字符串) *PairRequired Error(
+    )
+ return &pairRequired Error{
         Err:  ErrRestrictionDissatisfied,
         Keys: keys,
     }
 }
 
-// PairRequiredError means this operation has required pair but missing.
-type PairRequiredError struct {
-    Err error
+// PairRequired Error 表示此操作需要配对但缺失。
+类型配对错误结构变化。
+    Err 错误
 
     Keys []string
 }
 
-func (e *PairRequiredError) Error() string {
-    return fmt.Sprintf("pair required, %v: %s", e.Keys, e.Err.Error())
+func (ae *PairRequireedError) Error() string Windows
+    return fmt.Sprintf("需要配对" %v: %s", e。Keys, e.ErrError())
 }
 
-// Unwrap implements xerrors.Wrapper
-func (e *PairRequiredError) Unwrap() error {
-    return e.Err
+// 卸载实现x错误。包装器
+真空(e *PairRequired Error) Unwrawrawrapper () 错误
+    return e.错误
 }
 ```
 
-## Rationale
+## 理由
 
-None.
+无。
 
-## Compatibility
+## 兼容性
 
-- More `ErrCapabilityInsufficient` could be returned as `loose` mode will be on as default
-- Some error could be returned as other error structs instead of `PairError`
-- `PairError` will be removed
+- 更多 `错误能力不足` 可以返回，因为 `松散了` 模式将被默认打开
+- 有些错误可以作为其他错误结构而不是 `配对错误`
+- `配对错误` 将被删除
 
-## Implementation
+## 二． 执行情况
 
-Most of the work would be done by the author of this proposal.
+大多数工作将由本提案的作者完成。

@@ -1,46 +1,46 @@
 ---
 author: Xuanwo <github@xuanwo.io>
-status: finished
+status: 完成
 updated_at: 2020-01-03
 ---
 
-# Proposal: Add ID in Object struct
+# 建议：在对象结构中添加 ID
 
-## Background
+## 二. 背景
 
-PR [services: Add dropbox basic support](https://github.com/Xuanwo/storage/pull/53) prompts a great problem: Should we have an ID metadata?
+PR [服务：添加Dropbox 基本支持](https://github.com/Xuanwo/storage/pull/53) 会引起一个很严重的问题：我们是否有一个 ID 元数据？
 
-The difference between `struct value` and `metadata` is:
+`结构值` 和 `元数据` 之间的差异是：
 
-- All value in `struct` are required, caller can use them safely.
-- All value in `metadata` are optional, caller need to check them before using.
+- 需要 `结构中的所有值` ，调用者可以安全地使用它们。
+- `元数据` 中的所有值都是可选的，调用者需要在使用前检查它们。
 
-First of all, it's obvious all storage services have an ID for Object:
+首先，所有存储服务显然都有一个 ID 用于对象：
 
-- For local file system: `ID` could be whole path towards root.
-- For object storage: `ID` could be the whole key.
-- For dropbox alike SaaS: `ID` could be their ID in business.
+- 对于本地文件系统： `ID` 可能是通向root的整个路径。
+- 对于对象存储： `ID` 可能是整个密钥。
+- 对于Dropbox 类似的 SaaS: `ID` 可以是他们的ID。
 
-Then, user need to access ID for some reason:
+然后，用户需要访问ID，原因是：
 
-- Distinguish files with same name (Some SaaS allow same name file in the same folder.)
-- Upper application needs ID for their business logic.
+- 区分具有相同名称的文件(some SaaS 允许同一个文件夹中的相同名称文件)
+- 较高的应用程序需要ID的商业逻辑。
 
-## Proposal
+## 建议
 
-So I propose following changes:
+因此，我提议作如下修改：
 
-- Add `ID string` in `Object` struct
-- Make sure every services filled `Object.ID`
+- 在 `对象` 结构中添加 `ID 字符串`
+- 确保填写的所有服务 `对象.ID`
 
-## Rationale
+## 理由
 
-None.
+无。
 
-## Compatibility
+## 兼容性
 
-No breaking changes.
+没有中断的更改。
 
-## Implementation
+## 二． 执行情况
 
-Implemented as Proposal.
+作为建议执行。
