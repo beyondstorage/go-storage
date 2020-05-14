@@ -93,6 +93,30 @@ func injectContext(ops []*Op) {
 	}
 }
 
+func injectHTTPClientOptions(srv *Service) {
+	// We don't need to inject http client into fs
+	if srv.Name == "fs" {
+		return
+	}
+
+	fn := func(ops []*Op) {
+		for _, op := range ops {
+			if op.Name != "new" {
+				continue
+			}
+			op.Generated = append(op.Generated, "http_client_options")
+			break
+		}
+	}
+
+	// If service exist, inject into service level; Or inject into storage level.
+	if len(srv.Service) > 0 {
+		fn(srv.Service)
+	} else {
+		fn(srv.Storage)
+	}
+}
+
 func parseHCL(src []byte, filename string, in interface{}) (err error) {
 	var diags hcl.Diagnostics
 	defer func() {

@@ -240,9 +240,9 @@ var pairServiceNewMap = map[string]struct{}{
 	ps.Credential: struct{}{},
 	ps.Project:    struct{}{},
 	// Optional pairs
-	ps.HTTPClientOptions: struct{}{},
 	// Generated pairs
-	ps.Context: struct{}{},
+	ps.Context:           struct{}{},
+	ps.HTTPClientOptions: struct{}{},
 }
 
 type pairServiceNew struct {
@@ -250,11 +250,11 @@ type pairServiceNew struct {
 	Credential *credential.Provider
 	Project    string
 	// Optional pairs
+	// Generated pairs
+	HasContext           bool
+	Context              context.Context
 	HasHTTPClientOptions bool
 	HTTPClientOptions    *httpclient.Options
-	// Generated pairs
-	HasContext bool
-	Context    context.Context
 }
 
 func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
@@ -284,16 +284,16 @@ func parseServicePairNew(opts ...*types.Pair) (*pairServiceNew, error) {
 		result.Project = v.(string)
 	}
 	// Handle optional pairs
-	v, ok = values[ps.HTTPClientOptions]
-	if ok {
-		result.HasHTTPClientOptions = true
-		result.HTTPClientOptions = v.(*httpclient.Options)
-	}
 	// Handle generated pairs
 	v, ok = values[ps.Context]
 	if ok {
 		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	v, ok = values[ps.HTTPClientOptions]
+	if ok {
+		result.HasHTTPClientOptions = true
+		result.HTTPClientOptions = v.(*httpclient.Options)
 	}
 
 	return result, nil

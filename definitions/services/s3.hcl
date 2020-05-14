@@ -16,7 +16,7 @@ service {
   }
   op "new" {
     required = ["credential"]
-    optional = ["endpoint", "http_client_options"]
+    optional = ["endpoint"]
   }
 }
 

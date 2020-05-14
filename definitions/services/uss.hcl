@@ -10,6 +10,6 @@ storage {
   }
   op "new" {
     required = ["credential", "name"]
-    optional = ["http_client_options", "work_dir"]
+    optional = ["work_dir"]
   }
 }
