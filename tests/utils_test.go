@@ -2,11 +2,13 @@ package tests
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	"gopkg.in/yaml.v2"
 )
 
@@ -54,6 +56,11 @@ func loadConfig() []config {
 		}
 
 		srv = append(srv, cfg)
+	}
+
+	// Hack on work dir
+	for _, v := range srv {
+		v.Options["work_dir"] = fmt.Sprintf("%s%s/", v.Options["work_dir"], uuid.New().String())
 	}
 	return srv
 }
