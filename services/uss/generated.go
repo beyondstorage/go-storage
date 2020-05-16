@@ -45,8 +45,7 @@ type pairStorageDelete struct {
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	HasContext bool
-	Context    context.Context
+	Context context.Context
 }
 
 func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
@@ -68,8 +67,10 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 	// Handle generated pairs
 	v, ok = values[ps.Context]
 	if ok {
-		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	if !ok {
+		result.Context = context.Background()
 	}
 
 	return result, nil
@@ -92,8 +93,7 @@ type pairStorageListDir struct {
 	HasFileFunc bool
 	FileFunc    types.ObjectFunc
 	// Generated pairs
-	HasContext bool
-	Context    context.Context
+	Context context.Context
 }
 
 func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
@@ -125,8 +125,10 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 	// Handle generated pairs
 	v, ok = values[ps.Context]
 	if ok {
-		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	if !ok {
+		result.Context = context.Background()
 	}
 
 	return result, nil
@@ -145,8 +147,7 @@ type pairStorageListPrefix struct {
 	ObjectFunc types.ObjectFunc
 	// Optional pairs
 	// Generated pairs
-	HasContext bool
-	Context    context.Context
+	Context context.Context
 }
 
 func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPrefix, error) {
@@ -175,8 +176,10 @@ func (s *Storage) parsePairListPrefix(opts ...*types.Pair) (*pairStorageListPref
 	// Handle generated pairs
 	v, ok = values[ps.Context]
 	if ok {
-		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	if !ok {
+		result.Context = context.Background()
 	}
 
 	return result, nil
@@ -193,8 +196,7 @@ type pairStorageMetadata struct {
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	HasContext bool
-	Context    context.Context
+	Context context.Context
 }
 
 func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error) {
@@ -216,8 +218,10 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 	// Handle generated pairs
 	v, ok = values[ps.Context]
 	if ok {
-		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	if !ok {
+		result.Context = context.Background()
 	}
 
 	return result, nil
@@ -242,7 +246,6 @@ type pairStorageNew struct {
 	HasWorkDir bool
 	WorkDir    string
 	// Generated pairs
-	HasContext           bool
 	Context              context.Context
 	HasHTTPClientOptions bool
 	HTTPClientOptions    *httpclient.Options
@@ -283,8 +286,10 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	// Handle generated pairs
 	v, ok = values[ps.Context]
 	if ok {
-		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	if !ok {
+		result.Context = context.Background()
 	}
 	v, ok = values[ps.HTTPClientOptions]
 	if ok {
@@ -309,7 +314,6 @@ type pairStorageRead struct {
 	// Generated pairs
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
-	HasContext          bool
 	Context             context.Context
 }
 
@@ -337,8 +341,10 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 	}
 	v, ok = values[ps.Context]
 	if ok {
-		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	if !ok {
+		result.Context = context.Background()
 	}
 
 	return result, nil
@@ -355,8 +361,7 @@ type pairStorageStat struct {
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	HasContext bool
-	Context    context.Context
+	Context context.Context
 }
 
 func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
@@ -378,8 +383,10 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 	// Handle generated pairs
 	v, ok = values[ps.Context]
 	if ok {
-		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	if !ok {
+		result.Context = context.Background()
 	}
 
 	return result, nil
@@ -399,7 +406,6 @@ type pairStorageWrite struct {
 	// Generated pairs
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
-	HasContext          bool
 	Context             context.Context
 }
 
@@ -427,8 +433,10 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 	}
 	v, ok = values[ps.Context]
 	if ok {
-		result.HasContext = true
 		result.Context = v.(context.Context)
+	}
+	if !ok {
+		result.Context = context.Background()
 	}
 
 	return result, nil
