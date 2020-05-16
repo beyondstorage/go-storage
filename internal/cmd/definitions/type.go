@@ -147,6 +147,7 @@ type Pair struct {
 	Type        string `hcl:"type"`
 	Description string `hcl:"description,optional"`
 	Parser      string `hcl:"parser,optional"`
+	Default     string `hcl:"default,optional"`
 
 	Global               bool
 	GeneratedDescription string // Description that generated from description

@@ -6,6 +6,7 @@ pair "checksum" {
 pair "context" {
   type        = "context.Context"
   description = "context in all request"
+  default     = "context.Background()"
 }
 pair "credential" {
   type        = "*credential.Provider"

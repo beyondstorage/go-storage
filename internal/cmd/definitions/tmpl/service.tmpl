@@ -147,7 +147,9 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
         {{- end }}
         // Generated pairs
         {{- range $_, $key := $v.Generated }}
+            {{- if not (index $pairs $key).Default }}
             Has{{ $key | toPascal }} bool
+            {{- end }}
             {{ $key | toPascal }}    {{ (index $pairs $key).Type }}
         {{- end }}
         }
@@ -198,9 +200,16 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
         {{- $pkey := $key | toPascal }}
         v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
         if ok {
+        {{- if not (index $pairs $key).Default }}
             result.Has{{ $pkey }} = true
+        {{- end }}
             result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
         }
+        {{- if (index $pairs $key).Default }}
+        if !ok {
+            result.{{ $pkey }} = {{ (index $pairs $key).Default }}
+        }
+        {{- end }}
         {{- end }}
 
         return result, nil
