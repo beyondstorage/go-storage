@@ -14,6 +14,8 @@ steps:
         from_secret: STORAGE_TEST_SERVICE_FS
       STORAGE_TEST_SERVICE_QINGSTOR:
         from_secret: STORAGE_TEST_SERVICE_QINGSTOR
+      STORAGE_TEST_SERVICE_AZBLOB:
+        from_secret: STORAGE_TEST_SERVICE_AZBLOB
     commands:
       - cd tests && go test -race -v ./...
 
@@ -23,6 +25,6 @@ volumes:
       path: /var/lib/cache/drone/storage/go
 ---
 kind: signature
-hmac: 75cfdc204d0a5aca0beada37c9931b2593a66ad55ec6febec617601422f2300a
+hmac: e36940a1b7e90d4eb66473ac88a1bc4c47537f7faf7ca9407c0cdfb21f91299e
 
 ...
