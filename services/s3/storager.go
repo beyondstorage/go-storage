@@ -93,7 +93,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		}
 
 		marker = aws.StringValue(output.StartAfter)
-		if aws.BoolValue(output.IsTruncated) {
+		if !aws.BoolValue(output.IsTruncated) {
 			break
 		}
 	}
@@ -136,7 +136,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		}
 
 		marker = aws.StringValue(output.StartAfter)
-		if aws.BoolValue(output.IsTruncated) {
+		if !aws.BoolValue(output.IsTruncated) {
 			break
 		}
 	}
