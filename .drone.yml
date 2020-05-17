@@ -10,12 +10,14 @@ steps:
       - name: go-cache
         path: /go
     environment:
+      STORAGE_TEST_SERVICE_AZBLOB:
+        from_secret: STORAGE_TEST_SERVICE_AZBLOB
       STORAGE_TEST_SERVICE_FS:
         from_secret: STORAGE_TEST_SERVICE_FS
       STORAGE_TEST_SERVICE_QINGSTOR:
         from_secret: STORAGE_TEST_SERVICE_QINGSTOR
-      STORAGE_TEST_SERVICE_AZBLOB:
-        from_secret: STORAGE_TEST_SERVICE_AZBLOB
+      STORAGE_TEST_SERVICE_S3:
+        from_secret: STORAGE_TEST_SERVICE_S3
     commands:
       - cd tests && go test -race -v ./...
 
@@ -25,6 +27,6 @@ volumes:
       path: /var/lib/cache/drone/storage/go
 ---
 kind: signature
-hmac: e36940a1b7e90d4eb66473ac88a1bc4c47537f7faf7ca9407c0cdfb21f91299e
+hmac: 7fe39fcbf0e32aea2bf1e26580ada7a0ad68671abb50744dcc64fc5cee86e1f7
 
 ...
