@@ -5,20 +5,18 @@ import (
 	"io"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/pkg/segment"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 // Storage is the s3 object storage service.
 type Storage struct {
-	service s3iface.S3API
+	service *s3.S3
 
 	name    string
 	workDir string

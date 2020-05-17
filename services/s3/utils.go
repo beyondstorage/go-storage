@@ -66,6 +66,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	}
 
 	srv = &Service{
+		sess:    sess,
 		service: s3.New(sess),
 	}
 	return

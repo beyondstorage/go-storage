@@ -32,7 +32,7 @@ storage {
     required = ["segment_func"]
   }
   op "new" {
-    required = ["name"]
+    required = ["location", "name"]
     optional = ["work_dir"]
   }
   op "write" {

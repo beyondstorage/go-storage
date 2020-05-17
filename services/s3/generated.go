@@ -736,7 +736,8 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 
 var pairStorageNewMap = map[string]struct{}{
 	// Required pairs
-	ps.Name: struct{}{},
+	ps.Location: struct{}{},
+	ps.Name:     struct{}{},
 	// Optional pairs
 	ps.WorkDir: struct{}{},
 	// Generated pairs
@@ -745,7 +746,8 @@ var pairStorageNewMap = map[string]struct{}{
 
 type pairStorageNew struct {
 	// Required pairs
-	Name string
+	Location string
+	Name     string
 	// Optional pairs
 	HasWorkDir bool
 	WorkDir    string
@@ -765,6 +767,13 @@ func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
 	var ok bool
 
 	// Handle required pairs
+	v, ok = values[ps.Location]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.Location)
+	}
+	if ok {
+		result.Location = v.(string)
+	}
 	v, ok = values[ps.Name]
 	if !ok {
 		return nil, services.NewPairRequiredError(ps.Name)
