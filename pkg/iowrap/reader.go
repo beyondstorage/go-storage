@@ -68,6 +68,7 @@ func ReadSeekCloser(r io.Reader) *SeekCloseableReader {
 	return &SeekCloseableReader{r, 0}
 }
 
+// SizedReadSeekCloser will return a size featured SeekCloseableReader.
 func SizedReadSeekCloser(r io.Reader, size int64) *SeekCloseableReader {
 	return &SeekCloseableReader{r, size}
 }
