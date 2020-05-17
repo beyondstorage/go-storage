@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/services"
@@ -125,7 +125,7 @@ func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
 	}
 
 	st = &Storage{
-		service: s3.New(s.sess, aws.NewConfig().WithRegion(opt.Location)),
+		service: newS3Service(s.sess, aws.NewConfig().WithRegion(opt.Location)),
 
 		name:    opt.Name,
 		workDir: "/",
