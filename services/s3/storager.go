@@ -191,6 +191,7 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	rp := s.getAbsPath(path)
 
 	input := &s3.PutObjectInput{
+		Bucket:        aws.String(s.name),
 		Key:           aws.String(rp),
 		ContentLength: &opt.Size,
 		Body:          aws.ReadSeekCloser(r),
@@ -218,7 +219,8 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	rp := s.getAbsPath(path)
 
 	input := &s3.HeadObjectInput{
-		Key: aws.String(rp),
+		Bucket: aws.String(s.name),
+		Key:    aws.String(rp),
 	}
 
 	output, err := s.service.HeadObject(input)
