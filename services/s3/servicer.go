@@ -15,7 +15,8 @@ import (
 
 // Service is the s3 service config.
 type Service struct {
-	service s3iface.S3API
+	sess    *session.Session
+	service *s3.S3
 }
 
 // String implements Servicer.String
@@ -124,7 +125,7 @@ func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
 	}
 
 	st = &Storage{
-		service: s.service,
+		service: s3.New(s.sess, aws.NewConfig().WithRegion(opt.Location)),
 
 		name:    opt.Name,
 		workDir: "/",
