@@ -109,14 +109,8 @@ func formatError(err error) error {
 	}
 
 	switch e.Code() {
-	case "":
-		switch e.StatusCode() {
-		case 404:
-			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
-		default:
-			return err
-		}
-	case "NoSuchKey":
+	// AWS SDK will use status code to generate awserr.Error, so "NotFound" should also be supported.
+	case "NoSuchKey", "NotFound":
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	case "AccessDenied":
 		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
