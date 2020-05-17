@@ -3,6 +3,7 @@ package iowrap
 import (
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -239,6 +240,34 @@ func TestReadSeekCloser_Seek(t *testing.T) {
 		pos, err := x.Seek(100, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), pos)
+	})
+
+	t.Run("not a seeker with size", func(t *testing.T) {
+		reader := NewMockReader(ctrl)
+
+		size := rand.Int63()
+		x := SizedReadSeekCloser(reader, size)
+		pos, err := x.Seek(0, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(0), pos)
+
+		pos, err = x.Seek(0, io.SeekCurrent)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(0), pos)
+
+		pos, err = x.Seek(0, io.SeekEnd)
+		assert.NoError(t, err)
+		assert.Equal(t, size, pos)
+	})
+
+	t.Run("not a seeker with invalid whence", func(t *testing.T) {
+		reader := NewMockReader(ctrl)
+
+		size := rand.Int63()
+		x := SizedReadSeekCloser(reader, size)
+		assert.Panics(t, func() {
+			_, _ = x.Seek(0, 100)
+		})
 	})
 }
 

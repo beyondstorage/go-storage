@@ -64,14 +64,20 @@ func (s *SectionedReadCloser) Close() error {
 // requires payload signing.
 //
 // NOTES: Idea borrows from AWS Go SDK.
-func ReadSeekCloser(r io.Reader) SeekCloseableReader {
-	return SeekCloseableReader{r}
+func ReadSeekCloser(r io.Reader) *SeekCloseableReader {
+	return &SeekCloseableReader{r, 0}
+}
+
+// SizedReadSeekCloser will return a size featured SeekCloseableReader.
+func SizedReadSeekCloser(r io.Reader, size int64) *SeekCloseableReader {
+	return &SeekCloseableReader{r, size}
 }
 
 // SeekCloseableReader represents a reader that can also delegate io.Seeker and
 // io.Closer interfaces to the underlying object if they are available.
 type SeekCloseableReader struct {
-	r io.Reader
+	r    io.Reader
+	size int64
 }
 
 // Read reads from the reader up to size of p. The number of bytes read, and
@@ -81,7 +87,7 @@ type SeekCloseableReader struct {
 // returned.
 //
 // Performs the same functionality as io.Reader Read
-func (r SeekCloseableReader) Read(p []byte) (int, error) {
+func (r *SeekCloseableReader) Read(p []byte) (int, error) {
 	return r.r.Read(p)
 }
 
@@ -90,21 +96,31 @@ func (r SeekCloseableReader) Read(p []byte) (int, error) {
 // current offset, and 2 means relative to the end. Seek returns the new offset
 // and an error, if any.
 //
-// If the SeekCloseableReader is not an io.Seeker nothing will be done.
-func (r SeekCloseableReader) Seek(offset int64, whence int) (int64, error) {
-	switch t := r.r.(type) {
-	case io.Seeker:
+// If the SeekCloseableReader is not an io.Seeker nothing will be done to underlying Reader.
+// For example: seek to end and then seek current will still return 0.
+func (r *SeekCloseableReader) Seek(offset int64, whence int) (int64, error) {
+	t, ok := r.r.(io.Seeker)
+	if ok {
 		return t.Seek(offset, whence)
 	}
-	return int64(0), nil
+
+	// If underlying reader is not seekable, we will use internal size.
+	switch whence {
+	case io.SeekStart, io.SeekCurrent:
+		return int64(0), nil
+	case io.SeekEnd:
+		return r.size, nil
+	default:
+		panic("invalid whence")
+	}
 }
 
 // Close closes the SeekCloseableReader.
 //
 // If the SeekCloseableReader is not an io.Closer nothing will be done.
-func (r SeekCloseableReader) Close() error {
-	switch t := r.r.(type) {
-	case io.Closer:
+func (r *SeekCloseableReader) Close() error {
+	t, ok := r.r.(io.Closer)
+	if ok {
 		return t.Close()
 	}
 	return nil
@@ -125,7 +141,7 @@ type CallbackifyReader struct {
 }
 
 // Read will read from underlying Reader.
-func (r CallbackifyReader) Read(p []byte) (int, error) {
+func (r *CallbackifyReader) Read(p []byte) (int, error) {
 	n, err := r.r.Read(p)
 	r.fn(p[:n])
 	return n, err
@@ -146,13 +162,13 @@ type CallbackifyReadCloser struct {
 }
 
 // Read will read from underlying Reader.
-func (r CallbackifyReadCloser) Read(p []byte) (int, error) {
+func (r *CallbackifyReadCloser) Read(p []byte) (int, error) {
 	n, err := r.r.Read(p)
 	r.fn(p[:n])
 	return n, err
 }
 
 // Close will close underlying Reader.
-func (r CallbackifyReadCloser) Close() error {
+func (r *CallbackifyReadCloser) Close() error {
 	return r.r.Close()
 }
