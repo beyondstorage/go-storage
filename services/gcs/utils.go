@@ -1,11 +1,15 @@
 package gcs
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	gs "cloud.google.com/go/storage"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
@@ -48,23 +52,38 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		return nil, err
 	}
 
-	options := make([]option.ClientOption, 0)
+	hc := httpclient.New(opt.HTTPClientOptions)
+
+	var credJSON []byte
 
 	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
 	switch credProtocol {
-	case credential.ProtocolAPIKey:
-		options = append(options, option.WithAPIKey(cred[0]))
 	case credential.ProtocolFile:
-		options = append(options, option.WithCredentialsFile(cred[0]))
+		credJSON, err = ioutil.ReadFile(cred[0])
+		if err != nil {
+			return nil, err
+		}
+	case credential.ProtocolBase64:
+		credJSON, err = base64.StdEncoding.DecodeString(cred[0])
+		if err != nil {
+			return nil, err
+		}
 	default:
 		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
-	options = append(options, option.WithHTTPClient(
-		httpclient.New(opt.HTTPClientOptions)),
-	)
+	// Loading token source from binary data.
+	creds, err := google.CredentialsFromJSON(opt.Context, credJSON, gs.ScopeFullControl)
+	if err != nil {
+		return nil, err
+	}
+	ot := &oauth2.Transport{
+		Source: creds.TokenSource,
+		Base:   hc.Transport,
+	}
+	hc.Transport = ot
 
-	client, err := gs.NewClient(opt.Context, options...)
+	client, err := gs.NewClient(opt.Context, option.WithHTTPClient(hc))
 	if err != nil {
 		return nil, err
 	}

@@ -25,6 +25,11 @@ const (
 	//
 	// value = [], service retrieves credential value from env.
 	ProtocolEnv = "env"
+	// ProtocolBase64 will represents credential binary data in base64
+	//
+	// Storage service like gcs will take token files as input, we provide base64 protocol so that user
+	// can pass token binary data directly.
+	ProtocolBase64 = "base64"
 )
 
 // Provider will provide credential protocol and values.
@@ -56,6 +61,8 @@ func Parse(cfg string) (*Provider, error) {
 		return NewFile(s[1:]...)
 	case ProtocolEnv:
 		return NewEnv()
+	case ProtocolBase64:
+		return NewBase64(s[1:]...)
 	default:
 		return nil, &Error{"parse", ErrUnsupportedProtocol, s[0], nil}
 	}
@@ -120,5 +127,16 @@ func NewEnv(_ ...string) (*Provider, error) {
 // MustNewEnv make sure Provider must be created if no panic happened.
 func MustNewEnv(value ...string) *Provider {
 	p, _ := NewEnv(value...)
+	return p
+}
+
+// NewBase64 create a base64 provider.
+func NewBase64(value ...string) (*Provider, error) {
+	return &Provider{ProtocolBase64, value}, nil
+}
+
+// MustNewBase64 make sure Provider must be created if no panic happened.
+func MustNewBase64(value ...string) *Provider {
+	p, _ := NewBase64(value...)
 	return p
 }
