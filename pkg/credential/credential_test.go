@@ -50,6 +50,12 @@ func TestParse(t *testing.T) {
 			nil,
 		},
 		{
+			"base64",
+			"base64:aGVsbG8sd29ybGQhCg==",
+			&Provider{protocol: ProtocolBase64, args: []string{"aGVsbG8sd29ybGQhCg=="}},
+			nil,
+		},
+		{
 			"not supported protocol",
 			"notsupported:ak:sk",
 			nil,
@@ -271,7 +277,7 @@ func TestMustNewFile(t *testing.T) {
 	}
 }
 
-func TestNewMev(t *testing.T) {
+func TestNewNnv(t *testing.T) {
 	cases := []struct {
 		name  string
 		input []string
@@ -321,6 +327,73 @@ func TestMustNewEnv(t *testing.T) {
 			} else {
 				assert.NotPanics(t, func() {
 					MustNewEnv(tt.input...)
+				})
+			}
+		})
+	}
+}
+
+func TestNewBase64(t *testing.T) {
+	cases := []struct {
+		name  string
+		input []string
+		value *Provider
+		err   error
+	}{
+		{
+			"normal",
+			[]string{"/path/to/file"},
+			&Provider{ProtocolBase64, []string{"/path/to/file"}},
+			nil,
+		},
+		{
+			"invalid",
+			[]string{"ak", "sk", "xxxx"},
+			nil,
+			ErrInvalidValue,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			p, err := NewBase64(tt.input...)
+			if tt.err == nil {
+				assert.Nil(t, err)
+			} else {
+				assert.True(t, errors.Is(err, tt.err))
+			}
+			assert.EqualValues(t, tt.value, p)
+		})
+	}
+}
+
+func TestMustNewBase64(t *testing.T) {
+	cases := []struct {
+		name  string
+		input []string
+		panic bool
+	}{
+		{
+			"normal",
+			[]string{"/path/to/file"},
+			false,
+		},
+		{
+			"invalid",
+			[]string{"ak", "sk", "xxxx"},
+			true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.panic {
+				assert.Panics(t, func() {
+					MustNewBase64(tt.input...)
+				})
+			} else {
+				assert.NotPanics(t, func() {
+					MustNewBase64(tt.input...)
 				})
 			}
 		})

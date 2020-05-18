@@ -269,8 +269,8 @@ func testDirLister(t *testing.T, typ string, pair []*types.Pair) {
 			fn := types.ObjectFunc(func(o *types.Object) {
 				called = true
 				obj = o
-
 			})
+
 			err = lister.ListDir("", ps.WithFileFunc(fn))
 
 			Convey("The error should be nil", func() {
