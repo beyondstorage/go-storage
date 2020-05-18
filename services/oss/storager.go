@@ -232,7 +232,7 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 	}
 
 	if v := output.Get(headers.LastModified); v != "" {
-		lastModified, err := time.Parse(time.RFC822, v)
+		lastModified, err := time.Parse(time.RFC1123, v)
 		if err != nil {
 			return nil, err
 		}
