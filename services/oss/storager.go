@@ -94,7 +94,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		}
 
 		marker = output.NextMarker
-		if output.IsTruncated {
+		if !output.IsTruncated {
 			break
 		}
 	}
@@ -138,7 +138,7 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		}
 
 		marker = output.NextMarker
-		if output.IsTruncated {
+		if !output.IsTruncated {
 			break
 		}
 	}
