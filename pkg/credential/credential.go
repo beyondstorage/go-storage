@@ -132,11 +132,17 @@ func MustNewEnv(value ...string) *Provider {
 
 // NewBase64 create a base64 provider.
 func NewBase64(value ...string) (*Provider, error) {
+	if len(value) != 1 {
+		return nil, &Error{"new", ErrInvalidValue, ProtocolFile, value}
+	}
 	return &Provider{ProtocolBase64, value}, nil
 }
 
 // MustNewBase64 make sure Provider must be created if no panic happened.
 func MustNewBase64(value ...string) *Provider {
-	p, _ := NewBase64(value...)
+	p, err := NewBase64(value...)
+	if err != nil {
+		panic(err)
+	}
 	return p
 }
