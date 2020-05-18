@@ -12,16 +12,18 @@ steps:
     environment:
       STORAGE_TEST_SERVICE_AZBLOB:
         from_secret: STORAGE_TEST_SERVICE_AZBLOB
+      STORAGE_TEST_SERVICE_COS:
+        from_secret: STORAGE_TEST_SERVICE_COS
       STORAGE_TEST_SERVICE_FS:
         from_secret: STORAGE_TEST_SERVICE_FS
       STORAGE_TEST_SERVICE_GCS:
         from_secret: STORAGE_TEST_SERVICE_GCS
+      STORAGE_TEST_SERVICE_OSS:
+        from_secret: STORAGE_TEST_SERVICE_OSS
       STORAGE_TEST_SERVICE_QINGSTOR:
         from_secret: STORAGE_TEST_SERVICE_QINGSTOR
       STORAGE_TEST_SERVICE_S3:
         from_secret: STORAGE_TEST_SERVICE_S3
-      STORAGE_TEST_SERVICE_COS:
-        from_secret: STORAGE_TEST_SERVICE_COS
     commands:
       - cd tests && go test -race -v ./...
 
@@ -31,6 +33,6 @@ volumes:
       path: /var/lib/cache/drone/storage/go
 ---
 kind: signature
-hmac: 4ea099f596192f59bb043298f55e1a163148db30cf99441c0c953d5cf1802b1d
+hmac: b3de0e11b75bf4c4be478525915f2ac8c9cf942bbfddc23165bf7c49a9cba1b8
 
 ...
