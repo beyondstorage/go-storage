@@ -54,13 +54,14 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 	rp := s.getAbsPath(path)
 
+	it := s.bucket.Objects(opt.Context, &gs.Query{
+		Prefix:    rp,
+		Delimiter: delimiter,
+	})
+
 	for {
-		it := s.bucket.Objects(opt.Context, &gs.Query{
-			Prefix:    rp,
-			Delimiter: delimiter,
-		})
 		object, err := it.Next()
-		if err != nil && err == iterator.Done {
+		if err == iterator.Done {
 			return nil
 		}
 		if err != nil {
@@ -71,7 +72,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		// entries" when iterating over buckets using Query.Delimiter. See
 		// ObjectIterator.Next. When set, no other fields in ObjectAttrs will be
 		// populated.
-		if object.Prefix == "" {
+		if object.Prefix != "" {
 			if !opt.HasDirFunc {
 				continue
 			}
@@ -111,8 +112,8 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 
 	rp := s.getAbsPath(prefix)
 
+	it := s.bucket.Objects(opt.Context, &gs.Query{Prefix: rp})
 	for {
-		it := s.bucket.Objects(opt.Context, &gs.Query{Prefix: rp})
 		object, err := it.Next()
 		if err != nil && err == iterator.Done {
 			return nil
