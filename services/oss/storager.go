@@ -151,7 +151,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		err = s.formatError(services.OpRead, err, path)
 	}()
 
-	opt, err := s.parsePairWrite(pairs...)
+	opt, err := s.parsePairRead(pairs...)
 	if err != nil {
 		return nil, err
 	}
