@@ -84,23 +84,17 @@ Optional metadata
 - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
 - `storage-class`: object's storage class as defined in [storage proposal](./design/8-normalize-metadata-storage-class.md)
 
-## Installation
-
-Install will `go get`
-
-```bash
-go get github.com/Xuanwo/storage
-```
-
-Import
-
-```go
-import "github.com/Xuanwo/storage"
-```
-
 ## Quick Start
 
 ```go
+import (
+    "log"
+
+    "github.com/Xuanwo/storage"
+    "github.com/Xuanwo/storage/coreutils"
+    "github.com/Xuanwo/storage/types/pairs"
+)
+
 // Init a service.
 store, err := coreutils.OpenStorager("fs", pairs.WithWorkDir("/tmp"))
 if err != nil {
