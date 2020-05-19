@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	qs "github.com/qiniu/api.v7/v7/storage"
 
@@ -141,9 +142,9 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 	rp := s.getAbsPath(path)
 
-	url := qs.MakePrivateURL(s.bucket.Mac, s.domain, rp, 3600)
-
-	resp, err := http.Get(url)
+	deadline := time.Now().Add(time.Hour).Unix()
+	url := qs.MakePrivateURL(s.bucket.Mac, s.domain, rp, deadline)
+	resp, err := s.bucket.Client.Get(url)
 	if err != nil {
 		return nil, err
 	}
