@@ -148,6 +148,10 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != http.StatusOK {
+		err = qs.ResponseError(resp)
+		return nil, err
+	}
 
 	r = resp.Body
 
