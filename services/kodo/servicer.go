@@ -1,7 +1,6 @@
 package kodo
 
 import (
-	"errors"
 	"fmt"
 
 	qs "github.com/qiniu/api.v7/v7/storage"
@@ -107,19 +106,9 @@ func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
 		return nil, err
 	}
 
-	// Get bucket's domain.
-	domains, err := s.service.ListBucketDomains(opt.Name)
-	if err != nil {
-		return nil, err
-	}
-	// TODO: we need to choose user's production domain.
-	if len(domains) == 0 {
-		return nil, errors.New("no available domains")
-	}
-
 	store = &Storage{
 		bucket: s.service,
-		domain: domains[0].Domain,
+		domain: opt.Endpoint.Value().String(),
 		putPolicy: qs.PutPolicy{
 			Scope: opt.Name,
 		},

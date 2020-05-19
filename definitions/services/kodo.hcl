@@ -22,7 +22,7 @@ storage {
     required = ["object_func"]
   }
   op "new" {
-    required = ["name"]
+    required = ["endpoint", "name"]
     optional = ["work_dir"]
   }
   op "write" {
