@@ -254,6 +254,11 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 
 	err = s.bucket.Delete(&upyun.DeleteObjectConfig{
 		Path: rp,
+		// USS requires a short time between PUT and DELETE, or we will get this error:
+		// DELETE 429 {"msg":"concurrent put or delete","code":42900007,"id":"xxx"}
+		//
+		// In order to pass the integration tests, use async delete instead
+		Async: true,
 	})
 	if err != nil {
 		return err
