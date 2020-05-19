@@ -59,8 +59,8 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 	rp := s.getAbsPath(path)
 
+	// USS SDK will close this channel in List
 	ch := make(chan *upyun.FileInfo, 200)
-	defer close(ch)
 
 	go func() {
 		for v := range ch {
@@ -121,8 +121,8 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 
 	rp := s.getAbsPath(prefix)
 
+	// USS SDK will close this channel in List
 	ch := make(chan *upyun.FileInfo, 200)
-	defer close(ch)
 
 	go func() {
 		errlock.Lock()
