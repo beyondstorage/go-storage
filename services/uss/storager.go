@@ -3,10 +3,13 @@ package uss
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/upyun/go-sdk/upyun"
 
+	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
@@ -37,7 +40,13 @@ func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error)
 
 // ListDir implements Storager.ListDir
 func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
+	// err could be updated in multiple goroutines, add explict lock to protect it.
+	var errlock sync.Mutex
+
 	defer func() {
+		errlock.Lock()
+		defer errlock.Unlock()
+
 		err = s.formatError(services.OpListDir, err, path)
 	}()
 
@@ -93,7 +102,13 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 
 // ListPrefix implements Storager.ListPrefix
 func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+	// err could be updated in multiple goroutines, add explict lock to protect it.
+	var errlock sync.Mutex
+
 	defer func() {
+		errlock.Lock()
+		defer errlock.Unlock()
+
 		err = s.formatError(services.OpListPrefix, err, prefix)
 	}()
 
@@ -110,10 +125,8 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 	defer close(ch)
 
 	go func() {
-		for v := range ch {
-			if v.IsDir {
-				continue
-			}
+		errlock.Lock()
+		defer errlock.Unlock()
 
 			o, err := s.formatFileObject(v)
 			if err != nil {
