@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -103,7 +104,7 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 				if err != nil {
 					t.Error(err)
 				}
-				So(readContent, ShouldResemble, content)
+				So(sha256.Sum256(readContent), ShouldResemble, sha256.Sum256(content))
 			})
 
 		})
