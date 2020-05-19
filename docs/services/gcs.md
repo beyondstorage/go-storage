@@ -8,7 +8,7 @@
 
 | Name | Required | Comments |
 | ---- | -------- | -------- |
-| `credential` | Y | only support `api_key` protocol |
+| `credential` | Y | support `base64` and `file` protocol: `base64` is the base64 of token content, `file` is the absolute path to token file. |
 
 ### Storager
 
@@ -16,4 +16,21 @@
 | ---- | -------- | -------- |
 | `name` | Y | bucket name |
 | `work_dir` | N | work dir |
-| `project_id` | Y | google cloud project id |
+| `project` | Y | google cloud project id |
+
+## Example
+
+Init servicer
+
+```yaml
+credential: file:<absolute_path_to_token_file>
+```
+
+Init storager
+
+```yaml
+credential: file:<absolute_path_to_token_file>
+name: <bucket_name>
+work_dir: /<work_dir>
+project: <google_cloud_project_id>
+```
