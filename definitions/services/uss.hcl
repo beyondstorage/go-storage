@@ -12,4 +12,7 @@ storage {
     required = ["credential", "name"]
     optional = ["work_dir"]
   }
+  op "write" {
+    required = ["size"]
+  }
 }

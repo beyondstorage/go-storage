@@ -394,6 +394,7 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 
 var pairStorageWriteMap = map[string]struct{}{
 	// Required pairs
+	ps.Size: struct{}{},
 	// Optional pairs
 	// Generated pairs
 	ps.ReadCallbackFunc: struct{}{},
@@ -402,6 +403,7 @@ var pairStorageWriteMap = map[string]struct{}{
 
 type pairStorageWrite struct {
 	// Required pairs
+	Size int64
 	// Optional pairs
 	// Generated pairs
 	HasReadCallbackFunc bool
@@ -424,6 +426,13 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 	var ok bool
 
 	// Handle required pairs
+	v, ok = values[ps.Size]
+	if !ok {
+		return nil, services.NewPairRequiredError(ps.Size)
+	}
+	if ok {
+		result.Size = v.(int64)
+	}
 	// Handle optional pairs
 	// Handle generated pairs
 	v, ok = values[ps.ReadCallbackFunc]

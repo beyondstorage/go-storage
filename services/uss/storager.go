@@ -184,6 +184,9 @@ func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err err
 	cfg := &upyun.PutObjectConfig{
 		Path:   rp,
 		Reader: r,
+		Headers: map[string]string{
+			headers.ContentLength: strconv.FormatInt(opt.Size, 10),
+		},
 	}
 
 	err = s.bucket.Put(cfg)
