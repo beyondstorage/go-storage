@@ -9,13 +9,24 @@ import (
 )
 
 func TestValue_String(t *testing.T) {
-	v := &Value{
-		Protocol: "http",
-		Host:     "example.com",
-		Port:     80,
-	}
+	t.Run("standard port", func(t *testing.T) {
+		v := &Value{
+			Protocol: "http",
+			Host:     "example.com",
+			Port:     80,
+		}
 
-	assert.Equal(t, "http://example.com:80", v.String())
+		assert.Equal(t, "http://example.com", v.String())
+	})
+	t.Run("non-standard port", func(t *testing.T) {
+		v := &Value{
+			Protocol: "http",
+			Host:     "example.com",
+			Port:     8080,
+		}
+
+		assert.Equal(t, "http://example.com:8080", v.String())
+	})
 }
 
 func TestParse(t *testing.T) {
@@ -29,11 +40,17 @@ func TestParse(t *testing.T) {
 			"invalid string",
 			"abcx",
 			nil,
-			ErrUnsupportedProtocol,
+			ErrInvalidValue,
 		},
 		{
 			"normal http",
 			"http:example.com:80",
+			NewHTTP("example.com", 80),
+			nil,
+		},
+		{
+			"normal http without port",
+			"http:example.com",
 			NewHTTP("example.com", 80),
 			nil,
 		},
@@ -46,6 +63,12 @@ func TestParse(t *testing.T) {
 		{
 			"normal https",
 			"https:example.com:443",
+			NewHTTPS("example.com", 443),
+			nil,
+		},
+		{
+			"normal https without port",
+			"https:example.com",
 			NewHTTPS("example.com", 443),
 			nil,
 		},
