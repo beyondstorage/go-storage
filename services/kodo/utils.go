@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/qiniu/api.v7/v7/auth/qbox"
+	qc "github.com/qiniu/api.v7/v7/client"
 	qs "github.com/qiniu/api.v7/v7/storage"
 
 	"github.com/Xuanwo/storage"
@@ -97,22 +98,15 @@ const (
 
 // ref: https://developer.qiniu.com/kodo/api/3928/error-responses
 func formatError(err error) error {
-	e, ok := err.(*qs.ErrorInfo)
+	e, ok := err.(*qc.ErrorInfo)
 	if !ok {
 		return err
 	}
 
 	// error code returned by kodo looks like http status code, but it's not.
 	// kodo could return 6xx or 7xx for their costumed errors, so we use untyped int directly.
-	switch e.Errno {
-	case 0:
-		switch e.Code {
-		case 404:
-			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
-		default:
-			return err
-		}
-	case 404:
+	switch e.Code {
+	case 612:
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
 	case 403:
 		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
