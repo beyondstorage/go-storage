@@ -163,15 +163,17 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 	rp := s.getAbsPath(path)
 
-	r, w := io.Pipe()
+	var w *io.PipeWriter
+	r, w = io.Pipe()
 
-	_, err = s.bucket.Get(&upyun.GetObjectConfig{
-		Path:   rp,
-		Writer: w,
-	})
-	if err != nil {
-		return nil, err
-	}
+	go func() {
+		defer w.Close()
+
+		_, err = s.bucket.Get(&upyun.GetObjectConfig{
+			Path:   rp,
+			Writer: w,
+		})
+	}()
 
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
