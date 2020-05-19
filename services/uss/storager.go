@@ -63,39 +63,39 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	ch := make(chan *upyun.FileInfo, 200)
 
 	go func() {
-		for v := range ch {
-			if v.IsDir {
-				if !opt.HasDirFunc {
-					continue
-				}
+		errlock.Lock()
+		defer errlock.Unlock()
 
-				o := &types.Object{
-					ID:         v.Name,
-					Name:       s.getRelPath(v.Name),
-					Type:       types.ObjectTypeDir,
-					ObjectMeta: info.NewObjectMeta(),
-				}
+		err = s.bucket.List(&upyun.GetObjectsConfig{
+			Path:         rp,
+			ObjectsChan:  ch,
+			MaxListLevel: maxListLevel,
+		})
+	}()
 
-				opt.DirFunc(o)
+	for v := range ch {
+		if v.IsDir {
+			if !opt.HasDirFunc {
 				continue
 			}
 
-			o, err := s.formatFileObject(v)
-			if err != nil {
-				return
+			o := &types.Object{
+				ID:         v.Name,
+				Name:       s.getRelPath(v.Name),
+				Type:       types.ObjectTypeDir,
+				ObjectMeta: info.NewObjectMeta(),
 			}
 
-			opt.FileFunc(o)
+			opt.DirFunc(o)
+			continue
 		}
-	}()
 
-	err = s.bucket.List(&upyun.GetObjectsConfig{
-		Path:         rp,
-		ObjectsChan:  ch,
-		MaxListLevel: maxListLevel,
-	})
-	if err != nil {
-		return err
+		o, err := s.formatFileObject(v)
+		if err != nil {
+			return err
+		}
+
+		opt.FileFunc(o)
 	}
 	return
 }
@@ -128,22 +128,24 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		errlock.Lock()
 		defer errlock.Unlock()
 
-			o, err := s.formatFileObject(v)
-			if err != nil {
-				return
-			}
-
-			opt.ObjectFunc(o)
-		}
+		err = s.bucket.List(&upyun.GetObjectsConfig{
+			Path:         rp,
+			ObjectsChan:  ch,
+			MaxListLevel: maxListLevel,
+		})
 	}()
 
-	err = s.bucket.List(&upyun.GetObjectsConfig{
-		Path:         rp,
-		ObjectsChan:  ch,
-		MaxListLevel: maxListLevel,
-	})
-	if err != nil {
-		return err
+	for v := range ch {
+		if v.IsDir {
+			continue
+		}
+
+		o, err := s.formatFileObject(v)
+		if err != nil {
+			return err
+		}
+
+		opt.ObjectFunc(o)
 	}
 	return
 }
