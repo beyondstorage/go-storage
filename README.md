@@ -14,41 +14,72 @@ An application-oriented unified storage layer for Golang.
 
 - Production ready
 - High performance
-- Vendor lock free
+- Vendor agnostic
 
 ## Features
 
-### Servicer Level
+### Widely services support
 
-- Basic operations across implemented storage services with the same API
-  - List: list all Storager in service
-  - Get: get a Storager via name
-  - Create: create a Storager
-  - Delete: delete a Storager
+- [azblob](./services/azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [cos](./services/cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
+- [dropbox](./services/dropbox/): [Dropbox](https://www.dropbox.com)
+- [fs](./services/fs/): Local file system
+- [gcs](./services/gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [kodo](./services/kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
+- [oss](./services/oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
+- [qingstor](./services/qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
+- [s3](./services/s3/): [Amazon S3](https://aws.amazon.com/s3/)
+- [uss](./services/uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 
-### Storager Level
+### Servicer operation support
 
-- Basic operations across all storage services with the same API
-  - Read: read file content
-  - Write: write content into file
-  - List: list files under a dir or prefix
-  - Stat: get file's metadata
-  - Delete: delete a file
-  - Metadata: get storage service's metadata
-- Advanced operations across implemented storage services with the same API
-  - Copy: copy a file
-  - Move: move a file
-  - Reach: generate a public accessible url
-  - Statistical: get storage service's statistics
-  - Segment: Full support for Segment, aka, Multipart
+- List: list all Storager in service
+- Get: get a Storager via name
+- Create: create a Storager
+- Delete: delete a Storager
 
-### File Level
+### Storager operation support
 
-- Metadata
-  - Content Length / Size: Full support via [RFC 2616](https://tools.ietf.org/html/rfc2616)
-  - Content MD5 / ETag: Full support via [proposal](docs/design/14-normalize-content-hash-check.md)
-  - Content Type: Full support via [RFC 2616](https://tools.ietf.org/html/rfc2616)
-  - Storage Class: Full support via [proposal](docs/design/8-normalize-metadata-storage-class.md)  
+Basic operations
+
+- Metadata: get storager's metadata
+- Read: read file content
+- Write: write content into file
+- Stat: get file's metadata
+- Delete: delete a file or directory
+
+Extended operations
+
+- Copy: copy a file inside storager
+- Move: move a file inside storager
+- Reach: generate a public accessible url
+- Statistical: get storage service's statistics
+
+Multiple list style support
+
+- ListDir: list files and directories under a directory
+- ListPrefix: list files under a prefix
+
+Segment/Multipart support
+
+- ListPrefixSegment: list segments under a prefix
+- InitIndexSegment: initiate an index type segment
+- WriteIndexSegment: write content into an index type segment
+- CompleteSegment: complete a segment to create a file
+- AbortSegment: abort a segment
+
+File metadata support
+
+- Required metadata
+    - `id`: unique key in service
+    - `name`: relative path towards service's work dir
+    - `size`: size of this object
+    - `updated_at`: last update time of this object
+- Optional metadata
+    - `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
+    - `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
+    - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
+    - `storage-class`: object's storage class as defined in [storage proposal](./design/8-normalize-metadata-storage-class.md)
 
 ## Installation
 
@@ -79,16 +110,3 @@ if err != nil {
     log.Printf("storager read: %v", err)
 }
 ```
-
-## Services
-
-- [azblob](./services/azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
-- [cos](./services/cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
-- [dropbox](./services/dropbox/): [Dropbox](https://www.dropbox.com)
-- [fs](./services/fs/): Local file system
-- [gcs](./services/gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
-- [kodo](./services/kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
-- [oss](./services/oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
-- [qingstor](./services/qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
-- [s3](./services/s3/): [Amazon S3](https://aws.amazon.com/s3/)
-- [uss](./services/uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
