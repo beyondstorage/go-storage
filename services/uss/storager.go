@@ -55,22 +55,21 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		return err
 	}
 
-	maxListLevel := 1
-
 	rp := s.getAbsPath(path)
 
 	// USS SDK will close this channel in List
 	ch := make(chan *upyun.FileInfo, 200)
 
 	go func() {
-		errlock.Lock()
-		defer errlock.Unlock()
-
-		err = s.bucket.List(&upyun.GetObjectsConfig{
+		xerr := s.bucket.List(&upyun.GetObjectsConfig{
 			Path:         rp,
 			ObjectsChan:  ch,
-			MaxListLevel: maxListLevel,
+			MaxListLevel: 1,
 		})
+
+		errlock.Lock()
+		defer errlock.Unlock()
+		err = xerr
 	}()
 
 	for v := range ch {
@@ -117,22 +116,21 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		return err
 	}
 
-	maxListLevel := -1
-
 	rp := s.getAbsPath(prefix)
 
 	// USS SDK will close this channel in List
 	ch := make(chan *upyun.FileInfo, 200)
 
 	go func() {
-		errlock.Lock()
-		defer errlock.Unlock()
-
-		err = s.bucket.List(&upyun.GetObjectsConfig{
+		xerr := s.bucket.List(&upyun.GetObjectsConfig{
 			Path:         rp,
 			ObjectsChan:  ch,
-			MaxListLevel: maxListLevel,
+			MaxListLevel: -1,
 		})
+
+		errlock.Lock()
+		defer errlock.Unlock()
+		err = xerr
 	}()
 
 	for v := range ch {
@@ -245,6 +243,11 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 }
 
 // Delete implements Storager.Delete
+//
+// USS requires a short time between PUT and DELETE, or we will get this error:
+// DELETE 429 {"msg":"concurrent put or delete","code":42900007,"id":"xxx"}
+//
+// Due to this problem, uss can't pass the storager integration tests.
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpDelete, err, path)
@@ -254,11 +257,6 @@ func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 
 	err = s.bucket.Delete(&upyun.DeleteObjectConfig{
 		Path: rp,
-		// USS requires a short time between PUT and DELETE, or we will get this error:
-		// DELETE 429 {"msg":"concurrent put or delete","code":42900007,"id":"xxx"}
-		//
-		// In order to pass the integration tests, use async delete instead
-		Async: true,
 	})
 	if err != nil {
 		return err

@@ -24,8 +24,6 @@ steps:
         from_secret: STORAGE_TEST_SERVICE_QINGSTOR
       STORAGE_TEST_SERVICE_S3:
         from_secret: STORAGE_TEST_SERVICE_S3
-      STORAGE_TEST_SERVICE_USS:
-        from_secret: STORAGE_TEST_SERVICE_USS
     commands:
       - cd tests && go test -race -v ./...
 
@@ -35,6 +33,6 @@ volumes:
       path: /var/lib/cache/drone/storage/go
 ---
 kind: signature
-hmac: 4e8cfadbaebc10dee4638873bb1045687019da9ed1b3f8cb155831b68e6310da
+hmac: b3de0e11b75bf4c4be478525915f2ac8c9cf942bbfddc23165bf7c49a9cba1b8
 
 ...
