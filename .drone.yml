@@ -18,6 +18,8 @@ steps:
         from_secret: STORAGE_TEST_SERVICE_FS
       STORAGE_TEST_SERVICE_GCS:
         from_secret: STORAGE_TEST_SERVICE_GCS
+      STORAGE_TEST_SERVICE_KODO:
+        from_secret: STORAGE_TEST_SERVICE_KODO
       STORAGE_TEST_SERVICE_OSS:
         from_secret: STORAGE_TEST_SERVICE_OSS
       STORAGE_TEST_SERVICE_QINGSTOR:
@@ -33,6 +35,6 @@ volumes:
       path: /var/lib/cache/drone/storage/go
 ---
 kind: signature
-hmac: b3de0e11b75bf4c4be478525915f2ac8c9cf942bbfddc23165bf7c49a9cba1b8
+hmac: 0c638a6495ebe4a897cfae728378e73af9c5b25118858320dd70ff8734fe05d5
 
 ...
