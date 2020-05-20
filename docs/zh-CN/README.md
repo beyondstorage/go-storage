@@ -76,7 +76,7 @@
 - `content-md5`：[rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)中定义的 md5 摘要
 - `content-type`：[rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)中定义的媒体类型
 - `etag`：在[rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)中定义的实体标签
-- `storage-class`：在[草案](./design/8-normalize-metadata-storage-class.md)中定义的对象存储级别</1>
+- `storage-class`：在[草案](./design/8-normalize-metadata-storage-class.md)中定义的对象存储级别
 
 ## 快速开始
 
@@ -95,7 +95,7 @@ if err != nil {
     log.Fatalf("service init failed: %v", err)
 }
 
-// Use Storager API to maintain data.
+// 使用 Storager API 来维护数据
 r, err := store.Read("path/to/file")
 if err != nil {
     log.Printf("storager read: %v", err)
