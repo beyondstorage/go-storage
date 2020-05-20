@@ -9,3 +9,11 @@ Local file system
 | Name       | Required | Comments |
 | ---------- | -------- | -------- |
 | `work_dir` | N        | work dir |
+
+## Example
+
+Init storager
+
+```yaml
+work_dir: /<work_dir>
+```

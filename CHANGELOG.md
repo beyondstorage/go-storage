@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v1.2.0] - 2020-05-20
+
+### Added
+
+- tests: Add integration test for qingstor (#325)
+- pkg/iowrap: Add SizedReadSeekCloser support (#329)
+- tests: Add integration test for azblob (#331)
+- tests: Add integration test for s3 (#338)
+- tests: Add integration test for gcs (#341)
+- tests: Add integration test for cos (#342)
+- tests: Add integration test for oss (#343)
+- tests: Add integration test for kodo (#347)
+
+### Changed
+
+- services/fs: Auto create work dir (#324)
+- pkg/endpoint: Allow omit protocol default port (#346)
+- tests: Compare content sha256 instead of full content
+
+### Fixed
+
+- services/*: Fix context not initiated (#328)
+- services/azblob: Fix content length not set correctly (#330)
+- services/s3: Fix NotFound error not handled correctly (#332)
+- services/s3: Fix ListDir && ListPrefix not ended correctly (#333)
+- services/s3: Fix Read's pair not parsed correctly (#334)
+- services/s3: Fix bucket in request input not assigned (#335)
+- services/s3: Location should be required in Storager Init (#336)
+- services/s3: Don't calculate content-sha256 as default (#337)
+- services/gcs: Fix ListDir and ListPrefix not ended correctly (#339)
+- services/gcs: Fix oauth2 token source not configured correctly (#340)
+- services/oss: Fix ListPrefix && ListDir not ended correctly
+- services/oss: Fix Read's pairs not parsed correctly
+- services/oss: Fix LastModified not parsed correctly
+- services/uss: Fix content-length header not filled
+- services/uss: Fix ListDir && ListPrefix data race while returning error
+- services/uss: Fix object channel double close
+- services/uss: Fix object not iterated fully
+- services/uss: Fix dead loop on reading from io.Pipe
+- services/uss: Use async delete to avoid 'concurrent' delete
+- services/uss: Disable async delete for unexpected behavior (#345)
+- services/kodo: Fix kodo's domain not setup correctly
+- services/kodo: Fix object not found error not formatted correctly
+- services/kodo: Fix request deadline not set correctly
+- services/kodo: Fix service level error not parsed
+
 ## [v1.1.0] - 2020-05-14
 
 ### Proposal
@@ -271,7 +317,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v1.2.0...HEAD
+[v1.2.0]: https://github.com/Xuanwo/storage/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/Xuanwo/storage/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/Xuanwo/storage/compare/v0.9.0...v1.0.0
 [v0.9.0]: https://github.com/Xuanwo/storage/compare/v0.8.0...v0.9.0

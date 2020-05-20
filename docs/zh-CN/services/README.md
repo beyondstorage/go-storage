@@ -1,21 +1,25 @@
 # Sevices
 
-## [azblob](./azblob/)
+## Available services
 
-## [cos](./cos/)
+### Tire 1 support services
 
-## [dropbox](./dropbox/)
+Tire 1 services should pass all integration tests, any failure will block release.
 
-## [fs](./fs/)
+- [azblob](./azblob/)
+- [cos](./cos/)
+- [fs](./fs/)
+- [gcs](./gcs/)
+- [kodo](./kodo/)
+- [oss](./oss/)
+- [qingstor](./qingstor/)
+- [s3](./s3/)
 
-## [gcs](./gcs/)
+### Tire 2 support services
 
-## [kodo](./kodo/)
+Tire 2 services allow to fail one or more integration tests.
 
-## [oss](./oss/)
-
-## [qingstor](./qingstor/)
-
-## [s3](./s3/)
-
-## [uss](./uss/)
+- [dropbox](./dropbox/)
+  - community contributed services
+- [uss](./uss/)
+  - uss have limitations for concurrent put/delete: delete a file shortly after put will make server returning an error
