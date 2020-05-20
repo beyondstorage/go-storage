@@ -67,18 +67,18 @@
 必须的元数据
 
 - `id`：服务中全局唯一的键
-- `name`: relative path towards service's work dir
-- `size`: size of this object
-- `updated_at`: last update time of this object
+- `name`：到当前工作路径的相对路径
+- `size`：此对象的大小
+- `updated_at`：此对象的最后更新时间
 
-Optional metadata
+可选的元数据
 
-- `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
-- `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
-- `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
-- `storage-class`: object's storage class as defined in [storage proposal](./design/8-normalize-metadata-storage-class.md)
+- `content-md5`：[rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)中定义的 md5 摘要
+- `content-type`：[rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)中定义的媒体类型
+- `etag`：在[rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)中定义的实体标签
+- `storage-class`：在[草案](./design/8-normalize-metadata-storage-class.md)中定义的对象存储级别</1>
 
-## Quick Start
+## 快速开始
 
 ```go
 import (
@@ -89,7 +89,7 @@ import (
     "github.com/Xuanwo/storage/types/pairs"
 )
 
-// Init a service.
+// 初始化一个 Storager
 store, err := coreutils.OpenStorager("fs", pairs.WithWorkDir("/tmp"))
 if err != nil {
     log.Fatalf("service init failed: %v", err)
