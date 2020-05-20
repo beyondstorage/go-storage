@@ -8,65 +8,65 @@
 
 - 可用于生产环境
 - 高性能
-- Vendor agnostic
+- 供应商无关
 
 ## 功能
 
-### Widely services support
+### 广泛的服务支持
 
-- [azblob](./services/azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
-- [cos](./services/cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
-- [dropbox](./services/dropbox/): [Dropbox](https://www.dropbox.com)
-- [fs](./services/fs/): Local file system
-- [gcs](./services/gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [zblob](./services/azblob/): [Azure Blob 存储](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [cos](./services/cos/): [腾讯云对象存储](https://cloud.tencent.com/product/cos)
+- [Dropbox](./services/dropbox/): [Dropbox](https://www.dropbox.com)
+- [fs](./services/fs/)：本地文件系统
+- [gcs](./services/gcs/): [Google 云存储](https://cloud.google.com/storage/)
 - [kodo](./services/kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
-- [oss](./services/oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
-- [qingstor](./services/qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
+- [oss](./services/oss/): [Aliyun 对象存储](https://www.aliyun.com/product/oss)
+- [qingstor](./services/qingstor/): [QingStor 对象存储](https://www.qingcloud.com/products/qingstor/)
 - [s3](./services/s3/): [Amazon S3](https://aws.amazon.com/s3/)
-- [uss](./services/uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
+- [uss](./services/uss/): [UPYUN 存储服务](https://www.upyun.com/products/file-storage)
 
-### Servicer operation support
+### 服务级别操作支持
 
-- List: list all Storager in service
-- Get: get a Storager via name
-- Create: create a Storager
-- Delete: delete a Storager
+- List: 列出所有 Storager
+- Get: 通过名称获取 Storager
+- Create: 创建一个 Storager
+- Delete: 删除一个 Storager
 
-### Storager operation support
+### 存储级别操作支持
 
-Basic operations
+基本操作
 
-- Metadata: get storager's metadata
-- Read: read file content
-- Write: write content into file
-- Stat: get file's metadata
-- Delete: delete a file or directory
+- Metadata: 获取存储服务的元数据
+- Read: 读取文件内容
+- Write: 将内容写入文件
+- Stat: 获取文件的元数据
+- Delete：删除文件或目录
 
-Extended operations
+扩展操作
 
-- Copy: copy a file inside storager
-- Move: move a file inside storager
-- Reach: generate a public accessible url
-- Statistical: get storage service's statistics
+- Copy: 在存储器中复制一个文件
+- Move：在存储器中移动一个文件
+- Reach: 生成一个可公开访问的 URL
+- Statistical：获取存储服务的统计
 
-Multiple list style support
+多种列取风格支持
 
-- ListDir: list files and directories under a directory
-- ListPrefix: list files under a prefix
+- ListDir：在目录下列出文件和目录
+- ListPrefix：列出前缀下的文件
 
-Segment/Multipart support
+分段上传支持
 
-- ListPrefixSegment: list segments under a prefix
-- InitIndexSegment: initiate an index type segment
-- WriteIndexSegment: write content into an index type segment
-- CompleteSegment: complete a segment to create a file
-- AbortSegment: abort a segment
+- ListPrefixSegment: 列出前缀下面的段
+- InitIndexSegment：创建一个基于索引的分段
+- WriteIndexSegment: 将内容写入一个基于索引的分段
+- CompleteSegment: 完成一个分段以创建一个文件
+- AbortSegment: 中止一个分段
 
-### File metadata support
+### 文件元数据支持
 
-Required metadata
+必须的元数据
 
-- `id`: unique key in service
+- `id`：服务中全局唯一的键
 - `name`: relative path towards service's work dir
 - `size`: size of this object
 - `updated_at`: last update time of this object
