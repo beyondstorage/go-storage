@@ -8,81 +8,96 @@
 
 - 可用于生产环境
 - 高性能
-- 无供应商锁定
+- Vendor agnostic
 
 ## 功能
 
-### 服务级别
+### Widely services support
 
-- 使用相同的 API 对存储服务进行基本操作
-  - List: 列出所有 Storager
-  - Get: 通过名称获取 Storager
-  - Create: 创建一个 Storager
-  - Delete: 删除一个 Storager
+- [azblob](./services/azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [cos](./services/cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
+- [dropbox](./services/dropbox/): [Dropbox](https://www.dropbox.com)
+- [fs](./services/fs/): Local file system
+- [gcs](./services/gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [kodo](./services/kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
+- [oss](./services/oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
+- [qingstor](./services/qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
+- [s3](./services/s3/): [Amazon S3](https://aws.amazon.com/s3/)
+- [uss](./services/uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 
-### 存储级别
+### Servicer operation support
 
-- 使用相同的 API 对存储服务进行基本操作
-  - Read: 读取文件内容
-  - Write: 将内容写入文件
-  - List: 列取一个目录或者前缀下的文件
-  - Stat: 获取文件的元数据
-  - Delete: 删除一个文件
-  - Metadata: 获取存储服务的元数据
-- 使用相同的 API 对存储服务进行高级操作
-  - Copy: 复制一个文件
-  - Move: 移动一个文件
-  - Reach: 生成一个可公开访问的 URL
-  - Statistical: 获取存储服务的统计数据
-  - Segment: 对分块/分段的完整支持
+- List: list all Storager in service
+- Get: get a Storager via name
+- Create: create a Storager
+- Delete: delete a Storager
 
-### 文件级别
+### Storager operation support
 
-- 元数据
-  - Content Length / Size: 通过 [RFC 2616](https://tools.ietf.org/html/rfc2616) 实现完整支持
-  - Content MD5 / ETag: 通过 [proposal](docs/design/14-normalize-content-hash-check.md) 实现完整支持
-  - Content Type: 通过 [RFC 2616](https://tools.ietf.org/html/rfc2616) 实现完整支持
-  - Storage Class: 通过 [proposal](docs/design/8-normalize-metadata-storage-class.md) 实现完整支持
+Basic operations
 
-## 安装
+- Metadata: get storager's metadata
+- Read: read file content
+- Write: write content into file
+- Stat: get file's metadata
+- Delete: delete a file or directory
 
-通过 `go get` 安装
+Extended operations
 
-```bash
-go get github.com/Xuanwo/storage
-```
+- Copy: copy a file inside storager
+- Move: move a file inside storager
+- Reach: generate a public accessible url
+- Statistical: get storage service's statistics
 
-Import
+Multiple list style support
+
+- ListDir: list files and directories under a directory
+- ListPrefix: list files under a prefix
+
+Segment/Multipart support
+
+- ListPrefixSegment: list segments under a prefix
+- InitIndexSegment: initiate an index type segment
+- WriteIndexSegment: write content into an index type segment
+- CompleteSegment: complete a segment to create a file
+- AbortSegment: abort a segment
+
+### File metadata support
+
+Required metadata
+
+- `id`: unique key in service
+- `name`: relative path towards service's work dir
+- `size`: size of this object
+- `updated_at`: last update time of this object
+
+Optional metadata
+
+- `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
+- `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
+- `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
+- `storage-class`: object's storage class as defined in [storage proposal](./design/8-normalize-metadata-storage-class.md)
+
+## Quick Start
 
 ```go
-import "github.com/Xuanwo/storage"
-```
+import (
+    "log"
 
-## 快速开始
+    "github.com/Xuanwo/storage"
+    "github.com/Xuanwo/storage/coreutils"
+    "github.com/Xuanwo/storage/types/pairs"
+)
 
-```go
-// 初始化服务。
+// Init a service.
 store, err := coreutils.OpenStorager("fs", pairs.WithWorkDir("/tmp"))
 if err != nil {
     log.Fatalf("service init failed: %v", err)
 }
 
-// 使用 Storager API 来维护数据。
+// Use Storager API to maintain data.
 r, err := store.Read("path/to/file")
 if err != nil {
     log.Printf("storager read: %v", err)
 }
 ```
-
-## 服务
-
-- [zblob](./services/azblob/): [Azure Blob 存储](https://docs.microsoft.com/en-us/azure/storage/blobs/)
-- [cos](./services/cos/): [腾讯云对象存储](https://cloud.tencent.com/product/cos)
-- [Dropbox](./services/dropbox/): [Dropbox](https://www.dropbox.com)
-- [fs](./services/fs/): 本地文件系统
-- [gcs](./services/gcs/): [Google 云存储](https://cloud.google.com/storage/)
-- [kodo](./services/kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
-- [oss](./services/oss/): [Aliyun 对象存储](https://www.aliyun.com/product/oss)
-- [qingstor](./services/qingstor/): [QingStor 对象存储](https://www.qingcloud.com/products/qingstor/)
-- [s3](./services/s3/): [Amazon S3](https://aws.amazon.com/s3/)
-- [uss](./services/uss/): [UPYUN 存储服务](https://www.upyun.com/products/file-storage)
