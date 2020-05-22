@@ -1,0 +1,30 @@
+package storage
+
+import (
+    "context"
+    "io"
+
+    "github.com/Xuanwo/storage/pkg/segment"
+    "github.com/Xuanwo/storage/types"
+    "github.com/Xuanwo/storage/types/info"
+)
+
+{{- range $_, $i := .Interfaces }}
+{{ $i.Description }}
+type {{ $i.DisplayName }} interface {
+    {{- if or (eq $i.Name "servicer") (eq $i.Name "storager")}}
+    String() string
+    {{- end }}
+
+    {{- range $_, $embed := $i.Embed }}
+        {{ $embed.DisplayName }}
+    {{- end }}
+
+    {{ range $_, $op := $i.Ops }}
+    // {{ $op.Name | toPascal }} {{ $op.Description }}
+    {{ $op.Name | toPascal }}({{ $op.FormatParams }}) ({{ $op.FormatResults }})
+    // {{ $op.Name | toPascal }}WithContext {{ $op.Description }}
+    {{ $op.Name | toPascal }}WithContext(ctx context.Context,{{ $op.FormatParams }}) ({{ $op.FormatResults }})
+    {{ end }}
+}
+{{- end }}

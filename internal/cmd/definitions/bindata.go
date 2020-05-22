@@ -2,6 +2,7 @@
 // sources:
 // tmpl/info.tmpl (1.442kB)
 // tmpl/open.tmpl (1.162kB)
+// tmpl/operation.tmpl (833B)
 // tmpl/pair.tmpl (2.285kB)
 // tmpl/service.tmpl (7.63kB)
 
@@ -109,6 +110,26 @@ func openTmpl() (*asset, error) {
 
 	info := bindataFileInfo{name: "open.tmpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf8, 0xc8, 0x9a, 0x70, 0xbb, 0xb4, 0xb6, 0xf6, 0x20, 0x86, 0xe4, 0x9f, 0x1, 0x8b, 0x2c, 0x4, 0x41, 0x21, 0x32, 0xca, 0xf2, 0x78, 0x9d, 0x67, 0x75, 0x29, 0x7d, 0x8c, 0x12, 0x41, 0xaf, 0xb2}}
+	return a, nil
+}
+
+var _operationTmpl = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x9c\x92\xcd\x4e\xeb\x30\x10\x85\xf7\x7e\x8a\x51\x94\x45\x22\xf5\x26\xfb\x2b\xb1\xe2\x47\x62\x03\x15\x2c\x60\x87\x5c\x77\x9a\x8e\xda\xd8\xc6\x9e\x42\xab\x90\x77\x47\x76\x9c\x52\x2a\x2a\x50\x77\xe3\x99\x73\x8e\x3f\x8f\x6c\xa5\x5a\xc9\x06\xc1\xb3\x71\xb2\x41\x21\xa8\xb5\xc6\x31\x14\x02\x00\x20\x53\x46\x33\x6e\x39\x1b\x4e\x64\x32\x31\x54\x0d\xf1\x72\x33\xab\x94\x69\xeb\xe7\x8d\xd4\xef\xa6\x4e\x01\xb5\x5d\x35\xb5\xc7\xa6\x45\x3d\xba\x4e\x6b\x79\x67\xd1\xff\x4d\x55\x93\x5e\x98\x4c\x94\x42\x74\xdd\x3f\x70\x52\x37\x08\xf9\xcb\x04\x72\x82\xff\x17\x50\xdd\x6a\x46\xb7\x90\x0a\x3d\xf4\xbd\xe8\x3a\xc8\xa9\xba\x42\xaf\x1c\x59\x26\xa3\x43\x33\xc4\x40\x9a\x90\xb7\x6b\xb9\xbb\x93\x2d\x42\xdf\x03\x8d\x66\xe8\x22\x4b\xb8\x81\x16\x60\x1c\x14\xf8\x1a\xf4\x51\x98\x79\x74\x6f\xa4\xd0\x65\xe5\x51\x7f\xe0\x74\x59\xd9\xf7\xd1\xff\xc8\x8e\x74\x53\x94\xe0\x63\xb1\xcf\x44\x3d\x0f\x20\xfb\xf3\xc1\x2b\xb0\x9d\xe1\x3c\xbc\x24\xa7\xea\x3a\xd6\x29\x6b\xd0\x26\xc1\x11\xf8\x89\xe0\xc3\x5c\x63\x53\xe8\xbd\xf5\xa3\xa3\xae\x63\xa2\xb1\x03\xff\x07\xb0\x99\x4a\xaf\xe4\x3a\xec\x22\x4d\x8e\x76\x37\x52\xfc\xe8\x29\xd2\xe4\xc6\xb8\x56\xf2\x54\x3a\xd9\x86\xbb\x4a\xf8\x3e\x78\x40\xbf\x59\x73\x9c\xfc\x8a\xf1\x44\xbc\xbc\x1c\xbe\xde\x39\x44\x07\xf6\x42\xf1\x16\xd2\x2f\xae\x52\x6f\x72\x1e\x70\xd7\x8d\x8b\xee\xc5\xd7\xd6\x3f\x03\x00\x00\xff\xff\xd9\x15\x9b\xd3\x41\x03\x00\x00")
+
+func operationTmplBytes() ([]byte, error) {
+	return bindataRead(
+		_operationTmpl,
+		"operation.tmpl",
+	)
+}
+
+func operationTmpl() (*asset, error) {
+	bytes, err := operationTmplBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "operation.tmpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x9e, 0xb3, 0x46, 0xbd, 0x47, 0xfa, 0xe1, 0xea, 0x2e, 0xc7, 0x5c, 0x64, 0xd6, 0xd8, 0xc0, 0x35, 0xd2, 0x0, 0x10, 0x3a, 0x1a, 0xdd, 0xf5, 0xb1, 0x2a, 0x72, 0x20, 0xfc, 0xa2, 0xc9, 0x1f, 0x17}}
 	return a, nil
 }
 
@@ -243,10 +264,11 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"info.tmpl":    infoTmpl,
-	"open.tmpl":    openTmpl,
-	"pair.tmpl":    pairTmpl,
-	"service.tmpl": serviceTmpl,
+	"info.tmpl":      infoTmpl,
+	"open.tmpl":      openTmpl,
+	"operation.tmpl": operationTmpl,
+	"pair.tmpl":      pairTmpl,
+	"service.tmpl":   serviceTmpl,
 }
 
 // AssetDir returns the file names below a certain
@@ -290,10 +312,11 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"info.tmpl":    &bintree{infoTmpl, map[string]*bintree{}},
-	"open.tmpl":    &bintree{openTmpl, map[string]*bintree{}},
-	"pair.tmpl":    &bintree{pairTmpl, map[string]*bintree{}},
-	"service.tmpl": &bintree{serviceTmpl, map[string]*bintree{}},
+	"info.tmpl":      &bintree{infoTmpl, map[string]*bintree{}},
+	"open.tmpl":      &bintree{openTmpl, map[string]*bintree{}},
+	"operation.tmpl": &bintree{operationTmpl, map[string]*bintree{}},
+	"pair.tmpl":      &bintree{pairTmpl, map[string]*bintree{}},
+	"service.tmpl":   &bintree{serviceTmpl, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory.

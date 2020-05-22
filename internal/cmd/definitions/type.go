@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"sort"
 	"strings"
+
+	"github.com/Xuanwo/templateutils"
 )
 
 // Data is the biggest cqontainer for all definitions.
@@ -64,10 +67,7 @@ func (d *Data) Sort() {
 		sort.Slice(v.Ops, func(i, j int) bool {
 			return v.Ops[i].Name < v.Ops[j].Name
 		})
-		for _, op := range v.Ops {
-			sort.Strings(op.Params)
-			sort.Strings(op.Results)
-		}
+		// NOTE: don't sort params/results to avoid potential API changes
 	}
 
 	for _, v := range d.serviceSpec {
@@ -184,10 +184,18 @@ func (p *Pair) Handle() {
 }
 
 type Interface struct {
-	Name     string
-	Internal bool
-	Embed    []*Interface
-	Ops      map[string]*Operation
+	Name        string
+	Description string
+	Internal    bool
+	Embed       []*Interface
+	Ops         map[string]*Operation
+}
+
+func (i *Interface) DisplayName() string {
+	if i.Internal {
+		return templateutils.ToCamel(i.Name)
+	}
+	return templateutils.ToPascal(i.Name)
 }
 
 type Operation struct {
@@ -197,9 +205,32 @@ type Operation struct {
 	Results     []*Field
 }
 
+func (o *Operation) FormatParams() string {
+	s := make([]string, 0)
+	for _, v := range o.Params {
+		s = append(s, v.String())
+	}
+	return strings.Join(s, ",")
+}
+
+func (o *Operation) FormatResults() string {
+	s := make([]string, 0)
+	for _, v := range o.Results {
+		s = append(s, v.String())
+	}
+	return strings.Join(s, ",")
+}
+
 type Field struct {
 	Name string `hcl:",label"`
 	Type string `hcl:"type"`
+}
+
+func (f *Field) String() string {
+	if f.Name == "" {
+		return f.Type
+	}
+	return fmt.Sprintf("%s %s", f.Name, f.Type)
 }
 
 // Info is the metadata definition.
@@ -248,10 +279,11 @@ type OperationsSpec struct {
 }
 
 type InterfaceSpec struct {
-	Name     string           `hcl:",label"`
-	Internal bool             `hcl:"internal,optional"`
-	Embed    []string         `hcl:"embed,optional"`
-	Ops      []*OperationSpec `hcl:"op,block"`
+	Name        string           `hcl:",label"`
+	Description string           `hcl:"description,optional"`
+	Internal    bool             `hcl:"internal,optional"`
+	Embed       []string         `hcl:"embed,optional"`
+	Ops         []*OperationSpec `hcl:"op,block"`
 }
 
 type OperationSpec struct {
@@ -346,23 +378,28 @@ func (d *Data) FormatOperations(o *OperationsSpec) (ins []*Interface, srvOps, st
 	inm := make(map[string]*Interface)
 	for _, in := range o.Interfaces {
 		inter := &Interface{
-			Name:     in.Name,
-			Internal: in.Internal,
-			Ops:      make(map[string]*Operation),
+			Name:        in.Name,
+			Description: formatDescription(templateutils.ToPascal(in.Name), in.Description),
+			Internal:    in.Internal,
+			Ops:         make(map[string]*Operation),
 		}
 
 		for _, v := range in.Ops {
 			op := &Operation{
 				Name:        v.Name,
-				Description: v.Description,
+				Description: formatDescription("", v.Description),
 			}
 
 			for _, f := range v.Params {
 				op.Params = append(op.Params, fileds[f])
 			}
+			// Inject pairs
+			op.Params = append(op.Params, fileds["pairs"])
 			for _, f := range v.Results {
 				op.Results = append(op.Results, fileds[f])
 			}
+			// Inject error
+			op.Results = append(op.Results, fileds["err"])
 
 			// Update op maps
 			inter.Ops[op.Name] = op
@@ -441,4 +478,12 @@ func compareInfo(x, y *Info) bool {
 		return x.Category < y.Category
 	}
 	return x.Name < y.Name
+}
+
+func formatDescription(name, desc string) string {
+	desc = strings.Trim(desc, "\n")
+	if name == "" {
+		return strings.ReplaceAll(desc, "\n", "\n// ")
+	}
+	return fmt.Sprintf("// %s %s", name, strings.ReplaceAll(desc, "\n", "\n// "))
 }

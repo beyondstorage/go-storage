@@ -100,7 +100,15 @@ func isAttrEmpty(attr *hclwrite.Attribute) bool {
 
 	// xxx = null
 	if len(tokens) == 1 && tokens[0].Type == hclsyntax.TokenIdent {
-		return true
+		s := string(tokens[0].Bytes)
+		switch s {
+		case "true":
+			return false
+		case "null", "false":
+			return true
+		default:
+			log.Fatalf("not handled token: %s", s)
+		}
 	}
 	// xxx = ""
 	if len(tokens) == 2 &&
@@ -114,5 +122,6 @@ func isAttrEmpty(attr *hclwrite.Attribute) bool {
 		tokens[1].Type == hclsyntax.TokenCBrack {
 		return true
 	}
+
 	return false
 }

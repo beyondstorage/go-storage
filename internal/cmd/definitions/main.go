@@ -5,7 +5,7 @@ func main() {
 	data.Handle()
 	data.Sort()
 
-	//
+	generateT(operationT, "../generated.go", data)
 	// generate(data)
 	format(data)
 }

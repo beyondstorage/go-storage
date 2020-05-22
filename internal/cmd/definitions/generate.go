@@ -12,10 +12,11 @@ import (
 //go:generate go-bindata -nometadata -ignore "\\.go$" -prefix tmpl ./tmpl
 
 var (
-	infoT    = newTmpl("info")
-	pairT    = newTmpl("pair")
-	serviceT = newTmpl("service")
-	openT    = newTmpl("open")
+	infoT      = newTmpl("info")
+	pairT      = newTmpl("pair")
+	serviceT   = newTmpl("service")
+	openT      = newTmpl("open")
+	operationT = newTmpl("operation")
 )
 
 func generate(data *Data) {
@@ -24,6 +25,9 @@ func generate(data *Data) {
 
 	// Pair generate
 	generateT(pairT, "../types/pairs/generated.go", data)
+
+	// Operation generate
+	generateT(operationT, "../generated.go", data)
 
 	// Service generate
 	for _, v := range data.Services {
