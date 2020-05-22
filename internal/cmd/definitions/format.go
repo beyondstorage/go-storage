@@ -35,6 +35,18 @@ func format(data *Data) {
 		log.Fatalf("format: %v", err)
 	}
 
+	// Generate operations
+	hf = hclwrite.NewEmptyFile()
+	gohcl.EncodeIntoBody(data.operationsSpec, hf.Body())
+
+	formatBody(hf.Body())
+
+	content = hclwrite.Format(hf.Bytes())
+	err = ioutil.WriteFile(operationPath, content, 0644)
+	if err != nil {
+		log.Fatalf("format: %v", err)
+	}
+
 	// Generate services
 	for _, v := range data.serviceSpec {
 		filePath := fmt.Sprintf("services/%s.hcl", v.Name)

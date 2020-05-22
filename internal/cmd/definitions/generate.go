@@ -19,9 +19,6 @@ var (
 )
 
 func generate(data *Data) {
-	data.Handle()
-	data.Sort()
-
 	// Metas generate
 	generateT(infoT, "../types/info/generated.go", data)
 

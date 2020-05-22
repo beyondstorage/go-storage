@@ -1,5 +1,7 @@
 github.com/Xuanwo/templateutils v0.0.0-20200505091011-3e31610c1726 h1:7zz5MCe2WsQ1WQYBKg+lv/PO/mWBF43nyGFU8M2yr8k=
 github.com/Xuanwo/templateutils v0.0.0-20200505091011-3e31610c1726/go.mod h1:x0qS7gfgEm24b8V9U+0zBEBAu/VpxZhO/+EWtpgEgDw=
+github.com/Xuanwo/templateutils v0.0.0-20200522034123-e18bf4efb1a0 h1:4+84dq64cNrjAjme4/YmB10v9pOIe+EoSf/OAF8590o=
+github.com/Xuanwo/templateutils v0.0.0-20200522034123-e18bf4efb1a0/go.mod h1:x0qS7gfgEm24b8V9U+0zBEBAu/VpxZhO/+EWtpgEgDw=
 github.com/agext/levenshtein v1.2.1 h1:QmvMAjj2aEICytGiWzmxoE0x2KZvE0fvmqMOfy2tjT8=
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/apparentlymart/go-dump v0.0.0-20180507223929-23540a00eaa3/go.mod h1:oL81AME2rN47vu18xqj1S1jPIPuN7afo62yKTNn3XMM=

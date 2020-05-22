@@ -2,7 +2,10 @@ package main
 
 func main() {
 	data := parse()
+	data.Handle()
+	data.Sort()
 
-	generate(data)
+	//
+	// generate(data)
 	format(data)
 }
