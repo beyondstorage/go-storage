@@ -1,6 +1,12 @@
-name = "s3"
+name      = "s3"
+implement = ["prefix_lister", "dir_lister", "servicer", "storager", "index_segmenter", "prefix_segments_lister"]
 
 service {
+
+  new {
+    required = ["credential"]
+    optional = ["endpoint"]
+  }
 
   op "create" {
     required = ["location"]
@@ -14,13 +20,14 @@ service {
   op "list" {
     required = ["storager_func"]
   }
-  op "new" {
-    required = ["credential"]
-    optional = ["endpoint"]
-  }
 }
 
 storage {
+
+  new {
+    required = ["location", "name"]
+    optional = ["work_dir"]
+  }
 
   op "list_dir" {
     optional = ["dir_func", "file_func"]
@@ -30,10 +37,6 @@ storage {
   }
   op "list_prefix_segments" {
     required = ["segment_func"]
-  }
-  op "new" {
-    required = ["location", "name"]
-    optional = ["work_dir"]
   }
   op "write" {
     required = ["size"]

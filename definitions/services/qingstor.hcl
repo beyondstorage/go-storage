@@ -1,6 +1,12 @@
-name = "qingstor"
+name      = "qingstor"
+implement = ["prefix_lister", "dir_lister", "servicer", "storager", "index_segmenter", "prefix_segments_lister", "reacher"]
 
 service {
+
+  new {
+    required = ["credential"]
+    optional = ["endpoint"]
+  }
 
   op "create" {
     required = ["location"]
@@ -15,13 +21,14 @@ service {
     required = ["storager_func"]
     optional = ["location"]
   }
-  op "new" {
-    required = ["credential"]
-    optional = ["endpoint"]
-  }
 }
 
 storage {
+
+  new {
+    required = ["name"]
+    optional = ["disable_uri_cleaning", "location", "work_dir"]
+  }
 
   op "list_dir" {
     optional = ["dir_func", "file_func"]
@@ -31,10 +38,6 @@ storage {
   }
   op "list_prefix_segments" {
     optional = ["segment_func"]
-  }
-  op "new" {
-    required = ["name"]
-    optional = ["disable_uri_cleaning", "location", "work_dir"]
   }
   op "reach" {
     required = ["expire"]

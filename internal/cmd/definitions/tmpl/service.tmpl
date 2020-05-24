@@ -33,7 +33,7 @@ const (
 {{- range $_, $v := .Pairs }}
     {{- if not $v.Global }}
     {{- $pname := $v.Name | toPascal }}
-    // {{ $pname }} will {{ $v.GeneratedDescription }}
+    // {{ $pname }} will {{ $v.Description }}
     Pair{{ $pname }} = "{{ $.Name }}_{{ $v.Name }}"
     {{- end }}
 {{- end }}
@@ -56,7 +56,7 @@ const (
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options
-// This pair is used to {{ $v.GeneratedDescription }}
+// This pair is used to {{ $v.Description }}
 func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
         return &types.Pair{
         Key: Pair{{ $pname }},
@@ -96,145 +96,116 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
 
 
 {{- if .Service }}
-    {{- template "pairs" makeSlice "service" .Service .Pairs }}
-    {{- template "context_func" makeSlice "service" .Service .Name }}
+    {{- template "pairs" makeSlice "service" .Service }}
 {{- end }}
 
-{{- template "pairs" makeSlice "storage" .Storage .Pairs }}
-{{- template "context_func" makeSlice "storage" .Storage .Name }}
-
-{{- define "pair_name" }}
-    {{- $key := index . 0 -}}
-    {{- $pairs := index . 1 -}}
-    {{- if (index $pairs $key).Global -}}
-        ps.{{- $key | toPascal -}}
-    {{- else -}}
-        Pair{{- $key | toPascal -}}
-    {{- end -}}
-{{- end }}
+{{- template "pairs" makeSlice "storage" .Storage }}
 
 {{- define "pairs" }}
     {{- $pn := index . 0 | toPascal }}
     {{- $data := index . 1 }}
-    {{- $pairs := index . 2 }}
 
     {{- range $_, $v := $data }}
-        {{- $pk := $v.Name | toPascal }}
-        var pair{{ $pn }}{{ $pk }}Map = map[string]struct{}{
-        // Required pairs
-        {{- range $v := $v.Required }}
-            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
-        {{- end }}
-        // Optional pairs
-        {{- range $v := $v.Optional }}
-            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
-        {{- end }}
-        // Generated pairs
-        {{- range $v := $v.Generated }}
-            {{ template "pair_name" makeSlice $v $pairs -}}: struct{}{},
-        {{- end }}
-        }
-
-        type pair{{ $pn }}{{ $pk }} struct {
-        // Required pairs
-        {{- range $_, $key := $v.Required }}
-            {{ $key | toPascal }}    {{ (index $pairs $key).Type }}
-        {{- end }}
-        // Optional pairs
-        {{- range $_, $key := $v.Optional }}
-            Has{{ $key | toPascal }} bool
-            {{ $key | toPascal }}    {{ (index $pairs $key).Type }}
-        {{- end }}
-        // Generated pairs
-        {{- range $_, $key := $v.Generated }}
-            {{- if not (index $pairs $key).Default }}
-            Has{{ $key | toPascal }} bool
-            {{- end }}
-            {{ $key | toPascal }}    {{ (index $pairs $key).Type }}
-        {{- end }}
-        }
-
-        {{ if hasPrefix $pk "New" -}}
-            func parse{{ $pn }}Pair
-        {{- else -}}
-            func (s *{{ $pn }} ) parsePair
-        {{- end -}}
-        {{ $pk }}(opts ...*types.Pair) (*pair{{ $pn }}{{ $pk }}, error) {
-        result := &pair{{ $pn }}{{ $pk }}{}
-
-        values := make(map[string]interface{})
-        for _, v := range opts {
-        {{- if not (hasPrefix $pk "New") }}
-            if _, ok := pair{{ $pn }}{{ $pk }}Map[v.Key]; !ok {
-            return nil, services.NewPairUnsupportedError(v)
-            }
-        {{- end }}
-        values[v.Key] = v.Value
-        }
-
-        var v interface{}
-        var ok bool
-
-        // Handle required pairs
-        {{- range $_, $key := $v.Required }}
-        {{- $pkey := $key | toPascal }}
-        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
-        if !ok {
-            return nil, services.NewPairRequiredError({{- template "pair_name" makeSlice $key $pairs -}})
-        }
-        if ok {
-            result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
-        }
-        {{- end }}
-        // Handle optional pairs
-        {{- range $_, $key := $v.Optional }}
-        {{- $pkey := $key | toPascal }}
-        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
-        if ok {
-            result.Has{{ $pkey }} = true
-            result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
-        }
-        {{- end }}
-        // Handle generated pairs
-        {{- range $_, $key := $v.Generated }}
-        {{- $pkey := $key | toPascal }}
-        v, ok = values[{{- template "pair_name" makeSlice $key $pairs -}}]
-        if ok {
-        {{- if not (index $pairs $key).Default }}
-            result.Has{{ $pkey }} = true
-        {{- end }}
-            result.{{ $pkey }} = v.({{ (index $pairs $key).Type }})
-        }
-        {{- if (index $pairs $key).Default }}
-        if !ok {
-            result.{{ $pkey }} = {{ (index $pairs $key).Default }}
-        }
-        {{- end }}
-        {{- end }}
-
-        return result, nil
-        }
+        {{- template "pair" makeSlice "storage" $v}}
     {{- end }}
 {{- end}}
 
-{{- define "context_func" }}
-    {{- $name := index . 0}}
-    {{- $pn := $name | toPascal }}
-    {{- $data := index . 1 }}
-    {{- $serviceName := index . 2}}
-    {{- range $_, $v := $data }}
-        {{ $fn := $v.Func }}
-        {{- if $fn }}
-            {{- if $fn.HasContext }}
-                // {{ $fn.Parent }}WithContext adds context support for {{ $fn.Parent }}.
-                func ({{ $fn.Receiver }}) {{ $fn.Parent }}WithContext(ctx context.Context, {{ $fn.Params }}) ( {{ $fn.Returns }}) {
-                span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/{{ $serviceName }}.{{ $name }}.{{ $fn.Parent }}")
-                defer span.Finish()
+{{- define "pair" }}
+    {{- $pn := index . 0 | toPascal }}
+    {{- $fn := index . 1 }}
 
-                pairs = append(pairs, ps.WithContext(ctx))
-                return s.{{ $fn.Parent }}({{ $fn.Caller }})
-                }
-            {{- end }}
+    {{- $fnk := $fn.Name | toPascal }}
+
+    // pair{{ $pn }}{{ $fnk }}Map holds all available pairs
+    var pair{{ $pn }}{{ $fnk }}Map = map[string]struct{}{
+        // Required pairs
+        {{- range $_, $pair := $fn.Required }}
+        {{ $pair.FullName }}: struct{}{},
+        {{- end }}
+        // Optional pairs
+        {{- range $_, $pair := $fn.Optional }}
+        {{ $pair.FullName }}: struct{}{},
+        {{- end }}
+        // Generated pairs
+        {{- range $_, $pair := $fn.Generated }}
+        {{ $pair.FullName }}: struct{}{},
+        {{- end }}
+    }
+
+    // pair{{ $pn }}{{ $fnk }} is the parsed struct
+    type pair{{ $pn }}{{ $fnk }} struct {
+        // Required pairs
+        {{- range $_, $pair := $fn.Required }}
+        {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+        {{- end }}
+        // Optional pairs
+        {{- range $_, $pair := $fn.Optional }}
+        Has{{ $pair.Name | toPascal }}   bool
+        {{ $pair.Name | toPascal }}      {{ $pair.Type }}
+        {{- end }}
+        // Generated pairs
+        {{- range $_, $pair := $fn.Generated }}
+        {{- if not $pair.Default }}
+        Has{{ $pair.Name | toPascal }}   bool
+        {{- end }}
+        {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+        {{- end }}
+    }
+
+    // parsePair{{ $pn }}{{ $fnk }} will parse *types.Pair slice into *pair{{ $pn }}{{ $fnk }}
+    func parsePair{{ $pn }}{{ $fnk }}(opts []*types.Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
+    result := &pair{{ $pn }}{{ $fnk }}{}
+
+    values := make(map[string]interface{})
+    for _, v := range opts {
+        {{- if not (hasPrefix $fnk "New") }}
+        if _, ok := pair{{ $pn }}{{ $fnk }}Map[v.Key]; !ok {
+            return nil, services.NewPairUnsupportedError(v)
+        }
+        {{- end }}
+        values[v.Key] = v.Value
+    }
+
+    var v interface{}
+    var ok bool
+
+    // Handle required pairs
+    {{- range $_, $pair := $fn.Required }}
+        {{- $pkey := $pair.Name | toPascal }}
+        v, ok = values[{{- $pair.FullName -}}]
+        if !ok {
+            return nil, services.NewPairRequiredError({{- $pair.FullName -}})
+        }
+        if ok {
+            result.{{ $pkey }} = v.({{ $pair.Type }})
+        }
+    {{- end }}
+    // Handle optional pairs
+    {{- range $_, $pair := $fn.Optional }}
+        {{- $pkey := $pair.Name | toPascal }}
+        v, ok = values[{{- $pair.FullName -}}]
+        if ok {
+        result.Has{{ $pkey }} = true
+        result.{{ $pkey }} = v.({{ $pair.Type }})
+        }
+    {{- end }}
+    // Handle generated pairs
+    {{- range $_, $pair := $fn.Generated }}
+        {{- $pkey := $pair.Name | toPascal }}
+        v, ok = values[{{- $pair.FullName -}}]
+        if ok {
+        {{- if not $pair.Default }}
+            result.Has{{ $pkey }} = true
+        {{- end }}
+        result.{{ $pkey }} = v.({{ $pair.Type }})
+        }
+        {{- if $pair.Default }}
+            if !ok {
+            result.{{ $pkey }} = {{ $pair.Default }}
+            }
         {{- end }}
     {{- end }}
+
+    return result, nil
+    }
 {{- end }}

@@ -1,6 +1,11 @@
-name = "cos"
+name      = "cos"
+implement = ["prefix_lister", "dir_lister", "servicer", "storager"]
 
 service {
+
+  new {
+    required = ["credential"]
+  }
 
   op "create" {
     required = ["location"]
@@ -14,22 +19,20 @@ service {
   op "list" {
     required = ["storager_func"]
   }
-  op "new" {
-    required = ["credential"]
-  }
 }
 
 storage {
+
+  new {
+    required = ["location", "name"]
+    optional = ["work_dir"]
+  }
 
   op "list_dir" {
     optional = ["dir_func", "file_func"]
   }
   op "list_prefix" {
     required = ["object_func"]
-  }
-  op "new" {
-    required = ["location", "name"]
-    optional = ["work_dir"]
   }
   op "write" {
     required = ["size"]

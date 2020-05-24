@@ -1,13 +1,15 @@
-name = "dropbox"
+name      = "dropbox"
+implement = ["dir_lister", "storager"]
 
 storage {
 
-  op "list_dir" {
-    optional = ["dir_func", "file_func"]
-  }
-  op "new" {
+  new {
     required = ["credential"]
     optional = ["work_dir"]
+  }
+
+  op "list_dir" {
+    optional = ["dir_func", "file_func"]
   }
   op "read" {
     optional = ["size"]

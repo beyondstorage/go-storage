@@ -1,26 +1,29 @@
-name = "azblob"
+name      = "azblob"
+implement = ["prefix_lister", "dir_lister", "servicer", "storager"]
 
 service {
+
+  new {
+    required = ["credential", "endpoint"]
+  }
 
   op "list" {
     required = ["storager_func"]
   }
-  op "new" {
-    required = ["credential", "endpoint"]
-  }
 }
 
 storage {
+
+  new {
+    required = ["name"]
+    optional = ["work_dir"]
+  }
 
   op "list_dir" {
     optional = ["dir_func", "file_func"]
   }
   op "list_prefix" {
     required = ["object_func"]
-  }
-  op "new" {
-    required = ["name"]
-    optional = ["work_dir"]
   }
   op "read" {
     optional = ["offset", "size"]

@@ -34,63 +34,22 @@ const ()
 // Service available infos.
 const ()
 
-var pairStorageCopyMap = map[string]struct{}{
-	// Required pairs
-	// Optional pairs
-	// Generated pairs
-	ps.Context: struct{}{},
-}
-
-type pairStorageCopy struct {
-	// Required pairs
-	// Optional pairs
-	// Generated pairs
-	Context context.Context
-}
-
-func (s *Storage) parsePairCopy(opts ...*types.Pair) (*pairStorageCopy, error) {
-	result := &pairStorageCopy{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := pairStorageCopyMap[v.Key]; !ok {
-			return nil, services.NewPairUnsupportedError(v)
-		}
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Handle required pairs
-	// Handle optional pairs
-	// Handle generated pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
-
-	return result, nil
-}
-
+// pairStorageDeleteMap holds all available pairs
 var pairStorageDeleteMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	ps.Context: struct{}{},
 }
 
+// pairStorageDelete is the parsed struct
 type pairStorageDelete struct {
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	Context context.Context
 }
 
-func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, error) {
+// parsePairStorageDelete will parse *types.Pair slice into *pairStorageDelete
+func parsePairStorageDelete(opts []*types.Pair) (*pairStorageDelete, error) {
 	result := &pairStorageDelete{}
 
 	values := make(map[string]interface{})
@@ -107,26 +66,164 @@ func (s *Storage) parsePairDelete(opts ...*types.Pair) (*pairStorageDelete, erro
 	// Handle required pairs
 	// Handle optional pairs
 	// Handle generated pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
 
 	return result, nil
 }
 
+// pairStorageMetadataMap holds all available pairs
+var pairStorageMetadataMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageMetadata is the parsed struct
+type pairStorageMetadata struct {
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageMetadata will parse *types.Pair slice into *pairStorageMetadata
+func parsePairStorageMetadata(opts []*types.Pair) (*pairStorageMetadata, error) {
+	result := &pairStorageMetadata{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageMetadataMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
+// pairStorageReadMap holds all available pairs
+var pairStorageReadMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageRead is the parsed struct
+type pairStorageRead struct {
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageRead will parse *types.Pair slice into *pairStorageRead
+func parsePairStorageRead(opts []*types.Pair) (*pairStorageRead, error) {
+	result := &pairStorageRead{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageReadMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
+// pairStorageStatMap holds all available pairs
+var pairStorageStatMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageStat is the parsed struct
+type pairStorageStat struct {
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageStat will parse *types.Pair slice into *pairStorageStat
+func parsePairStorageStat(opts []*types.Pair) (*pairStorageStat, error) {
+	result := &pairStorageStat{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageStatMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
+// pairStorageWriteMap holds all available pairs
+var pairStorageWriteMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageWrite is the parsed struct
+type pairStorageWrite struct {
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageWrite will parse *types.Pair slice into *pairStorageWrite
+func parsePairStorageWrite(opts []*types.Pair) (*pairStorageWrite, error) {
+	result := &pairStorageWrite{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageWriteMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
+// pairStorageListDirMap holds all available pairs
 var pairStorageListDirMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	ps.DirFunc:  struct{}{},
 	ps.FileFunc: struct{}{},
 	// Generated pairs
-	ps.Context: struct{}{},
 }
 
+// pairStorageListDir is the parsed struct
 type pairStorageListDir struct {
 	// Required pairs
 	// Optional pairs
@@ -135,10 +232,10 @@ type pairStorageListDir struct {
 	HasFileFunc bool
 	FileFunc    types.ObjectFunc
 	// Generated pairs
-	Context context.Context
 }
 
-func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, error) {
+// parsePairStorageListDir will parse *types.Pair slice into *pairStorageListDir
+func parsePairStorageListDir(opts []*types.Pair) (*pairStorageListDir, error) {
 	result := &pairStorageListDir{}
 
 	values := make(map[string]interface{})
@@ -165,32 +262,62 @@ func (s *Storage) parsePairListDir(opts ...*types.Pair) (*pairStorageListDir, er
 		result.FileFunc = v.(types.ObjectFunc)
 	}
 	// Handle generated pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
 
 	return result, nil
 }
 
+// pairStorageDeleteMap holds all available pairs
+var pairStorageDeleteMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageDelete is the parsed struct
+type pairStorageDelete struct {
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageDelete will parse *types.Pair slice into *pairStorageDelete
+func parsePairStorageDelete(opts []*types.Pair) (*pairStorageDelete, error) {
+	result := &pairStorageDelete{}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageDeleteMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	var v interface{}
+	var ok bool
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
+// pairStorageMetadataMap holds all available pairs
 var pairStorageMetadataMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	ps.Context: struct{}{},
 }
 
+// pairStorageMetadata is the parsed struct
 type pairStorageMetadata struct {
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	Context context.Context
 }
 
-func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, error) {
+// parsePairStorageMetadata will parse *types.Pair slice into *pairStorageMetadata
+func parsePairStorageMetadata(opts []*types.Pair) (*pairStorageMetadata, error) {
 	result := &pairStorageMetadata{}
 
 	values := make(map[string]interface{})
@@ -207,116 +334,20 @@ func (s *Storage) parsePairMetadata(opts ...*types.Pair) (*pairStorageMetadata, 
 	// Handle required pairs
 	// Handle optional pairs
 	// Handle generated pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
 
 	return result, nil
 }
 
-var pairStorageMoveMap = map[string]struct{}{
-	// Required pairs
-	// Optional pairs
-	// Generated pairs
-	ps.Context: struct{}{},
-}
-
-type pairStorageMove struct {
-	// Required pairs
-	// Optional pairs
-	// Generated pairs
-	Context context.Context
-}
-
-func (s *Storage) parsePairMove(opts ...*types.Pair) (*pairStorageMove, error) {
-	result := &pairStorageMove{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		if _, ok := pairStorageMoveMap[v.Key]; !ok {
-			return nil, services.NewPairUnsupportedError(v)
-		}
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Handle required pairs
-	// Handle optional pairs
-	// Handle generated pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
-
-	return result, nil
-}
-
-var pairStorageNewMap = map[string]struct{}{
-	// Required pairs
-	// Optional pairs
-	ps.WorkDir: struct{}{},
-	// Generated pairs
-	ps.Context: struct{}{},
-}
-
-type pairStorageNew struct {
-	// Required pairs
-	// Optional pairs
-	HasWorkDir bool
-	WorkDir    string
-	// Generated pairs
-	Context context.Context
-}
-
-func parseStoragePairNew(opts ...*types.Pair) (*pairStorageNew, error) {
-	result := &pairStorageNew{}
-
-	values := make(map[string]interface{})
-	for _, v := range opts {
-		values[v.Key] = v.Value
-	}
-
-	var v interface{}
-	var ok bool
-
-	// Handle required pairs
-	// Handle optional pairs
-	v, ok = values[ps.WorkDir]
-	if ok {
-		result.HasWorkDir = true
-		result.WorkDir = v.(string)
-	}
-	// Handle generated pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
-
-	return result, nil
-}
-
+// pairStorageReadMap holds all available pairs
 var pairStorageReadMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	ps.Offset: struct{}{},
 	ps.Size:   struct{}{},
 	// Generated pairs
-	ps.ReadCallbackFunc: struct{}{},
-	ps.Context:          struct{}{},
 }
 
+// pairStorageRead is the parsed struct
 type pairStorageRead struct {
 	// Required pairs
 	// Optional pairs
@@ -325,12 +356,10 @@ type pairStorageRead struct {
 	HasSize   bool
 	Size      int64
 	// Generated pairs
-	HasReadCallbackFunc bool
-	ReadCallbackFunc    func([]byte)
-	Context             context.Context
 }
 
-func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
+// parsePairStorageRead will parse *types.Pair slice into *pairStorageRead
+func parsePairStorageRead(opts []*types.Pair) (*pairStorageRead, error) {
 	result := &pairStorageRead{}
 
 	values := make(map[string]interface{})
@@ -357,37 +386,26 @@ func (s *Storage) parsePairRead(opts ...*types.Pair) (*pairStorageRead, error) {
 		result.Size = v.(int64)
 	}
 	// Handle generated pairs
-	v, ok = values[ps.ReadCallbackFunc]
-	if ok {
-		result.HasReadCallbackFunc = true
-		result.ReadCallbackFunc = v.(func([]byte))
-	}
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
 
 	return result, nil
 }
 
+// pairStorageStatMap holds all available pairs
 var pairStorageStatMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	ps.Context: struct{}{},
 }
 
+// pairStorageStat is the parsed struct
 type pairStorageStat struct {
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
-	Context context.Context
 }
 
-func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
+// parsePairStorageStat will parse *types.Pair slice into *pairStorageStat
+func parsePairStorageStat(opts []*types.Pair) (*pairStorageStat, error) {
 	result := &pairStorageStat{}
 
 	values := make(map[string]interface{})
@@ -404,38 +422,29 @@ func (s *Storage) parsePairStat(opts ...*types.Pair) (*pairStorageStat, error) {
 	// Handle required pairs
 	// Handle optional pairs
 	// Handle generated pairs
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
 
 	return result, nil
 }
 
+// pairStorageWriteMap holds all available pairs
 var pairStorageWriteMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
 	ps.Size: struct{}{},
 	// Generated pairs
-	ps.ReadCallbackFunc: struct{}{},
-	ps.Context:          struct{}{},
 }
 
+// pairStorageWrite is the parsed struct
 type pairStorageWrite struct {
 	// Required pairs
 	// Optional pairs
 	HasSize bool
 	Size    int64
 	// Generated pairs
-	HasReadCallbackFunc bool
-	ReadCallbackFunc    func([]byte)
-	Context             context.Context
 }
 
-func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error) {
+// parsePairStorageWrite will parse *types.Pair slice into *pairStorageWrite
+func parsePairStorageWrite(opts []*types.Pair) (*pairStorageWrite, error) {
 	result := &pairStorageWrite{}
 
 	values := make(map[string]interface{})
@@ -457,90 +466,6 @@ func (s *Storage) parsePairWrite(opts ...*types.Pair) (*pairStorageWrite, error)
 		result.Size = v.(int64)
 	}
 	// Handle generated pairs
-	v, ok = values[ps.ReadCallbackFunc]
-	if ok {
-		result.HasReadCallbackFunc = true
-		result.ReadCallbackFunc = v.(func([]byte))
-	}
-	v, ok = values[ps.Context]
-	if ok {
-		result.Context = v.(context.Context)
-	}
-	if !ok {
-		result.Context = context.Background()
-	}
 
 	return result, nil
-}
-
-// CopyWithContext adds context support for Copy.
-func (s *Storage) CopyWithContext(ctx context.Context, src, dst string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.Copy")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Copy(src, dst, pairs...)
-}
-
-// DeleteWithContext adds context support for Delete.
-func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.Delete")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Delete(path, pairs...)
-}
-
-// ListDirWithContext adds context support for ListDir.
-func (s *Storage) ListDirWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.ListDir")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.ListDir(path, pairs...)
-}
-
-// MetadataWithContext adds context support for Metadata.
-func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (m info.StorageMeta, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.Metadata")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Metadata(pairs...)
-}
-
-// MoveWithContext adds context support for Move.
-func (s *Storage) MoveWithContext(ctx context.Context, src, dst string, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.Move")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Move(src, dst, pairs...)
-}
-
-// ReadWithContext adds context support for Read.
-func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.Read")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Read(path, pairs...)
-}
-
-// StatWithContext adds context support for Stat.
-func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.Stat")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Stat(path, pairs...)
-}
-
-// WriteWithContext adds context support for Write.
-func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "github.com/Xuanwo/storage/services/fs.storage.Write")
-	defer span.Finish()
-
-	pairs = append(pairs, ps.WithContext(ctx))
-	return s.Write(path, r, pairs...)
 }

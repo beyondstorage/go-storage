@@ -21,7 +21,7 @@ const (
 
 func parse() (data *Data) {
 	// Parse pairs
-	pairSpec := &PairSpec{}
+	pairSpec := &PairsSpec{}
 	content, err := ioutil.ReadFile(pairPath)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
@@ -32,7 +32,7 @@ func parse() (data *Data) {
 	}
 
 	// Parse metadata
-	metaSpec := &InfoSpec{}
+	metaSpec := &InfosSpec{}
 	content, err = ioutil.ReadFile(infoPath)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
@@ -81,49 +81,6 @@ func parse() (data *Data) {
 
 	data = FormatData(pairSpec, metaSpec, operationsSpec, serviceSpecs)
 	return data
-}
-
-func injectReadCallbackFunc(ops []*Op) {
-	for _, op := range ops {
-		fn := op.Func
-		if fn == nil {
-			continue
-		}
-		if strings.Contains(fn.Params, "io.Reader") ||
-			strings.Contains(fn.Returns, "io.ReadCloser") {
-			op.Generated = append(op.Generated, "read_callback_func")
-		}
-	}
-}
-
-func injectContext(ops []*Op) {
-	for _, op := range ops {
-		op.Generated = append(op.Generated, "context")
-	}
-}
-
-func injectHTTPClientOptions(srv *Service) {
-	// We don't need to inject http client into fs
-	if srv.Name == "fs" {
-		return
-	}
-
-	fn := func(ops []*Op) {
-		for _, op := range ops {
-			if op.Name != "new" {
-				continue
-			}
-			op.Generated = append(op.Generated, "http_client_options")
-			break
-		}
-	}
-
-	// If service exist, inject into service level; Or inject into storage level.
-	if len(srv.Service) > 0 {
-		fn(srv.Service)
-	} else {
-		fn(srv.Storage)
-	}
 }
 
 func parseHCL(src []byte, filename string, in interface{}) (err error) {
