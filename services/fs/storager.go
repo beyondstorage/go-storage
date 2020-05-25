@@ -78,6 +78,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelet
 	}
 	return nil
 }
+
 func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListDir) (err error) {
 	rp := s.getAbsPath(dir)
 
@@ -114,11 +115,13 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 	}
 	return
 }
+
 func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta info.StorageMeta, err error) {
 	meta = info.NewStorageMeta()
 	meta.WorkDir = s.workDir
 	return meta, nil
 }
+
 func (s *Storage) read(ctx context.Context, path string, opt *pairStorageRead) (rc io.ReadCloser, err error) {
 	// If path is "-", return stdin directly.
 	if path == "-" {
@@ -151,6 +154,7 @@ func (s *Storage) read(ctx context.Context, path string, opt *pairStorageRead) (
 	}
 	return rc, nil
 }
+
 func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *types.Object, err error) {
 	if path == "-" {
 		return &types.Object{
@@ -197,6 +201,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 	o.Type = types.ObjectTypeInvalid
 	return o, nil
 }
+
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pairStorageWrite) (err error) {
 	var f io.WriteCloser
 	// If path is "-", use stdout directly.

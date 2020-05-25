@@ -121,6 +121,21 @@ type Interface struct {
 	Ops         map[string]*Operation
 }
 
+func NewInterface(in *InterfaceSpec, fields map[string]*Field) *Interface {
+	inter := &Interface{
+		Name:        in.Name,
+		Description: formatDescription(templateutils.ToPascal(in.Name), in.Description),
+		Internal:    in.Internal,
+		Ops:         make(map[string]*Operation),
+	}
+	for _, v := range in.Ops {
+		// Update op maps
+		inter.Ops[v.Name] = NewOperation(v, fields)
+	}
+
+	return inter
+}
+
 func (i *Interface) DisplayName() string {
 	if i.Internal {
 		return templateutils.ToCamel(i.Name)
@@ -133,6 +148,26 @@ type Operation struct {
 	Description string
 	Params      Fields
 	Results     Fields
+}
+
+func NewOperation(v *OperationSpec, fields map[string]*Field) *Operation {
+	op := &Operation{
+		Name:        v.Name,
+		Description: formatDescription("", v.Description),
+	}
+	for _, f := range v.Params {
+		op.Params = append(op.Params, fields[f])
+	}
+	// Inject pairs
+	op.Params = append(op.Params, fields["pairs"])
+
+	for _, f := range v.Results {
+		op.Results = append(op.Results, fields[f])
+	}
+	// Inject error
+	op.Results = append(op.Results, fields["err"])
+
+	return op
 }
 
 func (o *Operation) FormatParams() string {
@@ -330,33 +365,7 @@ func (d *Data) FormatOperations(o *OperationsSpec) (ins []*Interface, inm map[st
 	// Build all interfaces.
 	inm = make(map[string]*Interface)
 	for _, in := range o.Interfaces {
-		inter := &Interface{
-			Name:        in.Name,
-			Description: formatDescription(templateutils.ToPascal(in.Name), in.Description),
-			Internal:    in.Internal,
-			Ops:         make(map[string]*Operation),
-		}
-
-		for _, v := range in.Ops {
-			op := &Operation{
-				Name:        v.Name,
-				Description: formatDescription("", v.Description),
-			}
-
-			for _, f := range v.Params {
-				op.Params = append(op.Params, fileds[f])
-			}
-			// Inject pairs
-			op.Params = append(op.Params, fileds["pairs"])
-			for _, f := range v.Results {
-				op.Results = append(op.Results, fileds[f])
-			}
-			// Inject error
-			op.Results = append(op.Results, fileds["err"])
-
-			// Update op maps
-			inter.Ops[op.Name] = op
-		}
+		inter := NewInterface(in, fileds)
 
 		ins = append(ins, inter)
 		inm[inter.Name] = inter
