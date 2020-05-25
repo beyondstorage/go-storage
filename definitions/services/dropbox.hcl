@@ -1,7 +1,7 @@
-name      = "dropbox"
-implement = ["dir_lister"]
+name = "dropbox"
 
-storage {
+namespace "storage" {
+  implement = ["dir_lister"]
 
   new {
     required = ["credential"]

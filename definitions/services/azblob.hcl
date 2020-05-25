@@ -1,7 +1,6 @@
-name      = "azblob"
-implement = ["prefix_lister", "dir_lister"]
+name = "azblob"
 
-service {
+namespace "service" {
 
   new {
     required = ["credential", "endpoint"]
@@ -11,8 +10,8 @@ service {
     required = ["storager_func"]
   }
 }
-
-storage {
+namespace "storage" {
+  implement = ["prefix_lister", "dir_lister"]
 
   new {
     required = ["name"]

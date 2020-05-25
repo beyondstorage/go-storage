@@ -27,12 +27,10 @@ type FieldSpec struct {
 
 // ServiceSpec is the data parsed from HCL.
 type ServiceSpec struct {
-	Name      string         `hcl:"name"`
-	Implement []string       `hcl:"implement"`
-	Service   *NamespaceSpec `hcl:"service,block"`
-	Storage   *NamespaceSpec `hcl:"storage,block"`
-	Pairs     *PairsSpec     `hcl:"pairs,block"`
-	Infos     *InfosSpec     `hcl:"infos,block"`
+	Name       string           `hcl:"name"`
+	Namespaces []*NamespaceSpec `hcl:"namespace,block"`
+	Pairs      *PairsSpec       `hcl:"pairs,block"`
+	Infos      *InfosSpec       `hcl:"infos,block"`
 }
 
 type InfosSpec struct {
@@ -64,8 +62,10 @@ type PairSpec struct {
 
 // NamespaceSpec is the data parsed from HCL.
 type NamespaceSpec struct {
-	New *NewSpec  `hcl:"new,block"`
-	Op  []*OpSpec `hcl:"op,block"`
+	Name      string    `hcl:",label"`
+	Implement []string  `hcl:"implement,optional"`
+	New       *NewSpec  `hcl:"new,block"`
+	Op        []*OpSpec `hcl:"op,block"`
 }
 
 // Op means an operation definition.

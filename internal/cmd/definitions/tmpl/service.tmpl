@@ -92,16 +92,11 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
     {{- end }}
 {{- end }}
 
-
-{{- if .Service }}
-    {{- template "pair" makeSlice "Service" .NewService}}
-    {{- template "pairs" makeSlice "service" .Service }}
-    {{- template "functions" makeSlice "service" .Service }}
+{{- range $_, $v := .Namespaces }}
+    {{- template "pair" makeSlice ( $v.Name | toPascal ) $v.New }}
+    {{- template "pairs" makeSlice $v.Name $v.Funcs }}
+    {{- template "functions" makeSlice $v.Name $v.Funcs }}
 {{- end }}
-
-{{- template "pair" makeSlice "Storage" .NewStorage}}
-{{- template "pairs" makeSlice "storage" .Storage }}
-{{- template "functions" makeSlice "storage" .Storage }}
 
 {{- define "pairs" }}
     {{- $pn := index . 0 | toPascal }}

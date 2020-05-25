@@ -1,7 +1,6 @@
-name      = "cos"
-implement = ["prefix_lister", "dir_lister"]
+name = "cos"
 
-service {
+namespace "service" {
 
   new {
     required = ["credential"]
@@ -20,8 +19,8 @@ service {
     required = ["storager_func"]
   }
 }
-
-storage {
+namespace "storage" {
+  implement = ["prefix_lister", "dir_lister"]
 
   new {
     required = ["location", "name"]

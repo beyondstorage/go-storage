@@ -1,7 +1,6 @@
-name      = "s3"
-implement = ["prefix_lister", "dir_lister", "index_segmenter", "prefix_segments_lister"]
+name = "s3"
 
-service {
+namespace "service" {
 
   new {
     required = ["credential"]
@@ -21,8 +20,8 @@ service {
     required = ["storager_func"]
   }
 }
-
-storage {
+namespace "storage" {
+  implement = ["prefix_lister", "dir_lister", "index_segmenter", "prefix_segments_lister"]
 
   new {
     required = ["location", "name"]

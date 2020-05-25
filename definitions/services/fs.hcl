@@ -1,7 +1,7 @@
-name      = "fs"
-implement = ["dir_lister"]
+name = "fs"
 
-storage {
+namespace "storage" {
+  implement = ["dir_lister"]
 
   new {
     optional = ["work_dir"]

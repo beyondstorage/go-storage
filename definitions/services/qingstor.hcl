@@ -1,7 +1,6 @@
-name      = "qingstor"
-implement = ["prefix_lister", "dir_lister", "index_segmenter", "prefix_segments_lister", "reacher"]
+name = "qingstor"
 
-service {
+namespace "service" {
 
   new {
     required = ["credential"]
@@ -22,8 +21,8 @@ service {
     optional = ["location"]
   }
 }
-
-storage {
+namespace "storage" {
+  implement = ["prefix_lister", "dir_lister", "index_segmenter", "prefix_segments_lister", "reacher"]
 
   new {
     required = ["name"]

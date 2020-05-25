@@ -1,7 +1,7 @@
-name      = "uss"
-implement = ["prefix_lister", "dir_lister"]
+name = "uss"
 
-storage {
+namespace "storage" {
+  implement = ["prefix_lister", "dir_lister"]
 
   new {
     required = ["credential", "name"]

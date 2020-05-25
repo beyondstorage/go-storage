@@ -35,32 +35,20 @@ func generate(data *Data) {
 		fp := fmt.Sprintf("../services/%s/generated.go", v.Name)
 		generateT(serviceT, fp, v)
 
-		sp := fmt.Sprintf("../services/%s/servicer.go", v.Name)
-		for _, fn := range v.Service {
-			if fn.implemented {
-				continue
+		for _, ns := range v.Namespaces {
+			sp := fmt.Sprintf("../services/%s/%s.go", v.Name, ns.Name)
+			for _, fn := range ns.Funcs {
+				if fn.implemented {
+					continue
+				}
+				appendT(functionT, sp, struct {
+					Namespace string
+					Func      *Function
+				}{
+					ns.Name,
+					fn,
+				})
 			}
-			appendT(functionT, sp, struct {
-				Namespace string
-				Func      *Function
-			}{
-				"Service",
-				fn,
-			})
-		}
-
-		sp = fmt.Sprintf("../services/%s/storager.go", v.Name)
-		for _, fn := range v.Storage {
-			if fn.implemented {
-				continue
-			}
-			appendT(functionT, sp, struct {
-				Namespace string
-				Func      *Function
-			}{
-				"Storage",
-				fn,
-			})
 		}
 	}
 

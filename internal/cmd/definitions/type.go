@@ -28,35 +28,32 @@ type Data struct {
 // Service is the service definition.
 type Service struct {
 	Name       string
-	NewService *Function
-	Service    []*Function
-	NewStorage *Function
-	Storage    []*Function
+	Namespaces []*Namespace
 	Pairs      map[string]*Pair
 	Infos      []*Info
 }
 
 func (s *Service) Sort() {
-	if len(s.Service) > 0 {
-		sort.Slice(s.Service, func(i, j int) bool {
-			x := s.Service
-			return x[i].Name < x[j].Name
-		})
-
-		for _, v := range s.Service {
-			v.Sort()
-		}
+	for _, v := range s.Namespaces {
+		v.Sort()
 	}
+}
 
-	if len(s.Storage) > 0 {
-		sort.Slice(s.Storage, func(i, j int) bool {
-			x := s.Storage
-			return x[i].Name < x[j].Name
-		})
+type Namespace struct {
+	Name  string
+	New   *Function
+	Funcs []*Function
+}
 
-		for _, v := range s.Storage {
-			v.Sort()
-		}
+func (n *Namespace) Sort() {
+	sort.Slice(n.Funcs, func(i, j int) bool {
+		x := n.Funcs
+		return x[i].Name < x[j].Name
+	})
+
+	n.New.Sort()
+	for _, v := range n.Funcs {
+		v.Sort()
 	}
 }
 
@@ -380,6 +377,49 @@ func (d *Data) FormatOperations(o *OperationsSpec) (ins []*Interface, inm map[st
 	return
 }
 
+func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
+	ns := &Namespace{Name: n.Name}
+
+	nsInterface := n.Name + "r"
+
+	// Handle New function
+	ns.New = NewFunction(&Operation{Name: "new"})
+	ns.New.Format(&OpSpec{
+		Required: n.New.Required,
+		Optional: n.New.Optional,
+	}, srv.Pairs)
+
+	// Handle other interfaces.
+	fns := make(map[string]*Function)
+
+	// Add namespace itself into implements.
+	implements := append(n.Implement[:], nsInterface)
+	for _, interfaceName := range implements {
+		inter := d.interfacesMap[interfaceName]
+
+		for k, v := range inter.Ops {
+			v := v
+
+			f := NewFunction(v)
+			ns.Funcs = append(ns.Funcs, f)
+			fns[k] = f
+		}
+	}
+
+	for _, v := range n.Op {
+		fns[v.Name].Format(v, srv.Pairs)
+	}
+
+	implemented := parseFunc(srv.Name, n.Name)
+	for _, fn := range fns {
+		x := templateutils.ToCamel(fn.Name)
+		if _, ok := implemented[x]; ok {
+			fn.implemented = true
+		}
+	}
+	return ns
+}
+
 // FormatService will format services from service spec
 func (d *Data) FormatService(s *ServiceSpec) *Service {
 	srv := &Service{
@@ -388,73 +428,10 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 		Infos: mergeInfos(d.Infos, d.FormatInfos(s.Infos, false)),
 	}
 
-	if s.Service != nil {
-		srv.NewService = NewFunction(&Operation{Name: "new"})
-		srv.NewService.Format(&OpSpec{
-			Required: s.Service.New.Required,
-			Optional: s.Service.New.Optional,
-		}, srv.Pairs)
+	for _, v := range s.Namespaces {
+		ns := d.FormatNamespace(srv, v)
 
-		srvFn := make(map[string]*Function)
-		inter := d.interfacesMap["servicer"]
-
-		for k := range inter.Ops {
-			f := NewFunction(inter.Ops[k])
-			srv.Service = append(srv.Service, f)
-			srvFn[k] = f
-		}
-
-		for _, v := range s.Service.Op {
-			srvFn[v.Name].Format(v, srv.Pairs)
-		}
-
-		implemented := parseFunc(s.Name, "servicer")
-		for _, fn := range srvFn {
-			x := templateutils.ToCamel(fn.Name)
-			if _, ok := implemented[x]; ok {
-				fn.implemented = true
-			}
-		}
-	}
-
-	storeFn := make(map[string]*Function)
-
-	if s.Storage != nil {
-		srv.NewStorage = NewFunction(&Operation{Name: "new"})
-		srv.NewStorage.Format(&OpSpec{
-			Required: s.Storage.New.Required,
-			Optional: s.Storage.New.Optional,
-		}, srv.Pairs)
-
-		inter := d.interfacesMap["storager"]
-
-		for k := range inter.Ops {
-			f := NewFunction(inter.Ops[k])
-			srv.Storage = append(srv.Storage, f)
-			storeFn[k] = f
-		}
-	}
-
-	for _, interfaceName := range s.Implement {
-		inter := d.interfacesMap[interfaceName]
-
-		for k := range inter.Ops {
-			f := NewFunction(inter.Ops[k])
-			srv.Storage = append(srv.Storage, f)
-			storeFn[k] = f
-		}
-	}
-
-	for _, v := range s.Storage.Op {
-		storeFn[v.Name].Format(v, srv.Pairs)
-	}
-
-	implemented := parseFunc(s.Name, "storager")
-	for _, fn := range storeFn {
-		x := templateutils.ToCamel(fn.Name)
-		if _, ok := implemented[x]; ok {
-			fn.implemented = true
-		}
+		srv.Namespaces = append(srv.Namespaces, ns)
 	}
 	return srv
 }
