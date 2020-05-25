@@ -189,7 +189,7 @@ field "statistic" {
   type = "info.StorageStatistic"
 }
 field "store" {
-  type = "Storager"
+  type = "storage.Storager"
 }
 field "url" {
   type = "string"

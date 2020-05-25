@@ -1,5 +1,5 @@
 name      = "s3"
-implement = ["prefix_lister", "dir_lister", "servicer", "storager", "index_segmenter", "prefix_segments_lister"]
+implement = ["prefix_lister", "dir_lister", "index_segmenter", "prefix_segments_lister"]
 
 service {
 

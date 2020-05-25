@@ -1,6 +1,7 @@
 package kodo
 
 import (
+	"context"
 	"fmt"
 
 	qs "github.com/qiniu/api.v7/v7/storage"
@@ -11,62 +12,7 @@ import (
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
-// Service is the kodo config.
-type Service struct {
-	service *qs.BucketManager
-}
-
-// String implements Service.String
-func (s *Service) String() string {
-	return fmt.Sprintf("Servicer kodo")
-}
-
-// List implements Service.List
-func (s *Service) List(pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpList, err, "")
-	}()
-
-	opt, err := s.parsePairList(pairs...)
-	if err != nil {
-		return err
-	}
-
-	buckets, err := s.service.Buckets(false)
-	for _, v := range buckets {
-		store, err := s.newStorage(ps.WithName(v))
-		if err != nil {
-			return err
-		}
-		opt.StoragerFunc(store)
-	}
-	return
-}
-
-// Get implements Service.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
-	defer func() {
-		err = s.formatError(services.OpGet, err, name)
-	}()
-
-	store, err := s.newStorage(ps.WithName(name))
-	if err != nil {
-		return nil, err
-	}
-	return store, nil
-}
-
-// Create implements Service.Create
-func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
-	defer func() {
-		err = s.formatError(services.OpCreate, err, name)
-	}()
-
-	opt, err := s.parsePairCreate(pairs...)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) create(ctx context.Context, name string, opt *pairServiceCreate) (store storage.Storager, err error) {
 	// Check region ID.
 	_, ok := qs.GetRegionByID(qs.RegionID(opt.Location))
 	if !ok {
@@ -79,59 +25,34 @@ func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager
 		return nil, err
 	}
 
-	store, err := s.newStorage(ps.WithName(name))
+	st, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return nil, err
 	}
-	return store, nil
+	return st, nil
 }
-
-// Delete implements Service.Delete
-func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpDelete, err, name)
-	}()
-
+func (s *Service) delete(ctx context.Context, name string, opt *pairServiceDelete) (err error) {
 	err = s.service.DropBucket(name)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-
-// newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
-	opt, err := parseStoragePairNew(pairs...)
+func (s *Service) get(ctx context.Context, name string, opt *pairServiceGet) (store storage.Storager, err error) {
+	st, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return nil, err
 	}
-
-	store = &Storage{
-		bucket: s.service,
-		domain: opt.Endpoint.Value().String(),
-		putPolicy: qs.PutPolicy{
-			Scope: opt.Name,
-		},
-
-		name:    opt.Name,
-		workDir: "/",
-	}
-
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
-	}
-	return store, nil
+	return st, nil
 }
-
-func (s *Service) formatError(op string, err error, name string) error {
-	if err == nil {
-		return nil
+func (s *Service) list(ctx context.Context, opt *pairServiceList) (err error) {
+	buckets, err := s.service.Buckets(false)
+	for _, v := range buckets {
+		store, err := s.newStorage(ps.WithName(v))
+		if err != nil {
+			return err
+		}
+		opt.StoragerFunc(store)
 	}
-
-	return &services.ServiceError{
-		Op:       op,
-		Err:      formatError(err),
-		Servicer: s,
-		Name:     name,
-	}
+	return
 }

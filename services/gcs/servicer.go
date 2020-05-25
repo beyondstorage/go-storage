@@ -1,6 +1,7 @@
 package gcs
 
 import (
+	"context"
 	"fmt"
 
 	gs "cloud.google.com/go/storage"
@@ -12,29 +13,39 @@ import (
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
-// Service is the gcs config.
-type Service struct {
-	service   *gs.Client
-	projectID string
+func (s *Service) create(ctx context.Context, name string, opt *pairServiceCreate) (store storage.Storager, err error) {
+	st, err := s.newStorage(ps.WithName(name))
+	if err != nil {
+		return nil, err
+	}
+	err = st.bucket.Create(ctx, s.projectID, nil)
+	if err != nil {
+		return nil, err
+	}
+	return st, nil
 }
 
-// String implements Servicer.String
-func (s *Service) String() string {
-	return fmt.Sprintf("Servicer gcs")
-}
-
-// List implements Servicer.List
-func (s *Service) List(pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpList, err, "")
-	}()
-
-	opt, err := s.parsePairList(pairs...)
+func (s *Service) delete(ctx context.Context, name string, opt *pairServiceDelete) (err error) {
+	store, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return err
 	}
+	err = store.bucket.Delete(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *Service) get(ctx context.Context, name string, opt *pairServiceGet) (store storage.Storager, err error) {
+	st, err := s.newStorage(ps.WithName(name))
+	if err != nil {
+		return nil, err
+	}
+	return st, nil
+}
+func (s *Service) list(ctx context.Context, opt *pairServiceList) (err error) {
+	it := s.service.Buckets(ctx, s.projectID)
 
-	it := s.service.Buckets(opt.Context, s.projectID)
 	for {
 		bucketAttr, err := it.Next()
 		// Next will return iterator.Done if there is no more items.
@@ -49,97 +60,5 @@ func (s *Service) List(pairs ...*types.Pair) (err error) {
 			return err
 		}
 		opt.StoragerFunc(store)
-	}
-}
-
-// Get implements Servicer.Get
-func (s *Service) Get(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
-	defer func() {
-		err = s.formatError(services.OpGet, err, name)
-	}()
-
-	store, err := s.newStorage(ps.WithName(name))
-	if err != nil {
-		return nil, err
-	}
-	return store, nil
-}
-
-// Create implements Servicer.Create
-func (s *Service) Create(name string, pairs ...*types.Pair) (st storage.Storager, err error) {
-	defer func() {
-		err = s.formatError(services.OpCreate, err, name)
-	}()
-
-	opt, err := s.parsePairCreate(pairs...)
-	if err != nil {
-		return nil, err
-	}
-
-	store, err := s.newStorage(ps.WithName(name))
-	if err != nil {
-		return nil, err
-	}
-	err = store.bucket.Create(opt.Context, s.projectID, nil)
-	if err != nil {
-		return nil, err
-	}
-	return store, nil
-}
-
-// Delete implements Servicer.Delete
-func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpDelete, err, name)
-	}()
-
-	opt, err := s.parsePairDelete(pairs...)
-	if err != nil {
-		return err
-	}
-
-	store, err := s.newStorage(ps.WithName(name))
-	if err != nil {
-		return err
-	}
-	err = store.bucket.Delete(opt.Context)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
-	opt, err := parseStoragePairNew(pairs...)
-	if err != nil {
-		return nil, err
-	}
-
-	bucket := s.service.Bucket(opt.Name)
-
-	store := &Storage{
-		bucket: bucket,
-		name:   opt.Name,
-
-		workDir: "/",
-	}
-
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
-	}
-	return store, nil
-}
-
-func (s *Service) formatError(op string, err error, name string) error {
-	if err == nil {
-		return nil
-	}
-
-	return &services.ServiceError{
-		Op:       op,
-		Err:      formatError(err),
-		Servicer: s,
-		Name:     name,
 	}
 }

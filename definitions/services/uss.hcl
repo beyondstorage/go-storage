@@ -1,5 +1,5 @@
 name      = "uss"
-implement = ["prefix_lister", "dir_lister", "storager"]
+implement = ["prefix_lister", "dir_lister"]
 
 storage {
 

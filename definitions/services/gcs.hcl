@@ -1,5 +1,5 @@
 name      = "gcs"
-implement = ["prefix_lister", "dir_lister", "servicer", "storager"]
+implement = ["prefix_lister", "dir_lister"]
 
 service {
 

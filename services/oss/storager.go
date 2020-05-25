@@ -1,61 +1,34 @@
 package oss
 
 import (
-	"fmt"
+	"context"
 	"io"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 
 	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
 )
 
-// Storage is the aliyun object storage service.
-type Storage struct {
-	bucket *oss.Bucket
+func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
+	rp := s.getAbsPath(path)
 
-	name    string
-	workDir string
-}
-
-// String implements Storager.String
-func (s *Storage) String() string {
-	return fmt.Sprintf(
-		"Storager oss {Name: %s, WorkDir: %s}",
-		s.bucket.BucketName, s.workDir,
-	)
-}
-
-// Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
-	m = info.NewStorageMeta()
-	m.Name = s.bucket.BucketName
-	m.WorkDir = s.workDir
-	return m, nil
-}
-
-// ListDir implements Storager.ListDir
-func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpListDir, err, path)
-	}()
-
-	opt, err := s.parsePairListDir(pairs...)
+	err = s.bucket.DeleteObject(rp)
 	if err != nil {
 		return err
 	}
-
+	return nil
+}
+func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListDir) (err error) {
 	marker := ""
 	delimiter := "/"
 	limit := 200
 
-	rp := s.getAbsPath(path)
+	rp := s.getAbsPath(dir)
 
 	var output oss.ListObjectsResult
 	for {
@@ -100,18 +73,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	}
 	return
 }
-
-// ListPrefix implements Storager.ListPrefix
-func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpListPrefix, err, prefix)
-	}()
-
-	opt, err := s.parsePairListPrefix(pairs...)
-	if err != nil {
-		return err
-	}
-
+func (s *Storage) listPrefix(ctx context.Context, prefix string, opt *pairStorageListPrefix) (err error) {
 	marker := ""
 	limit := 200
 
@@ -144,18 +106,13 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 	}
 	return
 }
-
-// Read implements Storager.Read
-func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	defer func() {
-		err = s.formatError(services.OpRead, err, path)
-	}()
-
-	opt, err := s.parsePairRead(pairs...)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta info.StorageMeta, err error) {
+	meta = info.NewStorageMeta()
+	meta.Name = s.bucket.BucketName
+	meta.WorkDir = s.workDir
+	return
+}
+func (s *Storage) read(ctx context.Context, path string, opt *pairStorageRead) (rc io.ReadCloser, err error) {
 	rp := s.getAbsPath(path)
 
 	output, err := s.bucket.GetObject(rp)
@@ -169,46 +126,7 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 
 	return output, nil
 }
-
-// Write implements Storager.Write
-func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpWrite, err, path)
-	}()
-
-	opt, err := s.parsePairWrite(pairs...)
-	if err != nil {
-		return err
-	}
-
-	options := make([]oss.Option, 0)
-	options = append(options, oss.ContentLength(opt.Size))
-	if opt.HasChecksum {
-		options = append(options, oss.ContentMD5(opt.Checksum))
-	}
-	if opt.HasStorageClass {
-		// TODO: we need to handle different storage class name between services.
-		options = append(options, oss.StorageClass(oss.StorageClassType(opt.StorageClass)))
-	}
-	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
-	}
-
-	rp := s.getAbsPath(path)
-
-	err = s.bucket.PutObject(rp, r, options...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Stat implements Storager.Stat
-func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	defer func() {
-		err = s.formatError(services.OpStat, err, path)
-	}()
-
+func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	output, err := s.bucket.GetObjectMeta(rp)
@@ -256,70 +174,25 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	return o, nil
 }
-
-// Delete implements Storager.Delete
-func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpDelete, err, path)
-	}()
+func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pairStorageWrite) (err error) {
+	options := make([]oss.Option, 0)
+	options = append(options, oss.ContentLength(opt.Size))
+	if opt.HasChecksum {
+		options = append(options, oss.ContentMD5(opt.Checksum))
+	}
+	if opt.HasStorageClass {
+		// TODO: we need to handle different storage class name between services.
+		options = append(options, oss.StorageClass(oss.StorageClassType(opt.StorageClass)))
+	}
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
+	}
 
 	rp := s.getAbsPath(path)
 
-	err = s.bucket.DeleteObject(rp)
+	err = s.bucket.PutObject(rp, r, options...)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// getAbsPath will calculate object storage's abs path
-func (s *Storage) getAbsPath(path string) string {
-	prefix := strings.TrimPrefix(s.workDir, "/")
-	return prefix + path
-}
-
-// getRelPath will get object storage's rel path.
-func (s *Storage) getRelPath(path string) string {
-	prefix := strings.TrimPrefix(s.workDir, "/")
-	return strings.TrimPrefix(path, prefix)
-}
-
-func (s *Storage) formatError(op string, err error, path ...string) error {
-	if err == nil {
-		return nil
-	}
-
-	return &services.StorageError{
-		Op:       op,
-		Err:      formatError(err),
-		Storager: s,
-		Path:     path,
-	}
-}
-
-func (s *Storage) formatFileObject(v oss.ObjectProperties) (o *types.Object, err error) {
-	o = &types.Object{
-		ID:         v.Key,
-		Name:       s.getRelPath(v.Key),
-		Type:       types.ObjectTypeFile,
-		Size:       v.Size,
-		UpdatedAt:  v.LastModified,
-		ObjectMeta: info.NewObjectMeta(),
-	}
-
-	if v.Type != "" {
-		o.SetContentType(v.Type)
-	}
-
-	// OSS advise us don't use Etag as Content-MD5.
-	//
-	// ref: https://help.aliyun.com/document_detail/31965.html
-	if v.ETag != "" {
-		o.SetETag(v.ETag)
-	}
-
-	if value := v.Type; value != "" {
-		setStorageClass(o.ObjectMeta, value)
-	}
-	return
 }

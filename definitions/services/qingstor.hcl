@@ -1,5 +1,5 @@
 name      = "qingstor"
-implement = ["prefix_lister", "dir_lister", "servicer", "storager", "index_segmenter", "prefix_segments_lister", "reacher"]
+implement = ["prefix_lister", "dir_lister", "index_segmenter", "prefix_segments_lister", "reacher"]
 
 service {
 

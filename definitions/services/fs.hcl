@@ -1,5 +1,5 @@
 name      = "fs"
-implement = ["dir_lister", "storager"]
+implement = ["dir_lister"]
 
 storage {
 

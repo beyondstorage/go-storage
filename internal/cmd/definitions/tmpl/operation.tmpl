@@ -22,9 +22,9 @@ type {{ $i.DisplayName }} interface {
 
     {{ range $_, $op := $i.Ops }}
     // {{ $op.Name | toPascal }} {{ $op.Description }}
-    {{ $op.Name | toPascal }}({{ $op.FormatParams }}) ({{ $op.FormatResults }})
+    {{ $op.Name | toPascal }}({{ $op.FormatParams }}) ({{ $op.FormatResultsWithPackageName "storage" }})
     // {{ $op.Name | toPascal }}WithContext {{ $op.Description }}
-    {{ $op.Name | toPascal }}WithContext(ctx context.Context,{{ $op.FormatParams }}) ({{ $op.FormatResults }})
+    {{ $op.Name | toPascal }}WithContext(ctx context.Context,{{ $op.FormatParams }}) ({{ $op.FormatResultsWithPackageName "storage" }})
     {{ end }}
 }
 {{- end }}

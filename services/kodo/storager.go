@@ -1,60 +1,31 @@
 package kodo
 
 import (
-	"fmt"
+	"context"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	qs "github.com/qiniu/api.v7/v7/storage"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
 )
 
-// Storage is the gcs service client.
-type Storage struct {
-	bucket    *qs.BucketManager
-	domain    string
-	putPolicy qs.PutPolicy // kodo need PutPolicy to generate upload token.
+func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
+	rp := s.getAbsPath(path)
 
-	name    string
-	workDir string
-}
-
-// String implements Storager.String
-func (s *Storage) String() string {
-	return fmt.Sprintf(
-		"Storager kodo {Name: %s, WorkDir: %s}",
-		s.name, s.workDir,
-	)
-}
-
-// Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
-	m = info.NewStorageMeta()
-	m.Name = s.name
-	m.WorkDir = s.workDir
-	return m, nil
-}
-
-// ListDir implements Storager.ListDir
-func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpListDir, err, path)
-	}()
-
-	opt, err := s.parsePairListDir(pairs...)
+	err = s.bucket.Delete(s.name, rp)
 	if err != nil {
 		return err
 	}
-
+	return nil
+}
+func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListDir) (err error) {
 	marker := ""
 	delimiter := "/"
-	rp := s.getAbsPath(path)
+	rp := s.getAbsPath(dir)
 
 	for {
 		entries, commonPrefix, nextMarker, _, err := s.bucket.ListFiles(s.name, rp, delimiter, marker, 1000)
@@ -92,18 +63,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 		}
 	}
 }
-
-// ListPrefix implements Storager.ListPrefix
-func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpListPrefix, err, prefix)
-	}()
-
-	opt, err := s.parsePairListPrefix(pairs...)
-	if err != nil {
-		return err
-	}
-
+func (s *Storage) listPrefix(ctx context.Context, prefix string, opt *pairStorageListPrefix) (err error) {
 	marker := ""
 	rp := s.getAbsPath(prefix)
 
@@ -128,18 +88,13 @@ func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 		}
 	}
 }
-
-// Read implements Storager.Read
-func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	defer func() {
-		err = s.formatError(services.OpRead, err, path)
-	}()
-
-	opt, err := s.parsePairRead(pairs...)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta info.StorageMeta, err error) {
+	meta = info.NewStorageMeta()
+	meta.Name = s.name
+	meta.WorkDir = s.workDir
+	return meta, nil
+}
+func (s *Storage) read(ctx context.Context, path string, opt *pairStorageRead) (rc io.ReadCloser, err error) {
 	rp := s.getAbsPath(path)
 
 	deadline := time.Now().Add(time.Hour).Unix()
@@ -153,47 +108,14 @@ func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err 
 		return nil, err
 	}
 
-	r = resp.Body
+	rc = resp.Body
 
 	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+		rc = iowrap.CallbackReadCloser(rc, opt.ReadCallbackFunc)
 	}
 	return
 }
-
-// Write implements Storager.Write
-func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpWrite, err, path)
-	}()
-
-	opt, err := s.parsePairWrite(pairs...)
-	if err != nil {
-		return err
-	}
-
-	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
-	}
-
-	rp := s.getAbsPath(path)
-
-	uploader := qs.NewFormUploader(s.bucket.Cfg)
-	ret := qs.PutRet{}
-	err = uploader.Put(opt.Context,
-		&ret, s.putPolicy.UploadToken(s.bucket.Mac), rp, r, opt.Size, nil)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Stat implements Storager.Stat
-func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	defer func() {
-		err = s.formatError(services.OpStat, err, path)
-	}()
-
+func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	fi, err := s.bucket.Stat(s.name, rp)
@@ -221,64 +143,19 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 
 	return o, nil
 }
-
-// Delete implements Storager.Delete
-func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpDelete, err, path)
-	}()
+func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pairStorageWrite) (err error) {
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
+	}
 
 	rp := s.getAbsPath(path)
 
-	err = s.bucket.Delete(s.name, rp)
+	uploader := qs.NewFormUploader(s.bucket.Cfg)
+	ret := qs.PutRet{}
+	err = uploader.Put(opt.Context,
+		&ret, s.putPolicy.UploadToken(s.bucket.Mac), rp, r, opt.Size, nil)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// getAbsPath will calculate object storage's abs path
-func (s *Storage) getAbsPath(path string) string {
-	prefix := strings.TrimPrefix(s.workDir, "/")
-	return prefix + path
-}
-
-// getRelPath will get object storage's rel path.
-func (s *Storage) getRelPath(path string) string {
-	prefix := strings.TrimPrefix(s.workDir, "/")
-	return strings.TrimPrefix(path, prefix)
-}
-
-func (s *Storage) formatError(op string, err error, path ...string) error {
-	if err == nil {
-		return nil
-	}
-
-	return &services.StorageError{
-		Op:       op,
-		Err:      formatError(err),
-		Storager: s,
-		Path:     path,
-	}
-}
-
-func (s *Storage) formatFileObject(v qs.ListItem) (o *types.Object, err error) {
-	o = &types.Object{
-		ID:         v.Key,
-		Name:       s.getRelPath(v.Key),
-		Type:       types.ObjectTypeFile,
-		Size:       v.Fsize,
-		UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
-		ObjectMeta: info.NewObjectMeta(),
-	}
-
-	if v.MimeType != "" {
-		o.SetContentType(v.MimeType)
-	}
-	if v.Hash != "" {
-		o.SetETag(v.Hash)
-	}
-
-	setStorageClass(o.ObjectMeta, v.Type)
-	return
 }

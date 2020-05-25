@@ -13,17 +13,6 @@ import (
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
-// Service is the s3 service config.
-type Service struct {
-	sess    *session.Session
-	service *s3.S3
-}
-
-// String implements Servicer.String
-func (s *Service) String() string {
-	return fmt.Sprintf("Servicer s3")
-}
-
 // List implements Servicer.List
 func (s *Service) List(pairs ...*types.Pair) (err error) {
 	defer func() {
@@ -117,35 +106,15 @@ func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	return nil
 }
 
-// newStorage will create a new client.
-func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
-	opt, err := parseStoragePairNew(pairs...)
-	if err != nil {
-		return nil, err
-	}
-
-	st = &Storage{
-		service: newS3Service(s.sess, aws.NewConfig().WithRegion(opt.Location)),
-
-		name:    opt.Name,
-		workDir: "/",
-	}
-
-	if opt.HasWorkDir {
-		st.workDir = opt.WorkDir
-	}
-	return st, nil
+func (s *Service) create(ctx context.Context, name string, opt *pairServiceCreate) (store storage.Storager, err error) {
+	panic("implement it")
 }
-
-func (s *Service) formatError(op string, err error, name string) error {
-	if err == nil {
-		return nil
-	}
-
-	return &services.ServiceError{
-		Op:       op,
-		Err:      formatError(err),
-		Servicer: s,
-		Name:     name,
-	}
+func (s *Service) delete(ctx context.Context, name string, opt *pairServiceDelete) (err error) {
+	panic("implement it")
+}
+func (s *Service) get(ctx context.Context, name string, opt *pairServiceGet) (store storage.Storager, err error) {
+	panic("implement it")
+}
+func (s *Service) list(ctx context.Context, opt *pairServiceList) (err error) {
+	panic("implement it")
 }

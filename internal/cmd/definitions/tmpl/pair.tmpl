@@ -16,7 +16,7 @@ import (
 const (
 {{- range $_, $v := .Pairs }}
     {{- $pname := $v.Name | toPascal }}
-    // {{ $pname }} will {{ $v.GeneratedDescription }}
+    // {{ $pname }} will {{ $v.Description }}
     {{ $pname }} = "{{ $v.Name }}"
 {{- end }}
 )
@@ -24,7 +24,7 @@ const (
 {{- range $_, $v := .Pairs }}
 {{- $pname := $v.Name | toPascal }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options
-// This pair is used to {{ $v.GeneratedDescription }}
+// This pair is used to {{ $v.Description }}
 func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
     return &types.Pair{
         Key: {{ $pname }},

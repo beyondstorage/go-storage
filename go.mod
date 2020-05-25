@@ -15,7 +15,6 @@ require (
 	github.com/dropbox/dropbox-sdk-go-unofficial v5.6.0+incompatible
 	github.com/golang/mock v1.4.3
 	github.com/google/uuid v1.1.1
-	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14
 	github.com/qingstor/qingstor-sdk-go/v4 v4.0.0
 	github.com/qiniu/api.v7/v7 v7.5.0

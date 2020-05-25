@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/Xuanwo/templateutils"
@@ -26,11 +27,37 @@ type Data struct {
 
 // Service is the service definition.
 type Service struct {
-	Name    string
-	Service []*Function
-	Storage []*Function
-	Pairs   map[string]*Pair
-	Infos   []*Info
+	Name       string
+	NewService *Function
+	Service    []*Function
+	NewStorage *Function
+	Storage    []*Function
+	Pairs      map[string]*Pair
+	Infos      []*Info
+}
+
+func (s *Service) Sort() {
+	if len(s.Service) > 0 {
+		sort.Slice(s.Service, func(i, j int) bool {
+			x := s.Service
+			return x[i].Name < x[j].Name
+		})
+
+		for _, v := range s.Service {
+			v.Sort()
+		}
+	}
+
+	if len(s.Storage) > 0 {
+		sort.Slice(s.Storage, func(i, j int) bool {
+			x := s.Storage
+			return x[i].Name < x[j].Name
+		})
+
+		for _, v := range s.Storage {
+			v.Sort()
+		}
+	}
 }
 
 // Pair is the pair definition.
@@ -104,8 +131,8 @@ func (i *Interface) DisplayName() string {
 type Operation struct {
 	Name        string
 	Description string
-	Params      []*Field
-	Results     []*Field
+	Params      Fields
+	Results     Fields
 }
 
 func (o *Operation) FormatParams() string {
@@ -124,12 +151,26 @@ func (o *Operation) FormatResults() string {
 	return strings.Join(s, ",")
 }
 
+func (o *Operation) FormatResultsWithPackageName(packageName string) string {
+	s := make([]string, 0)
+	for _, v := range o.Results {
+		if strings.HasPrefix(v.Type, packageName) {
+			s = append(s, v.Name+" "+strings.TrimPrefix(v.Type, packageName+"."))
+			continue
+		}
+		s = append(s, v.String())
+	}
+	return strings.Join(s, ",")
+}
+
 type Function struct {
 	*Operation
 
 	Required  []*Pair
 	Optional  []*Pair
 	Generated []*Pair // This op's generated pairs, they will be treated as optional.
+
+	implemented bool
 }
 
 func NewFunction(o *Operation) *Function {
@@ -145,6 +186,80 @@ func (f *Function) Format(s *OpSpec, p map[string]*Pair) {
 	}
 }
 
+func (f *Function) Sort() {
+	sort.Slice(f.Required, func(i, j int) bool {
+		x := f.Required
+		return x[i].Name < x[j].Name
+	})
+	sort.Slice(f.Optional, func(i, j int) bool {
+		x := f.Optional
+		return x[i].Name < x[j].Name
+	})
+	sort.Slice(f.Generated, func(i, j int) bool {
+		x := f.Generated
+		return x[i].Name < x[j].Name
+	})
+}
+
+type Fields []*Field
+
+func (f Fields) String() string {
+	x := make([]string, 0)
+	for _, v := range f {
+		x = append(x, v.String())
+	}
+	return strings.Join(x, ",")
+}
+
+func (f Fields) StringEndswithComma() string {
+	content := f.String()
+	if content == "" {
+		return ""
+	}
+	return content + ","
+}
+
+func (f Fields) Caller() string {
+	x := make([]string, 0)
+	for _, v := range f {
+		x = append(x, v.Caller())
+	}
+	return strings.Join(x, ",")
+}
+
+func (f Fields) CallerEndswithComma() string {
+	content := f.Caller()
+	if content == "" {
+		return ""
+	}
+	return content + ","
+}
+
+func (f Fields) TrimLast() Fields {
+	return f[:len(f)-1]
+}
+
+func (f Fields) PathCaller() string {
+	x := make([]string, 0)
+	for _, v := range f {
+		if v.Name == "seg" {
+			x = append(x, "seg.Path()", "seg.ID()")
+			continue
+		}
+		if v.Type != "string" {
+			break
+		}
+
+		x = append(x, v.Caller())
+	}
+
+	content := strings.Join(x, ",")
+	if content == "" {
+		return ""
+	}
+	return "," + content
+}
+
 type Field struct {
 	Name string
 	Type string
@@ -155,6 +270,13 @@ func (f *Field) String() string {
 		return f.Type
 	}
 	return fmt.Sprintf("%s %s", f.Name, f.Type)
+}
+
+func (f *Field) Caller() string {
+	if strings.HasPrefix(f.Type, "...") {
+		return f.Name + "..."
+	}
+	return f.Name
 }
 
 func (f *Field) Format(s *FieldSpec) {
@@ -258,6 +380,12 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 	}
 
 	if s.Service != nil {
+		srv.NewService = NewFunction(&Operation{Name: "new"})
+		srv.NewService.Format(&OpSpec{
+			Required: s.Service.New.Required,
+			Optional: s.Service.New.Optional,
+		}, srv.Pairs)
+
 		srvFn := make(map[string]*Function)
 		inter := d.interfacesMap["servicer"]
 
@@ -270,11 +398,25 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 		for _, v := range s.Service.Op {
 			srvFn[v.Name].Format(v, srv.Pairs)
 		}
+
+		implemented := parseFunc(s.Name, "servicer")
+		for _, fn := range srvFn {
+			x := templateutils.ToCamel(fn.Name)
+			if _, ok := implemented[x]; ok {
+				fn.implemented = true
+			}
+		}
 	}
 
 	storeFn := make(map[string]*Function)
 
 	if s.Storage != nil {
+		srv.NewStorage = NewFunction(&Operation{Name: "new"})
+		srv.NewStorage.Format(&OpSpec{
+			Required: s.Storage.New.Required,
+			Optional: s.Storage.New.Optional,
+		}, srv.Pairs)
+
 		inter := d.interfacesMap["storager"]
 
 		for k := range inter.Ops {
@@ -297,7 +439,21 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 	for _, v := range s.Storage.Op {
 		storeFn[v.Name].Format(v, srv.Pairs)
 	}
+
+	implemented := parseFunc(s.Name, "storager")
+	for _, fn := range storeFn {
+		x := templateutils.ToCamel(fn.Name)
+		if _, ok := implemented[x]; ok {
+			fn.implemented = true
+		}
+	}
 	return srv
+}
+
+func (d *Data) Sort() {
+	for _, v := range d.Services {
+		v.Sort()
+	}
 }
 
 // FormatData will format the whole data.

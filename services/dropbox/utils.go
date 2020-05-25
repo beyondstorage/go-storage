@@ -16,6 +16,21 @@ import (
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
+// Storage is the dropbox client.
+type Storage struct {
+	client files.Client
+
+	workDir string
+}
+
+// String implements Storager.String
+func (s *Storage) String() string {
+	return fmt.Sprintf(
+		"Storager dropbox {WorkDir: %s}",
+		s.workDir,
+	)
+}
+
 // NewStorager will create Storager only.
 func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
 	return newStorager(pairs...)
@@ -29,7 +44,7 @@ func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 		}
 	}()
 
-	opt, err := parseStoragePairNew(pairs...)
+	opt, err := parsePairStorageNew(pairs)
 	if err != nil {
 		return
 	}
@@ -75,4 +90,20 @@ func formatError(err error) error {
 		err = fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
 	}
 	return err
+}
+func (s *Storage) getAbsPath(path string) string {
+	return strings.TrimPrefix(s.workDir+"/"+path, "/")
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      formatError(err),
+		Storager: s,
+		Path:     path,
+	}
 }

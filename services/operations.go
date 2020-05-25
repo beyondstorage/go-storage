@@ -18,6 +18,7 @@ const (
 	OpRead       = "read"
 	OpWrite      = "write"
 	OpStat       = "stat"
+	OpMetadata   = "metadata"
 
 	// Extended op
 	OpCopy        = "copy"

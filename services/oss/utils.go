@@ -3,7 +3,9 @@ package oss
 import (
 	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/Xuanwo/storage/types/info"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 
 	"github.com/Xuanwo/storage"
@@ -13,6 +15,35 @@ import (
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
+
+// Service is the aliyun oss *Service config.
+type Service struct {
+	service *oss.Client
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	if s.service == nil {
+		return fmt.Sprintf("Servicer oss")
+	}
+	return fmt.Sprintf("Servicer oss {AccessKey: %s}", s.service.Config.AccessKeyID)
+}
+
+// Storage is the aliyun object storage service.
+type Storage struct {
+	bucket *oss.Bucket
+
+	name    string
+	workDir string
+}
+
+// String implements Storager.String
+func (s *Storage) String() string {
+	return fmt.Sprintf(
+		"Storager oss {Name: %s, WorkDir: %s}",
+		s.bucket.BucketName, s.workDir,
+	)
+}
 
 // New will create both Servicer and Storager.
 func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
@@ -38,7 +69,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 
 	srv = &Service{}
 
-	opt, err := parseServicePairNew(pairs...)
+	opt, err := parsePairServiceNew(pairs)
 	if err != nil {
 		return nil, err
 	}
@@ -117,4 +148,93 @@ func formatError(err error) error {
 	}
 
 	return err
+}
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
+	opt, err := parsePairStorageNew(pairs)
+	if err != nil {
+		return nil, err
+	}
+
+	bucket, err := s.service.Bucket(opt.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	store := &Storage{
+		bucket: bucket,
+
+		workDir: "/",
+	}
+
+	if opt.HasWorkDir {
+		store.workDir = opt.WorkDir
+	}
+	return store, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      formatError(err),
+		Servicer: s,
+		Name:     name,
+	}
+}
+
+// getAbsPath will calculate object storage's abs path
+func (s *Storage) getAbsPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return prefix + path
+}
+
+// getRelPath will get object storage's rel path.
+func (s *Storage) getRelPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return strings.TrimPrefix(path, prefix)
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      formatError(err),
+		Storager: s,
+		Path:     path,
+	}
+}
+
+func (s *Storage) formatFileObject(v oss.ObjectProperties) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Key,
+		Name:       s.getRelPath(v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Size,
+		UpdatedAt:  v.LastModified,
+		ObjectMeta: info.NewObjectMeta(),
+	}
+
+	if v.Type != "" {
+		o.SetContentType(v.Type)
+	}
+
+	// OSS advise us don't use Etag as Content-MD5.
+	//
+	// ref: https://help.aliyun.com/document_detail/31965.html
+	if v.ETag != "" {
+		o.SetETag(v.ETag)
+	}
+
+	if value := v.Type; value != "" {
+		setStorageClass(o.ObjectMeta, value)
+	}
+	return
 }

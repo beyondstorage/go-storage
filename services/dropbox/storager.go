@@ -1,56 +1,34 @@
 package dropbox
 
 import (
-	"fmt"
+	"context"
 	"io"
 	"path/filepath"
-	"strings"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/dropbox/files"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
 )
 
-// Storage is the dropbox client.
-type Storage struct {
-	client files.Client
+func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
+	rp := s.getAbsPath(path)
 
-	workDir string
-}
+	input := &files.DeleteArg{
+		Path: rp,
+	}
 
-// String implements Storager.String
-func (s *Storage) String() string {
-	return fmt.Sprintf(
-		"Storager dropbox {WorkDir: %s}",
-		s.workDir,
-	)
-}
-
-// Metadata implements Storager.Metadata
-func (s *Storage) Metadata(pairs ...*types.Pair) (m info.StorageMeta, err error) {
-	m = info.NewStorageMeta()
-	m.WorkDir = s.workDir
-	m.Name = ""
-
-	return m, nil
-}
-
-// ListDir implements Storager.ListDir
-func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpListDir, err, path)
-	}()
-
-	opt, err := s.parsePairListDir(pairs...)
+	_, err = s.client.DeleteV2(input)
 	if err != nil {
 		return err
 	}
 
-	rp := s.getAbsPath(path)
+	return nil
+}
+func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListDir) (err error) {
+	rp := s.getAbsPath(dir)
 
 	result, err := s.client.ListFolder(&files.ListFolderArg{
 		Path: rp,
@@ -66,7 +44,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 				o := &types.Object{
 					ID:         meta.Id,
 					Type:       types.ObjectTypeFile,
-					Name:       filepath.Join(path, meta.Name),
+					Name:       filepath.Join(dir, meta.Name),
 					Size:       int64(meta.Size),
 					UpdatedAt:  meta.ServerModified,
 					ObjectMeta: info.NewObjectMeta(),
@@ -83,7 +61,7 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 				o := &types.Object{
 					ID:         meta.Id,
 					Type:       types.ObjectTypeDir,
-					Name:       filepath.Join(path, meta.Name),
+					Name:       filepath.Join(dir, meta.Name),
 					ObjectMeta: info.NewObjectMeta(),
 				}
 
@@ -107,83 +85,36 @@ func (s *Storage) ListDir(path string, pairs ...*types.Pair) (err error) {
 	}
 	return
 }
+func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta info.StorageMeta, err error) {
+	meta = info.NewStorageMeta()
+	meta.WorkDir = s.workDir
+	meta.Name = ""
 
-// Read implements Storager.Read
-func (s *Storage) Read(path string, pairs ...*types.Pair) (r io.ReadCloser, err error) {
-	defer func() {
-		err = s.formatError(services.OpRead, err, path)
-	}()
-
-	opt, err := s.parsePairRead(pairs...)
-	if err != nil {
-		return nil, err
-	}
-
+	return
+}
+func (s *Storage) read(ctx context.Context, path string, opt *pairStorageRead) (rc io.ReadCloser, err error) {
 	rp := s.getAbsPath(path)
 
 	input := &files.DownloadArg{
 		Path: rp,
 	}
 
-	_, r, err = s.client.Download(input)
+	_, rc, err = s.client.Download(input)
 	if err != nil {
 		return nil, err
 	}
 
 	if opt.HasSize {
-		r = iowrap.LimitReadCloser(r, opt.Size)
+		rc = iowrap.LimitReadCloser(rc, opt.Size)
 	}
 
 	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReadCloser(r, opt.ReadCallbackFunc)
+		rc = iowrap.CallbackReadCloser(rc, opt.ReadCallbackFunc)
 	}
 
 	return
 }
-
-// Write implements Storager.Write
-func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpWrite, err, path)
-	}()
-
-	opt, err := s.parsePairWrite(pairs...)
-	if err != nil {
-		return err
-	}
-
-	rp := s.getAbsPath(path)
-
-	if opt.HasSize {
-		r = io.LimitReader(r, opt.Size)
-	}
-	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
-	}
-
-	input := &files.CommitInfo{
-		Path: rp,
-		Mode: &files.WriteMode{
-			Tagged: dropbox.Tagged{
-				Tag: files.WriteModeAdd,
-			},
-		},
-	}
-
-	_, err = s.client.Upload(input, r)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Stat implements Storager.Stat
-func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
-	defer func() {
-		err = s.formatError(services.OpStat, err, path)
-	}()
-
+func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	input := &files.GetMetadataArg{
@@ -228,40 +159,29 @@ func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err 
 		return o, nil
 	}
 }
-
-// Delete implements Storager.Delete
-func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpDelete, err, path)
-	}()
-
+func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pairStorageWrite) (err error) {
 	rp := s.getAbsPath(path)
 
-	input := &files.DeleteArg{
-		Path: rp,
+	if opt.HasSize {
+		r = io.LimitReader(r, opt.Size)
+	}
+	if opt.HasReadCallbackFunc {
+		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
-	_, err = s.client.DeleteV2(input)
+	input := &files.CommitInfo{
+		Path: rp,
+		Mode: &files.WriteMode{
+			Tagged: dropbox.Tagged{
+				Tag: files.WriteModeAdd,
+			},
+		},
+	}
+
+	_, err = s.client.Upload(input, r)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (s *Storage) getAbsPath(path string) string {
-	return strings.TrimPrefix(s.workDir+"/"+path, "/")
-}
-
-func (s *Storage) formatError(op string, err error, path ...string) error {
-	if err == nil {
-		return nil
-	}
-
-	return &services.StorageError{
-		Op:       op,
-		Err:      formatError(err),
-		Storager: s,
-		Path:     path,
-	}
 }
