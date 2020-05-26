@@ -10,7 +10,7 @@ import (
 
 	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/types/info"
-	"github.com/qingstor/qingstor-sdk-go/v4/config"
+	qsconfig "github.com/qingstor/qingstor-sdk-go/v4/config"
 	iface "github.com/qingstor/qingstor-sdk-go/v4/interface"
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
@@ -25,7 +25,7 @@ import (
 
 // Service is the qingstor service config.
 type Service struct {
-	config  *config.Config
+	config  *qsconfig.Config
 	service iface.Service
 
 	client *http.Client
@@ -95,7 +95,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
-	cfg, err := config.New(cred[0], cred[1])
+	cfg, err := qsconfig.New(cred[0], cred[1])
 	if err != nil {
 		return nil, err
 	}

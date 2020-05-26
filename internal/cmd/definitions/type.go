@@ -33,18 +33,21 @@ type Service struct {
 	Infos      []*Info
 }
 
+// Sort will sort the service
 func (s *Service) Sort() {
 	for _, v := range s.Namespaces {
 		v.Sort()
 	}
 }
 
+// Namespace contains all info aboue a namespace
 type Namespace struct {
 	Name  string
 	New   *Function
 	Funcs []*Function
 }
 
+// Sort will sort the namespace
 func (n *Namespace) Sort() {
 	sort.Slice(n.Funcs, func(i, j int) bool {
 		x := n.Funcs
@@ -69,6 +72,7 @@ type Pair struct {
 	Description string
 }
 
+// Format will format current pair
 func (p *Pair) Format(s *PairSpec, global bool) {
 	p.Name = s.Name
 	p.Type = s.Type
@@ -80,6 +84,7 @@ func (p *Pair) Format(s *PairSpec, global bool) {
 	p.Description = formatDescription(templateutils.ToPascal(p.Name), s.Description)
 }
 
+// FullName will print full name for current pair
 func (p *Pair) FullName() string {
 	if p.Global {
 		return fmt.Sprintf("ps.%s", templateutils.ToPascal(p.Name))
@@ -99,6 +104,7 @@ type Info struct {
 	Global bool
 }
 
+// Format will format info spec into Info
 func (i *Info) Format(s *InfoSpec, global bool) {
 	i.Scope = s.Scope
 	i.Category = s.Category
@@ -110,6 +116,7 @@ func (i *Info) Format(s *InfoSpec, global bool) {
 	i.Global = global
 }
 
+// Interface represents an interface
 type Interface struct {
 	Name        string
 	Description string
@@ -118,6 +125,7 @@ type Interface struct {
 	Ops         map[string]*Operation
 }
 
+// NewInterface will create a new interface from spec.
 func NewInterface(in *InterfaceSpec, fields map[string]*Field) *Interface {
 	inter := &Interface{
 		Name:        in.Name,
@@ -133,6 +141,7 @@ func NewInterface(in *InterfaceSpec, fields map[string]*Field) *Interface {
 	return inter
 }
 
+// DisplayName will output interface's display name.
 func (i *Interface) DisplayName() string {
 	if i.Internal {
 		return templateutils.ToCamel(i.Name)
@@ -140,6 +149,7 @@ func (i *Interface) DisplayName() string {
 	return templateutils.ToPascal(i.Name)
 }
 
+// Operation represents an operation.
 type Operation struct {
 	Name        string
 	Description string
@@ -147,6 +157,7 @@ type Operation struct {
 	Results     Fields
 }
 
+// NewOperation will create an new operation from operation spec.
 func NewOperation(v *OperationSpec, fields map[string]*Field) *Operation {
 	op := &Operation{
 		Name:        v.Name,
@@ -167,6 +178,7 @@ func NewOperation(v *OperationSpec, fields map[string]*Field) *Operation {
 	return op
 }
 
+// FormatParams print params.
 func (o *Operation) FormatParams() string {
 	s := make([]string, 0)
 	for _, v := range o.Params {
@@ -175,6 +187,7 @@ func (o *Operation) FormatParams() string {
 	return strings.Join(s, ",")
 }
 
+// FormatResults will print results.
 func (o *Operation) FormatResults() string {
 	s := make([]string, 0)
 	for _, v := range o.Results {
@@ -183,6 +196,9 @@ func (o *Operation) FormatResults() string {
 	return strings.Join(s, ",")
 }
 
+// FormatResultsWithPackageName will print results with package name
+//
+// If type is starts with this package name, we will ignore it.
 func (o *Operation) FormatResultsWithPackageName(packageName string) string {
 	s := make([]string, 0)
 	for _, v := range o.Results {
@@ -195,6 +211,7 @@ func (o *Operation) FormatResultsWithPackageName(packageName string) string {
 	return strings.Join(s, ",")
 }
 
+// Function represents a function.
 type Function struct {
 	*Operation
 
@@ -205,10 +222,12 @@ type Function struct {
 	implemented bool
 }
 
+// NewFunction will createn a new function.
 func NewFunction(o *Operation) *Function {
 	return &Function{Operation: o}
 }
 
+// Format will format a function with OpSpec.
 func (f *Function) Format(s *OpSpec, p map[string]*Pair) {
 	for _, v := range s.Required {
 		f.Required = append(f.Required, p[v])
@@ -218,6 +237,7 @@ func (f *Function) Format(s *OpSpec, p map[string]*Pair) {
 	}
 }
 
+// Sort will sort this function.
 func (f *Function) Sort() {
 	sort.Slice(f.Required, func(i, j int) bool {
 		x := f.Required
@@ -233,8 +253,10 @@ func (f *Function) Sort() {
 	})
 }
 
+// Fields is a slice for field.
 type Fields []*Field
 
+// String implements the stringer interface.
 func (f Fields) String() string {
 	x := make([]string, 0)
 	for _, v := range f {
@@ -243,6 +265,7 @@ func (f Fields) String() string {
 	return strings.Join(x, ",")
 }
 
+// StringEndswithComma will print string with comma aware.
 func (f Fields) StringEndswithComma() string {
 	content := f.String()
 	if content == "" {
@@ -251,6 +274,7 @@ func (f Fields) StringEndswithComma() string {
 	return content + ","
 }
 
+// Caller will print caller foramt.
 func (f Fields) Caller() string {
 	x := make([]string, 0)
 	for _, v := range f {
@@ -259,6 +283,17 @@ func (f Fields) Caller() string {
 	return strings.Join(x, ",")
 }
 
+// HasReader will check whether we have reader here.
+func (f Fields) HasReader() bool {
+	for _, v := range f {
+		if v.Type == "io.Reader" || v.Type == "io.ReadCloser" {
+			return true
+		}
+	}
+	return false
+}
+
+// CallerEndswithComma will print caller with comma aware.
 func (f Fields) CallerEndswithComma() string {
 	content := f.Caller()
 	if content == "" {
@@ -267,10 +302,12 @@ func (f Fields) CallerEndswithComma() string {
 	return content + ","
 }
 
+// TrimLast will trim the last fields.
 func (f Fields) TrimLast() Fields {
 	return f[:len(f)-1]
 }
 
+// PathCaller will print caller with path aware.
 func (f Fields) PathCaller() string {
 	x := make([]string, 0)
 	for _, v := range f {
@@ -292,11 +329,13 @@ func (f Fields) PathCaller() string {
 	return "," + content
 }
 
+// Field represent a field.
 type Field struct {
 	Name string
 	Type string
 }
 
+// String will print field in string format.
 func (f *Field) String() string {
 	if f.Name == "" {
 		return f.Type
@@ -304,6 +343,7 @@ func (f *Field) String() string {
 	return fmt.Sprintf("%s %s", f.Name, f.Type)
 }
 
+// Caller will print the caller format of field.
 func (f *Field) Caller() string {
 	if strings.HasPrefix(f.Type, "...") {
 		return f.Name + "..."
@@ -311,6 +351,7 @@ func (f *Field) Caller() string {
 	return f.Name
 }
 
+// Format will create a new field.
 func (f *Field) Format(s *FieldSpec) {
 	f.Type = s.Type
 	f.Name = s.Name
@@ -377,6 +418,7 @@ func (d *Data) FormatOperations(o *OperationsSpec) (ins []*Interface, inm map[st
 	return
 }
 
+// FormatNamespace will format a namespace.
 func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
 	ns := &Namespace{Name: n.Name}
 
@@ -417,7 +459,25 @@ func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
 			fn.implemented = true
 		}
 	}
+
+	// Inject generated pair.
+	d.InjectNamespace(srv, ns)
 	return ns
+}
+
+// InjectNamespace will inject a namespace to insert generated pairs.
+func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
+	// Inject read_callback_func
+	for _, v := range n.Funcs {
+		if v.Params.HasReader() || v.Results.HasReader() {
+			v.Generated = append(v.Generated, srv.Pairs["read_callback_func"])
+		}
+	}
+
+	// Inject http_client_options
+	if n.New != nil {
+		n.New.Generated = append(n.New.Generated, srv.Pairs["http_client_options"])
+	}
 }
 
 // FormatService will format services from service spec
@@ -433,9 +493,11 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 
 		srv.Namespaces = append(srv.Namespaces, ns)
 	}
+
 	return srv
 }
 
+// Sort will sort the data.
 func (d *Data) Sort() {
 	for _, v := range d.Services {
 		v.Sort()

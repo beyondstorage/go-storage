@@ -152,7 +152,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 
 	uploader := qs.NewFormUploader(s.bucket.Cfg)
 	ret := qs.PutRet{}
-	err = uploader.Put(opt.Context,
+	err = uploader.Put(ctx,
 		&ret, s.putPolicy.UploadToken(s.bucket.Mac), rp, r, opt.Size, nil)
 	if err != nil {
 		return err

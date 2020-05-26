@@ -2,9 +2,7 @@ package s3
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"

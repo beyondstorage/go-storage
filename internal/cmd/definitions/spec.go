@@ -1,5 +1,6 @@
 package main
 
+// InterfaceSpec is the spec for interface.
 type InterfaceSpec struct {
 	Name        string           `hcl:",label"`
 	Description string           `hcl:"description,optional"`
@@ -8,11 +9,13 @@ type InterfaceSpec struct {
 	Ops         []*OperationSpec `hcl:"op,block"`
 }
 
+// OperationsSpec is the spec for operations.
 type OperationsSpec struct {
 	Interfaces []*InterfaceSpec `hcl:"interface,block"`
 	Fields     []*FieldSpec     `hcl:"field,block"`
 }
 
+// OperationSpec is the spec for operation.
 type OperationSpec struct {
 	Name        string   `hcl:",label"`
 	Description string   `hcl:"description,optional"`
@@ -20,6 +23,7 @@ type OperationSpec struct {
 	Results     []string `hcl:"results,optional"`
 }
 
+// FieldSpec is the spec for field.
 type FieldSpec struct {
 	Name string `hcl:",label"`
 	Type string `hcl:"type"`
@@ -33,10 +37,12 @@ type ServiceSpec struct {
 	Infos      *InfosSpec       `hcl:"infos,block"`
 }
 
+// InfosSpec is the spec for infos.
 type InfosSpec struct {
 	Infos []*InfoSpec `hcl:"info,block"`
 }
 
+// InfoSpec is the spec for info.
 type InfoSpec struct {
 	Scope       string `hcl:",label"`
 	Category    string `hcl:",label"`
@@ -46,7 +52,7 @@ type InfoSpec struct {
 	ZeroValue   string `hcl:"zero_value,optional"`
 }
 
-// PairSpec is the data parsed from HCL.
+// PairsSpec is the data parsed from HCL.
 type PairsSpec struct {
 	Pairs []*PairSpec `hcl:"pair,block"`
 }
@@ -68,13 +74,14 @@ type NamespaceSpec struct {
 	Op        []*OpSpec `hcl:"op,block"`
 }
 
-// Op means an operation definition.
+// OpSpec means an operation definition.
 type OpSpec struct {
 	Name     string   `hcl:",label"`
 	Required []string `hcl:"required,optional"`
 	Optional []string `hcl:"optional,optional"`
 }
 
+// NewSpec is the spec for new function.
 type NewSpec struct {
 	Required []string `hcl:"required,optional"`
 	Optional []string `hcl:"optional,optional"`

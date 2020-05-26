@@ -1,6 +1,7 @@
 package gcs
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -74,6 +75,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		}
 	}()
 
+	ctx := context.Background()
 	srv = &Service{}
 
 	opt, err := parsePairServiceNew(pairs)
@@ -102,7 +104,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	}
 
 	// Loading token source from binary data.
-	creds, err := google.CredentialsFromJSON(opt.Context, credJSON, gs.ScopeFullControl)
+	creds, err := google.CredentialsFromJSON(ctx, credJSON, gs.ScopeFullControl)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +114,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	}
 	hc.Transport = ot
 
-	client, err := gs.NewClient(opt.Context, option.WithHTTPClient(hc))
+	client, err := gs.NewClient(ctx, option.WithHTTPClient(hc))
 	if err != nil {
 		return nil, err
 	}

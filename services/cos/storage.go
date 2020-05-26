@@ -2,7 +2,6 @@ package cos
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"time"
 

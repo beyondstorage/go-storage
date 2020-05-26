@@ -2,17 +2,14 @@ package uss
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/upyun/go-sdk/upyun"
 
 	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
 )
@@ -126,7 +123,7 @@ func (s *Storage) read(ctx context.Context, path string, opt *pairStorageRead) (
 	rp := s.getAbsPath(path)
 
 	var w *io.PipeWriter
-	r, w = io.Pipe()
+	rc, w = io.Pipe()
 
 	go func() {
 		defer w.Close()

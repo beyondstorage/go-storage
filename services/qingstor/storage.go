@@ -2,13 +2,9 @@ package qingstor
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"strings"
 
 	"github.com/pengsrc/go-shared/convert"
-	qsconfig "github.com/qingstor/qingstor-sdk-go/v4/config"
-	iface "github.com/qingstor/qingstor-sdk-go/v4/interface"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
 	"github.com/Xuanwo/storage/pkg/headers"

@@ -2,14 +2,10 @@ package gcs
 
 import (
 	"context"
-	"fmt"
 
-	gs "cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 
 	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 

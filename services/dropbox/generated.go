@@ -39,27 +39,33 @@ var pairStorageNewMap = map[string]struct{}{
 	// Optional pairs
 	ps.WorkDir: struct{}{},
 	// Generated pairs
+	ps.HTTPClientOptions: struct{}{},
 }
 
 // pairStorageNew is the parsed struct
 type pairStorageNew struct {
+	pairs []*types.Pair
+
 	// Required pairs
 	Credential *credential.Provider
 	// Optional pairs
 	HasWorkDir bool
 	WorkDir    string
 	// Generated pairs
+	HasHTTPClientOptions bool
+	HTTPClientOptions    *httpclient.Options
 }
 
 // parsePairStorageNew will parse *types.Pair slice into *pairStorageNew
 func parsePairStorageNew(opts []*types.Pair) (*pairStorageNew, error) {
-	result := &pairStorageNew{}
+	result := &pairStorageNew{
+		pairs: opts,
+	}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
 		values[v.Key] = v.Value
 	}
-
 	var v interface{}
 	var ok bool
 
@@ -78,6 +84,11 @@ func parsePairStorageNew(opts []*types.Pair) (*pairStorageNew, error) {
 		result.WorkDir = v.(string)
 	}
 	// Handle generated pairs
+	v, ok = values[ps.HTTPClientOptions]
+	if ok {
+		result.HasHTTPClientOptions = true
+		result.HTTPClientOptions = v.(*httpclient.Options)
+	}
 
 	return result, nil
 }
@@ -91,6 +102,8 @@ var pairStorageDeleteMap = map[string]struct{}{
 
 // pairStorageDelete is the parsed struct
 type pairStorageDelete struct {
+	pairs []*types.Pair
+
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
@@ -98,7 +111,9 @@ type pairStorageDelete struct {
 
 // parsePairStorageDelete will parse *types.Pair slice into *pairStorageDelete
 func parsePairStorageDelete(opts []*types.Pair) (*pairStorageDelete, error) {
-	result := &pairStorageDelete{}
+	result := &pairStorageDelete{
+		pairs: opts,
+	}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -107,9 +122,6 @@ func parsePairStorageDelete(opts []*types.Pair) (*pairStorageDelete, error) {
 		}
 		values[v.Key] = v.Value
 	}
-
-	var v interface{}
-	var ok bool
 
 	// Handle required pairs
 	// Handle optional pairs
@@ -129,6 +141,8 @@ var pairStorageListDirMap = map[string]struct{}{
 
 // pairStorageListDir is the parsed struct
 type pairStorageListDir struct {
+	pairs []*types.Pair
+
 	// Required pairs
 	// Optional pairs
 	HasDirFunc  bool
@@ -140,7 +154,9 @@ type pairStorageListDir struct {
 
 // parsePairStorageListDir will parse *types.Pair slice into *pairStorageListDir
 func parsePairStorageListDir(opts []*types.Pair) (*pairStorageListDir, error) {
-	result := &pairStorageListDir{}
+	result := &pairStorageListDir{
+		pairs: opts,
+	}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -149,7 +165,6 @@ func parsePairStorageListDir(opts []*types.Pair) (*pairStorageListDir, error) {
 		}
 		values[v.Key] = v.Value
 	}
-
 	var v interface{}
 	var ok bool
 
@@ -179,6 +194,8 @@ var pairStorageMetadataMap = map[string]struct{}{
 
 // pairStorageMetadata is the parsed struct
 type pairStorageMetadata struct {
+	pairs []*types.Pair
+
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
@@ -186,7 +203,9 @@ type pairStorageMetadata struct {
 
 // parsePairStorageMetadata will parse *types.Pair slice into *pairStorageMetadata
 func parsePairStorageMetadata(opts []*types.Pair) (*pairStorageMetadata, error) {
-	result := &pairStorageMetadata{}
+	result := &pairStorageMetadata{
+		pairs: opts,
+	}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -195,9 +214,6 @@ func parsePairStorageMetadata(opts []*types.Pair) (*pairStorageMetadata, error) 
 		}
 		values[v.Key] = v.Value
 	}
-
-	var v interface{}
-	var ok bool
 
 	// Handle required pairs
 	// Handle optional pairs
@@ -212,20 +228,27 @@ var pairStorageReadMap = map[string]struct{}{
 	// Optional pairs
 	ps.Size: struct{}{},
 	// Generated pairs
+	ps.ReadCallbackFunc: struct{}{},
 }
 
 // pairStorageRead is the parsed struct
 type pairStorageRead struct {
+	pairs []*types.Pair
+
 	// Required pairs
 	// Optional pairs
 	HasSize bool
 	Size    int64
 	// Generated pairs
+	HasReadCallbackFunc bool
+	ReadCallbackFunc    func([]byte)
 }
 
 // parsePairStorageRead will parse *types.Pair slice into *pairStorageRead
 func parsePairStorageRead(opts []*types.Pair) (*pairStorageRead, error) {
-	result := &pairStorageRead{}
+	result := &pairStorageRead{
+		pairs: opts,
+	}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -234,7 +257,6 @@ func parsePairStorageRead(opts []*types.Pair) (*pairStorageRead, error) {
 		}
 		values[v.Key] = v.Value
 	}
-
 	var v interface{}
 	var ok bool
 
@@ -246,6 +268,11 @@ func parsePairStorageRead(opts []*types.Pair) (*pairStorageRead, error) {
 		result.Size = v.(int64)
 	}
 	// Handle generated pairs
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
+	}
 
 	return result, nil
 }
@@ -259,6 +286,8 @@ var pairStorageStatMap = map[string]struct{}{
 
 // pairStorageStat is the parsed struct
 type pairStorageStat struct {
+	pairs []*types.Pair
+
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
@@ -266,7 +295,9 @@ type pairStorageStat struct {
 
 // parsePairStorageStat will parse *types.Pair slice into *pairStorageStat
 func parsePairStorageStat(opts []*types.Pair) (*pairStorageStat, error) {
-	result := &pairStorageStat{}
+	result := &pairStorageStat{
+		pairs: opts,
+	}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -275,9 +306,6 @@ func parsePairStorageStat(opts []*types.Pair) (*pairStorageStat, error) {
 		}
 		values[v.Key] = v.Value
 	}
-
-	var v interface{}
-	var ok bool
 
 	// Handle required pairs
 	// Handle optional pairs
@@ -292,20 +320,27 @@ var pairStorageWriteMap = map[string]struct{}{
 	// Optional pairs
 	ps.Size: struct{}{},
 	// Generated pairs
+	ps.ReadCallbackFunc: struct{}{},
 }
 
 // pairStorageWrite is the parsed struct
 type pairStorageWrite struct {
+	pairs []*types.Pair
+
 	// Required pairs
 	// Optional pairs
 	HasSize bool
 	Size    int64
 	// Generated pairs
+	HasReadCallbackFunc bool
+	ReadCallbackFunc    func([]byte)
 }
 
 // parsePairStorageWrite will parse *types.Pair slice into *pairStorageWrite
 func parsePairStorageWrite(opts []*types.Pair) (*pairStorageWrite, error) {
-	result := &pairStorageWrite{}
+	result := &pairStorageWrite{
+		pairs: opts,
+	}
 
 	values := make(map[string]interface{})
 	for _, v := range opts {
@@ -314,7 +349,6 @@ func parsePairStorageWrite(opts []*types.Pair) (*pairStorageWrite, error) {
 		}
 		values[v.Key] = v.Value
 	}
-
 	var v interface{}
 	var ok bool
 
@@ -326,6 +360,11 @@ func parsePairStorageWrite(opts []*types.Pair) (*pairStorageWrite, error) {
 		result.Size = v.(int64)
 	}
 	// Handle generated pairs
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
+	}
 
 	return result, nil
 }

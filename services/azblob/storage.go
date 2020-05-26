@@ -161,7 +161,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 	}
 
 	// TODO: add checksum and storage class support.
-	_, err = s.bucket.NewBlockBlobURL(rp).Upload(opt.Context, iowrap.SizedReadSeekCloser(r, opt.Size),
+	_, err = s.bucket.NewBlockBlobURL(rp).Upload(ctx, iowrap.SizedReadSeekCloser(r, opt.Size),
 		azblob.BlobHTTPHeaders{}, azblob.Metadata{}, azblob.BlobAccessConditions{})
 	if err != nil {
 		return err

@@ -131,6 +131,8 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
 
     // pair{{ $pn }}{{ $fnk }} is the parsed struct
     type pair{{ $pn }}{{ $fnk }} struct {
+        pairs []*types.Pair
+
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
         {{ $pair.Name | toPascal }}    {{ $pair.Type }}
@@ -151,7 +153,9 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
 
     // parsePair{{ $pn }}{{ $fnk }} will parse *types.Pair slice into *pair{{ $pn }}{{ $fnk }}
     func parsePair{{ $pn }}{{ $fnk }}(opts []*types.Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
-    result := &pair{{ $pn }}{{ $fnk }}{}
+    result := &pair{{ $pn }}{{ $fnk }}{
+        pairs: opts,
+    }
 
     values := make(map[string]interface{})
     for _, v := range opts {
@@ -163,8 +167,10 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
         values[v.Key] = v.Value
     }
 
+    {{- if or $fn.Required $fn.Optional $fn.Generated }}
     var v interface{}
     var ok bool
+    {{- end }}
 
     // Handle required pairs
     {{- range $_, $pair := $fn.Required }}
@@ -228,7 +234,11 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
     }
     func (s *{{$pn}}) {{ $fnk }}WithContext(ctx context.Context, {{$fn.Params.String}}) ({{$fn.Results.String}}) {
         defer func(){
-            err = s.formatError(services.Op{{ $fnk }}, err {{$fn.Params.PathCaller}} )
+            {{- $path := $fn.Params.PathCaller }}
+            {{- if and (eq $path "") (eq $pn "Service") }}
+                {{ $path = ",\"\"" }}
+            {{- end }}
+            err = s.formatError(services.Op{{ $fnk }}, err {{ $path }} )
         }()
         var opt *pair{{ $pn }}{{ $fnk }}
         opt, err = parsePair{{ $pn }}{{ $fnk }}(pairs)
