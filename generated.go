@@ -55,9 +55,9 @@ type IndexSegmenter interface {
 // Mover is the interface for Move.
 type Mover interface {
 
-	// Move will move an object or multiple object in the service.
+	// Move will move an object in the service.
 	Move(src string, dst string, pairs ...*types.Pair) (err error)
-	// MoveWithContext will move an object or multiple object in the service.
+	// MoveWithContext will move an object in the service.
 	MoveWithContext(ctx context.Context, src string, dst string, pairs ...*types.Pair) (err error)
 }
 
@@ -65,14 +65,8 @@ type Mover interface {
 type PrefixLister interface {
 
 	// ListPrefix will return list a specific dir.
-	//
-	// Caller:
-	//   - prefix SHOULD NOT start with /, and SHOULD relative to workdir.
 	ListPrefix(prefix string, pairs ...*types.Pair) (err error)
 	// ListPrefixWithContext will return list a specific dir.
-	//
-	// Caller:
-	//   - prefix SHOULD NOT start with /, and SHOULD relative to workdir.
 	ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error)
 }
 
@@ -81,14 +75,8 @@ type PrefixSegmentsLister interface {
 	segmenter
 
 	// ListPrefixSegments will list segments.
-	//
-	// Implementer:
-	//   - If prefix == "", services should return all segments.
 	ListPrefixSegments(prefix string, pairs ...*types.Pair) (err error)
 	// ListPrefixSegmentsWithContext will list segments.
-	//
-	// Implementer:
-	//   - If prefix == "", services should return all segments.
 	ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error)
 }
 
@@ -96,14 +84,8 @@ type PrefixSegmentsLister interface {
 type Reacher interface {
 
 	// Reach will provide a way, which can reach the object.
-	//
-	// Implementer:
-	//   - SHOULD return a publicly reachable http url.
 	Reach(path string, pairs ...*types.Pair) (url string, err error)
 	// ReachWithContext will provide a way, which can reach the object.
-	//
-	// Implementer:
-	//   - SHOULD return a publicly reachable http url.
 	ReachWithContext(ctx context.Context, path string, pairs ...*types.Pair) (url string, err error)
 }
 
@@ -111,39 +93,17 @@ type Reacher interface {
 type segmenter interface {
 
 	// AbortSegment will abort a segment.
-	//
-	// Implementer:
-	//   - SHOULD return error while caller call AbortSegment without init.
-	// Caller:
-	//   - SHOULD call InitIndexSegment before AbortSegment.
 	AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error)
 	// AbortSegmentWithContext will abort a segment.
-	//
-	// Implementer:
-	//   - SHOULD return error while caller call AbortSegment without init.
-	// Caller:
-	//   - SHOULD call InitIndexSegment before AbortSegment.
 	AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error)
 
 	// CompleteSegment will complete a segment and merge them into a File.
-	//
-	// Implementer:
-	//   - SHOULD return error while caller call CompleteSegment without init.
-	// Caller:
-	//   - SHOULD call InitIndexSegment before CompleteSegment.
 	CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error)
 	// CompleteSegmentWithContext will complete a segment and merge them into a File.
-	//
-	// Implementer:
-	//   - SHOULD return error while caller call CompleteSegment without init.
-	// Caller:
-	//   - SHOULD call InitIndexSegment before CompleteSegment.
 	CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error)
 }
 
 // Servicer can maintain multipart storage services.
-//
-// Implementer can choose to implement this interface or not.
 type Servicer interface {
 	String() string
 
@@ -172,41 +132,12 @@ type Servicer interface {
 type Statistician interface {
 
 	// Statistical will count service's statistics, such as Size, Count.
-	//
-	// Implementer:
-	//   - Statistical SHOULD only return dynamic data like Size, Count.
-	// Caller:
-	//   - Statistical call COULD be expensive.
 	Statistical(pairs ...*types.Pair) (url string, err error)
 	// StatisticalWithContext will count service's statistics, such as Size, Count.
-	//
-	// Implementer:
-	//   - Statistical SHOULD only return dynamic data like Size, Count.
-	// Caller:
-	//   - Statistical call COULD be expensive.
 	StatisticalWithContext(ctx context.Context, pairs ...*types.Pair) (url string, err error)
 }
 
 // Storager is the interface for storage service.
-//
-// Currently, we support two different types of storage services: prefix based and directory based. Prefix based storage
-// service is usually an object storage service, such as AWS; And directory based service is often a POSIX file system.
-// We used to treat them as different abstract level services, but in this project, we will unify both of them to make a
-// production ready high performance vendor lock free storage layer.
-//
-// Every storager will implement the same interface but with different capability and operation pairs set.
-//
-// Everything in a storager is an Object with two types: File, Dir.
-// File is the smallest unit in service, it will have content and metadata. Dir is a container for File and Dir.
-// In prefix-based storage service, Dir is usually an empty key end with "/" or with special content type.
-// For directory-based service, Dir will be corresponded to the real directory on file system.
-//
-// In the comments of every method, we will use following rules to standardize the Storager's behavior:
-//
-//   - The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
-//     and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
-//   - Implementer is the provider of the service, while trying to implement Storager interface, you need to follow.
-//   - Caller is the user of the service, while trying to use the Storager interface, you need to follow.
 type Storager interface {
 	String() string
 
@@ -216,29 +147,13 @@ type Storager interface {
 	DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error)
 
 	// Metadata will return current storager's metadata.
-	//
-	// Implementer:
-	//   - Metadata SHOULD only return static data without API call or with a cache.
-	// Caller:
-	//   - Metadata SHOULD be cheap.
 	Metadata(pairs ...*types.Pair) (meta info.StorageMeta, err error)
 	// MetadataWithContext will return current storager's metadata.
-	//
-	// Implementer:
-	//   - Metadata SHOULD only return static data without API call or with a cache.
-	// Caller:
-	//   - Metadata SHOULD be cheap.
 	MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (meta info.StorageMeta, err error)
 
 	// Read will read the file's data.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data read.
 	Read(path string, pairs ...*types.Pair) (rc io.ReadCloser, err error)
 	// ReadWithContext will read the file's data.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data read.
 	ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (rc io.ReadCloser, err error)
 
 	// Stat will stat a path to get info of an object.
@@ -247,13 +162,7 @@ type Storager interface {
 	StatWithContext(ctx context.Context, path string, pairs ...*types.Pair) (o *types.Object, err error)
 
 	// Write will write data into a file.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data written.
 	Write(path string, r io.Reader, pairs ...*types.Pair) (err error)
 	// WriteWithContext will write data into a file.
-	//
-	// Caller:
-	//   - MUST close reader while error happened or all data written.
 	WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*types.Pair) (err error)
 }
