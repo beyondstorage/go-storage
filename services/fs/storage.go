@@ -8,66 +8,9 @@ import (
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/pkg/mime"
-	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
 )
-
-// Copy implements Storager.Copy
-func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpCopy, err, src, dst)
-	}()
-
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	// Create dir for dst.
-	err = s.createDir(dst)
-	if err != nil {
-		return err
-	}
-
-	srcFile, err := s.osOpen(rs)
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-
-	dstFile, err := s.osCreate(rd)
-	if err != nil {
-		return err
-	}
-	defer dstFile.Close()
-
-	_, err = s.ioCopyBuffer(dstFile, srcFile, make([]byte, 1024*1024))
-	if err != nil {
-		return err
-	}
-	return
-}
-
-// Move implements Storager.Move
-func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpMove, err, src, dst)
-	}()
-
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	// Create dir for dst path.
-	err = s.createDir(dst)
-	if err != nil {
-		return err
-	}
-
-	err = s.osRename(rs, rd)
-	if err != nil {
-		return err
-	}
-	return
-}
 
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
@@ -231,6 +174,52 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 	} else {
 		_, err = s.ioCopyBuffer(f, r, make([]byte, 1024*1024))
 	}
+	if err != nil {
+		return err
+	}
+	return
+}
+
+func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairStorageCopy) (err error) {
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	// Create dir for dst.
+	err = s.createDir(dst)
+	if err != nil {
+		return err
+	}
+
+	srcFile, err := s.osOpen(rs)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := s.osCreate(rd)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = s.ioCopyBuffer(dstFile, srcFile, make([]byte, 1024*1024))
+	if err != nil {
+		return err
+	}
+	return
+}
+func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairStorageMove) (err error) {
+
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	// Create dir for dst path.
+	err = s.createDir(dst)
+	if err != nil {
+		return err
+	}
+
+	err = s.osRename(rs, rd)
 	if err != nil {
 		return err
 	}

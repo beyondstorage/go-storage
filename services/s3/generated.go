@@ -311,10 +311,15 @@ func parsePairServiceList(opts []*types.Pair) (*pairServiceList, error) {
 	return result, nil
 }
 
+// Create will create a new storager instance.
+//
+// This function will create a context by default.
 func (s *Service) Create(name string, pairs ...*types.Pair) (store storage.Storager, err error) {
 	ctx := context.Background()
 	return s.CreateWithContext(ctx, name, pairs...)
 }
+
+// CreateWithContext will create a new storager instance.
 func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*types.Pair) (store storage.Storager, err error) {
 	defer func() {
 		err = s.formatError(services.OpCreate, err, name)
@@ -328,10 +333,15 @@ func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*
 	return s.create(ctx, name, opt)
 }
 
+// Delete will delete a storager instance.
+//
+// This function will create a context by default.
 func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, name, pairs...)
 }
+
+// DeleteWithContext will delete a storager instance.
 func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpDelete, err, name)
@@ -345,10 +355,15 @@ func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...*
 	return s.delete(ctx, name, opt)
 }
 
+// Get will get a valid storager instance for service.
+//
+// This function will create a context by default.
 func (s *Service) Get(name string, pairs ...*types.Pair) (store storage.Storager, err error) {
 	ctx := context.Background()
 	return s.GetWithContext(ctx, name, pairs...)
 }
+
+// GetWithContext will get a valid storager instance for service.
 func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*types.Pair) (store storage.Storager, err error) {
 	defer func() {
 		err = s.formatError(services.OpGet, err, name)
@@ -362,10 +377,15 @@ func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*typ
 	return s.get(ctx, name, opt)
 }
 
+// List will list all storager instances under this service.
+//
+// This function will create a context by default.
 func (s *Service) List(pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.ListWithContext(ctx, pairs...)
 }
+
+// ListWithContext will list all storager instances under this service.
 func (s *Service) ListWithContext(ctx context.Context, pairs ...*types.Pair) (err error) {
 	defer func() {
 
@@ -446,6 +466,80 @@ func parsePairStorageNew(opts []*types.Pair) (*pairStorageNew, error) {
 		result.HasHTTPClientOptions = true
 		result.HTTPClientOptions = v.(*httpclient.Options)
 	}
+
+	return result, nil
+}
+
+// pairStorageAbortSegmentMap holds all available pairs
+var pairStorageAbortSegmentMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageAbortSegment is the parsed struct
+type pairStorageAbortSegment struct {
+	pairs []*types.Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageAbortSegment will parse *types.Pair slice into *pairStorageAbortSegment
+func parsePairStorageAbortSegment(opts []*types.Pair) (*pairStorageAbortSegment, error) {
+	result := &pairStorageAbortSegment{
+		pairs: opts,
+	}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageAbortSegmentMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
+// pairStorageCompleteSegmentMap holds all available pairs
+var pairStorageCompleteSegmentMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageCompleteSegment is the parsed struct
+type pairStorageCompleteSegment struct {
+	pairs []*types.Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageCompleteSegment will parse *types.Pair slice into *pairStorageCompleteSegment
+func parsePairStorageCompleteSegment(opts []*types.Pair) (*pairStorageCompleteSegment, error) {
+	result := &pairStorageCompleteSegment{
+		pairs: opts,
+	}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageCompleteSegmentMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
 
 	return result, nil
 }
@@ -915,10 +1009,59 @@ func parsePairStorageWriteIndexSegment(opts []*types.Pair) (*pairStorageWriteInd
 	return result, nil
 }
 
+// AbortSegment will abort a segment.
+//
+// This function will create a context by default.
+func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
+	ctx := context.Background()
+	return s.AbortSegmentWithContext(ctx, seg, pairs...)
+}
+
+// AbortSegmentWithContext will abort a segment.
+func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError(services.OpAbortSegment, err, seg.Path(), seg.ID())
+	}()
+	var opt *pairStorageAbortSegment
+	opt, err = parsePairStorageAbortSegment(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.abortSegment(ctx, seg, opt)
+}
+
+// CompleteSegment will complete a segment and merge them into a File.
+//
+// This function will create a context by default.
+func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
+	ctx := context.Background()
+	return s.CompleteSegmentWithContext(ctx, seg, pairs...)
+}
+
+// CompleteSegmentWithContext will complete a segment and merge them into a File.
+func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError(services.OpCompleteSegment, err, seg.Path(), seg.ID())
+	}()
+	var opt *pairStorageCompleteSegment
+	opt, err = parsePairStorageCompleteSegment(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.completeSegment(ctx, seg, opt)
+}
+
+// Delete will delete an Object from service.
+//
+// This function will create a context by default.
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, path, pairs...)
 }
+
+// DeleteWithContext will delete an Object from service.
 func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpDelete, err, path)
@@ -932,10 +1075,15 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 	return s.delete(ctx, path, opt)
 }
 
+// InitIndexSegment will init an index based segment.
+//
+// This function will create a context by default.
 func (s *Storage) InitIndexSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
 	ctx := context.Background()
 	return s.InitIndexSegmentWithContext(ctx, path, pairs...)
 }
+
+// InitIndexSegmentWithContext will init an index based segment.
 func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
 	defer func() {
 		err = s.formatError(services.OpInitIndexSegment, err, path)
@@ -949,10 +1097,15 @@ func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, 
 	return s.initIndexSegment(ctx, path, opt)
 }
 
+// ListDir will return list a specific dir.
+//
+// This function will create a context by default.
 func (s *Storage) ListDir(dir string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.ListDirWithContext(ctx, dir, pairs...)
 }
+
+// ListDirWithContext will return list a specific dir.
 func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpListDir, err, dir)
@@ -966,10 +1119,15 @@ func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*
 	return s.listDir(ctx, dir, opt)
 }
 
+// ListPrefix will return list a specific dir.
+//
+// This function will create a context by default.
 func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.ListPrefixWithContext(ctx, prefix, pairs...)
 }
+
+// ListPrefixWithContext will return list a specific dir.
 func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpListPrefix, err, prefix)
@@ -983,10 +1141,15 @@ func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pair
 	return s.listPrefix(ctx, prefix, opt)
 }
 
+// ListPrefixSegments will list segments.
+//
+// This function will create a context by default.
 func (s *Storage) ListPrefixSegments(prefix string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.ListPrefixSegmentsWithContext(ctx, prefix, pairs...)
 }
+
+// ListPrefixSegmentsWithContext will list segments.
 func (s *Storage) ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpListPrefixSegments, err, prefix)
@@ -1000,10 +1163,15 @@ func (s *Storage) ListPrefixSegmentsWithContext(ctx context.Context, prefix stri
 	return s.listPrefixSegments(ctx, prefix, opt)
 }
 
+// Metadata will return current storager's metadata.
+//
+// This function will create a context by default.
 func (s *Storage) Metadata(pairs ...*types.Pair) (meta info.StorageMeta, err error) {
 	ctx := context.Background()
 	return s.MetadataWithContext(ctx, pairs...)
 }
+
+// MetadataWithContext will return current storager's metadata.
 func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (meta info.StorageMeta, err error) {
 	defer func() {
 		err = s.formatError(services.OpMetadata, err)
@@ -1017,10 +1185,15 @@ func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair)
 	return s.metadata(ctx, opt)
 }
 
+// Read will read the file's data.
+//
+// This function will create a context by default.
 func (s *Storage) Read(path string, pairs ...*types.Pair) (rc io.ReadCloser, err error) {
 	ctx := context.Background()
 	return s.ReadWithContext(ctx, path, pairs...)
 }
+
+// ReadWithContext will read the file's data.
 func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (rc io.ReadCloser, err error) {
 	defer func() {
 		err = s.formatError(services.OpRead, err, path)
@@ -1034,10 +1207,15 @@ func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*ty
 	return s.read(ctx, path, opt)
 }
 
+// Stat will stat a path to get info of an object.
+//
+// This function will create a context by default.
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.StatWithContext(ctx, path, pairs...)
 }
+
+// StatWithContext will stat a path to get info of an object.
 func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err = s.formatError(services.OpStat, err, path)
@@ -1051,10 +1229,15 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*ty
 	return s.stat(ctx, path, opt)
 }
 
+// Write will write data into a file.
+//
+// This function will create a context by default.
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.WriteWithContext(ctx, path, r, pairs...)
 }
+
+// WriteWithContext will write data into a file.
 func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpWrite, err, path)
@@ -1068,10 +1251,15 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 	return s.write(ctx, path, r, opt)
 }
 
+// WriteIndexSegment will write a part into an index based segment.
+//
+// This function will create a context by default.
 func (s *Storage) WriteIndexSegment(seg segment.Segment, r io.Reader, index int, size int64, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.WriteIndexSegmentWithContext(ctx, seg, r, index, size, pairs...)
 }
+
+// WriteIndexSegmentWithContext will write a part into an index based segment.
 func (s *Storage) WriteIndexSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, index int, size int64, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpWriteIndexSegment, err, seg.Path(), seg.ID())

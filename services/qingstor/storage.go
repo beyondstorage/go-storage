@@ -15,42 +15,6 @@ import (
 	"github.com/Xuanwo/storage/types/info"
 )
 
-// Copy implements Storager.Copy
-func (s *Storage) Copy(src, dst string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpCopy, err, src, dst)
-	}()
-
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
-		XQSCopySource: &rs,
-	})
-	if err != nil {
-		return
-	}
-	return nil
-}
-
-// Move implements Storager.Move
-func (s *Storage) Move(src, dst string, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpMove, err, src, dst)
-	}()
-
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
-		XQSMoveSource: &rs,
-	})
-	if err != nil {
-		return
-	}
-	return nil
-}
-
 // Statistical implements Storager.Statistical
 func (s *Storage) Statistical(pairs ...*types.Pair) (m info.StorageStatistic, err error) {
 	defer func() {
@@ -399,4 +363,30 @@ func (s *Storage) writeIndexSegment(ctx context.Context, seg segment.Segment, r 
 		return
 	}
 	return
+}
+
+func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairStorageCopy) (err error) {
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
+		XQSCopySource: &rs,
+	})
+	if err != nil {
+		return
+	}
+	return nil
+}
+
+func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairStorageMove) (err error) {
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
+		XQSMoveSource: &rs,
+	})
+	if err != nil {
+		return
+	}
+	return nil
 }

@@ -21,7 +21,7 @@ namespace "service" {
   }
 }
 namespace "storage" {
-  implement = ["dir_lister", "index_segmenter", "prefix_lister", "prefix_segments_lister"]
+  implement = ["dir_lister", "index_segmenter", "prefix_lister", "prefix_segments_lister", "segmenter"]
 
   new {
     required = ["location", "name"]

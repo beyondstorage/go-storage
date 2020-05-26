@@ -84,6 +84,43 @@ func parsePairStorageNew(opts []*types.Pair) (*pairStorageNew, error) {
 	return result, nil
 }
 
+// pairStorageCopyMap holds all available pairs
+var pairStorageCopyMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageCopy is the parsed struct
+type pairStorageCopy struct {
+	pairs []*types.Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageCopy will parse *types.Pair slice into *pairStorageCopy
+func parsePairStorageCopy(opts []*types.Pair) (*pairStorageCopy, error) {
+	result := &pairStorageCopy{
+		pairs: opts,
+	}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageCopyMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
 // pairStorageDeleteMap holds all available pairs
 var pairStorageDeleteMap = map[string]struct{}{
 	// Required pairs
@@ -201,6 +238,43 @@ func parsePairStorageMetadata(opts []*types.Pair) (*pairStorageMetadata, error) 
 	values := make(map[string]interface{})
 	for _, v := range opts {
 		if _, ok := pairStorageMetadataMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
+// pairStorageMoveMap holds all available pairs
+var pairStorageMoveMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageMove is the parsed struct
+type pairStorageMove struct {
+	pairs []*types.Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageMove will parse *types.Pair slice into *pairStorageMove
+func parsePairStorageMove(opts []*types.Pair) (*pairStorageMove, error) {
+	result := &pairStorageMove{
+		pairs: opts,
+	}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageMoveMap[v.Key]; !ok {
 			return nil, services.NewPairUnsupportedError(v)
 		}
 		values[v.Key] = v.Value
@@ -368,10 +442,37 @@ func parsePairStorageWrite(opts []*types.Pair) (*pairStorageWrite, error) {
 	return result, nil
 }
 
+// Copy will copy an Object or multiple object in the service.
+//
+// This function will create a context by default.
+func (s *Storage) Copy(src string, dst string, pairs ...*types.Pair) (err error) {
+	ctx := context.Background()
+	return s.CopyWithContext(ctx, src, dst, pairs...)
+}
+
+// CopyWithContext will copy an Object or multiple object in the service.
+func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError(services.OpCopy, err, src, dst)
+	}()
+	var opt *pairStorageCopy
+	opt, err = parsePairStorageCopy(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.copy(ctx, src, dst, opt)
+}
+
+// Delete will delete an Object from service.
+//
+// This function will create a context by default.
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, path, pairs...)
 }
+
+// DeleteWithContext will delete an Object from service.
 func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpDelete, err, path)
@@ -385,10 +486,15 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 	return s.delete(ctx, path, opt)
 }
 
+// ListDir will return list a specific dir.
+//
+// This function will create a context by default.
 func (s *Storage) ListDir(dir string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.ListDirWithContext(ctx, dir, pairs...)
 }
+
+// ListDirWithContext will return list a specific dir.
 func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpListDir, err, dir)
@@ -402,10 +508,15 @@ func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*
 	return s.listDir(ctx, dir, opt)
 }
 
+// Metadata will return current storager's metadata.
+//
+// This function will create a context by default.
 func (s *Storage) Metadata(pairs ...*types.Pair) (meta info.StorageMeta, err error) {
 	ctx := context.Background()
 	return s.MetadataWithContext(ctx, pairs...)
 }
+
+// MetadataWithContext will return current storager's metadata.
 func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (meta info.StorageMeta, err error) {
 	defer func() {
 		err = s.formatError(services.OpMetadata, err)
@@ -419,10 +530,37 @@ func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair)
 	return s.metadata(ctx, opt)
 }
 
+// Move will move an object in the service.
+//
+// This function will create a context by default.
+func (s *Storage) Move(src string, dst string, pairs ...*types.Pair) (err error) {
+	ctx := context.Background()
+	return s.MoveWithContext(ctx, src, dst, pairs...)
+}
+
+// MoveWithContext will move an object in the service.
+func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError(services.OpMove, err, src, dst)
+	}()
+	var opt *pairStorageMove
+	opt, err = parsePairStorageMove(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.move(ctx, src, dst, opt)
+}
+
+// Read will read the file's data.
+//
+// This function will create a context by default.
 func (s *Storage) Read(path string, pairs ...*types.Pair) (rc io.ReadCloser, err error) {
 	ctx := context.Background()
 	return s.ReadWithContext(ctx, path, pairs...)
 }
+
+// ReadWithContext will read the file's data.
 func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (rc io.ReadCloser, err error) {
 	defer func() {
 		err = s.formatError(services.OpRead, err, path)
@@ -436,10 +574,15 @@ func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*ty
 	return s.read(ctx, path, opt)
 }
 
+// Stat will stat a path to get info of an object.
+//
+// This function will create a context by default.
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.StatWithContext(ctx, path, pairs...)
 }
+
+// StatWithContext will stat a path to get info of an object.
 func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err = s.formatError(services.OpStat, err, path)
@@ -453,10 +596,15 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*ty
 	return s.stat(ctx, path, opt)
 }
 
+// Write will write data into a file.
+//
+// This function will create a context by default.
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.WriteWithContext(ctx, path, r, pairs...)
 }
+
+// WriteWithContext will write data into a file.
 func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpWrite, err, path)

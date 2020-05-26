@@ -9,57 +9,9 @@ import (
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
 )
-
-// CompleteSegment implements Storager.CompleteSegment
-func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpCompleteSegment, err, seg.Path(), seg.ID())
-	}()
-
-	parts := seg.(*segment.IndexBasedSegment).Parts()
-	objectParts := make([]*s3.CompletedPart, 0, len(parts))
-	for _, v := range parts {
-		objectParts = append(objectParts, &s3.CompletedPart{
-			PartNumber: aws.Int64(int64(v.Index)),
-		})
-	}
-
-	rp := s.getAbsPath(seg.Path())
-
-	_, err = s.service.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
-		Bucket:          aws.String(s.name),
-		Key:             aws.String(rp),
-		MultipartUpload: &s3.CompletedMultipartUpload{Parts: objectParts},
-		UploadId:        aws.String(seg.ID()),
-	})
-	if err != nil {
-		return
-	}
-	return
-}
-
-// AbortSegment implements Storager.AbortSegment
-func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpAbortSegment, err, seg.Path(), seg.ID())
-	}()
-
-	rp := s.getAbsPath(seg.Path())
-
-	_, err = s.service.AbortMultipartUpload(&s3.AbortMultipartUploadInput{
-		Bucket:   aws.String(s.name),
-		Key:      aws.String(rp),
-		UploadId: aws.String(seg.ID()),
-	})
-	if err != nil {
-		return
-	}
-	return
-}
 
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
@@ -316,6 +268,42 @@ func (s *Storage) writeIndexSegment(ctx context.Context, seg segment.Segment, r 
 		Key:           aws.String(rp),
 		PartNumber:    aws.Int64(int64(p.Index)),
 		UploadId:      aws.String(seg.ID()),
+	})
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (s *Storage) abortSegment(ctx context.Context, seg segment.Segment, opt *pairStorageAbortSegment) (err error) {
+	parts := seg.(*segment.IndexBasedSegment).Parts()
+	objectParts := make([]*s3.CompletedPart, 0, len(parts))
+	for _, v := range parts {
+		objectParts = append(objectParts, &s3.CompletedPart{
+			PartNumber: aws.Int64(int64(v.Index)),
+		})
+	}
+
+	rp := s.getAbsPath(seg.Path())
+
+	_, err = s.service.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
+		Bucket:          aws.String(s.name),
+		Key:             aws.String(rp),
+		MultipartUpload: &s3.CompletedMultipartUpload{Parts: objectParts},
+		UploadId:        aws.String(seg.ID()),
+	})
+	if err != nil {
+		return
+	}
+	return
+}
+func (s *Storage) completeSegment(ctx context.Context, seg segment.Segment, opt *pairStorageCompleteSegment) (err error) {
+	rp := s.getAbsPath(seg.Path())
+
+	_, err = s.service.AbortMultipartUpload(&s3.AbortMultipartUploadInput{
+		Bucket:   aws.String(s.name),
+		Key:      aws.String(rp),
+		UploadId: aws.String(seg.ID()),
 	})
 	if err != nil {
 		return

@@ -1,7 +1,7 @@
 name = "fs"
 
 namespace "storage" {
-  implement = ["dir_lister"]
+  implement = ["copier", "dir_lister", "mover"]
 
   new {
     optional = ["work_dir"]

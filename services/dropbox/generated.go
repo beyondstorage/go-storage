@@ -369,10 +369,15 @@ func parsePairStorageWrite(opts []*types.Pair) (*pairStorageWrite, error) {
 	return result, nil
 }
 
+// Delete will delete an Object from service.
+//
+// This function will create a context by default.
 func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, path, pairs...)
 }
+
+// DeleteWithContext will delete an Object from service.
 func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpDelete, err, path)
@@ -386,10 +391,15 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 	return s.delete(ctx, path, opt)
 }
 
+// ListDir will return list a specific dir.
+//
+// This function will create a context by default.
 func (s *Storage) ListDir(dir string, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.ListDirWithContext(ctx, dir, pairs...)
 }
+
+// ListDirWithContext will return list a specific dir.
 func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpListDir, err, dir)
@@ -403,10 +413,15 @@ func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*
 	return s.listDir(ctx, dir, opt)
 }
 
+// Metadata will return current storager's metadata.
+//
+// This function will create a context by default.
 func (s *Storage) Metadata(pairs ...*types.Pair) (meta info.StorageMeta, err error) {
 	ctx := context.Background()
 	return s.MetadataWithContext(ctx, pairs...)
 }
+
+// MetadataWithContext will return current storager's metadata.
 func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (meta info.StorageMeta, err error) {
 	defer func() {
 		err = s.formatError(services.OpMetadata, err)
@@ -420,10 +435,15 @@ func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair)
 	return s.metadata(ctx, opt)
 }
 
+// Read will read the file's data.
+//
+// This function will create a context by default.
 func (s *Storage) Read(path string, pairs ...*types.Pair) (rc io.ReadCloser, err error) {
 	ctx := context.Background()
 	return s.ReadWithContext(ctx, path, pairs...)
 }
+
+// ReadWithContext will read the file's data.
 func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (rc io.ReadCloser, err error) {
 	defer func() {
 		err = s.formatError(services.OpRead, err, path)
@@ -437,10 +457,15 @@ func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*ty
 	return s.read(ctx, path, opt)
 }
 
+// Stat will stat a path to get info of an object.
+//
+// This function will create a context by default.
 func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.StatWithContext(ctx, path, pairs...)
 }
+
+// StatWithContext will stat a path to get info of an object.
 func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err = s.formatError(services.OpStat, err, path)
@@ -454,10 +479,15 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*ty
 	return s.stat(ctx, path, opt)
 }
 
+// Write will write data into a file.
+//
+// This function will create a context by default.
 func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	ctx := context.Background()
 	return s.WriteWithContext(ctx, path, r, pairs...)
 }
+
+// WriteWithContext will write data into a file.
 func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*types.Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpWrite, err, path)

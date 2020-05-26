@@ -228,10 +228,15 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
 
     {{ $fnk := $fn.Name | toPascal }}
 
+    // {{ $fnk }} {{ $fn.Description }}
+    //
+    // This function will create a context by default.
     func (s *{{$pn}}) {{ $fnk }}({{$fn.Params.String}}) ({{$fn.Results.String}}) {
         ctx := context.Background()
         return s.{{ $fnk }}WithContext(ctx, {{$fn.Params.Caller}})
     }
+
+    // {{ $fnk }}WithContext {{ $fn.Description }}
     func (s *{{$pn}}) {{ $fnk }}WithContext(ctx context.Context, {{$fn.Params.String}}) ({{$fn.Results.String}}) {
         defer func(){
             {{- $path := $fn.Params.PathCaller }}
