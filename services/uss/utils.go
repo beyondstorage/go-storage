@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Xuanwo/storage/types/info"
 	"github.com/upyun/go-sdk/upyun"
 
 	"github.com/Xuanwo/storage"
@@ -13,6 +14,20 @@ import (
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
+
+// Storage is the uss service.
+type Storage struct {
+	bucket *upyun.UpYun
+
+	name    string
+	workDir string
+}
+
+// String implements Storager.String
+func (s *Storage) String() string {
+	return fmt.Sprintf("Storager uss {Name: %s, WorkDir: %s}",
+		s.name, s.workDir)
+}
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
@@ -28,7 +43,7 @@ func newStorager(pairs ...*types.Pair) (store *Storage, err error) {
 
 	store = &Storage{}
 
-	opt, err := parseStoragePairNew(pairs...)
+	opt, err := parsePairStorageNew(pairs)
 	if err != nil {
 		return
 	}
@@ -80,4 +95,49 @@ func formatError(err error) error {
 	default:
 		return err
 	}
+}
+
+// getAbsPath will calculate object storage's abs path
+func (s *Storage) getAbsPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return prefix + path
+}
+
+// getRelPath will get object storage's rel path.
+func (s *Storage) getRelPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return strings.TrimPrefix(path, prefix)
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      formatError(err),
+		Storager: s,
+		Path:     path,
+	}
+}
+
+func (s *Storage) formatFileObject(v *upyun.FileInfo) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Name,
+		Name:       s.getRelPath(v.Name),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Size,
+		UpdatedAt:  v.Time,
+		ObjectMeta: info.NewObjectMeta(),
+	}
+
+	if v.ETag != "" {
+		o.SetETag(v.ETag)
+	}
+	if v.ContentType != "" {
+		o.SetContentType(v.ContentType)
+	}
+
+	return o, nil
 }

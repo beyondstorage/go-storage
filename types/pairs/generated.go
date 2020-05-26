@@ -14,49 +14,49 @@ import (
 
 // All available pairs.
 const (
-	// Checksum will specify checksum for this request, could be used as content md5 or etag
+	// Checksum will // Checksum specify checksum for this request, could be used as content md5 or etag
 	Checksum = "checksum"
-	// Context will context in all request
+	// Context will // Context context in all request
 	Context = "context"
-	// Credential will specify how to provide credential for service or storage
+	// Credential will // Credential specify how to provide credential for service or storage
 	Credential = "credential"
-	// DirFunc will specify what todo with a dir object
+	// DirFunc will // DirFunc specify what todo with a dir object
 	DirFunc = "dir_func"
-	// Endpoint will specify how to provide endpoint for service or storage
+	// Endpoint will // Endpoint specify how to provide endpoint for service or storage
 	Endpoint = "endpoint"
-	// Expire will specify when the url returned by reach will expire
+	// Expire will // Expire specify when the url returned by reach will expire
 	Expire = "expire"
-	// FileFunc will specify what todo with a file object
+	// FileFunc will // FileFunc specify what todo with a file object
 	FileFunc = "file_func"
-	// HTTPClientOptions will sepcify the options for the http client
+	// HTTPClientOptions will // HTTPClientOptions sepcify the options for the http client
 	HTTPClientOptions = "http_client_options"
-	// Index will specify the index of this segment
+	// Index will // Index specify the index of this segment
 	Index = "index"
-	// Location will specify the location for service or storage
+	// Location will // Location specify the location for service or storage
 	Location = "location"
-	// Name will specify the storage name
+	// Name will // Name specify the storage name
 	Name = "name"
-	// ObjectFunc will specify what todo with an object
+	// ObjectFunc will // ObjectFunc specify what todo with an object
 	ObjectFunc = "object_func"
-	// Offset will specify offset for this request, storage will seek to this offset before read
+	// Offset will // Offset specify offset for this request, storage will seek to this offset before read
 	Offset = "offset"
-	// Project will specify project name/id for this service or storage
+	// Project will // Project specify project name/id for this service or storage
 	Project = "project"
-	// ReadCallbackFunc will specify what todo every time we read data from source
+	// ReadCallbackFunc will // ReadCallbackFunc specify what todo every time we read data from source
 	ReadCallbackFunc = "read_callback_func"
-	// SegmentFunc will specify what todo with a segment
+	// SegmentFunc will // SegmentFunc specify what todo with a segment
 	SegmentFunc = "segment_func"
-	// Size will specify size for this request, storage will only read limited content data
+	// Size will // Size specify size for this request, storage will only read limited content data
 	Size = "size"
-	// StoragerFunc will specify what todo with a storager
+	// StoragerFunc will // StoragerFunc specify what todo with a storager
 	StoragerFunc = "storager_func"
-	// WorkDir will specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
-	// For fs storage service on windows platform, the behavior is undefined.
+	// WorkDir will // WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
+	//  For fs storage service on windows platform, the behavior is undefined.
 	WorkDir = "work_dir"
 )
 
 // WithChecksum will apply checksum value to Options
-// This pair is used to specify checksum for this request, could be used as content md5 or etag
+// This pair is used to // Checksum specify checksum for this request, could be used as content md5 or etag
 func WithChecksum(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Checksum,
@@ -65,7 +65,7 @@ func WithChecksum(v string) *types.Pair {
 }
 
 // WithContext will apply context value to Options
-// This pair is used to context in all request
+// This pair is used to // Context context in all request
 func WithContext(v context.Context) *types.Pair {
 	return &types.Pair{
 		Key:   Context,
@@ -74,7 +74,7 @@ func WithContext(v context.Context) *types.Pair {
 }
 
 // WithCredential will apply credential value to Options
-// This pair is used to specify how to provide credential for service or storage
+// This pair is used to // Credential specify how to provide credential for service or storage
 func WithCredential(v *credential.Provider) *types.Pair {
 	return &types.Pair{
 		Key:   Credential,
@@ -83,7 +83,7 @@ func WithCredential(v *credential.Provider) *types.Pair {
 }
 
 // WithDirFunc will apply dir_func value to Options
-// This pair is used to specify what todo with a dir object
+// This pair is used to // DirFunc specify what todo with a dir object
 func WithDirFunc(v types.ObjectFunc) *types.Pair {
 	return &types.Pair{
 		Key:   DirFunc,
@@ -92,7 +92,7 @@ func WithDirFunc(v types.ObjectFunc) *types.Pair {
 }
 
 // WithEndpoint will apply endpoint value to Options
-// This pair is used to specify how to provide endpoint for service or storage
+// This pair is used to // Endpoint specify how to provide endpoint for service or storage
 func WithEndpoint(v endpoint.Provider) *types.Pair {
 	return &types.Pair{
 		Key:   Endpoint,
@@ -101,7 +101,7 @@ func WithEndpoint(v endpoint.Provider) *types.Pair {
 }
 
 // WithExpire will apply expire value to Options
-// This pair is used to specify when the url returned by reach will expire
+// This pair is used to // Expire specify when the url returned by reach will expire
 func WithExpire(v int) *types.Pair {
 	return &types.Pair{
 		Key:   Expire,
@@ -110,7 +110,7 @@ func WithExpire(v int) *types.Pair {
 }
 
 // WithFileFunc will apply file_func value to Options
-// This pair is used to specify what todo with a file object
+// This pair is used to // FileFunc specify what todo with a file object
 func WithFileFunc(v types.ObjectFunc) *types.Pair {
 	return &types.Pair{
 		Key:   FileFunc,
@@ -119,7 +119,7 @@ func WithFileFunc(v types.ObjectFunc) *types.Pair {
 }
 
 // WithHTTPClientOptions will apply http_client_options value to Options
-// This pair is used to sepcify the options for the http client
+// This pair is used to // HTTPClientOptions sepcify the options for the http client
 func WithHTTPClientOptions(v *httpclient.Options) *types.Pair {
 	return &types.Pair{
 		Key:   HTTPClientOptions,
@@ -128,7 +128,7 @@ func WithHTTPClientOptions(v *httpclient.Options) *types.Pair {
 }
 
 // WithIndex will apply index value to Options
-// This pair is used to specify the index of this segment
+// This pair is used to // Index specify the index of this segment
 func WithIndex(v int) *types.Pair {
 	return &types.Pair{
 		Key:   Index,
@@ -137,7 +137,7 @@ func WithIndex(v int) *types.Pair {
 }
 
 // WithLocation will apply location value to Options
-// This pair is used to specify the location for service or storage
+// This pair is used to // Location specify the location for service or storage
 func WithLocation(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Location,
@@ -146,7 +146,7 @@ func WithLocation(v string) *types.Pair {
 }
 
 // WithName will apply name value to Options
-// This pair is used to specify the storage name
+// This pair is used to // Name specify the storage name
 func WithName(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Name,
@@ -155,7 +155,7 @@ func WithName(v string) *types.Pair {
 }
 
 // WithObjectFunc will apply object_func value to Options
-// This pair is used to specify what todo with an object
+// This pair is used to // ObjectFunc specify what todo with an object
 func WithObjectFunc(v types.ObjectFunc) *types.Pair {
 	return &types.Pair{
 		Key:   ObjectFunc,
@@ -164,7 +164,7 @@ func WithObjectFunc(v types.ObjectFunc) *types.Pair {
 }
 
 // WithOffset will apply offset value to Options
-// This pair is used to specify offset for this request, storage will seek to this offset before read
+// This pair is used to // Offset specify offset for this request, storage will seek to this offset before read
 func WithOffset(v int64) *types.Pair {
 	return &types.Pair{
 		Key:   Offset,
@@ -173,7 +173,7 @@ func WithOffset(v int64) *types.Pair {
 }
 
 // WithProject will apply project value to Options
-// This pair is used to specify project name/id for this service or storage
+// This pair is used to // Project specify project name/id for this service or storage
 func WithProject(v string) *types.Pair {
 	return &types.Pair{
 		Key:   Project,
@@ -182,7 +182,7 @@ func WithProject(v string) *types.Pair {
 }
 
 // WithReadCallbackFunc will apply read_callback_func value to Options
-// This pair is used to specify what todo every time we read data from source
+// This pair is used to // ReadCallbackFunc specify what todo every time we read data from source
 func WithReadCallbackFunc(v func([]byte)) *types.Pair {
 	return &types.Pair{
 		Key:   ReadCallbackFunc,
@@ -191,7 +191,7 @@ func WithReadCallbackFunc(v func([]byte)) *types.Pair {
 }
 
 // WithSegmentFunc will apply segment_func value to Options
-// This pair is used to specify what todo with a segment
+// This pair is used to // SegmentFunc specify what todo with a segment
 func WithSegmentFunc(v segment.Func) *types.Pair {
 	return &types.Pair{
 		Key:   SegmentFunc,
@@ -200,7 +200,7 @@ func WithSegmentFunc(v segment.Func) *types.Pair {
 }
 
 // WithSize will apply size value to Options
-// This pair is used to specify size for this request, storage will only read limited content data
+// This pair is used to // Size specify size for this request, storage will only read limited content data
 func WithSize(v int64) *types.Pair {
 	return &types.Pair{
 		Key:   Size,
@@ -209,7 +209,7 @@ func WithSize(v int64) *types.Pair {
 }
 
 // WithStoragerFunc will apply storager_func value to Options
-// This pair is used to specify what todo with a storager
+// This pair is used to // StoragerFunc specify what todo with a storager
 func WithStoragerFunc(v storage.StoragerFunc) *types.Pair {
 	return &types.Pair{
 		Key:   StoragerFunc,
@@ -218,8 +218,8 @@ func WithStoragerFunc(v storage.StoragerFunc) *types.Pair {
 }
 
 // WithWorkDir will apply work_dir value to Options
-// This pair is used to specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
-// For fs storage service on windows platform, the behavior is undefined.
+// This pair is used to // WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
+//  For fs storage service on windows platform, the behavior is undefined.
 func WithWorkDir(v string) *types.Pair {
 	return &types.Pair{
 		Key:   WorkDir,

@@ -1,12 +1,14 @@
 name = "fs"
 
-storage {
+namespace "storage" {
+  implement = ["copier", "dir_lister", "mover"]
+
+  new {
+    optional = ["work_dir"]
+  }
 
   op "list_dir" {
     optional = ["dir_func", "file_func"]
-  }
-  op "new" {
-    optional = ["work_dir"]
   }
   op "read" {
     optional = ["offset", "size"]

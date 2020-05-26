@@ -7,7 +7,7 @@ Goals
 
 - High performance: more code generation, less runtime reflect.
 
-- Vendor lock free: more generic abstraction, less internal details.
+- Vendor agnostic: more generic abstraction, less internal details.
 
 Details
 

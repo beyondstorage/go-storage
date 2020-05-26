@@ -1,13 +1,16 @@
 package gcs
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	gs "cloud.google.com/go/storage"
+	"github.com/Xuanwo/storage/types/info"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
@@ -21,6 +24,33 @@ import (
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
+
+// Service is the gcs config.
+type Service struct {
+	service   *gs.Client
+	projectID string
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer gcs")
+}
+
+// Storage is the gcs service client.
+type Storage struct {
+	bucket *gs.BucketHandle
+
+	name    string
+	workDir string
+}
+
+// String implements Storager.String
+func (s *Storage) String() string {
+	return fmt.Sprintf(
+		"Storager gcs {Name: %s, WorkDir: %s}",
+		s.name, s.workDir,
+	)
+}
 
 // New will create both Servicer and Storager.
 func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
@@ -45,9 +75,10 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		}
 	}()
 
+	ctx := context.Background()
 	srv = &Service{}
 
-	opt, err := parseServicePairNew(pairs...)
+	opt, err := parsePairServiceNew(pairs)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +104,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	}
 
 	// Loading token source from binary data.
-	creds, err := google.CredentialsFromJSON(opt.Context, credJSON, gs.ScopeFullControl)
+	creds, err := google.CredentialsFromJSON(ctx, credJSON, gs.ScopeFullControl)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +114,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 	}
 	hc.Transport = ot
 
-	client, err := gs.NewClient(opt.Context, option.WithHTTPClient(hc))
+	client, err := gs.NewClient(ctx, option.WithHTTPClient(hc))
 	if err != nil {
 		return nil, err
 	}
@@ -142,4 +173,90 @@ func formatError(err error) error {
 	default:
 		return err
 	}
+}
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
+	opt, err := parsePairStorageNew(pairs)
+	if err != nil {
+		return nil, err
+	}
+
+	bucket := s.service.Bucket(opt.Name)
+
+	store := &Storage{
+		bucket: bucket,
+		name:   opt.Name,
+
+		workDir: "/",
+	}
+
+	if opt.HasWorkDir {
+		store.workDir = opt.WorkDir
+	}
+	return store, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      formatError(err),
+		Servicer: s,
+		Name:     name,
+	}
+}
+
+// getAbsPath will calculate object storage's abs path
+func (s *Storage) getAbsPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return prefix + path
+}
+
+// getRelPath will get object storage's rel path.
+func (s *Storage) getRelPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return strings.TrimPrefix(path, prefix)
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      formatError(err),
+		Storager: s,
+		Path:     path,
+	}
+}
+
+func (s *Storage) formatFileObject(v *gs.ObjectAttrs) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Name,
+		Name:       s.getRelPath(v.Name),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Size,
+		UpdatedAt:  v.Updated,
+		ObjectMeta: info.NewObjectMeta(),
+	}
+
+	if v.ContentType != "" {
+		o.SetContentType(v.ContentType)
+	}
+	if v.Etag != "" {
+		o.SetETag(v.Etag)
+	}
+	if len(v.MD5) > 0 {
+		o.SetContentMD5(base64.StdEncoding.EncodeToString(v.MD5))
+	}
+	if value := v.StorageClass; value != "" {
+		setStorageClass(o.ObjectMeta, value)
+	}
+
+	return
 }

@@ -25,6 +25,7 @@ module.exports = {
     themeConfig: {
         nav: [
             {text: 'Services', link: '/services/'},
+            {text: 'Operations', link: '/operations/'},
             {text: 'Design', link: '/design/'},
             {text: 'Spec', link: '/spec/'}
         ],
@@ -46,6 +47,7 @@ module.exports = {
                 },
                 nav: [
                     {text: 'Services', link: '/services/', ariaLabel: 'Services'},
+                    {text: 'Operations', link: '/operations/', ariaLabel: 'Operations'},
                     {text: 'Design', link: '/design/', ariaLabel: 'Design'},
                     {text: 'Spec', link: '/spec/', ariaLabel: 'Spec'}
                 ]
@@ -63,6 +65,7 @@ module.exports = {
                 },
                 nav: [
                     {text: '服务', link: '/zh-CN/services/'},
+                    {text: '操作', link: '/zh-CN//operations/'},
                     {text: '设计', link: '/zh-CN/design/'},
                     {text: '规范', link: '/zh-CN/spec/'}
                 ]

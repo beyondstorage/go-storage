@@ -3,10 +3,15 @@ package qingstor
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
-	"github.com/qingstor/qingstor-sdk-go/v4/config"
+	"github.com/Xuanwo/storage/pkg/headers"
+	"github.com/Xuanwo/storage/types/info"
+	qsconfig "github.com/qingstor/qingstor-sdk-go/v4/config"
+	iface "github.com/qingstor/qingstor-sdk-go/v4/interface"
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
@@ -17,6 +22,41 @@ import (
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
+
+// Service is the qingstor service config.
+type Service struct {
+	config  *qsconfig.Config
+	service iface.Service
+
+	client *http.Client
+}
+
+// String implements Service.String
+func (s *Service) String() string {
+	if s.config == nil {
+		return fmt.Sprintf("Servicer qingstor")
+	}
+	return fmt.Sprintf("Servicer qingstor {AccessKey: %s}", s.config.AccessKeyID)
+}
+
+// Storage is the qingstor object storage client.
+type Storage struct {
+	bucket     iface.Bucket
+	config     *qsconfig.Config
+	properties *service.Properties
+
+	// options for this storager.
+	workDir string // workDir dir for all operation.
+}
+
+// String implements Storager.String
+func (s *Storage) String() string {
+	// qingstor work dir should start and end with "/"
+	return fmt.Sprintf(
+		"Storager qingstor {Name: %s, Location: %s, WorkDir: %s}",
+		*s.properties.BucketName, *s.properties.Zone, s.workDir,
+	)
+}
 
 // New will create both Servicer and Storager.
 func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
@@ -41,7 +81,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		}
 	}()
 
-	opt, err := parseServicePairNew(pairs...)
+	opt, err := parsePairServiceNew(pairs)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +95,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
-	cfg, err := config.New(cred[0], cred[1])
+	cfg, err := qsconfig.New(cred[0], cred[1])
 	if err != nil {
 		return nil, err
 	}
@@ -143,3 +183,145 @@ const (
 	StorageClassStandard   = "STANDARD"
 	StorageClassStandardIA = "STANDARD_IA"
 )
+
+func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
+	opt, err := parsePairStorageNew(pairs)
+	if err != nil {
+		return
+	}
+
+	// WorkDir should be an abs path, start and ends with "/"
+	if opt.HasWorkDir && !isWorkDirValid(opt.WorkDir) {
+		err = ErrInvalidWorkDir
+		return
+	}
+	// set work dir into root path if no work dir passed
+	if !opt.HasWorkDir {
+		opt.WorkDir = "/"
+	}
+
+	if !IsBucketNameValid(opt.Name) {
+		err = ErrInvalidBucketName
+		return
+	}
+
+	// Detect location automatically
+	if !opt.HasLocation {
+		opt.Location, err = s.detectLocation(opt.Name)
+		if err != nil {
+			return
+		}
+	}
+
+	bucket, err := s.service.Bucket(opt.Name, opt.Location)
+	if err != nil {
+		return
+	}
+
+	st := &Storage{
+		bucket:     bucket,
+		config:     bucket.Config,
+		properties: bucket.Properties,
+
+		workDir: "/",
+	}
+
+	if opt.HasWorkDir {
+		st.workDir = opt.WorkDir
+	}
+	if opt.HasDisableURICleaning {
+		st.config.DisableURICleaning = opt.DisableURICleaning
+	}
+	return st, nil
+}
+
+func (s *Service) detectLocation(name string) (location string, err error) {
+	defer func() {
+		err = s.formatError("detect_location", err, "")
+	}()
+
+	url := fmt.Sprintf("%s://%s.%s:%d", s.config.Protocol, name, s.config.Host, s.config.Port)
+
+	r, err := s.client.Head(url)
+	if err != nil {
+		return
+	}
+	if r.StatusCode != http.StatusTemporaryRedirect {
+		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusTemporaryRedirect)
+		return
+	}
+
+	// Example URL: https://bucket.zone.qingstor.com
+	location = strings.Split(r.Header.Get(headers.Location), ".")[1]
+	return
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      formatError(err),
+		Servicer: s,
+		Name:     name,
+	}
+}
+
+// isWorkDirValid check qingstor work dir
+// work dir must start with only one "/" (abs path), and end with only one "/" (a dir).
+// If work dir is the root path, set it to "/".
+func isWorkDirValid(wd string) bool {
+	return strings.HasPrefix(wd, "/") && // must start with "/"
+		strings.HasSuffix(wd, "/") && // must end with "/"
+		!strings.HasPrefix(wd, "//") && // not start with more than one "/"
+		!strings.HasSuffix(wd, "//") // not end with more than one "/"
+}
+
+// getAbsPath will calculate object storage's abs path
+func (s *Storage) getAbsPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return prefix + path
+}
+
+// getRelPath will get object storage's rel path.
+func (s *Storage) getRelPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return strings.TrimPrefix(path, prefix)
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      formatError(err),
+		Storager: s,
+		Path:     path,
+	}
+}
+
+func (s *Storage) formatFileObject(v *service.KeyType) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         *v.Key,
+		Name:       s.getRelPath(*v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       service.Int64Value(v.Size),
+		UpdatedAt:  convertUnixTimestampToTime(service.IntValue(v.Modified)),
+		ObjectMeta: info.NewObjectMeta(),
+	}
+
+	if v.MimeType != nil {
+		o.SetContentType(service.StringValue(v.MimeType))
+	}
+	if value := service.StringValue(v.StorageClass); value != "" {
+		setStorageClass(o.ObjectMeta, value)
+	}
+	if v.Etag != nil {
+		o.SetETag(service.StringValue(v.Etag))
+	}
+	return o, nil
+}

@@ -1,6 +1,10 @@
 name = "cos"
 
-service {
+namespace "service" {
+
+  new {
+    required = ["credential"]
+  }
 
   op "create" {
     required = ["location"]
@@ -14,22 +18,20 @@ service {
   op "list" {
     required = ["storager_func"]
   }
-  op "new" {
-    required = ["credential"]
-  }
 }
+namespace "storage" {
+  implement = ["dir_lister", "prefix_lister"]
 
-storage {
+  new {
+    required = ["location", "name"]
+    optional = ["work_dir"]
+  }
 
   op "list_dir" {
     optional = ["dir_func", "file_func"]
   }
   op "list_prefix" {
     required = ["object_func"]
-  }
-  op "new" {
-    required = ["location", "name"]
-    optional = ["work_dir"]
   }
   op "write" {
     required = ["size"]

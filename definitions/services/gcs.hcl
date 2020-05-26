@@ -1,26 +1,28 @@
 name = "gcs"
 
-service {
+namespace "service" {
+
+  new {
+    required = ["credential", "project"]
+  }
 
   op "list" {
     required = ["storager_func"]
   }
-  op "new" {
-    required = ["credential", "project"]
-  }
 }
+namespace "storage" {
+  implement = ["dir_lister", "prefix_lister"]
 
-storage {
+  new {
+    required = ["name"]
+    optional = ["work_dir"]
+  }
 
   op "list_dir" {
     optional = ["dir_func", "file_func"]
   }
   op "list_prefix" {
     required = ["object_func"]
-  }
-  op "new" {
-    required = ["name"]
-    optional = ["work_dir"]
   }
   op "write" {
     required = ["size"]

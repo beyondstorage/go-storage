@@ -1,13 +1,15 @@
 name = "dropbox"
 
-storage {
+namespace "storage" {
+  implement = ["dir_lister"]
+
+  new {
+    required = ["credential"]
+    optional = ["work_dir"]
+  }
 
   op "list_dir" {
     optional = ["dir_func", "file_func"]
-  }
-  op "new" {
-    required = ["credential"]
-    optional = ["work_dir"]
   }
   op "read" {
     optional = ["size"]

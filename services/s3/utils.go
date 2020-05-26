@@ -2,7 +2,9 @@ package s3
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/Xuanwo/storage/types/info"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -17,6 +19,33 @@ import (
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
+
+// Service is the s3 service config.
+type Service struct {
+	sess    *session.Session
+	service *s3.S3
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer s3")
+}
+
+// Storage is the s3 object storage service.
+type Storage struct {
+	service *s3.S3
+
+	name    string
+	workDir string
+}
+
+// String implements Storager.String
+func (s *Storage) String() string {
+	return fmt.Sprintf(
+		"Storager s3 {Name: %s, WorkDir: %s}",
+		s.name, s.workDir,
+	)
+}
 
 // New will create both Servicer and Storager.
 func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
@@ -41,7 +70,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		}
 	}()
 
-	opt, err := parseServicePairNew(pairs...)
+	opt, err := parsePairServiceNew(pairs)
 	if err != nil {
 		return nil, err
 	}
@@ -132,5 +161,83 @@ func newS3Service(sess *session.Session, cfgs ...*aws.Config) (srv *s3.S3) {
 		// With UnsignedPayload set to true, signer will set "X-Amz-Content-Sha256" to "UNSIGNED-PAYLOAD"
 		s.UnsignedPayload = true
 	}))
+	return
+}
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (st *Storage, err error) {
+	opt, err := parsePairStorageNew(pairs)
+	if err != nil {
+		return nil, err
+	}
+
+	st = &Storage{
+		service: newS3Service(s.sess, aws.NewConfig().WithRegion(opt.Location)),
+
+		name:    opt.Name,
+		workDir: "/",
+	}
+
+	if opt.HasWorkDir {
+		st.workDir = opt.WorkDir
+	}
+	return st, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      formatError(err),
+		Servicer: s,
+		Name:     name,
+	}
+}
+
+// getAbsPath will calculate object storage's abs path
+func (s *Storage) getAbsPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return prefix + path
+}
+
+// getRelPath will get object storage's rel path.
+func (s *Storage) getRelPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return strings.TrimPrefix(path, prefix)
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      formatError(err),
+		Storager: s,
+		Path:     path,
+	}
+}
+
+func (s *Storage) formatFileObject(v *s3.Object) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         *v.Key,
+		Name:       s.getRelPath(*v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       aws.Int64Value(v.Size),
+		UpdatedAt:  aws.TimeValue(v.LastModified),
+		ObjectMeta: info.NewObjectMeta(),
+	}
+
+	if value := aws.StringValue(v.StorageClass); value != "" {
+		setStorageClass(o.ObjectMeta, value)
+	}
+	if v.ETag != nil {
+		o.SetETag(*v.ETag)
+	}
+
 	return
 }

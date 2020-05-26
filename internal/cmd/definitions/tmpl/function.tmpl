@@ -1,0 +1,4 @@
+{{- $fnk := $.Func.Name | toCamel }}
+func (s *{{ $.Namespace | toPascal }}) {{$fnk}}(ctx context.Context, {{$.Func.Params.TrimLast.StringEndswithComma}} opt *pair{{ $.Namespace }}{{ $fnk | toPascal }})({{$.Func.Results.String}}) {
+    panic("implement it")
+}

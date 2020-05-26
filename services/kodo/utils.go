@@ -3,8 +3,10 @@ package kodo
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/Xuanwo/storage/types/info"
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	qc "github.com/qiniu/api.v7/v7/client"
 	qs "github.com/qiniu/api.v7/v7/storage"
@@ -16,6 +18,34 @@ import (
 	"github.com/Xuanwo/storage/types"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
+
+// Service is the kodo config.
+type Service struct {
+	service *qs.BucketManager
+}
+
+// String implements Service.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer kodo")
+}
+
+// Storage is the gcs service client.
+type Storage struct {
+	bucket    *qs.BucketManager
+	domain    string
+	putPolicy qs.PutPolicy // kodo need PutPolicy to generate upload token.
+
+	name    string
+	workDir string
+}
+
+// String implements Storager.String
+func (s *Storage) String() string {
+	return fmt.Sprintf(
+		"Storager kodo {Name: %s, WorkDir: %s}",
+		s.name, s.workDir,
+	)
+}
 
 // New will create both Servicer and Storager.
 func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
@@ -42,7 +72,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 
 	srv = &Service{}
 
-	opt, err := parseServicePairNew(pairs...)
+	opt, err := parsePairServiceNew(pairs)
 	if err != nil {
 		return nil, err
 	}
@@ -113,4 +143,87 @@ func formatError(err error) error {
 	default:
 		return err
 	}
+}
+
+// newStorage will create a new client.
+func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
+	opt, err := parsePairStorageNew(pairs)
+	if err != nil {
+		return nil, err
+	}
+
+	store = &Storage{
+		bucket: s.service,
+		domain: opt.Endpoint.Value().String(),
+		putPolicy: qs.PutPolicy{
+			Scope: opt.Name,
+		},
+
+		name:    opt.Name,
+		workDir: "/",
+	}
+
+	if opt.HasWorkDir {
+		store.workDir = opt.WorkDir
+	}
+	return store, nil
+}
+
+func (s *Service) formatError(op string, err error, name string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.ServiceError{
+		Op:       op,
+		Err:      formatError(err),
+		Servicer: s,
+		Name:     name,
+	}
+}
+
+// getAbsPath will calculate object storage's abs path
+func (s *Storage) getAbsPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return prefix + path
+}
+
+// getRelPath will get object storage's rel path.
+func (s *Storage) getRelPath(path string) string {
+	prefix := strings.TrimPrefix(s.workDir, "/")
+	return strings.TrimPrefix(path, prefix)
+}
+
+func (s *Storage) formatError(op string, err error, path ...string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &services.StorageError{
+		Op:       op,
+		Err:      formatError(err),
+		Storager: s,
+		Path:     path,
+	}
+}
+
+func (s *Storage) formatFileObject(v qs.ListItem) (o *types.Object, err error) {
+	o = &types.Object{
+		ID:         v.Key,
+		Name:       s.getRelPath(v.Key),
+		Type:       types.ObjectTypeFile,
+		Size:       v.Fsize,
+		UpdatedAt:  convertUnixTimestampToTime(v.PutTime),
+		ObjectMeta: info.NewObjectMeta(),
+	}
+
+	if v.MimeType != "" {
+		o.SetContentType(v.MimeType)
+	}
+	if v.Hash != "" {
+		o.SetETag(v.Hash)
+	}
+
+	setStorageClass(o.ObjectMeta, v.Type)
+	return
 }
