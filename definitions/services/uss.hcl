@@ -1,7 +1,7 @@
 name = "uss"
 
 namespace "storage" {
-  implement = ["prefix_lister", "dir_lister"]
+  implement = ["dir_lister", "prefix_lister"]
 
   new {
     required = ["credential", "name"]

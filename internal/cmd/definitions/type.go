@@ -499,6 +499,14 @@ func (d *Data) FormatService(s *ServiceSpec) *Service {
 
 // Sort will sort the data.
 func (d *Data) Sort() {
+	// Sort all specs.
+	d.pairSpec.Sort()
+	d.infoSpec.Sort()
+	d.operationsSpec.Sort()
+	for _, v := range d.serviceSpec {
+		v.Sort()
+	}
+
 	for _, v := range d.Services {
 		v.Sort()
 	}
@@ -549,16 +557,6 @@ func mergeInfos(a, b []*Info) []*Info {
 	}
 
 	return fn(a, b)
-}
-
-func compareInfo(x, y *Info) bool {
-	if x.Scope != y.Scope {
-		return x.Scope < y.Scope
-	}
-	if x.Category != y.Category {
-		return x.Category < y.Category
-	}
-	return x.Name < y.Name
 }
 
 func formatDescription(name, desc string) string {
