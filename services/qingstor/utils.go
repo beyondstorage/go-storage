@@ -8,8 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Xuanwo/storage/pkg/headers"
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/qingstor/qingstor-sdk-go/v4/config"
 	iface "github.com/qingstor/qingstor-sdk-go/v4/interface"
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
@@ -17,9 +16,11 @@ import (
 
 	"github.com/Xuanwo/storage"
 	"github.com/Xuanwo/storage/pkg/credential"
+	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/pkg/httpclient"
 	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
+	"github.com/Xuanwo/storage/types/info"
 	ps "github.com/Xuanwo/storage/types/pairs"
 )
 
@@ -324,4 +325,8 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *types.Object, err err
 		o.SetETag(service.StringValue(v.Etag))
 	}
 	return o, nil
+}
+
+func isObjectDirectory(o *service.KeyType) bool {
+	return convert.StringValue(o.MimeType) == "application/x-directory"
 }

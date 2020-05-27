@@ -6,7 +6,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/pengsrc/go-shared/convert"
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
+	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Xuanwo/storage/pkg/credential"
@@ -172,5 +174,34 @@ func TestHandleQingStorError(t *testing.T) {
 				assert.True(t, errors.Is(formatError(tt.input), tt.expected))
 			})
 		}
+	}
+}
+
+func Test_isObjectDirectory(t *testing.T) {
+	tests := []struct {
+		name    string
+		keyType string
+		want    bool
+	}{
+		{
+			name:    "false",
+			keyType: "application/octet-stream",
+			want:    false,
+		},
+		{
+			name:    "true",
+			keyType: "application/x-directory",
+			want:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o := &service.KeyType{
+				MimeType: convert.String(tt.keyType),
+			}
+			if got := isObjectDirectory(o); got != tt.want {
+				t.Errorf("isObjectDirectory() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
