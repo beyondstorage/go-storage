@@ -310,12 +310,14 @@ func TestStorage_ListDir(t *testing.T) {
 
 	tests := []struct {
 		name   string
+		path   string
 		output *service.ListObjectsOutput
 		items  []*types.Object
 		err    error
 	}{
 		{
 			"list without delimiter",
+			uuid.New().String(),
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
 				Keys: []*service.KeyType{
@@ -336,6 +338,7 @@ func TestStorage_ListDir(t *testing.T) {
 		},
 		{
 			"list with return next marker",
+			uuid.New().String(),
 			&service.ListObjectsOutput{
 				NextMarker: service.String("test_marker"),
 				HasMore:    service.Bool(false),
@@ -355,6 +358,7 @@ func TestStorage_ListDir(t *testing.T) {
 		},
 		{
 			"list with return empty keys",
+			uuid.New().String(),
 			&service.ListObjectsOutput{
 				NextMarker: service.String("test_marker"),
 				HasMore:    service.Bool(true),
@@ -364,6 +368,7 @@ func TestStorage_ListDir(t *testing.T) {
 		},
 		{
 			"list with error return",
+			uuid.New().String(),
 			nil,
 			[]*types.Object{},
 			&qerror.QingStorError{
@@ -372,6 +377,7 @@ func TestStorage_ListDir(t *testing.T) {
 		},
 		{
 			"list with all data returned",
+			uuid.New().String(),
 			&service.ListObjectsOutput{
 				HasMore: service.Bool(false),
 				Keys: []*service.KeyType{
@@ -398,11 +404,47 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"list with dir and objects",
+			keys[6],
+			&service.ListObjectsOutput{
+				HasMore: service.Bool(false),
+				Keys: []*service.KeyType{
+					{
+						Key:      service.String(keys[6]),
+						MimeType: service.String("application/x-directory"),
+						Etag:     service.String("xxxxx"),
+						Size:     service.Int64(0),
+						Modified: service.Int(1233),
+					},
+					{
+						Key:      service.String(keys[6]),
+						MimeType: service.String("application/json"),
+						Etag:     service.String("xxxxx"),
+						Size:     service.Int64(1233),
+						Modified: service.Int(1233),
+					},
+				},
+			},
+			[]*types.Object{
+				{
+					ID:        keys[6],
+					Name:      keys[6],
+					Type:      types.ObjectTypeFile,
+					Size:      1233,
+					UpdatedAt: time.Unix(1233, 0),
+					ObjectMeta: info.NewObjectMeta().
+						SetContentType("application/json").
+						SetETag("xxxxx"),
+				},
+			},
+			nil,
+		},
 	}
 
 	for _, v := range tests {
 		t.Run(v.name, func(t *testing.T) {
-			path := uuid.New().String()
+			path := v.path
 
 			mockBucket.EXPECT().ListObjects(gomock.Any()).DoAndReturn(func(input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
 				assert.Equal(t, path, *input.Prefix)

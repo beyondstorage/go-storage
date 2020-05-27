@@ -139,6 +139,10 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 
 		if opt.HasFileFunc {
 			for _, v := range output.Keys {
+				// add filter to exclude dir-key itself, which would exist if created in console, see issue #365
+				if convert.StringValue(v.Key) == rp {
+					continue
+				}
 				o, err := s.formatFileObject(v)
 				if err != nil {
 					return err
