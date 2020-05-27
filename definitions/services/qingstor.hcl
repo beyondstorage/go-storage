@@ -22,7 +22,7 @@ namespace "service" {
   }
 }
 namespace "storage" {
-  implement = ["copier", "dir_lister", "index_segmenter", "mover", "prefix_lister", "prefix_segments_lister", "reacher"]
+  implement = ["copier", "dir_lister", "index_segmenter", "mover", "prefix_lister", "prefix_segments_lister", "reacher", "segmenter", "statistician"]
 
   new {
     required = ["name"]
