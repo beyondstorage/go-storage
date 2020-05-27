@@ -132,9 +132,9 @@ type Servicer interface {
 type Statistician interface {
 
 	// Statistical will count service's statistics, such as Size, Count.
-	Statistical(pairs ...*types.Pair) (url string, err error)
+	Statistical(pairs ...*types.Pair) (statistic info.StorageStatistic, err error)
 	// StatisticalWithContext will count service's statistics, such as Size, Count.
-	StatisticalWithContext(ctx context.Context, pairs ...*types.Pair) (url string, err error)
+	StatisticalWithContext(ctx context.Context, pairs ...*types.Pair) (statistic info.StorageStatistic, err error)
 }
 
 // Storager is the interface for storage service.

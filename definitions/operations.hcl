@@ -110,7 +110,7 @@ interface "statistician" {
 
   op "statistical" {
     description = "will count service's statistics, such as Size, Count."
-    results     = ["url"]
+    results     = ["statistic"]
   }
 }
 interface "storager" {

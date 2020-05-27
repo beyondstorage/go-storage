@@ -496,6 +496,80 @@ func parsePairStorageNew(opts []*types.Pair) (*pairStorageNew, error) {
 	return result, nil
 }
 
+// pairStorageAbortSegmentMap holds all available pairs
+var pairStorageAbortSegmentMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageAbortSegment is the parsed struct
+type pairStorageAbortSegment struct {
+	pairs []*types.Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageAbortSegment will parse *types.Pair slice into *pairStorageAbortSegment
+func parsePairStorageAbortSegment(opts []*types.Pair) (*pairStorageAbortSegment, error) {
+	result := &pairStorageAbortSegment{
+		pairs: opts,
+	}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageAbortSegmentMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
+// pairStorageCompleteSegmentMap holds all available pairs
+var pairStorageCompleteSegmentMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageCompleteSegment is the parsed struct
+type pairStorageCompleteSegment struct {
+	pairs []*types.Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageCompleteSegment will parse *types.Pair slice into *pairStorageCompleteSegment
+func parsePairStorageCompleteSegment(opts []*types.Pair) (*pairStorageCompleteSegment, error) {
+	result := &pairStorageCompleteSegment{
+		pairs: opts,
+	}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageCompleteSegmentMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
 // pairStorageCopyMap holds all available pairs
 var pairStorageCopyMap = map[string]struct{}{
 	// Required pairs
@@ -979,6 +1053,43 @@ func parsePairStorageStat(opts []*types.Pair) (*pairStorageStat, error) {
 	return result, nil
 }
 
+// pairStorageStatisticalMap holds all available pairs
+var pairStorageStatisticalMap = map[string]struct{}{
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// pairStorageStatistical is the parsed struct
+type pairStorageStatistical struct {
+	pairs []*types.Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageStatistical will parse *types.Pair slice into *pairStorageStatistical
+func parsePairStorageStatistical(opts []*types.Pair) (*pairStorageStatistical, error) {
+	result := &pairStorageStatistical{
+		pairs: opts,
+	}
+
+	values := make(map[string]interface{})
+	for _, v := range opts {
+		if _, ok := pairStorageStatisticalMap[v.Key]; !ok {
+			return nil, services.NewPairUnsupportedError(v)
+		}
+		values[v.Key] = v.Value
+	}
+
+	// Handle required pairs
+	// Handle optional pairs
+	// Handle generated pairs
+
+	return result, nil
+}
+
 // pairStorageWriteMap holds all available pairs
 var pairStorageWriteMap = map[string]struct{}{
 	// Required pairs
@@ -1096,6 +1207,50 @@ func parsePairStorageWriteIndexSegment(opts []*types.Pair) (*pairStorageWriteInd
 	}
 
 	return result, nil
+}
+
+// AbortSegment will abort a segment.
+//
+// This function will create a context by default.
+func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
+	ctx := context.Background()
+	return s.AbortSegmentWithContext(ctx, seg, pairs...)
+}
+
+// AbortSegmentWithContext will abort a segment.
+func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError(services.OpAbortSegment, err, seg.Path(), seg.ID())
+	}()
+	var opt *pairStorageAbortSegment
+	opt, err = parsePairStorageAbortSegment(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.abortSegment(ctx, seg, opt)
+}
+
+// CompleteSegment will complete a segment and merge them into a File.
+//
+// This function will create a context by default.
+func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
+	ctx := context.Background()
+	return s.CompleteSegmentWithContext(ctx, seg, pairs...)
+}
+
+// CompleteSegmentWithContext will complete a segment and merge them into a File.
+func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
+	defer func() {
+		err = s.formatError(services.OpCompleteSegment, err, seg.Path(), seg.ID())
+	}()
+	var opt *pairStorageCompleteSegment
+	opt, err = parsePairStorageCompleteSegment(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.completeSegment(ctx, seg, opt)
 }
 
 // Copy will copy an Object or multiple object in the service.
@@ -1338,6 +1493,28 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*ty
 	}
 
 	return s.stat(ctx, path, opt)
+}
+
+// Statistical will count service's statistics, such as Size, Count.
+//
+// This function will create a context by default.
+func (s *Storage) Statistical(pairs ...*types.Pair) (statistic info.StorageStatistic, err error) {
+	ctx := context.Background()
+	return s.StatisticalWithContext(ctx, pairs...)
+}
+
+// StatisticalWithContext will count service's statistics, such as Size, Count.
+func (s *Storage) StatisticalWithContext(ctx context.Context, pairs ...*types.Pair) (statistic info.StorageStatistic, err error) {
+	defer func() {
+		err = s.formatError(services.OpStatistical, err)
+	}()
+	var opt *pairStorageStatistical
+	opt, err = parsePairStorageStatistical(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.statistical(ctx, opt)
 }
 
 // Write will write data into a file.

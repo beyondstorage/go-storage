@@ -10,76 +10,9 @@ import (
 	"github.com/Xuanwo/storage/pkg/headers"
 	"github.com/Xuanwo/storage/pkg/iowrap"
 	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/services"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
 )
-
-// Statistical implements Storager.Statistical
-func (s *Storage) Statistical(pairs ...*types.Pair) (m info.StorageStatistic, err error) {
-	defer func() {
-		err = s.formatError(services.OpStatistical, err)
-	}()
-
-	m = info.NewStorageStatistic()
-
-	output, err := s.bucket.GetStatistics()
-	if err != nil {
-		return
-	}
-
-	if output.Size != nil {
-		m.SetSize(*output.Size)
-	}
-	if output.Count != nil {
-		m.SetCount(*output.Count)
-	}
-	return m, nil
-}
-
-// CompleteSegment implements Storager.CompleteSegment
-func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpCompleteSegment, err, seg.Path(), seg.ID())
-	}()
-
-	parts := seg.(*segment.IndexBasedSegment).Parts()
-	objectParts := make([]*service.ObjectPartType, 0, len(parts))
-	for _, v := range parts {
-		objectParts = append(objectParts, &service.ObjectPartType{
-			PartNumber: service.Int(v.Index),
-			Size:       service.Int64(v.Size),
-		})
-	}
-
-	rp := s.getAbsPath(seg.Path())
-
-	_, err = s.bucket.CompleteMultipartUpload(rp, &service.CompleteMultipartUploadInput{
-		UploadID:    service.String(seg.ID()),
-		ObjectParts: objectParts,
-	})
-	if err != nil {
-		return
-	}
-	return
-}
-
-// AbortSegment implements Storager.AbortSegment
-func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
-	defer func() {
-		err = s.formatError(services.OpAbortSegment, err, seg.Path(), seg.ID())
-	}()
-
-	rp := s.getAbsPath(seg.Path())
-
-	_, err = s.bucket.AbortMultipartUpload(rp, &service.AbortMultipartUploadInput{
-		UploadID: service.String(seg.ID()),
-	})
-	if err != nil {
-		return
-	}
-	return
-}
 
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
@@ -389,4 +322,53 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairSto
 		return
 	}
 	return nil
+}
+
+func (s *Storage) abortSegment(ctx context.Context, seg segment.Segment, opt *pairStorageAbortSegment) (err error) {
+	rp := s.getAbsPath(seg.Path())
+
+	_, err = s.bucket.AbortMultipartUpload(rp, &service.AbortMultipartUploadInput{
+		UploadID: service.String(seg.ID()),
+	})
+	if err != nil {
+		return
+	}
+	return
+}
+func (s *Storage) completeSegment(ctx context.Context, seg segment.Segment, opt *pairStorageCompleteSegment) (err error) {
+	parts := seg.(*segment.IndexBasedSegment).Parts()
+	objectParts := make([]*service.ObjectPartType, 0, len(parts))
+	for _, v := range parts {
+		objectParts = append(objectParts, &service.ObjectPartType{
+			PartNumber: service.Int(v.Index),
+			Size:       service.Int64(v.Size),
+		})
+	}
+
+	rp := s.getAbsPath(seg.Path())
+
+	_, err = s.bucket.CompleteMultipartUpload(rp, &service.CompleteMultipartUploadInput{
+		UploadID:    service.String(seg.ID()),
+		ObjectParts: objectParts,
+	})
+	if err != nil {
+		return
+	}
+	return
+}
+func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic info.StorageStatistic, err error) {
+	statistic = info.NewStorageStatistic()
+
+	output, err := s.bucket.GetStatistics()
+	if err != nil {
+		return
+	}
+
+	if output.Size != nil {
+		statistic.SetSize(*output.Size)
+	}
+	if output.Count != nil {
+		statistic.SetCount(*output.Count)
+	}
+	return statistic, nil
 }
