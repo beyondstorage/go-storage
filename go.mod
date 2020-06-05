@@ -20,7 +20,7 @@ require (
 	github.com/qingstor/qingstor-sdk-go/v4 v4.0.0
 	github.com/qiniu/api.v7/v7 v7.5.0
 	github.com/satori/go.uuid v1.2.0 // indirect
-	github.com/stretchr/testify v1.6.0
+	github.com/stretchr/testify v1.6.1
 	github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20191221060900-c807d39e9045
 	github.com/upyun/go-sdk v2.1.0+incompatible
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
