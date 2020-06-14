@@ -78,6 +78,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/QcloudApi/qcloud_sign_golang v0.0.0-20141224014652-e4130a326409/go.mod h1:1pk82RBxDY/JZnPQrtqHlUFfCctgdorsd9M06fMynOM=
 github.com/aliyun/aliyun-oss-go-sdk v2.1.0+incompatible h1:90Z2Cp7EqcbaYfVwVjmQoK8kgoFPz+doQlujcwe1BRg=
 github.com/aliyun/aliyun-oss-go-sdk v2.1.0+incompatible/go.mod h1:T/Aws4fEfogEE9v+HPhhw+CntffsBHJ8nXQCwKr0/g8=
+github.com/aliyun/aliyun-oss-go-sdk v2.1.1+incompatible h1:rCOqkJYYTYM6vQH0dWkWTXAw4uKFp8+GPXcYl4Oayr8=
+github.com/aliyun/aliyun-oss-go-sdk v2.1.1+incompatible/go.mod h1:T/Aws4fEfogEE9v+HPhhw+CntffsBHJ8nXQCwKr0/g8=
 github.com/aws/aws-sdk-go v1.31.1 h1:5tv3VtTS/IM1yZ6lxMQQVmH28SkkR3b3w+6u+9rcLx4=
 github.com/aws/aws-sdk-go v1.31.1/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
 github.com/aws/aws-sdk-go v1.31.4 h1:YZ0uEYIWeanGuAomElHmRWMAbXVqrQixxgf2vtIjO6M=
