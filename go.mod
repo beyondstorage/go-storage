@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	bou.ke/monkey v1.0.2
-	cloud.google.com/go/storage v1.9.0
+	cloud.google.com/go/storage v1.10.0
 	github.com/Azure/azure-pipeline-go v0.2.2
 	github.com/Azure/azure-storage-blob-go v0.9.0
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.1+incompatible
@@ -23,5 +23,5 @@ require (
 	github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20191221060900-c807d39e9045
 	github.com/upyun/go-sdk v2.1.0+incompatible
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	google.golang.org/api v0.27.0
+	google.golang.org/api v0.28.0
 )
