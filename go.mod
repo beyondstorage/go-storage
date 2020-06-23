@@ -7,7 +7,7 @@ require (
 	cloud.google.com/go/storage v1.10.0
 	github.com/Azure/azure-pipeline-go v0.2.2
 	github.com/Azure/azure-storage-blob-go v0.9.0
-	github.com/aliyun/aliyun-oss-go-sdk v2.1.1+incompatible
+	github.com/aliyun/aliyun-oss-go-sdk v2.1.2+incompatible
 	github.com/aws/aws-sdk-go v1.32.7
 	github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
