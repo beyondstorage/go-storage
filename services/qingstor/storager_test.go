@@ -417,27 +417,9 @@ func TestStorage_ListDir(t *testing.T) {
 						Size:     service.Int64(0),
 						Modified: service.Int(1233),
 					},
-					{
-						Key:      service.String(keys[6]),
-						MimeType: service.String("application/json"),
-						Etag:     service.String("xxxxx"),
-						Size:     service.Int64(1233),
-						Modified: service.Int(1233),
-					},
 				},
 			},
-			[]*types.Object{
-				{
-					ID:        keys[6],
-					Name:      keys[6],
-					Type:      types.ObjectTypeFile,
-					Size:      1233,
-					UpdatedAt: time.Unix(1233, 0),
-					ObjectMeta: info.NewObjectMeta().
-						SetContentType("application/json").
-						SetETag("xxxxx"),
-				},
-			},
+			[]*types.Object{},
 			nil,
 		},
 	}
