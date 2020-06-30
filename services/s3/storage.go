@@ -7,10 +7,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 
-	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/cns-io/go-storage/v2/pkg/iowrap"
+	"github.com/cns-io/go-storage/v2/pkg/segment"
+	"github.com/cns-io/go-storage/v2/types"
+	"github.com/cns-io/go-storage/v2/types/info"
 )
 
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {

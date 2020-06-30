@@ -1,4 +1,4 @@
-module github.com/Xuanwo/storage/internal/cmd
+module github.com/cns-io/go-storage/v2/internal/cmd
 
 go 1.13
 

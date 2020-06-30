@@ -2,18 +2,18 @@
 package coreutils
 
 import (
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/services/azblob"
-	"github.com/Xuanwo/storage/services/cos"
-	"github.com/Xuanwo/storage/services/dropbox"
-	"github.com/Xuanwo/storage/services/fs"
-	"github.com/Xuanwo/storage/services/gcs"
-	"github.com/Xuanwo/storage/services/kodo"
-	"github.com/Xuanwo/storage/services/oss"
-	"github.com/Xuanwo/storage/services/qingstor"
-	"github.com/Xuanwo/storage/services/s3"
-	"github.com/Xuanwo/storage/services/uss"
-	"github.com/Xuanwo/storage/types"
+	"github.com/cns-io/go-storage/v2"
+	"github.com/cns-io/go-storage/v2/services/azblob"
+	"github.com/cns-io/go-storage/v2/services/cos"
+	"github.com/cns-io/go-storage/v2/services/dropbox"
+	"github.com/cns-io/go-storage/v2/services/fs"
+	"github.com/cns-io/go-storage/v2/services/gcs"
+	"github.com/cns-io/go-storage/v2/services/kodo"
+	"github.com/cns-io/go-storage/v2/services/oss"
+	"github.com/cns-io/go-storage/v2/services/qingstor"
+	"github.com/cns-io/go-storage/v2/services/s3"
+	"github.com/cns-io/go-storage/v2/services/uss"
+	"github.com/cns-io/go-storage/v2/types"
 )
 
 type openFunc func(opt ...*types.Pair) (srv storage.Servicer, store storage.Storager, err error)

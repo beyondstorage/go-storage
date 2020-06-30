@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/cns-io/go-storage/v2/types/info"
 	"github.com/upyun/go-sdk/upyun"
 
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
-	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types"
-	ps "github.com/Xuanwo/storage/types/pairs"
+	"github.com/cns-io/go-storage/v2"
+	"github.com/cns-io/go-storage/v2/pkg/credential"
+	"github.com/cns-io/go-storage/v2/pkg/httpclient"
+	"github.com/cns-io/go-storage/v2/services"
+	"github.com/cns-io/go-storage/v2/types"
+	ps "github.com/cns-io/go-storage/v2/types/pairs"
 )
 
 // Storage is the uss service.

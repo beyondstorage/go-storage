@@ -3,8 +3,8 @@ package cos
 import (
 	"context"
 
-	"github.com/Xuanwo/storage"
-	ps "github.com/Xuanwo/storage/types/pairs"
+	"github.com/cns-io/go-storage/v2"
+	ps "github.com/cns-io/go-storage/v2/types/pairs"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt *pairServiceCreate) (store storage.Storager, err error) {

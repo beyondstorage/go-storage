@@ -14,11 +14,11 @@ import (
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/info"
-	"github.com/Xuanwo/storage/types/pairs"
+	"github.com/cns-io/go-storage/v2/pkg/segment"
+	"github.com/cns-io/go-storage/v2/services"
+	"github.com/cns-io/go-storage/v2/types"
+	"github.com/cns-io/go-storage/v2/types/info"
+	"github.com/cns-io/go-storage/v2/types/pairs"
 )
 
 func TestStorage_String(t *testing.T) {

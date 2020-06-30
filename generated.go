@@ -4,9 +4,9 @@ import (
 	"context"
 	"io"
 
-	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/cns-io/go-storage/v2/pkg/segment"
+	"github.com/cns-io/go-storage/v2/types"
+	"github.com/cns-io/go-storage/v2/types/info"
 )
 
 // Copier is the interface for Copy.
