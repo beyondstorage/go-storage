@@ -7,9 +7,9 @@ import (
 	gs "cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 
-	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/cns-io/go-storage/v2/pkg/iowrap"
+	"github.com/cns-io/go-storage/v2/types"
+	"github.com/cns-io/go-storage/v2/types/info"
 )
 
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {

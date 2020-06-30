@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Xuanwo/storage/types"
+	"github.com/cns-io/go-storage/v2/types"
 )
 
 var (

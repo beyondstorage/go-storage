@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/cns-io/go-storage/v2/types/info"
 )
 
 // ObjectType is the type for object, under layer type is string.

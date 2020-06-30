@@ -1,8 +1,8 @@
 package coreutils
 
 import (
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/types"
+	"github.com/cns-io/go-storage/v2"
+	"github.com/cns-io/go-storage/v2/types"
 )
 
 // Open will parse config string and return valid Servicer and Storager.
