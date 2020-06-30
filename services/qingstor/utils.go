@@ -14,14 +14,14 @@ import (
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
-	"github.com/Xuanwo/storage/pkg/headers"
-	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/info"
-	ps "github.com/Xuanwo/storage/types/pairs"
+	"github.com/aos-dev/go-storage/v2"
+	"github.com/aos-dev/go-storage/v2/pkg/credential"
+	"github.com/aos-dev/go-storage/v2/pkg/headers"
+	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
+	"github.com/aos-dev/go-storage/v2/services"
+	"github.com/aos-dev/go-storage/v2/types"
+	"github.com/aos-dev/go-storage/v2/types/info"
+	ps "github.com/aos-dev/go-storage/v2/types/pairs"
 )
 
 // Service is the qingstor service config.

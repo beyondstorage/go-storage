@@ -1,4 +1,4 @@
-module github.com/Xuanwo/storage
+module github.com/aos-dev/go-storage/v2
 
 go 1.13
 

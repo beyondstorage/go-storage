@@ -2,10 +2,10 @@ package oss
 
 import (
 	"context"
-	ps "github.com/Xuanwo/storage/types/pairs"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	ps "github.com/aos-dev/go-storage/v2/types/pairs"
 
-	"github.com/Xuanwo/storage"
+	"github.com/aos-dev/go-storage/v2"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt *pairServiceCreate) (store storage.Storager, err error) {

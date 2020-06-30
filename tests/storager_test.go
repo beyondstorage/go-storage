@@ -12,12 +12,12 @@ import (
 	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/coreutils"
-	"github.com/Xuanwo/storage/pkg/randbytes"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types"
-	ps "github.com/Xuanwo/storage/types/pairs"
+	"github.com/aos-dev/go-storage/v2"
+	"github.com/aos-dev/go-storage/v2/coreutils"
+	"github.com/aos-dev/go-storage/v2/pkg/randbytes"
+	"github.com/aos-dev/go-storage/v2/services"
+	"github.com/aos-dev/go-storage/v2/types"
+	ps "github.com/aos-dev/go-storage/v2/types/pairs"
 )
 
 func TestStorager(t *testing.T) {

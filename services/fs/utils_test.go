@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Xuanwo/storage/services"
+	"github.com/aos-dev/go-storage/v2/services"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )

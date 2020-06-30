@@ -12,13 +12,13 @@ import (
 	"time"
 
 	"bou.ke/monkey"
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/aos-dev/go-storage/v2/types/info"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/pairs"
+	"github.com/aos-dev/go-storage/v2/types"
+	"github.com/aos-dev/go-storage/v2/types/pairs"
 )
 
 func TestStorage_String(t *testing.T) {

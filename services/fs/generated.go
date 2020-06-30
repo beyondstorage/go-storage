@@ -5,15 +5,15 @@ import (
 	"context"
 	"io"
 
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
-	"github.com/Xuanwo/storage/pkg/endpoint"
-	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/pkg/segment"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/info"
-	ps "github.com/Xuanwo/storage/types/pairs"
+	"github.com/aos-dev/go-storage/v2"
+	"github.com/aos-dev/go-storage/v2/pkg/credential"
+	"github.com/aos-dev/go-storage/v2/pkg/endpoint"
+	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
+	"github.com/aos-dev/go-storage/v2/pkg/segment"
+	"github.com/aos-dev/go-storage/v2/services"
+	"github.com/aos-dev/go-storage/v2/types"
+	"github.com/aos-dev/go-storage/v2/types/info"
+	ps "github.com/aos-dev/go-storage/v2/types/pairs"
 )
 
 var _ credential.Provider

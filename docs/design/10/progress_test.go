@@ -7,8 +7,8 @@ import (
 
 	"github.com/schollz/progressbar/v2"
 
-	"github.com/Xuanwo/storage/coreutils"
-	ps "github.com/Xuanwo/storage/types/pairs"
+	"github.com/aos-dev/go-storage/v2/coreutils"
+	ps "github.com/aos-dev/go-storage/v2/types/pairs"
 )
 
 func TestProgress(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types"
+	"github.com/aos-dev/go-storage/v2"
+	"github.com/aos-dev/go-storage/v2/services"
+	"github.com/aos-dev/go-storage/v2/types"
 )
 
 // StreamModeType is the stream mode type.

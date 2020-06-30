@@ -8,9 +8,9 @@ import (
 
 	qs "github.com/qiniu/api.v7/v7/storage"
 
-	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/types"
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/aos-dev/go-storage/v2/pkg/iowrap"
+	"github.com/aos-dev/go-storage/v2/types"
+	"github.com/aos-dev/go-storage/v2/types/info"
 )
 
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {

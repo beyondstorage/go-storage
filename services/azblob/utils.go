@@ -10,14 +10,14 @@ import (
 
 	"github.com/Azure/azure-pipeline-go/pipeline"
 	"github.com/Azure/azure-storage-blob-go/azblob"
-	"github.com/Xuanwo/storage/types/info"
+	"github.com/aos-dev/go-storage/v2/types/info"
 
-	"github.com/Xuanwo/storage"
-	"github.com/Xuanwo/storage/pkg/credential"
-	"github.com/Xuanwo/storage/pkg/httpclient"
-	"github.com/Xuanwo/storage/services"
-	"github.com/Xuanwo/storage/types"
-	ps "github.com/Xuanwo/storage/types/pairs"
+	"github.com/aos-dev/go-storage/v2"
+	"github.com/aos-dev/go-storage/v2/pkg/credential"
+	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
+	"github.com/aos-dev/go-storage/v2/services"
+	"github.com/aos-dev/go-storage/v2/types"
+	ps "github.com/aos-dev/go-storage/v2/types/pairs"
 )
 
 // Service is the azblob config.
