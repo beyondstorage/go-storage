@@ -94,12 +94,13 @@ func TestStorage_Stat(t *testing.T) {
 				modTime: nowTime,
 			},
 			&types.Object{
-				ID:         "regular file",
-				Name:       "regular file",
-				Type:       types.ObjectTypeFile,
-				Size:       1234,
-				UpdatedAt:  nowTime,
-				ObjectMeta: info.NewObjectMeta(),
+				ID:        "regular file",
+				Name:      "regular file",
+				Type:      types.ObjectTypeFile,
+				Size:      1234,
+				UpdatedAt: nowTime,
+				ObjectMeta: info.NewObjectMeta().
+					SetContentType("application/octet-stream"),
 			},
 		},
 		{
@@ -406,12 +407,13 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					ID:         filepath.Join(paths[0], "test_file"),
-					Name:       path.Join(paths[0], "test_file"),
-					Type:       types.ObjectTypeFile,
-					Size:       1234,
-					UpdatedAt:  time.Unix(1, 0),
-					ObjectMeta: info.NewObjectMeta(),
+					ID:        filepath.Join(paths[0], "test_file"),
+					Name:      path.Join(paths[0], "test_file"),
+					Type:      types.ObjectTypeFile,
+					Size:      1234,
+					UpdatedAt: time.Unix(1, 0),
+					ObjectMeta: info.NewObjectMeta().
+						SetContentType("application/octet-stream"),
 				},
 			},
 			nil,
@@ -428,12 +430,13 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					ID:         filepath.Join(paths[1], "test_file"),
-					Name:       path.Join(paths[1], "test_file"),
-					Type:       types.ObjectTypeFile,
-					Size:       1234,
-					UpdatedAt:  time.Unix(1, 0),
-					ObjectMeta: info.NewObjectMeta(),
+					ID:        filepath.Join(paths[1], "test_file"),
+					Name:      path.Join(paths[1], "test_file"),
+					Type:      types.ObjectTypeFile,
+					Size:      1234,
+					UpdatedAt: time.Unix(1, 0),
+					ObjectMeta: info.NewObjectMeta().
+						SetContentType("application/octet-stream"),
 				},
 			},
 			nil,
@@ -496,11 +499,12 @@ func TestStorage_ListDir(t *testing.T) {
 				{
 					ID: filepath.Join(paths[4], "test_file"),
 					// Make sure ListDir return a name with slash.
-					Name:       fmt.Sprintf("%s/%s", paths[4], "test_file"),
-					Type:       types.ObjectTypeFile,
-					Size:       1234,
-					UpdatedAt:  time.Unix(1, 0),
-					ObjectMeta: info.NewObjectMeta(),
+					Name:      fmt.Sprintf("%s/%s", paths[4], "test_file"),
+					Type:      types.ObjectTypeFile,
+					Size:      1234,
+					UpdatedAt: time.Unix(1, 0),
+					ObjectMeta: info.NewObjectMeta().
+						SetContentType("application/octet-stream"),
 				},
 			},
 			nil,
