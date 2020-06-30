@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v1.2.1] - 2020-06-30
+
+### Changed
+
+- internal: Generate all exported APIs (#361)
+- services/fs: Convert system specific separator to slash (#408)
+
+### Fixed
+
+- services/qingstor: Fix WorkDir listed in keys while ListDir (#366)
+- definitions: Fix statistical's result is incorrect (#367)
+- services/qingstor: Fix unit test for ListDir (#404)
+
 ## [v1.2.0] - 2020-05-20
 
 ### Added
@@ -317,7 +330,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v1.2.1...HEAD
+[v1.2.1]: https://github.com/Xuanwo/storage/compare/v1.2.0...v1.2.1
 [v1.2.0]: https://github.com/Xuanwo/storage/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/Xuanwo/storage/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/Xuanwo/storage/compare/v0.9.0...v1.0.0
