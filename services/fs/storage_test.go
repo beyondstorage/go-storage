@@ -2,8 +2,10 @@ package fs
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -405,7 +407,7 @@ func TestStorage_ListDir(t *testing.T) {
 			[]*types.Object{
 				{
 					ID:         filepath.Join(paths[0], "test_file"),
-					Name:       filepath.Join(paths[0], "test_file"),
+					Name:       path.Join(paths[0], "test_file"),
 					Type:       types.ObjectTypeFile,
 					Size:       1234,
 					UpdatedAt:  time.Unix(1, 0),
@@ -427,7 +429,7 @@ func TestStorage_ListDir(t *testing.T) {
 			[]*types.Object{
 				{
 					ID:         filepath.Join(paths[1], "test_file"),
-					Name:       filepath.Join(paths[1], "test_file"),
+					Name:       path.Join(paths[1], "test_file"),
 					Type:       types.ObjectTypeFile,
 					Size:       1234,
 					UpdatedAt:  time.Unix(1, 0),
@@ -449,7 +451,7 @@ func TestStorage_ListDir(t *testing.T) {
 			[]*types.Object{
 				{
 					ID:         filepath.Join(paths[2], "test_dir"),
-					Name:       filepath.Join(paths[2], "test_dir"),
+					Name:       path.Join(paths[2], "test_dir"),
 					Type:       types.ObjectTypeDir,
 					Size:       0,
 					UpdatedAt:  time.Unix(1, 0),
@@ -471,9 +473,32 @@ func TestStorage_ListDir(t *testing.T) {
 			[]*types.Object{
 				{
 					ID:         filepath.Join(paths[3], "test_dir"),
-					Name:       filepath.Join(paths[3], "test_dir"),
+					Name:       path.Join(paths[3], "test_dir"),
 					Type:       types.ObjectTypeDir,
 					Size:       0,
+					UpdatedAt:  time.Unix(1, 0),
+					ObjectMeta: info.NewObjectMeta(),
+				},
+			},
+			nil,
+		},
+		{
+			"success file under windows",
+			[]os.FileInfo{
+				fileInfo{
+					name:    "test_file",
+					size:    1234,
+					mode:    0644,
+					modTime: time.Unix(1, 0),
+				},
+			},
+			[]*types.Object{
+				{
+					ID: filepath.Join(paths[4], "test_file"),
+					// Make sure ListDir return a name with slash.
+					Name:       fmt.Sprintf("%s/%s", paths[4], "test_file"),
+					Type:       types.ObjectTypeFile,
+					Size:       1234,
 					UpdatedAt:  time.Unix(1, 0),
 					ObjectMeta: info.NewObjectMeta(),
 				},

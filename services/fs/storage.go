@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/Xuanwo/storage/pkg/iowrap"
@@ -23,7 +24,10 @@ func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelet
 }
 
 func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListDir) (err error) {
+	// Always keep service original name as rp.
 	rp := s.getAbsPath(dir)
+	// Then convert the dir to slash separator.
+	dir = filepath.ToSlash(dir)
 
 	fi, err := s.ioutilReadDir(rp)
 	if err != nil {
@@ -32,8 +36,10 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 
 	for _, v := range fi {
 		o := &types.Object{
-			ID:         filepath.Join(rp, v.Name()),
-			Name:       filepath.Join(dir, v.Name()),
+			// Always keep service original name as ID.
+			ID: filepath.Join(rp, v.Name()),
+			// Object's name should always be separated by slash (/)
+			Name:       path.Join(dir, v.Name()),
 			Size:       v.Size(),
 			UpdatedAt:  v.ModTime(),
 			ObjectMeta: info.NewObjectMeta(),
