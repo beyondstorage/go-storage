@@ -7,8 +7,9 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/qingstor/go-mime"
+
 	"github.com/Xuanwo/storage/pkg/iowrap"
-	"github.com/Xuanwo/storage/pkg/mime"
 	"github.com/Xuanwo/storage/types"
 	"github.com/Xuanwo/storage/types/info"
 )
@@ -53,7 +54,7 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 			continue
 		}
 
-		if v := mime.TypeByFileName(v.Name()); v != "" {
+		if v := mime.DetectFilePath(v.Name()); v != "" {
 			o.SetContentType(v)
 		}
 
@@ -135,7 +136,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 		return
 	}
 	if fi.Mode().IsRegular() {
-		if v := mime.TypeByFileName(path); v != "" {
+		if v := mime.DetectFilePath(path); v != "" {
 			o.SetContentType(v)
 		}
 

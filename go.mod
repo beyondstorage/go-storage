@@ -15,6 +15,7 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/google/uuid v1.1.1
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14
+	github.com/qingstor/go-mime v0.1.0
 	github.com/qingstor/qingstor-sdk-go/v4 v4.0.0
 	github.com/qiniu/api.v7/v7 v7.5.0
 	github.com/satori/go.uuid v1.2.0 // indirect
