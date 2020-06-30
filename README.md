@@ -82,7 +82,7 @@ Optional metadata
 - `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
 - `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
 - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
-- `storage-class`: object's storage class as defined in [storage proposal](./design/8-normalize-metadata-storage-class.md)
+- `storage-class`: object's storage class as defined in [storage proposal](./docs/design/8-normalize-metadata-storage-class.md)
 
 ## Quick Start
 
