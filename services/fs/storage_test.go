@@ -494,7 +494,8 @@ func TestStorage_ListDir(t *testing.T) {
 			},
 			[]*types.Object{
 				{
-					ID:         filepath.Join(paths[4], "test_file"),
+					ID: filepath.Join(paths[4], "test_file"),
+					// Make sure ListDir return a name with slash.
 					Name:       fmt.Sprintf("%s/%s", paths[4], "test_file"),
 					Type:       types.ObjectTypeFile,
 					Size:       1234,
