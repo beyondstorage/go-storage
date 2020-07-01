@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/Xuanwo/templateutils"
 	"github.com/hashicorp/hcl/v2"
@@ -14,72 +13,34 @@ import (
 )
 
 const (
-	pairPath      = "pairs.hcl"
-	infoPath      = "infos.hcl"
-	operationPath = "operations.hcl"
+	pairPath      = "definitions/pairs.hcl"
+	infoPath      = "definitions/infos.hcl"
+	operationPath = "definitions/operations.hcl"
 )
 
 func parse() (data *Data) {
 	// Parse pairs
 	pairSpec := &PairsSpec{}
-	content, err := ioutil.ReadFile(pairPath)
-	if err != nil {
-		log.Fatalf("parse: %v", err)
-	}
-	err = parseHCL(content, pairPath, pairSpec)
+	err := parseHCL(MustAsset(pairPath), pairPath, pairSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
 
 	// Parse metadata
 	metaSpec := &InfosSpec{}
-	content, err = ioutil.ReadFile(infoPath)
-	if err != nil {
-		log.Fatalf("parse: %v", err)
-	}
-	err = parseHCL(content, infoPath, metaSpec)
+	err = parseHCL(MustAsset(infoPath), infoPath, metaSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
 
 	// Parse operations
 	operationsSpec := &OperationsSpec{}
-	content, err = ioutil.ReadFile(operationPath)
-	if err != nil {
-		log.Fatalf("parse: %v", err)
-	}
-	err = parseHCL(content, operationPath, operationsSpec)
+	err = parseHCL(MustAsset(operationPath), operationPath, operationsSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
 
-	// Parse service
-	serviceSpecs := make([]*ServiceSpec, 0)
-	files, err := ioutil.ReadDir("services")
-	if err != nil {
-		log.Fatalf("parse: %v", err)
-	}
-	for _, v := range files {
-		if !strings.HasSuffix(v.Name(), ".hcl") {
-			continue
-		}
-
-		filePath := "services/" + v.Name()
-		content, err := ioutil.ReadFile(filePath)
-		if err != nil {
-			log.Fatalf("parse: %v", err)
-		}
-
-		srv := &ServiceSpec{}
-		err = parseHCL(content, filePath, srv)
-		if err != nil {
-			log.Fatalf("parse: %v", err)
-		}
-
-		serviceSpecs = append(serviceSpecs, srv)
-	}
-
-	data = FormatData(pairSpec, metaSpec, operationsSpec, serviceSpecs)
+	data = FormatData(pairSpec, metaSpec, operationsSpec)
 	return data
 }
 

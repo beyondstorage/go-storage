@@ -35,15 +35,15 @@ lint: golint
 	@golint ./...
 	@echo "ok"
 
-build_generator: go-bindata
+build_definitions: go-bindata
 	@echo "build storage generator"
-	@pushd internal/cmd \
+	@pushd cmd/definitions \
 		&& go generate ./... \
-		&& go build -o ../bin/definitions ./definitions \
+		&& go build -o ../../bin/definitions . \
 		&& popd
 	@echo "Done"
 
-generate: build_generator mockgen
+generate: build_definitions mockgen
 	@echo "generate code"
 	@go generate ./...
 	@go fmt ./...

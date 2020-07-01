@@ -9,51 +9,29 @@ import (
 	"github.com/Xuanwo/templateutils"
 )
 
-//go:generate go-bindata -nometadata -ignore "\\.go$" -prefix tmpl ./tmpl
+//go:generate go-bindata -nometadata -ignore "\\.go$" -prefix "../../" ./tmpl ../../definitions
 
 var (
-	infoT      = newTmpl("info")
-	pairT      = newTmpl("pair")
-	serviceT   = newTmpl("service")
-	openT      = newTmpl("open")
-	operationT = newTmpl("operation")
-	functionT  = newTmpl("function")
+	infoT      = newTmpl("cmd/definitions/tmpl/info")
+	pairT      = newTmpl("cmd/definitions/tmpl/pair")
+	serviceT   = newTmpl("cmd/definitions/tmpl/service")
+	operationT = newTmpl("cmd/definitions/tmpl/operation")
+	functionT  = newTmpl("cmd/definitions/tmpl/function")
 )
 
-func generate(data *Data) {
+func generateGlobal(data *Data) {
 	// Metas generate
-	generateT(infoT, "../types/info/generated.go", data)
+	generateT(infoT, "types/info/generated.go", data)
 
 	// Pair generate
-	generateT(pairT, "../types/pairs/generated.go", data)
+	generateT(pairT, "types/pairs/generated.go", data)
 
 	// Operation generate
-	generateT(operationT, "../generated.go", data)
+	generateT(operationT, "generated.go", data)
+}
 
-	// Service generate
-	for _, v := range data.Services {
-		fp := fmt.Sprintf("../services/%s/generated.go", v.Name)
-		generateT(serviceT, fp, v)
-
-		for _, ns := range v.Namespaces {
-			sp := fmt.Sprintf("../services/%s/%s.go", v.Name, ns.Name)
-			for _, fn := range ns.Funcs {
-				if fn.implemented {
-					continue
-				}
-				appendT(functionT, sp, struct {
-					Namespace string
-					Func      *Function
-				}{
-					ns.Name,
-					fn,
-				})
-			}
-		}
-	}
-
-	// Coreutils generate
-	generateT(openT, "../coreutils/generated.go", data)
+func generateService(data *Data) {
+	generateT(serviceT, "generated.go", data.Service)
 }
 
 func generateT(tmpl *template.Template, filePath string, data interface{}) {
