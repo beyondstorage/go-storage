@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 )
 
-func format(data *Data) {
+func formatGlobal(data *Data) {
 	// Generate pairs
 	hf := hclwrite.NewEmptyFile()
 	gohcl.EncodeIntoBody(data.pairSpec, hf.Body())
@@ -20,7 +21,7 @@ func format(data *Data) {
 	content := hclwrite.Format(hf.Bytes())
 	err := ioutil.WriteFile(pairPath, content, 0644)
 	if err != nil {
-		log.Fatalf("format: %v", err)
+		log.Fatalf("formatGlobal: %v", err)
 	}
 
 	// Generate metadata
@@ -32,7 +33,7 @@ func format(data *Data) {
 	content = hclwrite.Format(hf.Bytes())
 	err = ioutil.WriteFile(infoPath, content, 0644)
 	if err != nil {
-		log.Fatalf("format: %v", err)
+		log.Fatalf("formatGlobal: %v", err)
 	}
 
 	// Generate operations
@@ -44,23 +45,22 @@ func format(data *Data) {
 	content = hclwrite.Format(hf.Bytes())
 	err = ioutil.WriteFile(operationPath, content, 0644)
 	if err != nil {
-		log.Fatalf("format: %v", err)
+		log.Fatalf("formatGlobal: %v", err)
 	}
+}
 
-	// Generate services
-	for _, v := range data.serviceSpec {
-		filePath := fmt.Sprintf("services/%s.hcl", v.Name)
+func formatService(data *Data) {
+	filePath := fmt.Sprintf(os.Args[1])
 
-		hf = hclwrite.NewEmptyFile()
-		gohcl.EncodeIntoBody(v, hf.Body())
+	hf := hclwrite.NewEmptyFile()
+	gohcl.EncodeIntoBody(data.serviceSpec, hf.Body())
 
-		formatBody(hf.Body())
+	formatBody(hf.Body())
 
-		content = hclwrite.Format(hf.Bytes())
-		err = ioutil.WriteFile(filePath, content, 0644)
-		if err != nil {
-			log.Fatalf("format: %v", err)
-		}
+	content := hclwrite.Format(hf.Bytes())
+	err := ioutil.WriteFile(filePath, content, 0644)
+	if err != nil {
+		log.Fatalf("formatGlobal: %v", err)
 	}
 }
 

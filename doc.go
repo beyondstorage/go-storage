@@ -38,3 +38,5 @@ Notes
 - Storage uses error wrapping added by go 1.13, go version before 1.13 could be behaved as unexpected.
 */
 package storage
+
+//go:generate bin/definitions

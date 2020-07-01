@@ -11,9 +11,9 @@ import (
 
 // Data is the biggest container for all definitions.
 type Data struct {
-	Pairs    map[string]*Pair
-	Infos    []*Info
-	Services []*Service
+	Pairs   map[string]*Pair
+	Infos   []*Info
+	Service *Service
 
 	Interfaces    []*Interface
 	interfacesMap map[string]*Interface
@@ -22,7 +22,7 @@ type Data struct {
 	pairSpec       *PairsSpec
 	infoSpec       *InfosSpec
 	operationsSpec *OperationsSpec
-	serviceSpec    []*ServiceSpec
+	serviceSpec    *ServiceSpec
 }
 
 // Service is the service definition.
@@ -72,7 +72,7 @@ type Pair struct {
 	Description string
 }
 
-// Format will format current pair
+// Format will formatGlobal current pair
 func (p *Pair) Format(s *PairSpec, global bool) {
 	p.Name = s.Name
 	p.Type = s.Type
@@ -104,7 +104,7 @@ type Info struct {
 	Global bool
 }
 
-// Format will format info spec into Info
+// Format will formatGlobal info spec into Info
 func (i *Info) Format(s *InfoSpec, global bool) {
 	i.Scope = s.Scope
 	i.Category = s.Category
@@ -227,7 +227,7 @@ func NewFunction(o *Operation) *Function {
 	return &Function{Operation: o}
 }
 
-// Format will format a function with OpSpec.
+// Format will formatGlobal a function with OpSpec.
 func (f *Function) Format(s *OpSpec, p map[string]*Pair) {
 	for _, v := range s.Required {
 		f.Required = append(f.Required, p[v])
@@ -335,7 +335,7 @@ type Field struct {
 	Type string
 }
 
-// String will print field in string format.
+// String will print field in string formatGlobal.
 func (f *Field) String() string {
 	if f.Name == "" {
 		return f.Type
@@ -343,7 +343,7 @@ func (f *Field) String() string {
 	return fmt.Sprintf("%s %s", f.Name, f.Type)
 }
 
-// Caller will print the caller format of field.
+// Caller will print the caller formatGlobal of field.
 func (f *Field) Caller() string {
 	if strings.HasPrefix(f.Type, "...") {
 		return f.Name + "..."
@@ -357,7 +357,7 @@ func (f *Field) Format(s *FieldSpec) {
 	f.Name = s.Name
 }
 
-// FormatPairs will format pairs for pair spec
+// FormatPairs will formatGlobal pairs for pair spec
 func (d *Data) FormatPairs(p *PairsSpec, global bool) map[string]*Pair {
 	if p == nil {
 		return nil
@@ -373,7 +373,7 @@ func (d *Data) FormatPairs(p *PairsSpec, global bool) map[string]*Pair {
 	return m
 }
 
-// FormatInfos will format metas for meta spec
+// FormatInfos will formatGlobal metas for meta spec
 func (d *Data) FormatInfos(m *InfosSpec, global bool) []*Info {
 	if m == nil {
 		return nil
@@ -390,7 +390,7 @@ func (d *Data) FormatInfos(m *InfosSpec, global bool) []*Info {
 	return is
 }
 
-// FormatOperations will format operations from operation spec
+// FormatOperations will formatGlobal operations from operation spec
 func (d *Data) FormatOperations(o *OperationsSpec) (ins []*Interface, inm map[string]*Interface) {
 	fileds := make(map[string]*Field)
 	for _, v := range o.Fields {
@@ -418,7 +418,7 @@ func (d *Data) FormatOperations(o *OperationsSpec) (ins []*Interface, inm map[st
 	return
 }
 
-// FormatNamespace will format a namespace.
+// FormatNamespace will formatGlobal a namespace.
 func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
 	ns := &Namespace{Name: n.Name}
 
@@ -480,8 +480,10 @@ func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 	}
 }
 
-// FormatService will format services from service spec
+// FormatService will formatGlobal services from service spec
 func (d *Data) FormatService(s *ServiceSpec) *Service {
+	d.serviceSpec = s
+
 	srv := &Service{
 		Name:  s.Name,
 		Pairs: mergePairs(d.Pairs, d.FormatPairs(s.Pairs, false)),
@@ -503,30 +505,26 @@ func (d *Data) Sort() {
 	d.pairSpec.Sort()
 	d.infoSpec.Sort()
 	d.operationsSpec.Sort()
-	for _, v := range d.serviceSpec {
-		v.Sort()
-	}
 
-	for _, v := range d.Services {
-		v.Sort()
+	if d.serviceSpec != nil {
+		d.serviceSpec.Sort()
+	}
+	if d.Service != nil {
+		d.Service.Sort()
 	}
 }
 
-// FormatData will format the whole data.
-func FormatData(p *PairsSpec, m *InfosSpec, o *OperationsSpec, s []*ServiceSpec) *Data {
+// FormatData will formatGlobal the whole data.
+func FormatData(p *PairsSpec, m *InfosSpec, o *OperationsSpec) *Data {
 	data := &Data{
 		pairSpec:       p,
 		infoSpec:       m,
 		operationsSpec: o,
-		serviceSpec:    s,
 	}
 	data.Pairs = data.FormatPairs(p, true)
 	data.Infos = data.FormatInfos(m, true)
 	data.Interfaces, data.interfacesMap = data.FormatOperations(o)
 
-	for _, v := range s {
-		data.Services = append(data.Services, data.FormatService(v))
-	}
 	return data
 }
 
