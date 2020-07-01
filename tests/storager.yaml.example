@@ -1,3 +1,0 @@
-- type: fs
-  options:
-    work_dir: "/path/to/work/dir"
