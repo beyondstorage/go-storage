@@ -10,6 +10,12 @@ info "object" "meta" "etag" {
   type         = "string"
   display_name = "ETag"
 }
+info "object" "meta" "size" {
+  type = "int64"
+}
+info "object" "meta" "updated_at" {
+  type = "time.Time"
+}
 info "storage" "meta" "location" {
   type = "string"
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/schollz/progressbar/v2"
 
-	"github.com/aos-dev/go-storage/v2/coreutils"
+	"github.com/aos-dev/go-coreutils"
 	ps "github.com/aos-dev/go-storage/v2/types/pairs"
 )
 
