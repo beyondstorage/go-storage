@@ -4,11 +4,9 @@ package pairs
 import (
 	"context"
 
-	"github.com/aos-dev/go-storage/v2"
 	"github.com/aos-dev/go-storage/v2/pkg/credential"
 	"github.com/aos-dev/go-storage/v2/pkg/endpoint"
 	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
-	"github.com/aos-dev/go-storage/v2/pkg/segment"
 	"github.com/aos-dev/go-storage/v2/types"
 )
 
@@ -20,14 +18,10 @@ const (
 	Context = "context"
 	// Credential will // Credential specify how to provide credential for service or storage
 	Credential = "credential"
-	// DirFunc will // DirFunc specify what todo with a dir object
-	DirFunc = "dir_func"
 	// Endpoint will // Endpoint specify how to provide endpoint for service or storage
 	Endpoint = "endpoint"
 	// Expire will // Expire specify when the url returned by reach will expire
 	Expire = "expire"
-	// FileFunc will // FileFunc specify what todo with a file object
-	FileFunc = "file_func"
 	// HTTPClientOptions will // HTTPClientOptions sepcify the options for the http client
 	HTTPClientOptions = "http_client_options"
 	// Index will // Index specify the index of this segment
@@ -36,20 +30,14 @@ const (
 	Location = "location"
 	// Name will // Name specify the storage name
 	Name = "name"
-	// ObjectFunc will // ObjectFunc specify what todo with an object
-	ObjectFunc = "object_func"
 	// Offset will // Offset specify offset for this request, storage will seek to this offset before read
 	Offset = "offset"
 	// Project will // Project specify project name/id for this service or storage
 	Project = "project"
 	// ReadCallbackFunc will // ReadCallbackFunc specify what todo every time we read data from source
 	ReadCallbackFunc = "read_callback_func"
-	// SegmentFunc will // SegmentFunc specify what todo with a segment
-	SegmentFunc = "segment_func"
 	// Size will // Size specify size for this request, storage will only read limited content data
 	Size = "size"
-	// StoragerFunc will // StoragerFunc specify what todo with a storager
-	StoragerFunc = "storager_func"
 	// WorkDir will // WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
 	//  For fs storage service on windows platform, the behavior is undefined.
 	WorkDir = "work_dir"
@@ -82,15 +70,6 @@ func WithCredential(v *credential.Provider) *types.Pair {
 	}
 }
 
-// WithDirFunc will apply dir_func value to Options
-// This pair is used to // DirFunc specify what todo with a dir object
-func WithDirFunc(v types.ObjectFunc) *types.Pair {
-	return &types.Pair{
-		Key:   DirFunc,
-		Value: v,
-	}
-}
-
 // WithEndpoint will apply endpoint value to Options
 // This pair is used to // Endpoint specify how to provide endpoint for service or storage
 func WithEndpoint(v endpoint.Provider) *types.Pair {
@@ -105,15 +84,6 @@ func WithEndpoint(v endpoint.Provider) *types.Pair {
 func WithExpire(v int) *types.Pair {
 	return &types.Pair{
 		Key:   Expire,
-		Value: v,
-	}
-}
-
-// WithFileFunc will apply file_func value to Options
-// This pair is used to // FileFunc specify what todo with a file object
-func WithFileFunc(v types.ObjectFunc) *types.Pair {
-	return &types.Pair{
-		Key:   FileFunc,
 		Value: v,
 	}
 }
@@ -154,15 +124,6 @@ func WithName(v string) *types.Pair {
 	}
 }
 
-// WithObjectFunc will apply object_func value to Options
-// This pair is used to // ObjectFunc specify what todo with an object
-func WithObjectFunc(v types.ObjectFunc) *types.Pair {
-	return &types.Pair{
-		Key:   ObjectFunc,
-		Value: v,
-	}
-}
-
 // WithOffset will apply offset value to Options
 // This pair is used to // Offset specify offset for this request, storage will seek to this offset before read
 func WithOffset(v int64) *types.Pair {
@@ -190,29 +151,11 @@ func WithReadCallbackFunc(v func([]byte)) *types.Pair {
 	}
 }
 
-// WithSegmentFunc will apply segment_func value to Options
-// This pair is used to // SegmentFunc specify what todo with a segment
-func WithSegmentFunc(v segment.Func) *types.Pair {
-	return &types.Pair{
-		Key:   SegmentFunc,
-		Value: v,
-	}
-}
-
 // WithSize will apply size value to Options
 // This pair is used to // Size specify size for this request, storage will only read limited content data
 func WithSize(v int64) *types.Pair {
 	return &types.Pair{
 		Key:   Size,
-		Value: v,
-	}
-}
-
-// WithStoragerFunc will apply storager_func value to Options
-// This pair is used to // StoragerFunc specify what todo with a storager
-func WithStoragerFunc(v storage.StoragerFunc) *types.Pair {
-	return &types.Pair{
-		Key:   StoragerFunc,
 		Value: v,
 	}
 }
@@ -286,19 +229,6 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 					Value: v,
 				}
 			}
-		case DirFunc:
-			switch rv := v.(type) {
-			case types.ObjectFunc:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   DirFunc,
-					Type:  "types.ObjectFunc",
-					Value: v,
-				}
-			}
 		case Endpoint:
 			switch rv := v.(type) {
 			case endpoint.Provider:
@@ -344,19 +274,6 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 					Err:   ErrPairTypeMismatch,
 					Key:   Expire,
 					Type:  "int",
-					Value: v,
-				}
-			}
-		case FileFunc:
-			switch rv := v.(type) {
-			case types.ObjectFunc:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   FileFunc,
-					Type:  "types.ObjectFunc",
 					Value: v,
 				}
 			}
@@ -423,19 +340,6 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 					Value: v,
 				}
 			}
-		case ObjectFunc:
-			switch rv := v.(type) {
-			case types.ObjectFunc:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   ObjectFunc,
-					Type:  "types.ObjectFunc",
-					Value: v,
-				}
-			}
 		case Offset:
 			switch rv := v.(type) {
 			case int64:
@@ -486,19 +390,6 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 					Value: v,
 				}
 			}
-		case SegmentFunc:
-			switch rv := v.(type) {
-			case segment.Func:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   SegmentFunc,
-					Type:  "segment.Func",
-					Value: v,
-				}
-			}
 		case Size:
 			switch rv := v.(type) {
 			case int64:
@@ -520,19 +411,6 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 					Err:   ErrPairTypeMismatch,
 					Key:   Size,
 					Type:  "int64",
-					Value: v,
-				}
-			}
-		case StoragerFunc:
-			switch rv := v.(type) {
-			case storage.StoragerFunc:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   StoragerFunc,
-					Type:  "storage.StoragerFunc",
 					Value: v,
 				}
 			}

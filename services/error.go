@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aos-dev/go-storage/v2"
 	"github.com/aos-dev/go-storage/v2/types"
 )
 
@@ -47,7 +46,7 @@ type ServiceError struct {
 	Op  string
 	Err error
 
-	storage.Servicer
+	types.Servicer
 	Name string
 }
 
@@ -70,7 +69,7 @@ type StorageError struct {
 	Op  string
 	Err error
 
-	storage.Storager
+	types.Storager
 	Path []string
 }
 
