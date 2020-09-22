@@ -1,10 +1,18 @@
-package segment
+package types
 
 import (
 	"fmt"
 	"sort"
 	"sync"
 )
+
+// Segment is carries basic segment info.
+type Segment interface {
+	String() string
+
+	ID() string
+	Path() string
+}
 
 // IndexBasedPart is a part of segment.
 type IndexBasedPart struct {

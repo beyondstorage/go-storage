@@ -107,6 +107,7 @@ interface "servicer" {
   }
   op "list" {
     description = "will list all storager instances under this service."
+    results     = ["sti"]
   }
 }
 interface "statistician" {
@@ -180,10 +181,10 @@ field "r" {
   type = "io.Reader"
 }
 field "seg" {
-  type = "segment.Segment"
+  type = "Segment"
 }
 field "si" {
-  type = "*segment.Iterator"
+  type = "*SegmentIterator"
 }
 field "size" {
   type = "int64"
@@ -193,6 +194,9 @@ field "src" {
 }
 field "statistic" {
   type = "StorageStatistic"
+}
+field "sti" {
+  type = "*StoragerIterator"
 }
 field "store" {
   type = "Storager"

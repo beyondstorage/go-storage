@@ -3,8 +3,6 @@ package types
 import (
 	"context"
 	"io"
-
-	"github.com/aos-dev/go-storage/v2/pkg/segment"
 )
 
 // Copier is the interface for Copy.
@@ -30,9 +28,9 @@ type DirSegmentsLister interface {
 	segmenter
 
 	// ListDirSegments will list segments via dir.
-	ListDirSegments(dir string, pairs ...*Pair) (si *segment.Iterator, err error)
+	ListDirSegments(dir string, pairs ...*Pair) (si *SegmentIterator, err error)
 	// ListDirSegmentsWithContext will list segments via dir.
-	ListDirSegmentsWithContext(ctx context.Context, dir string, pairs ...*Pair) (si *segment.Iterator, err error)
+	ListDirSegmentsWithContext(ctx context.Context, dir string, pairs ...*Pair) (si *SegmentIterator, err error)
 }
 
 // IndexSegmenter is the interface for index based segment.
@@ -40,14 +38,14 @@ type IndexSegmenter interface {
 	segmenter
 
 	// InitIndexSegment will init an index based segment.
-	InitIndexSegment(path string, pairs ...*Pair) (seg segment.Segment, err error)
+	InitIndexSegment(path string, pairs ...*Pair) (seg Segment, err error)
 	// InitIndexSegmentWithContext will init an index based segment.
-	InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...*Pair) (seg segment.Segment, err error)
+	InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...*Pair) (seg Segment, err error)
 
 	// WriteIndexSegment will write a part into an index based segment.
-	WriteIndexSegment(seg segment.Segment, r io.Reader, index int, size int64, pairs ...*Pair) (err error)
+	WriteIndexSegment(seg Segment, r io.Reader, index int, size int64, pairs ...*Pair) (err error)
 	// WriteIndexSegmentWithContext will write a part into an index based segment.
-	WriteIndexSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, index int, size int64, pairs ...*Pair) (err error)
+	WriteIndexSegmentWithContext(ctx context.Context, seg Segment, r io.Reader, index int, size int64, pairs ...*Pair) (err error)
 }
 
 // Mover is the interface for Move.
@@ -73,9 +71,9 @@ type PrefixSegmentsLister interface {
 	segmenter
 
 	// ListPrefixSegments will list segments.
-	ListPrefixSegments(prefix string, pairs ...*Pair) (si *segment.Iterator, err error)
+	ListPrefixSegments(prefix string, pairs ...*Pair) (si *SegmentIterator, err error)
 	// ListPrefixSegmentsWithContext will list segments.
-	ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...*Pair) (si *segment.Iterator, err error)
+	ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...*Pair) (si *SegmentIterator, err error)
 }
 
 // Reacher is the interface for Reach.
@@ -91,14 +89,14 @@ type Reacher interface {
 type segmenter interface {
 
 	// AbortSegment will abort a segment.
-	AbortSegment(seg segment.Segment, pairs ...*Pair) (err error)
+	AbortSegment(seg Segment, pairs ...*Pair) (err error)
 	// AbortSegmentWithContext will abort a segment.
-	AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*Pair) (err error)
+	AbortSegmentWithContext(ctx context.Context, seg Segment, pairs ...*Pair) (err error)
 
 	// CompleteSegment will complete a segment and merge them into a File.
-	CompleteSegment(seg segment.Segment, pairs ...*Pair) (err error)
+	CompleteSegment(seg Segment, pairs ...*Pair) (err error)
 	// CompleteSegmentWithContext will complete a segment and merge them into a File.
-	CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*Pair) (err error)
+	CompleteSegmentWithContext(ctx context.Context, seg Segment, pairs ...*Pair) (err error)
 }
 
 // Servicer can maintain multipart storage services.
@@ -121,9 +119,9 @@ type Servicer interface {
 	GetWithContext(ctx context.Context, name string, pairs ...*Pair) (store Storager, err error)
 
 	// List will list all storager instances under this service.
-	List(pairs ...*Pair) (err error)
+	List(pairs ...*Pair) (sti *StoragerIterator, err error)
 	// ListWithContext will list all storager instances under this service.
-	ListWithContext(ctx context.Context, pairs ...*Pair) (err error)
+	ListWithContext(ctx context.Context, pairs ...*Pair) (sti *StoragerIterator, err error)
 }
 
 // Statistician is the interface for Statistical.

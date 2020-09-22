@@ -41,6 +41,8 @@ build_definitions: go-bindata
 		&& go generate ./... \
 		&& go build -o ../../bin/definitions . \
 		&& popd
+	@echo "build iterator generator"
+	@pushd internal/cmd && go build -o ../bin/iterator ./iterator && popd
 	@echo "Done"
 
 generate: build_definitions mockgen
