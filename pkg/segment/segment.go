@@ -7,6 +7,3 @@ type Segment interface {
 	ID() string
 	Path() string
 }
-
-// Func will handle a Segment.
-type Func func(segment Segment)

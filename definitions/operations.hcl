@@ -13,6 +13,7 @@ interface "dir_lister" {
   op "list_dir" {
     description = "will return list a specific dir."
     params      = ["dir"]
+    results     = ["oi"]
   }
 }
 interface "dir_segments_lister" {
@@ -22,6 +23,7 @@ interface "dir_segments_lister" {
   op "list_dir_segments" {
     description = "will list segments via dir."
     params      = ["dir"]
+    results     = ["si"]
   }
 }
 interface "index_segmenter" {
@@ -52,6 +54,7 @@ interface "prefix_lister" {
   op "list_prefix" {
     description = "will return list a specific dir."
     params      = ["prefix"]
+    results     = ["oi"]
   }
 }
 interface "prefix_segments_lister" {
@@ -61,6 +64,7 @@ interface "prefix_segments_lister" {
   op "list_prefix_segments" {
     description = "will list segments."
     params      = ["prefix"]
+    results     = ["si"]
   }
 }
 interface "reacher" {
@@ -126,8 +130,7 @@ interface "storager" {
   }
   op "read" {
     description = "will read the file's data."
-    params      = ["path"]
-    results     = ["rc"]
+    params      = ["path", "w"]
   }
   op "stat" {
     description = "will stat a path to get info of an object."
@@ -153,16 +156,19 @@ field "index" {
   type = "int"
 }
 field "meta" {
-  type = "info.StorageMeta"
+  type = "StorageMeta"
 }
 field "name" {
   type = "string"
 }
 field "o" {
-  type = "*types.Object"
+  type = "*Object"
+}
+field "oi" {
+  type = "*ObjectIterator"
 }
 field "pairs" {
-  type = "...*types.Pair"
+  type = "...*Pair"
 }
 field "path" {
   type = "string"
@@ -173,11 +179,11 @@ field "prefix" {
 field "r" {
   type = "io.Reader"
 }
-field "rc" {
-  type = "io.ReadCloser"
-}
 field "seg" {
   type = "segment.Segment"
+}
+field "si" {
+  type = "*segment.Iterator"
 }
 field "size" {
   type = "int64"
@@ -186,11 +192,14 @@ field "src" {
   type = "string"
 }
 field "statistic" {
-  type = "info.StorageStatistic"
+  type = "StorageStatistic"
 }
 field "store" {
-  type = "storage.Storager"
+  type = "Storager"
 }
 field "url" {
   type = "string"
+}
+field "w" {
+  type = "io.Writer"
 }

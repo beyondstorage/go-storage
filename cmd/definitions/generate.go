@@ -21,13 +21,13 @@ var (
 
 func generateGlobal(data *Data) {
 	// Metas generate
-	generateT(infoT, "types/info/generated.go", data)
+	generateT(infoT, "types/info_generated.go", data)
 
 	// Pair generate
 	generateT(pairT, "types/pairs/generated.go", data)
 
 	// Operation generate
-	generateT(operationT, "generated.go", data)
+	generateT(operationT, "types/generated.go", data)
 }
 
 func generateService(data *Data) {
