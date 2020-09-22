@@ -44,4 +44,5 @@ func actionService() {
 
 	generateService(data)
 	formatService(data)
+	log.Printf("%s generate finished", filePath)
 }
