@@ -5,19 +5,17 @@ import (
     "context"
     "io"
 
-    "github.com/aos-dev/go-storage/v2"
     "github.com/aos-dev/go-storage/v2/pkg/endpoint"
     "github.com/aos-dev/go-storage/v2/pkg/credential"
     "github.com/aos-dev/go-storage/v2/pkg/httpclient"
     "github.com/aos-dev/go-storage/v2/services"
-    "github.com/aos-dev/go-storage/v2/types"
-    ps "github.com/aos-dev/go-storage/v2/types/pairs"
+    . "github.com/aos-dev/go-storage/v2/types"
+    ps "github.com/aos-dev/go-storage/v2/pairs"
 )
 
 var _ credential.Provider
 var _ endpoint.Provider
-var _ segment.Segment
-var _ storage.Storager
+var _ Storager
 var _ services.ServiceError
 var _ httpclient.Options
 
@@ -53,8 +51,8 @@ const (
 {{- $pname := $v.Name | toPascal }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options
 // This pair is used to {{ $v.Description }}
-func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
-        return &types.Pair{
+func With{{ $pname }}(v {{ $v.Type }}) *Pair {
+        return &Pair{
         Key: Pair{{ $pname }},
         Value: v,
     }
@@ -71,7 +69,7 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
     {{- end }}
     {{ $serviceName := printf "%s%s" ($v.Scope | toPascal) ($v.Category | toPascal) }}
     // Get{{ $pname }} will get {{ $v.Name }} value from metadata.
-    func Get{{ $pname }}(m info.{{ $serviceName }}) ({{ $v.Type }}, bool)  {
+    func Get{{ $pname }}(m {{ $serviceName }}) ({{ $v.Type }}, bool)  {
     v, ok := m.Get(Info{{ $serviceName }}{{ $pname }})
     if !ok {
     {{- if $v.ZeroValue }}
@@ -84,7 +82,7 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
     }
 
     // set{{ $v.Name }} will set {{ $v.Name }} value into metadata.
-    func set{{ $pname }}(m info.{{ $serviceName }}, v {{ $v.Type }}) info.{{ $serviceName }} {
+    func set{{ $pname }}(m {{ $serviceName }}, v {{ $v.Type }}) {{ $serviceName }} {
     return m.Set(Info{{ $serviceName }}{{ $pname }}, v)
     }
     {{- end }}
@@ -129,7 +127,7 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
 
     // pair{{ $pn }}{{ $fnk }} is the parsed struct
     type pair{{ $pn }}{{ $fnk }} struct {
-        pairs []*types.Pair
+        pairs []*Pair
 
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
@@ -149,8 +147,8 @@ func With{{ $pname }}(v {{ $v.Type }}) *types.Pair {
         {{- end }}
     }
 
-    // parsePair{{ $pn }}{{ $fnk }} will parse *types.Pair slice into *pair{{ $pn }}{{ $fnk }}
-    func parsePair{{ $pn }}{{ $fnk }}(opts []*types.Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
+    // parsePair{{ $pn }}{{ $fnk }} will parse *Pair slice into *pair{{ $pn }}{{ $fnk }}
+    func parsePair{{ $pn }}{{ $fnk }}(opts []*Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
     result := &pair{{ $pn }}{{ $fnk }}{
         pairs: opts,
     }
