@@ -132,6 +132,7 @@ interface "storager" {
   op "read" {
     description = "will read the file's data."
     params      = ["path", "w"]
+    results     = ["n"]
   }
   op "stat" {
     description = "will stat a path to get info of an object."
@@ -141,6 +142,7 @@ interface "storager" {
   op "write" {
     description = "will write data into a file."
     params      = ["path", "r"]
+    results     = ["n"]
   }
 }
 
@@ -158,6 +160,9 @@ field "index" {
 }
 field "meta" {
   type = "StorageMeta"
+}
+field "n" {
+  type = "int64"
 }
 field "name" {
   type = "string"
