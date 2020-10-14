@@ -148,9 +148,9 @@ type Storager interface {
 	MetadataWithContext(ctx context.Context, pairs ...*Pair) (meta StorageMeta, err error)
 
 	// Read will read the file's data.
-	Read(path string, w io.Writer, pairs ...*Pair) (err error)
+	Read(path string, w io.Writer, pairs ...*Pair) (n int64, err error)
 	// ReadWithContext will read the file's data.
-	ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...*Pair) (err error)
+	ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...*Pair) (n int64, err error)
 
 	// Stat will stat a path to get info of an object.
 	Stat(path string, pairs ...*Pair) (o *Object, err error)
@@ -158,7 +158,7 @@ type Storager interface {
 	StatWithContext(ctx context.Context, path string, pairs ...*Pair) (o *Object, err error)
 
 	// Write will write data into a file.
-	Write(path string, r io.Reader, pairs ...*Pair) (err error)
+	Write(path string, r io.Reader, pairs ...*Pair) (n int64, err error)
 	// WriteWithContext will write data into a file.
-	WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*Pair) (err error)
+	WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*Pair) (n int64, err error)
 }
