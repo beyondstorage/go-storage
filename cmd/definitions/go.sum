@@ -1,5 +1,3 @@
-github.com/Xuanwo/templateutils v0.0.0-20200525032739-864c196e9f08 h1:0xegAe9Qw5A+WeanhTO+1I5ks4YfpYu4cKEFlrE5F7c=
-github.com/Xuanwo/templateutils v0.0.0-20200525032739-864c196e9f08/go.mod h1:x0qS7gfgEm24b8V9U+0zBEBAu/VpxZhO/+EWtpgEgDw=
 github.com/Xuanwo/templateutils v0.0.0-20200527044304-305a6a6fbfe6 h1:Wwau3GNp2bqbdz3yCr5fKrg0O3YU8nSydEkD/uOld8A=
 github.com/Xuanwo/templateutils v0.0.0-20200527044304-305a6a6fbfe6/go.mod h1:x0qS7gfgEm24b8V9U+0zBEBAu/VpxZhO/+EWtpgEgDw=
 github.com/agext/levenshtein v1.2.1 h1:QmvMAjj2aEICytGiWzmxoE0x2KZvE0fvmqMOfy2tjT8=
