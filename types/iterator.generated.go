@@ -1,6 +1,7 @@
 package types
 
 import (
+	"context"
 	"errors"
 	"fmt"
 )
@@ -12,14 +13,15 @@ Notes
 - ErrDone should be return while there are no items any more.
 - Input objects slice should be set every time.
 */
-type NextObjectFunc func(*ObjectPage) error
+type NextObjectFunc func(ctx context.Context, page *ObjectPage) error
 
 type ObjectPage struct {
-	Token string
-	Data  []*Object
+	Status interface{}
+	Data   []*Object
 }
 
 type ObjectIterator struct {
+	ctx  context.Context
 	next NextObjectFunc
 
 	index int
@@ -28,12 +30,15 @@ type ObjectIterator struct {
 	o ObjectPage
 }
 
-func NewObjectIterator(next NextObjectFunc) *ObjectIterator {
+func NewObjectIterator(ctx context.Context, next NextObjectFunc, status interface{}) *ObjectIterator {
 	return &ObjectIterator{
+		ctx:   ctx,
 		next:  next,
 		index: 0,
 		done:  false,
-		o:     ObjectPage{},
+		o: ObjectPage{
+			Status: status,
+		},
 	}
 }
 
@@ -51,7 +56,7 @@ func (it *ObjectIterator) Next() (object *Object, err error) {
 	// Reset buf before call next.
 	it.o.Data = it.o.Data[:0]
 
-	err = it.next(&it.o)
+	err = it.next(it.ctx, &it.o)
 	if err != nil && !errors.Is(err, IterateDone) {
 		return nil, fmt.Errorf("iterator next failed: %w", err)
 	}
@@ -75,14 +80,15 @@ Notes
 - ErrDone should be return while there are no items any more.
 - Input objects slice should be set every time.
 */
-type NextSegmentFunc func(*SegmentPage) error
+type NextSegmentFunc func(ctx context.Context, page *SegmentPage) error
 
 type SegmentPage struct {
-	Token string
-	Data  []Segment
+	Status interface{}
+	Data   []Segment
 }
 
 type SegmentIterator struct {
+	ctx  context.Context
 	next NextSegmentFunc
 
 	index int
@@ -91,12 +97,15 @@ type SegmentIterator struct {
 	o SegmentPage
 }
 
-func NewSegmentIterator(next NextSegmentFunc) *SegmentIterator {
+func NewSegmentIterator(ctx context.Context, next NextSegmentFunc, status interface{}) *SegmentIterator {
 	return &SegmentIterator{
+		ctx:   ctx,
 		next:  next,
 		index: 0,
 		done:  false,
-		o:     SegmentPage{},
+		o: SegmentPage{
+			Status: status,
+		},
 	}
 }
 
@@ -114,7 +123,7 @@ func (it *SegmentIterator) Next() (object Segment, err error) {
 	// Reset buf before call next.
 	it.o.Data = it.o.Data[:0]
 
-	err = it.next(&it.o)
+	err = it.next(it.ctx, &it.o)
 	if err != nil && !errors.Is(err, IterateDone) {
 		return nil, fmt.Errorf("iterator next failed: %w", err)
 	}
@@ -138,14 +147,15 @@ Notes
 - ErrDone should be return while there are no items any more.
 - Input objects slice should be set every time.
 */
-type NextStoragerFunc func(*StoragerPage) error
+type NextStoragerFunc func(ctx context.Context, page *StoragerPage) error
 
 type StoragerPage struct {
-	Token string
-	Data  []Storager
+	Status interface{}
+	Data   []Storager
 }
 
 type StoragerIterator struct {
+	ctx  context.Context
 	next NextStoragerFunc
 
 	index int
@@ -154,12 +164,15 @@ type StoragerIterator struct {
 	o StoragerPage
 }
 
-func NewStoragerIterator(next NextStoragerFunc) *StoragerIterator {
+func NewStoragerIterator(ctx context.Context, next NextStoragerFunc, status interface{}) *StoragerIterator {
 	return &StoragerIterator{
+		ctx:   ctx,
 		next:  next,
 		index: 0,
 		done:  false,
-		o:     StoragerPage{},
+		o: StoragerPage{
+			Status: status,
+		},
 	}
 }
 
@@ -177,7 +190,7 @@ func (it *StoragerIterator) Next() (object Storager, err error) {
 	// Reset buf before call next.
 	it.o.Data = it.o.Data[:0]
 
-	err = it.next(&it.o)
+	err = it.next(it.ctx, &it.o)
 	if err != nil && !errors.Is(err, IterateDone) {
 		return nil, fmt.Errorf("iterator next failed: %w", err)
 	}

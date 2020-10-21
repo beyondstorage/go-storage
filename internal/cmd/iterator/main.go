@@ -34,6 +34,7 @@ var tmpl = template.Must(template.New("iterator").Parse(`
 package types
 
 import (
+	"context"
 	"errors"
 	"fmt"
 )
@@ -46,14 +47,15 @@ Notes
 - ErrDone should be return while there are no items any more.
 - Input objects slice should be set every time.
 */
-type Next{{$k}}Func func(*{{$k}}Page) error
+type Next{{$k}}Func func(ctx context.Context, page *{{$k}}Page) error
 
 type {{$k}}Page struct {
-	Token string
+	Status interface{}
 	Data  []{{$v}}
 }
 
 type {{$k}}Iterator struct {
+	ctx context.Context
 	next Next{{$k}}Func
 
 	index int
@@ -62,12 +64,15 @@ type {{$k}}Iterator struct {
 	o {{$k}}Page
 }
 
-func New{{$k}}Iterator(next Next{{$k}}Func) *{{$k}}Iterator {
+func New{{$k}}Iterator(ctx context.Context, next Next{{$k}}Func, status interface{}) *{{$k}}Iterator {
 	return &{{$k}}Iterator{
+		ctx: ctx,
 		next:  next,
 		index: 0,
 		done:  false,
-		o:     {{$k}}Page{},
+		o:     {{$k}}Page{
+			Status: status,
+		},
 	}
 }
 
@@ -85,7 +90,7 @@ func (it *{{$k}}Iterator) Next() (object {{$v}}, err error) {
 	// Reset buf before call next.
 	it.o.Data = it.o.Data[:0]
 
-	err = it.next(&it.o)
+	err = it.next(it.ctx ,&it.o)
 	if err != nil && !errors.Is(err, IterateDone) {
 		return nil, fmt.Errorf("iterator next failed: %w", err)
 	}
