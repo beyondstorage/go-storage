@@ -68,3 +68,13 @@ func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
 }
 {{- end }}
 {{- end }}
+
+func (o *Object) clone(xo *Object) {
+    {{- range $k, $v := .ObjectMeta }}
+    o.{{ $v.TypeName }} = xo.{{ $v.TypeName }}
+    {{- end }}
+
+    o.meta = xo.meta
+
+    o.bit = xo.bit
+}
