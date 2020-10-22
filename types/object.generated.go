@@ -173,3 +173,18 @@ func (o *Object) SetUpdatedAt(v time.Time) *Object {
 	o.bit |= 1 << 7
 	return o
 }
+
+func (o *Object) clone(xo *Object) {
+	o.contentMd5 = xo.contentMd5
+	o.contentType = xo.contentType
+	o.etag = xo.etag
+	o.ID = xo.ID
+	o.Name = xo.Name
+	o.size = xo.size
+	o.Type = xo.Type
+	o.updatedAt = xo.updatedAt
+
+	o.meta = xo.meta
+
+	o.bit = xo.bit
+}

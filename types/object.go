@@ -48,7 +48,7 @@ func (o *Object) statSlow() {
 			// Ignore all errors while object stat, just keep them empty
 			return
 		}
-		o.meta = ob.meta
+		o.clone(ob)
 	}
 }
 
