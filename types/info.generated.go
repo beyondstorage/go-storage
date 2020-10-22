@@ -2,177 +2,292 @@
 package types
 
 import (
+	"fmt"
 	"time"
 )
 
-// All available metadata.
-const (
-	ObjectMetaContentMD5  = "content-md5"
-	ObjectMetaContentType = "content-type"
-	ObjectMetaETag        = "etag"
-	ObjectMetaSize        = "size"
-	ObjectMetaUpdatedAt   = "updated_at"
-	StorageMetaLocation   = "location"
-	StorageStatisticCount = "count"
-	StorageStatisticSize  = "size"
-)
+type objectMeta struct {
+	contentMd5  string
+	contentType string
+	etag        string
+	size        int64
+	updatedAt   time.Time
 
-// GetContentMD5 will get content-md5 value from metadata.
-func (m ObjectMeta) GetContentMD5() (string, bool) {
-	v, ok := m.m[ObjectMetaContentMD5]
-	if !ok {
-		return "", false
+	bit uint64
+	m   map[string]interface{}
+}
+
+func (m objectMeta) GetContentMD5() (string, bool) {
+	if m.bit&(1<<0) == 1 {
+		return m.contentMd5, true
 	}
-	return v.(string), true
+	return "", false
 }
 
-// MustGetcontent-md5 will get content-md5 value from metadata.
-func (m ObjectMeta) MustGetContentMD5() string {
-	return m.m[ObjectMetaContentMD5].(string)
-}
-
-// Setcontent-md5 will set content-md5 value into metadata.
-func (m ObjectMeta) SetContentMD5(v string) ObjectMeta {
-	m.m[ObjectMetaContentMD5] = v
-	return m
-}
-
-// GetContentType will get content-type value from metadata.
-func (m ObjectMeta) GetContentType() (string, bool) {
-	v, ok := m.m[ObjectMetaContentType]
-	if !ok {
-		return "", false
+func (m objectMeta) MustGetContentMD5() string {
+	if m.bit&(1<<0) != 1 {
+		panic(fmt.Sprintf("objectMeta content-md5 is not set"))
 	}
-	return v.(string), true
+	return m.contentMd5
 }
 
-// MustGetcontent-type will get content-type value from metadata.
-func (m ObjectMeta) MustGetContentType() string {
-	return m.m[ObjectMetaContentType].(string)
+func (m objectMeta) SetContentMD5(v string) {
+	m.contentMd5 = v
+	m.bit |= 1 << 0
 }
-
-// Setcontent-type will set content-type value into metadata.
-func (m ObjectMeta) SetContentType(v string) ObjectMeta {
-	m.m[ObjectMetaContentType] = v
-	return m
-}
-
-// GetETag will get etag value from metadata.
-func (m ObjectMeta) GetETag() (string, bool) {
-	v, ok := m.m[ObjectMetaETag]
-	if !ok {
-		return "", false
+func (m objectMeta) GetContentType() (string, bool) {
+	if m.bit&(1<<1) == 1 {
+		return m.contentType, true
 	}
-	return v.(string), true
+	return "", false
 }
 
-// MustGetetag will get etag value from metadata.
-func (m ObjectMeta) MustGetETag() string {
-	return m.m[ObjectMetaETag].(string)
-}
-
-// Setetag will set etag value into metadata.
-func (m ObjectMeta) SetETag(v string) ObjectMeta {
-	m.m[ObjectMetaETag] = v
-	return m
-}
-
-// GetSize will get size value from metadata.
-func (m ObjectMeta) GetSize() (int64, bool) {
-	v, ok := m.m[ObjectMetaSize]
-	if !ok {
-		return 0, false
+func (m objectMeta) MustGetContentType() string {
+	if m.bit&(1<<1) != 1 {
+		panic(fmt.Sprintf("objectMeta content-type is not set"))
 	}
-	return v.(int64), true
+	return m.contentType
 }
 
-// MustGetsize will get size value from metadata.
-func (m ObjectMeta) MustGetSize() int64 {
-	return m.m[ObjectMetaSize].(int64)
+func (m objectMeta) SetContentType(v string) {
+	m.contentType = v
+	m.bit |= 1 << 1
 }
-
-// Setsize will set size value into metadata.
-func (m ObjectMeta) SetSize(v int64) ObjectMeta {
-	m.m[ObjectMetaSize] = v
-	return m
-}
-
-// GetUpdatedAt will get updated_at value from metadata.
-func (m ObjectMeta) GetUpdatedAt() (time.Time, bool) {
-	v, ok := m.m[ObjectMetaUpdatedAt]
-	if !ok {
-		return time.Time{}, false
+func (m objectMeta) GetETag() (string, bool) {
+	if m.bit&(1<<2) == 1 {
+		return m.etag, true
 	}
-	return v.(time.Time), true
+	return "", false
 }
 
-// MustGetupdated_at will get updated_at value from metadata.
-func (m ObjectMeta) MustGetUpdatedAt() time.Time {
-	return m.m[ObjectMetaUpdatedAt].(time.Time)
-}
-
-// Setupdated_at will set updated_at value into metadata.
-func (m ObjectMeta) SetUpdatedAt(v time.Time) ObjectMeta {
-	m.m[ObjectMetaUpdatedAt] = v
-	return m
-}
-
-// GetLocation will get location value from metadata.
-func (m StorageMeta) GetLocation() (string, bool) {
-	v, ok := m.m[StorageMetaLocation]
-	if !ok {
-		return "", false
+func (m objectMeta) MustGetETag() string {
+	if m.bit&(1<<2) != 1 {
+		panic(fmt.Sprintf("objectMeta etag is not set"))
 	}
-	return v.(string), true
+	return m.etag
 }
 
-// MustGetlocation will get location value from metadata.
-func (m StorageMeta) MustGetLocation() string {
-	return m.m[StorageMetaLocation].(string)
+func (m objectMeta) SetETag(v string) {
+	m.etag = v
+	m.bit |= 1 << 2
 }
-
-// Setlocation will set location value into metadata.
-func (m StorageMeta) SetLocation(v string) StorageMeta {
-	m.m[StorageMetaLocation] = v
-	return m
-}
-
-// GetCount will get count value from metadata.
-func (m StorageStatistic) GetCount() (int64, bool) {
-	v, ok := m.m[StorageStatisticCount]
-	if !ok {
-		return 0, false
+func (m objectMeta) GetSize() (int64, bool) {
+	if m.bit&(1<<3) == 1 {
+		return m.size, true
 	}
-	return v.(int64), true
+	return 0, false
 }
 
-// MustGetcount will get count value from metadata.
-func (m StorageStatistic) MustGetCount() int64 {
-	return m.m[StorageStatisticCount].(int64)
-}
-
-// Setcount will set count value into metadata.
-func (m StorageStatistic) SetCount(v int64) StorageStatistic {
-	m.m[StorageStatisticCount] = v
-	return m
-}
-
-// GetSize will get size value from metadata.
-func (m StorageStatistic) GetSize() (int64, bool) {
-	v, ok := m.m[StorageStatisticSize]
-	if !ok {
-		return 0, false
+func (m objectMeta) MustGetSize() int64 {
+	if m.bit&(1<<3) != 1 {
+		panic(fmt.Sprintf("objectMeta size is not set"))
 	}
-	return v.(int64), true
+	return m.size
 }
 
-// MustGetsize will get size value from metadata.
-func (m StorageStatistic) MustGetSize() int64 {
-	return m.m[StorageStatisticSize].(int64)
+func (m objectMeta) SetSize(v int64) {
+	m.size = v
+	m.bit |= 1 << 3
+}
+func (m objectMeta) GetUpdatedAt() (time.Time, bool) {
+	if m.bit&(1<<4) == 1 {
+		return m.updatedAt, true
+	}
+	return time.Time{}, false
 }
 
-// Setsize will set size value into metadata.
-func (m StorageStatistic) SetSize(v int64) StorageStatistic {
-	m.m[StorageStatisticSize] = v
-	return m
+func (m objectMeta) MustGetUpdatedAt() time.Time {
+	if m.bit&(1<<4) != 1 {
+		panic(fmt.Sprintf("objectMeta updated_at is not set"))
+	}
+	return m.updatedAt
+}
+
+func (m objectMeta) SetUpdatedAt(v time.Time) {
+	m.updatedAt = v
+	m.bit |= 1 << 4
+}
+
+type storageMeta struct {
+	location string
+	Name     string
+	WorkDir  string
+
+	bit uint64
+	m   map[string]interface{}
+}
+
+func (m storageMeta) GetLocation() (string, bool) {
+	if m.bit&(1<<0) == 1 {
+		return m.location, true
+	}
+	return "", false
+}
+
+func (m storageMeta) MustGetLocation() string {
+	if m.bit&(1<<0) != 1 {
+		panic(fmt.Sprintf("storageMeta location is not set"))
+	}
+	return m.location
+}
+
+func (m storageMeta) SetLocation(v string) {
+	m.location = v
+	m.bit |= 1 << 0
+}
+func (m storageMeta) GetName() (string, bool) {
+	if m.bit&(1<<1) == 1 {
+		return m.Name, true
+	}
+	return "", false
+}
+
+func (m storageMeta) MustGetName() string {
+	if m.bit&(1<<1) != 1 {
+		panic(fmt.Sprintf("storageMeta name is not set"))
+	}
+	return m.Name
+}
+
+func (m storageMeta) SetName(v string) {
+	m.Name = v
+	m.bit |= 1 << 1
+}
+func (m storageMeta) GetWorkDir() (string, bool) {
+	if m.bit&(1<<2) == 1 {
+		return m.WorkDir, true
+	}
+	return "", false
+}
+
+func (m storageMeta) MustGetWorkDir() string {
+	if m.bit&(1<<2) != 1 {
+		panic(fmt.Sprintf("storageMeta work-dir is not set"))
+	}
+	return m.WorkDir
+}
+
+func (m storageMeta) SetWorkDir(v string) {
+	m.WorkDir = v
+	m.bit |= 1 << 2
+}
+
+type storageStatistic struct {
+	count int64
+	size  int64
+
+	bit uint64
+	m   map[string]interface{}
+}
+
+func (m storageStatistic) GetCount() (int64, bool) {
+	if m.bit&(1<<0) == 1 {
+		return m.count, true
+	}
+	return 0, false
+}
+
+func (m storageStatistic) MustGetCount() int64 {
+	if m.bit&(1<<0) != 1 {
+		panic(fmt.Sprintf("storageStatistic count is not set"))
+	}
+	return m.count
+}
+
+func (m storageStatistic) SetCount(v int64) {
+	m.count = v
+	m.bit |= 1 << 0
+}
+func (m storageStatistic) GetSize() (int64, bool) {
+	if m.bit&(1<<1) == 1 {
+		return m.size, true
+	}
+	return 0, false
+}
+
+func (m storageStatistic) MustGetSize() int64 {
+	if m.bit&(1<<1) != 1 {
+		panic(fmt.Sprintf("storageStatistic size is not set"))
+	}
+	return m.size
+}
+
+func (m storageStatistic) SetSize(v int64) {
+	m.size = v
+	m.bit |= 1 << 1
+}
+func (o *Object) GetContentMD5() (string, bool) {
+	o.stat()
+
+	return o.meta.GetContentMD5()
+}
+
+func (o *Object) MustGetContentMD5() string {
+	o.stat()
+
+	return o.meta.MustGetContentMD5()
+}
+
+func (o *Object) SetContentMD5(v string) {
+	o.meta.SetContentMD5(v)
+}
+func (o *Object) GetContentType() (string, bool) {
+	o.stat()
+
+	return o.meta.GetContentType()
+}
+
+func (o *Object) MustGetContentType() string {
+	o.stat()
+
+	return o.meta.MustGetContentType()
+}
+
+func (o *Object) SetContentType(v string) {
+	o.meta.SetContentType(v)
+}
+func (o *Object) GetETag() (string, bool) {
+	o.stat()
+
+	return o.meta.GetETag()
+}
+
+func (o *Object) MustGetETag() string {
+	o.stat()
+
+	return o.meta.MustGetETag()
+}
+
+func (o *Object) SetETag(v string) {
+	o.meta.SetETag(v)
+}
+func (o *Object) GetSize() (int64, bool) {
+	o.stat()
+
+	return o.meta.GetSize()
+}
+
+func (o *Object) MustGetSize() int64 {
+	o.stat()
+
+	return o.meta.MustGetSize()
+}
+
+func (o *Object) SetSize(v int64) {
+	o.meta.SetSize(v)
+}
+func (o *Object) GetUpdatedAt() (time.Time, bool) {
+	o.stat()
+
+	return o.meta.GetUpdatedAt()
+}
+
+func (o *Object) MustGetUpdatedAt() time.Time {
+	o.stat()
+
+	return o.meta.MustGetUpdatedAt()
+}
+
+func (o *Object) SetUpdatedAt(v time.Time) {
+	o.meta.SetUpdatedAt(v)
 }
