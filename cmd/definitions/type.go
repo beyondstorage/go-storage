@@ -11,10 +11,11 @@ import (
 
 // Data is the biggest container for all definitions.
 type Data struct {
-	Pairs    map[string]*Pair
-	Infos    []*Info
-	InfosMap map[string][]*Info
-	Service  *Service
+	Pairs      map[string]*Pair
+	Infos      []*Info
+	InfosMap   map[string][]*Info
+	ObjectMeta []*Info
+	Service    *Service
 
 	Interfaces    []*Interface
 	interfacesMap map[string]*Interface
@@ -101,6 +102,7 @@ type Info struct {
 	Type      string
 	ZeroValue string
 	Export    bool
+	Comment   string
 
 	Global bool
 
@@ -116,6 +118,7 @@ func (i *Info) Format(s *InfoSpec, global bool) {
 	i.displayName = s.DisplayName
 	i.ZeroValue = s.ZeroValue
 	i.Export = s.Export
+	i.Comment = s.Comment
 
 	i.Global = global
 }
@@ -410,6 +413,10 @@ func (d *Data) FormatInfos(m *InfosSpec, global bool) []*Info {
 		v := v
 
 		typeName := fmt.Sprintf("%s-%s", v.Scope, v.Category)
+		if typeName == "object-meta" {
+			d.ObjectMeta = append(d.ObjectMeta, v)
+			continue
+		}
 
 		d.InfosMap[typeName] = append(d.InfosMap[typeName], v)
 	}

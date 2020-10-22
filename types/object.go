@@ -1,7 +1,6 @@
 package types
 
 import (
-	"sync"
 	"sync/atomic"
 )
 
@@ -19,9 +18,7 @@ const (
 func NewObject(client Storager, done bool) *Object {
 	o := &Object{
 		client: client,
-		meta: objectMeta{
-			m: make(map[string]interface{}),
-		},
+		meta:   make(map[string]interface{}),
 	}
 
 	if done {
@@ -29,24 +26,6 @@ func NewObject(client Storager, done bool) *Object {
 		o.done = 1
 	}
 	return o
-}
-
-// Object may be a *File, *Dir or a *Stream.
-type Object struct {
-	// ID is the unique key in service.
-	ID string
-	// name is the relative path towards service's WorkDir.
-	Name string
-	// type should be one of "file", "stream", "dir" or "invalid".
-	Type ObjectType
-
-	// client is the client in which Object is alive.
-	client Storager
-	// metadata is the metadata of the object.
-	meta objectMeta
-
-	done uint32
-	m    sync.Mutex
 }
 
 // Borrowed from sync.Once
@@ -77,7 +56,7 @@ func (o *Object) statSlow() {
 func (o *Object) Get(key string) (interface{}, bool) {
 	o.stat()
 
-	v, ok := o.meta.m[key]
+	v, ok := o.meta[key]
 	if !ok {
 		return nil, false
 	}
@@ -86,6 +65,6 @@ func (o *Object) Get(key string) (interface{}, bool) {
 
 // Set will get meta from object meta.
 func (o *Object) Set(key string, value interface{}) *Object {
-	o.meta.m[key] = value
+	o.meta[key] = value
 	return o
 }
