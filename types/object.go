@@ -16,33 +16,19 @@ const (
 	ObjectTypeInvalid ObjectType = "invalid"
 )
 
-func NewObject(client Storager, id, name string, ty ObjectType) *Object {
-	return &Object{
-		ID:   id,
-		Name: name,
-		Type: ty,
-
+func NewObject(client Storager, done bool) *Object {
+	o := &Object{
 		client: client,
 		meta: objectMeta{
 			m: make(map[string]interface{}),
 		},
 	}
-}
 
-func NewStatedObject(client Storager, id, name string, ty ObjectType) *Object {
-	return &Object{
-		ID:   id,
-		Name: name,
-		Type: ty,
-
-		client: client,
-		meta: objectMeta{
-			m: make(map[string]interface{}),
-		},
-
-		// done == 1 means this object already stated, we don't need to stat it anymore.
-		done: 1,
+	if done {
+		// Done means this object already stated, we don't need to stat it anymore.
+		o.done = 1
 	}
+	return o
 }
 
 // Object may be a *File, *Dir or a *Stream.
