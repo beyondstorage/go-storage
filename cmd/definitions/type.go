@@ -11,9 +11,10 @@ import (
 
 // Data is the biggest container for all definitions.
 type Data struct {
-	Pairs   map[string]*Pair
-	Infos   []*Info
-	Service *Service
+	Pairs    map[string]*Pair
+	Infos    []*Info
+	InfosMap map[string][]*Info
+	Service  *Service
 
 	Interfaces    []*Interface
 	interfacesMap map[string]*Interface
@@ -94,14 +95,16 @@ func (p *Pair) FullName() string {
 
 // Info is the metadata definition.
 type Info struct {
-	Scope       string
-	Category    string
-	Name        string
-	Type        string
-	DisplayName string
-	ZeroValue   string
+	Scope     string
+	Category  string
+	Name      string
+	Type      string
+	ZeroValue string
+	Export    bool
 
 	Global bool
+
+	displayName string
 }
 
 // Format will formatGlobal info spec into Info
@@ -110,10 +113,25 @@ func (i *Info) Format(s *InfoSpec, global bool) {
 	i.Category = s.Category
 	i.Name = s.Name
 	i.Type = s.Type
-	i.DisplayName = s.DisplayName
+	i.displayName = s.DisplayName
 	i.ZeroValue = s.ZeroValue
+	i.Export = s.Export
 
 	i.Global = global
+}
+
+func (i *Info) TypeName() string {
+	if i.Export {
+		return templateutils.ToPascal(i.Name)
+	} else {
+		return templateutils.ToCamel(i.Name)
+	}
+}
+func (i *Info) DisplayName() string {
+	if i.displayName != "" {
+		return i.displayName
+	}
+	return templateutils.ToPascal(i.Name)
 }
 
 // Interface represents an interface
@@ -385,6 +403,15 @@ func (d *Data) FormatInfos(m *InfosSpec, global bool) []*Info {
 		i.Format(v, global)
 
 		is = append(is, i)
+	}
+
+	d.InfosMap = make(map[string][]*Info)
+	for _, v := range is {
+		v := v
+
+		typeName := fmt.Sprintf("%s-%s", v.Scope, v.Category)
+
+		d.InfosMap[typeName] = append(d.InfosMap[typeName], v)
 	}
 
 	return is

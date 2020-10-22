@@ -2,47 +2,62 @@
 package types
 
 import (
+    "fmt"
     "time"
 )
 
-// All available metadata.
-const (
-{{- range $_, $v := .Infos }}
-    {{- $pname := $v.Name | toPascal }}
-    {{- if $v.DisplayName }}
-        {{- $pname = $v.DisplayName }}
-    {{- end }}
-    {{ $v.Scope | toPascal }}{{ $v.Category | toPascal }}{{ $pname }} = "{{ $v.Name }}"
-{{- end }}
-)
+{{- range $k, $infos := .InfosMap }}
+    {{ $serviceName := $k | toCamel }}
 
-{{- range $_, $v := .Infos }}
-    {{ $pname := $v.Name | toPascal }}
-    {{- if $v.DisplayName }}
-        {{ $pname = $v.DisplayName }}
+type {{ $serviceName }} struct {
+    {{- range $_, $v := $infos }}
+    {{ $v.TypeName }} {{ $v.Type }}
     {{- end }}
-    {{ $serviceName := printf "%s%s" ($v.Scope | toPascal) ($v.Category | toPascal) }}
-    // Get{{ $pname }} will get {{ $v.Name }} value from metadata.
-    func (m {{ $serviceName }}) Get{{ $pname }}() ({{ $v.Type }}, bool)  {
-    v, ok := m.m[{{ $serviceName }}{{ $pname }}]
-    if !ok {
+
+     bit uint64
+    m map[string]interface{}
+}
+
+    {{- range $k, $v := $infos }}
+func (m {{ $serviceName }}) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
+    if m.bit & (1<<{{ $k }}) == 1 {
+        return m.{{ $v.TypeName }}, true
+    }
     {{- if $v.ZeroValue }}
         return {{ $v.ZeroValue }}, false
     {{- else }}
         return {{ $v.Type | zeroValue }}, false
     {{- end }}
-    }
-    return v.({{ $v.Type }}), true
-    }
+}
 
-    // MustGet{{ $v.Name }} will get {{ $v.Name }} value from metadata.
-    func (m {{ $serviceName }}) MustGet{{ $pname }}() {{ $v.Type }}  {
-    return m.m[{{ $serviceName }}{{ $pname }}].({{ $v.Type }})
+func (m {{ $serviceName }}) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
+    if m.bit & (1<<{{ $k }}) != 1 {
+        panic(fmt.Sprintf("{{ $serviceName }} {{ $v.Name }} is not set"))
     }
+    return m.{{ $v.TypeName }}
+}
 
-    // Set{{ $v.Name }} will set {{ $v.Name }} value into metadata.
-    func (m {{ $serviceName }}) Set{{ $pname }}(v {{ $v.Type }}) {{ $serviceName }} {
-    m.m[{{ $serviceName }}{{ $pname }}] = v
-    return m
-    }
+func (m {{ $serviceName }}) Set{{ $v.DisplayName }}(v {{ $v.Type }}) {
+    m.{{ $v.TypeName }} = v
+    m.bit |= 1<<{{ $k }}
+}
+    {{- end }}
+{{- end }}
+
+{{- range $k, $v := index .InfosMap "object-meta" }}
+func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
+    o.stat()
+
+    return o.meta.Get{{ $v.DisplayName }}()
+}
+
+func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
+    o.stat()
+
+    return o.meta.MustGet{{ $v.DisplayName }}()
+}
+
+func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) {
+    o.meta.Set{{ $v.DisplayName }}(v)
+}
 {{- end }}

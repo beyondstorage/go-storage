@@ -98,6 +98,7 @@ type InfoSpec struct {
 	Type        string `hcl:"type"`
 	DisplayName string `hcl:"display_name,optional"`
 	ZeroValue   string `hcl:"zero_value,optional"`
+	Export      bool   `hcl:"export,optional"`
 }
 
 // PairsSpec is the data parsed from HCL.

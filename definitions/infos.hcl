@@ -19,6 +19,14 @@ info "object" "meta" "updated_at" {
 info "storage" "meta" "location" {
   type = "string"
 }
+info "storage" "meta" "name" {
+  type   = "string"
+  export = true
+}
+info "storage" "meta" "work-dir" {
+  type   = "string"
+  export = true
+}
 info "storage" "statistic" "count" {
   type = "int64"
 }
