@@ -14,37 +14,40 @@ type storageMeta struct {
 	m   map[string]interface{}
 }
 
-func (m storageMeta) GetLocation() (string, bool) {
+func (m *storageMeta) GetLocation() (string, bool) {
 	if m.bit&(1<<0) == 1 {
 		return m.location, true
 	}
 	return "", false
 }
 
-func (m storageMeta) MustGetLocation() string {
+func (m *storageMeta) MustGetLocation() string {
 	if m.bit&(1<<0) != 1 {
 		panic(fmt.Sprintf("storage-meta location is not set"))
 	}
 	return m.location
 }
 
-func (m storageMeta) SetLocation(v string) {
+func (m *storageMeta) SetLocation(v string) *storageMeta {
 	m.location = v
 	m.bit |= 1 << 0
+	return m
 }
-func (m storageMeta) GetName() string {
+func (m *storageMeta) GetName() string {
 	return m.Name
 }
 
-func (m storageMeta) SetName(v string) {
+func (m *storageMeta) SetName(v string) *storageMeta {
 	m.Name = v
+	return m
 }
-func (m storageMeta) GetWorkDir() string {
+func (m *storageMeta) GetWorkDir() string {
 	return m.WorkDir
 }
 
-func (m storageMeta) SetWorkDir(v string) {
+func (m *storageMeta) SetWorkDir(v string) *storageMeta {
 	m.WorkDir = v
+	return m
 }
 
 type storageStatistic struct {
@@ -55,40 +58,42 @@ type storageStatistic struct {
 	m   map[string]interface{}
 }
 
-func (m storageStatistic) GetCount() (int64, bool) {
+func (m *storageStatistic) GetCount() (int64, bool) {
 	if m.bit&(1<<0) == 1 {
 		return m.count, true
 	}
 	return 0, false
 }
 
-func (m storageStatistic) MustGetCount() int64 {
+func (m *storageStatistic) MustGetCount() int64 {
 	if m.bit&(1<<0) != 1 {
 		panic(fmt.Sprintf("storage-statistic count is not set"))
 	}
 	return m.count
 }
 
-func (m storageStatistic) SetCount(v int64) {
+func (m *storageStatistic) SetCount(v int64) *storageStatistic {
 	m.count = v
 	m.bit |= 1 << 0
+	return m
 }
 
-func (m storageStatistic) GetSize() (int64, bool) {
+func (m *storageStatistic) GetSize() (int64, bool) {
 	if m.bit&(1<<1) == 1 {
 		return m.size, true
 	}
 	return 0, false
 }
 
-func (m storageStatistic) MustGetSize() int64 {
+func (m *storageStatistic) MustGetSize() int64 {
 	if m.bit&(1<<1) != 1 {
 		panic(fmt.Sprintf("storage-statistic size is not set"))
 	}
 	return m.size
 }
 
-func (m storageStatistic) SetSize(v int64) {
+func (m *storageStatistic) SetSize(v int64) *storageStatistic {
 	m.size = v
 	m.bit |= 1 << 1
+	return m
 }

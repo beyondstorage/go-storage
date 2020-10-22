@@ -32,8 +32,9 @@ func (o *Object) Get{{ $v.DisplayName }}() {{ $v.Type }} {
     return o.{{ $v.TypeName }}
 }
 
-func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) {
+func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
     o.{{ $v.TypeName }} = v
+    return o
 }
 {{- else }}
 
@@ -60,9 +61,10 @@ func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
     return o.{{ $v.TypeName }}
 }
 
-func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) {
+func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
     o.{{ $v.TypeName }} = v
     o.bit |= 1<<{{ $k }}
+    return o
 }
 {{- end }}
 {{- end }}

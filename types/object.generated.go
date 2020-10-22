@@ -48,9 +48,10 @@ func (o *Object) MustGetContentMD5() string {
 	return o.contentMd5
 }
 
-func (o *Object) SetContentMD5(v string) {
+func (o *Object) SetContentMD5(v string) *Object {
 	o.contentMd5 = v
 	o.bit |= 1 << 0
+	return o
 }
 
 func (o *Object) GetContentType() (string, bool) {
@@ -71,9 +72,10 @@ func (o *Object) MustGetContentType() string {
 	return o.contentType
 }
 
-func (o *Object) SetContentType(v string) {
+func (o *Object) SetContentType(v string) *Object {
 	o.contentType = v
 	o.bit |= 1 << 1
+	return o
 }
 
 func (o *Object) GetETag() (string, bool) {
@@ -94,23 +96,26 @@ func (o *Object) MustGetETag() string {
 	return o.etag
 }
 
-func (o *Object) SetETag(v string) {
+func (o *Object) SetETag(v string) *Object {
 	o.etag = v
 	o.bit |= 1 << 2
+	return o
 }
 func (o *Object) GetID() string {
 	return o.ID
 }
 
-func (o *Object) SetID(v string) {
+func (o *Object) SetID(v string) *Object {
 	o.ID = v
+	return o
 }
 func (o *Object) GetName() string {
 	return o.Name
 }
 
-func (o *Object) SetName(v string) {
+func (o *Object) SetName(v string) *Object {
 	o.Name = v
+	return o
 }
 
 func (o *Object) GetSize() (int64, bool) {
@@ -131,16 +136,18 @@ func (o *Object) MustGetSize() int64 {
 	return o.size
 }
 
-func (o *Object) SetSize(v int64) {
+func (o *Object) SetSize(v int64) *Object {
 	o.size = v
 	o.bit |= 1 << 5
+	return o
 }
 func (o *Object) GetType() ObjectType {
 	return o.Type
 }
 
-func (o *Object) SetType(v ObjectType) {
+func (o *Object) SetType(v ObjectType) *Object {
 	o.Type = v
+	return o
 }
 
 func (o *Object) GetUpdatedAt() (time.Time, bool) {
@@ -161,7 +168,8 @@ func (o *Object) MustGetUpdatedAt() time.Time {
 	return o.updatedAt
 }
 
-func (o *Object) SetUpdatedAt(v time.Time) {
+func (o *Object) SetUpdatedAt(v time.Time) *Object {
 	o.updatedAt = v
 	o.bit |= 1 << 7
+	return o
 }
