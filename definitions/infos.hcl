@@ -10,8 +10,23 @@ info "object" "meta" "etag" {
   type         = "string"
   display_name = "ETag"
 }
+info "object" "meta" "id" {
+  type    = "string"
+  export  = true
+  comment = "ID is the unique key in service."
+}
+info "object" "meta" "name" {
+  type    = "string"
+  export  = true
+  comment = "Name is the relative path towards service's WorkDir."
+}
 info "object" "meta" "size" {
   type = "int64"
+}
+info "object" "meta" "type" {
+  type    = "ObjectType"
+  export  = true
+  comment = "Type should be one of `file`, `stream`, `dir` or `invalid`."
 }
 info "object" "meta" "updated_at" {
   type = "time.Time"

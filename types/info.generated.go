@@ -3,110 +3,7 @@ package types
 
 import (
 	"fmt"
-	"time"
 )
-
-type objectMeta struct {
-	contentMd5  string
-	contentType string
-	etag        string
-	size        int64
-	updatedAt   time.Time
-
-	bit uint64
-	m   map[string]interface{}
-}
-
-func (m objectMeta) GetContentMD5() (string, bool) {
-	if m.bit&(1<<0) == 1 {
-		return m.contentMd5, true
-	}
-	return "", false
-}
-
-func (m objectMeta) MustGetContentMD5() string {
-	if m.bit&(1<<0) != 1 {
-		panic(fmt.Sprintf("objectMeta content-md5 is not set"))
-	}
-	return m.contentMd5
-}
-
-func (m objectMeta) SetContentMD5(v string) {
-	m.contentMd5 = v
-	m.bit |= 1 << 0
-}
-func (m objectMeta) GetContentType() (string, bool) {
-	if m.bit&(1<<1) == 1 {
-		return m.contentType, true
-	}
-	return "", false
-}
-
-func (m objectMeta) MustGetContentType() string {
-	if m.bit&(1<<1) != 1 {
-		panic(fmt.Sprintf("objectMeta content-type is not set"))
-	}
-	return m.contentType
-}
-
-func (m objectMeta) SetContentType(v string) {
-	m.contentType = v
-	m.bit |= 1 << 1
-}
-func (m objectMeta) GetETag() (string, bool) {
-	if m.bit&(1<<2) == 1 {
-		return m.etag, true
-	}
-	return "", false
-}
-
-func (m objectMeta) MustGetETag() string {
-	if m.bit&(1<<2) != 1 {
-		panic(fmt.Sprintf("objectMeta etag is not set"))
-	}
-	return m.etag
-}
-
-func (m objectMeta) SetETag(v string) {
-	m.etag = v
-	m.bit |= 1 << 2
-}
-func (m objectMeta) GetSize() (int64, bool) {
-	if m.bit&(1<<3) == 1 {
-		return m.size, true
-	}
-	return 0, false
-}
-
-func (m objectMeta) MustGetSize() int64 {
-	if m.bit&(1<<3) != 1 {
-		panic(fmt.Sprintf("objectMeta size is not set"))
-	}
-	return m.size
-}
-
-func (m objectMeta) SetSize(v int64) {
-	m.size = v
-	m.bit |= 1 << 3
-}
-func (m objectMeta) GetUpdatedAt() (time.Time, bool) {
-	if m.bit&(1<<4) == 1 {
-		return m.updatedAt, true
-	}
-	return time.Time{}, false
-}
-
-func (m objectMeta) MustGetUpdatedAt() time.Time {
-	if m.bit&(1<<4) != 1 {
-		panic(fmt.Sprintf("objectMeta updated_at is not set"))
-	}
-	return m.updatedAt
-}
-
-func (m objectMeta) SetUpdatedAt(v time.Time) {
-	m.updatedAt = v
-	m.bit |= 1 << 4
-}
 
 type storageMeta struct {
 	location string
@@ -126,7 +23,7 @@ func (m storageMeta) GetLocation() (string, bool) {
 
 func (m storageMeta) MustGetLocation() string {
 	if m.bit&(1<<0) != 1 {
-		panic(fmt.Sprintf("storageMeta location is not set"))
+		panic(fmt.Sprintf("storage-meta location is not set"))
 	}
 	return m.location
 }
@@ -135,41 +32,19 @@ func (m storageMeta) SetLocation(v string) {
 	m.location = v
 	m.bit |= 1 << 0
 }
-func (m storageMeta) GetName() (string, bool) {
-	if m.bit&(1<<1) == 1 {
-		return m.Name, true
-	}
-	return "", false
-}
-
-func (m storageMeta) MustGetName() string {
-	if m.bit&(1<<1) != 1 {
-		panic(fmt.Sprintf("storageMeta name is not set"))
-	}
+func (m storageMeta) GetName() string {
 	return m.Name
 }
 
 func (m storageMeta) SetName(v string) {
 	m.Name = v
-	m.bit |= 1 << 1
 }
-func (m storageMeta) GetWorkDir() (string, bool) {
-	if m.bit&(1<<2) == 1 {
-		return m.WorkDir, true
-	}
-	return "", false
-}
-
-func (m storageMeta) MustGetWorkDir() string {
-	if m.bit&(1<<2) != 1 {
-		panic(fmt.Sprintf("storageMeta work-dir is not set"))
-	}
+func (m storageMeta) GetWorkDir() string {
 	return m.WorkDir
 }
 
 func (m storageMeta) SetWorkDir(v string) {
 	m.WorkDir = v
-	m.bit |= 1 << 2
 }
 
 type storageStatistic struct {
@@ -189,7 +64,7 @@ func (m storageStatistic) GetCount() (int64, bool) {
 
 func (m storageStatistic) MustGetCount() int64 {
 	if m.bit&(1<<0) != 1 {
-		panic(fmt.Sprintf("storageStatistic count is not set"))
+		panic(fmt.Sprintf("storage-statistic count is not set"))
 	}
 	return m.count
 }
@@ -198,6 +73,7 @@ func (m storageStatistic) SetCount(v int64) {
 	m.count = v
 	m.bit |= 1 << 0
 }
+
 func (m storageStatistic) GetSize() (int64, bool) {
 	if m.bit&(1<<1) == 1 {
 		return m.size, true
@@ -207,7 +83,7 @@ func (m storageStatistic) GetSize() (int64, bool) {
 
 func (m storageStatistic) MustGetSize() int64 {
 	if m.bit&(1<<1) != 1 {
-		panic(fmt.Sprintf("storageStatistic size is not set"))
+		panic(fmt.Sprintf("storage-statistic size is not set"))
 	}
 	return m.size
 }
@@ -215,79 +91,4 @@ func (m storageStatistic) MustGetSize() int64 {
 func (m storageStatistic) SetSize(v int64) {
 	m.size = v
 	m.bit |= 1 << 1
-}
-func (o *Object) GetContentMD5() (string, bool) {
-	o.stat()
-
-	return o.meta.GetContentMD5()
-}
-
-func (o *Object) MustGetContentMD5() string {
-	o.stat()
-
-	return o.meta.MustGetContentMD5()
-}
-
-func (o *Object) SetContentMD5(v string) {
-	o.meta.SetContentMD5(v)
-}
-func (o *Object) GetContentType() (string, bool) {
-	o.stat()
-
-	return o.meta.GetContentType()
-}
-
-func (o *Object) MustGetContentType() string {
-	o.stat()
-
-	return o.meta.MustGetContentType()
-}
-
-func (o *Object) SetContentType(v string) {
-	o.meta.SetContentType(v)
-}
-func (o *Object) GetETag() (string, bool) {
-	o.stat()
-
-	return o.meta.GetETag()
-}
-
-func (o *Object) MustGetETag() string {
-	o.stat()
-
-	return o.meta.MustGetETag()
-}
-
-func (o *Object) SetETag(v string) {
-	o.meta.SetETag(v)
-}
-func (o *Object) GetSize() (int64, bool) {
-	o.stat()
-
-	return o.meta.GetSize()
-}
-
-func (o *Object) MustGetSize() int64 {
-	o.stat()
-
-	return o.meta.MustGetSize()
-}
-
-func (o *Object) SetSize(v int64) {
-	o.meta.SetSize(v)
-}
-func (o *Object) GetUpdatedAt() (time.Time, bool) {
-	o.stat()
-
-	return o.meta.GetUpdatedAt()
-}
-
-func (o *Object) MustGetUpdatedAt() time.Time {
-	o.stat()
-
-	return o.meta.MustGetUpdatedAt()
-}
-
-func (o *Object) SetUpdatedAt(v time.Time) {
-	o.meta.SetUpdatedAt(v)
 }
