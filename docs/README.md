@@ -110,4 +110,4 @@ if err != nil {
 
 ## Sponsor
 
-[](./imgs/vercel.svg)
+<img src="./imgs/vercel.svg">
