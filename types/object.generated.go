@@ -7,6 +7,18 @@ import (
 	"time"
 )
 
+// Field index in object bit
+const (
+	objectIndexContentMd5  = 1 << 0
+	objectIndexContentType = 1 << 1
+	objectIndexEtag        = 1 << 2
+	objectIndexID          = 1 << 3
+	objectIndexName        = 1 << 4
+	objectIndexSize        = 1 << 5
+	objectIndexType        = 1 << 6
+	objectIndexUpdatedAt   = 1 << 7
+)
+
 type Object struct {
 	contentMd5  string
 	contentType string
@@ -34,7 +46,7 @@ type Object struct {
 func (o *Object) GetContentMD5() (string, bool) {
 	o.stat()
 
-	if o.bit&(1<<0) == 1 {
+	if o.bit&objectIndexContentMd5 == 1 {
 		return o.contentMd5, true
 	}
 	return "", false
@@ -43,7 +55,7 @@ func (o *Object) GetContentMD5() (string, bool) {
 func (o *Object) MustGetContentMD5() string {
 	o.stat()
 
-	if o.bit&(1<<0) != 1 {
+	if o.bit&objectIndexContentMd5 != 1 {
 		panic(fmt.Sprintf("object content-md5 is not set"))
 	}
 	return o.contentMd5
@@ -51,14 +63,14 @@ func (o *Object) MustGetContentMD5() string {
 
 func (o *Object) SetContentMD5(v string) *Object {
 	o.contentMd5 = v
-	o.bit |= 1 << 0
+	o.bit |= objectIndexContentMd5
 	return o
 }
 
 func (o *Object) GetContentType() (string, bool) {
 	o.stat()
 
-	if o.bit&(1<<1) == 1 {
+	if o.bit&objectIndexContentType == 1 {
 		return o.contentType, true
 	}
 	return "", false
@@ -67,7 +79,7 @@ func (o *Object) GetContentType() (string, bool) {
 func (o *Object) MustGetContentType() string {
 	o.stat()
 
-	if o.bit&(1<<1) != 1 {
+	if o.bit&objectIndexContentType != 1 {
 		panic(fmt.Sprintf("object content-type is not set"))
 	}
 	return o.contentType
@@ -75,14 +87,14 @@ func (o *Object) MustGetContentType() string {
 
 func (o *Object) SetContentType(v string) *Object {
 	o.contentType = v
-	o.bit |= 1 << 1
+	o.bit |= objectIndexContentType
 	return o
 }
 
 func (o *Object) GetETag() (string, bool) {
 	o.stat()
 
-	if o.bit&(1<<2) == 1 {
+	if o.bit&objectIndexEtag == 1 {
 		return o.etag, true
 	}
 	return "", false
@@ -91,7 +103,7 @@ func (o *Object) GetETag() (string, bool) {
 func (o *Object) MustGetETag() string {
 	o.stat()
 
-	if o.bit&(1<<2) != 1 {
+	if o.bit&objectIndexEtag != 1 {
 		panic(fmt.Sprintf("object etag is not set"))
 	}
 	return o.etag
@@ -99,7 +111,7 @@ func (o *Object) MustGetETag() string {
 
 func (o *Object) SetETag(v string) *Object {
 	o.etag = v
-	o.bit |= 1 << 2
+	o.bit |= objectIndexEtag
 	return o
 }
 func (o *Object) GetID() string {
@@ -122,7 +134,7 @@ func (o *Object) SetName(v string) *Object {
 func (o *Object) GetSize() (int64, bool) {
 	o.stat()
 
-	if o.bit&(1<<5) == 1 {
+	if o.bit&objectIndexSize == 1 {
 		return o.size, true
 	}
 	return 0, false
@@ -131,7 +143,7 @@ func (o *Object) GetSize() (int64, bool) {
 func (o *Object) MustGetSize() int64 {
 	o.stat()
 
-	if o.bit&(1<<5) != 1 {
+	if o.bit&objectIndexSize != 1 {
 		panic(fmt.Sprintf("object size is not set"))
 	}
 	return o.size
@@ -139,7 +151,7 @@ func (o *Object) MustGetSize() int64 {
 
 func (o *Object) SetSize(v int64) *Object {
 	o.size = v
-	o.bit |= 1 << 5
+	o.bit |= objectIndexSize
 	return o
 }
 func (o *Object) GetType() ObjectType {
@@ -154,7 +166,7 @@ func (o *Object) SetType(v ObjectType) *Object {
 func (o *Object) GetUpdatedAt() (time.Time, bool) {
 	o.stat()
 
-	if o.bit&(1<<7) == 1 {
+	if o.bit&objectIndexUpdatedAt == 1 {
 		return o.updatedAt, true
 	}
 	return time.Time{}, false
@@ -163,7 +175,7 @@ func (o *Object) GetUpdatedAt() (time.Time, bool) {
 func (o *Object) MustGetUpdatedAt() time.Time {
 	o.stat()
 
-	if o.bit&(1<<7) != 1 {
+	if o.bit&objectIndexUpdatedAt != 1 {
 		panic(fmt.Sprintf("object updated_at is not set"))
 	}
 	return o.updatedAt
@@ -171,7 +183,7 @@ func (o *Object) MustGetUpdatedAt() time.Time {
 
 func (o *Object) SetUpdatedAt(v time.Time) *Object {
 	o.updatedAt = v
-	o.bit |= 1 << 7
+	o.bit |= objectIndexUpdatedAt
 	return o
 }
 
