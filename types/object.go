@@ -40,16 +40,16 @@ func (o *Object) statSlow() {
 	o.m.Lock()
 	defer o.m.Unlock()
 
+	// No matter stat success or not, we only execute once.
 	defer atomic.StoreUint32(&o.done, 1)
 
-	if o.done == 0 {
-		ob, err := o.client.Stat(o.Name)
-		if err != nil {
-			// Ignore all errors while object stat, just keep them empty
-			return
-		}
-		o.clone(ob)
+	ob, err := o.client.Stat(o.Name)
+	if err != nil {
+		// Ignore all errors while object stat, just keep them empty
+		return
 	}
+
+	o.clone(ob)
 }
 
 // Get will get meta from object meta.
