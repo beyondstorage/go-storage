@@ -20,6 +20,7 @@ type Object struct {
 	// m stores storage related metadata.
     meta map[string]interface{}
 
+    // bit used as a bitmap for object value, 0 means not set, 1 means set
     bit uint64
 	done uint32
 	m    sync.Mutex
