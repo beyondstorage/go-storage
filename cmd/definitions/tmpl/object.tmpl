@@ -7,6 +7,13 @@ import (
     "sync"
 )
 
+// Field index in object bit
+const (
+{{- range $k, $v := .ObjectMeta }}
+    objectIndex{{ $v.Name | toPascal }} = 1<<{{ $k }}
+{{- end }}
+)
+
 type Object struct {
 {{- range $k, $v := .ObjectMeta }}
     {{- if $v.Comment }}
@@ -42,7 +49,7 @@ func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
 func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
     o.stat()
 
-    if o.bit & (1<<{{ $k }}) == 1 {
+    if o.bit & objectIndex{{ $v.Name | toPascal }} == 1 {
         return o.{{ $v.TypeName }}, true
     }
 
@@ -56,7 +63,7 @@ func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
 func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
     o.stat()
 
-    if o.bit & (1<<{{ $k }}) != 1 {
+    if o.bit & objectIndex{{ $v.Name | toPascal }} != 1 {
         panic(fmt.Sprintf("object {{ $v.Name }} is not set"))
     }
     return o.{{ $v.TypeName }}
@@ -64,7 +71,7 @@ func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
 
 func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
     o.{{ $v.TypeName }} = v
-    o.bit |= 1<<{{ $k }}
+    o.bit |= objectIndex{{ $v.Name | toPascal }}
     return o
 }
 {{- end }}

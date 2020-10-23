@@ -5,24 +5,32 @@ import (
 	"fmt"
 )
 
+// Field index in storageMeta bit
+const (
+	storageMetaIndexLocation = 1 << 0
+	storageMetaIndexName     = 1 << 1
+	storageMetaIndexWorkDir  = 1 << 2
+)
+
 type storageMeta struct {
 	location string
 	Name     string
 	WorkDir  string
 
+	// bit used as a bitmap for object value, 0 means not set, 1 means set
 	bit uint64
 	m   map[string]interface{}
 }
 
 func (m *storageMeta) GetLocation() (string, bool) {
-	if m.bit&(1<<0) == 1 {
+	if m.bit&storageMetaIndexLocation == 1 {
 		return m.location, true
 	}
 	return "", false
 }
 
 func (m *storageMeta) MustGetLocation() string {
-	if m.bit&(1<<0) != 1 {
+	if m.bit&storageMetaIndexLocation != 1 {
 		panic(fmt.Sprintf("storage-meta location is not set"))
 	}
 	return m.location
@@ -30,7 +38,7 @@ func (m *storageMeta) MustGetLocation() string {
 
 func (m *storageMeta) SetLocation(v string) *storageMeta {
 	m.location = v
-	m.bit |= 1 << 0
+	m.bit |= storageMetaIndexLocation
 	return m
 }
 func (m *storageMeta) GetName() string {
@@ -50,23 +58,30 @@ func (m *storageMeta) SetWorkDir(v string) *storageMeta {
 	return m
 }
 
+// Field index in storageStatistic bit
+const (
+	storageStatisticIndexCount = 1 << 0
+	storageStatisticIndexSize  = 1 << 1
+)
+
 type storageStatistic struct {
 	count int64
 	size  int64
 
+	// bit used as a bitmap for object value, 0 means not set, 1 means set
 	bit uint64
 	m   map[string]interface{}
 }
 
 func (m *storageStatistic) GetCount() (int64, bool) {
-	if m.bit&(1<<0) == 1 {
+	if m.bit&storageStatisticIndexCount == 1 {
 		return m.count, true
 	}
 	return 0, false
 }
 
 func (m *storageStatistic) MustGetCount() int64 {
-	if m.bit&(1<<0) != 1 {
+	if m.bit&storageStatisticIndexCount != 1 {
 		panic(fmt.Sprintf("storage-statistic count is not set"))
 	}
 	return m.count
@@ -74,19 +89,19 @@ func (m *storageStatistic) MustGetCount() int64 {
 
 func (m *storageStatistic) SetCount(v int64) *storageStatistic {
 	m.count = v
-	m.bit |= 1 << 0
+	m.bit |= storageStatisticIndexCount
 	return m
 }
 
 func (m *storageStatistic) GetSize() (int64, bool) {
-	if m.bit&(1<<1) == 1 {
+	if m.bit&storageStatisticIndexSize == 1 {
 		return m.size, true
 	}
 	return 0, false
 }
 
 func (m *storageStatistic) MustGetSize() int64 {
-	if m.bit&(1<<1) != 1 {
+	if m.bit&storageStatisticIndexSize != 1 {
 		panic(fmt.Sprintf("storage-statistic size is not set"))
 	}
 	return m.size
@@ -94,6 +109,6 @@ func (m *storageStatistic) MustGetSize() int64 {
 
 func (m *storageStatistic) SetSize(v int64) *storageStatistic {
 	m.size = v
-	m.bit |= 1 << 1
+	m.bit |= storageStatisticIndexSize
 	return m
 }

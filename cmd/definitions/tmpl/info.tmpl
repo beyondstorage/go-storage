@@ -6,14 +6,22 @@ import (
 )
 
 {{- range $k, $infos := .InfosMap }}
-    {{ $serviceName := $k | toCamel }}
+{{ $serviceName := $k | toCamel }}
+
+// Field index in {{$serviceName}} bit
+const (
+{{- range $k, $v := $infos }}
+    {{$serviceName}}Index{{ $v.Name | toPascal }} = 1<<{{ $k }}
+{{- end }}
+)
 
 type {{ $serviceName }} struct {
     {{- range $_, $v := $infos }}
     {{ $v.TypeName }} {{ $v.Type }}
     {{- end }}
 
-     bit uint64
+    // bit used as a bitmap for object value, 0 means not set, 1 means set
+    bit uint64
     m map[string]interface{}
 }
 
@@ -30,7 +38,7 @@ func (m *{{ $serviceName }}) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *{{ $servi
 {{- else }}
 
 func (m *{{ $serviceName }}) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
-    if m.bit & (1<<{{ $k }}) == 1 {
+    if m.bit & {{$serviceName}}Index{{ $v.Name | toPascal }} == 1 {
         return m.{{ $v.TypeName }}, true
     }
     {{- if $v.ZeroValue }}
@@ -41,7 +49,7 @@ func (m *{{ $serviceName }}) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
 }
 
 func (m *{{ $serviceName }}) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
-    if m.bit & (1<<{{ $k }}) != 1 {
+    if m.bit & {{$serviceName}}Index{{ $v.Name | toPascal }} != 1 {
         panic(fmt.Sprintf("{{ $serviceName | toKebab }} {{ $v.Name }} is not set"))
     }
     return m.{{ $v.TypeName }}
@@ -49,7 +57,7 @@ func (m *{{ $serviceName }}) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
 
 func (m *{{ $serviceName }}) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *{{ $serviceName }} {
     m.{{ $v.TypeName }} = v
-    m.bit |= 1<<{{ $k }}
+    m.bit |= {{$serviceName}}Index{{ $v.Name | toPascal }}
     return m
 }
 {{- end }}
