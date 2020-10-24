@@ -110,4 +110,6 @@ if err != nil {
 
 ## Sponsor
 
-<img src="./imgs/vercel.svg">
+<a href="https://vercel.com?utm_source=aos-dev&utm_campaign=oss">
+    <img src="./imgs/vercel.svg">
+</a>
