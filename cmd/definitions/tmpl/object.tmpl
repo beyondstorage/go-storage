@@ -49,7 +49,7 @@ func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
 func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
     o.stat()
 
-    if o.bit & objectIndex{{ $v.Name | toPascal }} == 1 {
+    if o.bit & objectIndex{{ $v.Name | toPascal }} != 0 {
         return o.{{ $v.TypeName }}, true
     }
 
@@ -63,7 +63,7 @@ func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
 func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
     o.stat()
 
-    if o.bit & objectIndex{{ $v.Name | toPascal }} != 1 {
+    if o.bit & objectIndex{{ $v.Name | toPascal }} == 0 {
         panic(fmt.Sprintf("object {{ $v.Name }} is not set"))
     }
     return o.{{ $v.TypeName }}

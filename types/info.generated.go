@@ -23,14 +23,14 @@ type storageMeta struct {
 }
 
 func (m *storageMeta) GetLocation() (string, bool) {
-	if m.bit&storageMetaIndexLocation == 1 {
+	if m.bit&storageMetaIndexLocation != 0 {
 		return m.location, true
 	}
 	return "", false
 }
 
 func (m *storageMeta) MustGetLocation() string {
-	if m.bit&storageMetaIndexLocation != 1 {
+	if m.bit&storageMetaIndexLocation == 0 {
 		panic(fmt.Sprintf("storage-meta location is not set"))
 	}
 	return m.location
@@ -74,14 +74,14 @@ type storageStatistic struct {
 }
 
 func (m *storageStatistic) GetCount() (int64, bool) {
-	if m.bit&storageStatisticIndexCount == 1 {
+	if m.bit&storageStatisticIndexCount != 0 {
 		return m.count, true
 	}
 	return 0, false
 }
 
 func (m *storageStatistic) MustGetCount() int64 {
-	if m.bit&storageStatisticIndexCount != 1 {
+	if m.bit&storageStatisticIndexCount == 0 {
 		panic(fmt.Sprintf("storage-statistic count is not set"))
 	}
 	return m.count
@@ -94,14 +94,14 @@ func (m *storageStatistic) SetCount(v int64) *storageStatistic {
 }
 
 func (m *storageStatistic) GetSize() (int64, bool) {
-	if m.bit&storageStatisticIndexSize == 1 {
+	if m.bit&storageStatisticIndexSize != 0 {
 		return m.size, true
 	}
 	return 0, false
 }
 
 func (m *storageStatistic) MustGetSize() int64 {
-	if m.bit&storageStatisticIndexSize != 1 {
+	if m.bit&storageStatisticIndexSize == 0 {
 		panic(fmt.Sprintf("storage-statistic size is not set"))
 	}
 	return m.size
