@@ -46,7 +46,7 @@ type Object struct {
 func (o *Object) GetContentMD5() (string, bool) {
 	o.stat()
 
-	if o.bit&objectIndexContentMd5 == 1 {
+	if o.bit&objectIndexContentMd5 != 0 {
 		return o.contentMd5, true
 	}
 	return "", false
@@ -55,7 +55,7 @@ func (o *Object) GetContentMD5() (string, bool) {
 func (o *Object) MustGetContentMD5() string {
 	o.stat()
 
-	if o.bit&objectIndexContentMd5 != 1 {
+	if o.bit&objectIndexContentMd5 == 0 {
 		panic(fmt.Sprintf("object content-md5 is not set"))
 	}
 	return o.contentMd5
@@ -70,7 +70,7 @@ func (o *Object) SetContentMD5(v string) *Object {
 func (o *Object) GetContentType() (string, bool) {
 	o.stat()
 
-	if o.bit&objectIndexContentType == 1 {
+	if o.bit&objectIndexContentType != 0 {
 		return o.contentType, true
 	}
 	return "", false
@@ -79,7 +79,7 @@ func (o *Object) GetContentType() (string, bool) {
 func (o *Object) MustGetContentType() string {
 	o.stat()
 
-	if o.bit&objectIndexContentType != 1 {
+	if o.bit&objectIndexContentType == 0 {
 		panic(fmt.Sprintf("object content-type is not set"))
 	}
 	return o.contentType
@@ -94,7 +94,7 @@ func (o *Object) SetContentType(v string) *Object {
 func (o *Object) GetETag() (string, bool) {
 	o.stat()
 
-	if o.bit&objectIndexEtag == 1 {
+	if o.bit&objectIndexEtag != 0 {
 		return o.etag, true
 	}
 	return "", false
@@ -103,7 +103,7 @@ func (o *Object) GetETag() (string, bool) {
 func (o *Object) MustGetETag() string {
 	o.stat()
 
-	if o.bit&objectIndexEtag != 1 {
+	if o.bit&objectIndexEtag == 0 {
 		panic(fmt.Sprintf("object etag is not set"))
 	}
 	return o.etag
@@ -134,7 +134,7 @@ func (o *Object) SetName(v string) *Object {
 func (o *Object) GetSize() (int64, bool) {
 	o.stat()
 
-	if o.bit&objectIndexSize == 1 {
+	if o.bit&objectIndexSize != 0 {
 		return o.size, true
 	}
 	return 0, false
@@ -143,7 +143,7 @@ func (o *Object) GetSize() (int64, bool) {
 func (o *Object) MustGetSize() int64 {
 	o.stat()
 
-	if o.bit&objectIndexSize != 1 {
+	if o.bit&objectIndexSize == 0 {
 		panic(fmt.Sprintf("object size is not set"))
 	}
 	return o.size
@@ -166,7 +166,7 @@ func (o *Object) SetType(v ObjectType) *Object {
 func (o *Object) GetUpdatedAt() (time.Time, bool) {
 	o.stat()
 
-	if o.bit&objectIndexUpdatedAt == 1 {
+	if o.bit&objectIndexUpdatedAt != 0 {
 		return o.updatedAt, true
 	}
 	return time.Time{}, false
@@ -175,7 +175,7 @@ func (o *Object) GetUpdatedAt() (time.Time, bool) {
 func (o *Object) MustGetUpdatedAt() time.Time {
 	o.stat()
 
-	if o.bit&objectIndexUpdatedAt != 1 {
+	if o.bit&objectIndexUpdatedAt == 0 {
 		panic(fmt.Sprintf("object updated_at is not set"))
 	}
 	return o.updatedAt
