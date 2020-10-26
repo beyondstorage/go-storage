@@ -8,6 +8,10 @@ pair "context" {
   description = "context in all request"
   default     = "context.Background()"
 }
+pair "continuation_token" {
+  type        = "string"
+  description = "specify the continuation token for list_dir or list_prefix."
+}
 pair "credential" {
   type        = "*credential.Provider"
   description = "specify how to provide credential for service or storage"

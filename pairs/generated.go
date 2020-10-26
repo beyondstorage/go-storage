@@ -16,6 +16,8 @@ const (
 	Checksum = "checksum"
 	// Context will // Context context in all request
 	Context = "context"
+	// ContinuationToken will // ContinuationToken specify the continuation token for list_dir or list_prefix.
+	ContinuationToken = "continuation_token"
 	// Credential will // Credential specify how to provide credential for service or storage
 	Credential = "credential"
 	// Endpoint will // Endpoint specify how to provide endpoint for service or storage
@@ -57,6 +59,15 @@ func WithChecksum(v string) *types.Pair {
 func WithContext(v context.Context) *types.Pair {
 	return &types.Pair{
 		Key:   Context,
+		Value: v,
+	}
+}
+
+// WithContinuationToken will apply continuation_token value to Options
+// This pair is used to // ContinuationToken specify the continuation token for list_dir or list_prefix.
+func WithContinuationToken(v string) *types.Pair {
+	return &types.Pair{
+		Key:   ContinuationToken,
 		Value: v,
 	}
 }
@@ -202,6 +213,19 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 					Err:   ErrPairTypeMismatch,
 					Key:   Context,
 					Type:  "context.Context",
+					Value: v,
+				}
+			}
+		case ContinuationToken:
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   ContinuationToken,
+					Type:  "string",
 					Value: v,
 				}
 			}
