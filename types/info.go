@@ -1,7 +1,7 @@
 package types
 
 // StorageMeta is the static metadata for StorageMeta.
-type StorageMeta = storageMeta
+type StorageMeta storageMeta
 
 // NewStorageMeta will create a new StorageMeta metadata.
 func NewStorageMeta() StorageMeta {
@@ -11,7 +11,7 @@ func NewStorageMeta() StorageMeta {
 }
 
 // StorageStatistic is the statistic metadata for StorageMeta.
-type StorageStatistic = storageStatistic
+type StorageStatistic storageStatistic
 
 // NewStorageStatistic will create a new StorageMeta statistic.
 func NewStorageStatistic() StorageStatistic {
