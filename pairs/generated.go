@@ -47,8 +47,8 @@ const (
 
 // WithChecksum will apply checksum value to Options
 // This pair is used to // Checksum specify checksum for this request, could be used as content md5 or etag
-func WithChecksum(v string) *types.Pair {
-	return &types.Pair{
+func WithChecksum(v string) types.Pair {
+	return types.Pair{
 		Key:   Checksum,
 		Value: v,
 	}
@@ -56,8 +56,8 @@ func WithChecksum(v string) *types.Pair {
 
 // WithContext will apply context value to Options
 // This pair is used to // Context context in all request
-func WithContext(v context.Context) *types.Pair {
-	return &types.Pair{
+func WithContext(v context.Context) types.Pair {
+	return types.Pair{
 		Key:   Context,
 		Value: v,
 	}
@@ -65,8 +65,8 @@ func WithContext(v context.Context) *types.Pair {
 
 // WithContinuationToken will apply continuation_token value to Options
 // This pair is used to // ContinuationToken specify the continuation token for list_dir or list_prefix.
-func WithContinuationToken(v string) *types.Pair {
-	return &types.Pair{
+func WithContinuationToken(v string) types.Pair {
+	return types.Pair{
 		Key:   ContinuationToken,
 		Value: v,
 	}
@@ -74,8 +74,8 @@ func WithContinuationToken(v string) *types.Pair {
 
 // WithCredential will apply credential value to Options
 // This pair is used to // Credential specify how to provide credential for service or storage
-func WithCredential(v *credential.Provider) *types.Pair {
-	return &types.Pair{
+func WithCredential(v *credential.Provider) types.Pair {
+	return types.Pair{
 		Key:   Credential,
 		Value: v,
 	}
@@ -83,8 +83,8 @@ func WithCredential(v *credential.Provider) *types.Pair {
 
 // WithEndpoint will apply endpoint value to Options
 // This pair is used to // Endpoint specify how to provide endpoint for service or storage
-func WithEndpoint(v endpoint.Provider) *types.Pair {
-	return &types.Pair{
+func WithEndpoint(v endpoint.Provider) types.Pair {
+	return types.Pair{
 		Key:   Endpoint,
 		Value: v,
 	}
@@ -92,8 +92,8 @@ func WithEndpoint(v endpoint.Provider) *types.Pair {
 
 // WithExpire will apply expire value to Options
 // This pair is used to // Expire specify when the url returned by reach will expire
-func WithExpire(v int) *types.Pair {
-	return &types.Pair{
+func WithExpire(v int) types.Pair {
+	return types.Pair{
 		Key:   Expire,
 		Value: v,
 	}
@@ -101,8 +101,8 @@ func WithExpire(v int) *types.Pair {
 
 // WithHTTPClientOptions will apply http_client_options value to Options
 // This pair is used to // HTTPClientOptions sepcify the options for the http client
-func WithHTTPClientOptions(v *httpclient.Options) *types.Pair {
-	return &types.Pair{
+func WithHTTPClientOptions(v *httpclient.Options) types.Pair {
+	return types.Pair{
 		Key:   HTTPClientOptions,
 		Value: v,
 	}
@@ -110,8 +110,8 @@ func WithHTTPClientOptions(v *httpclient.Options) *types.Pair {
 
 // WithIndex will apply index value to Options
 // This pair is used to // Index specify the index of this segment
-func WithIndex(v int) *types.Pair {
-	return &types.Pair{
+func WithIndex(v int) types.Pair {
+	return types.Pair{
 		Key:   Index,
 		Value: v,
 	}
@@ -119,8 +119,8 @@ func WithIndex(v int) *types.Pair {
 
 // WithLocation will apply location value to Options
 // This pair is used to // Location specify the location for service or storage
-func WithLocation(v string) *types.Pair {
-	return &types.Pair{
+func WithLocation(v string) types.Pair {
+	return types.Pair{
 		Key:   Location,
 		Value: v,
 	}
@@ -128,8 +128,8 @@ func WithLocation(v string) *types.Pair {
 
 // WithName will apply name value to Options
 // This pair is used to // Name specify the storage name
-func WithName(v string) *types.Pair {
-	return &types.Pair{
+func WithName(v string) types.Pair {
+	return types.Pair{
 		Key:   Name,
 		Value: v,
 	}
@@ -137,8 +137,8 @@ func WithName(v string) *types.Pair {
 
 // WithOffset will apply offset value to Options
 // This pair is used to // Offset specify offset for this request, storage will seek to this offset before read
-func WithOffset(v int64) *types.Pair {
-	return &types.Pair{
+func WithOffset(v int64) types.Pair {
+	return types.Pair{
 		Key:   Offset,
 		Value: v,
 	}
@@ -146,8 +146,8 @@ func WithOffset(v int64) *types.Pair {
 
 // WithProject will apply project value to Options
 // This pair is used to // Project specify project name/id for this service or storage
-func WithProject(v string) *types.Pair {
-	return &types.Pair{
+func WithProject(v string) types.Pair {
+	return types.Pair{
 		Key:   Project,
 		Value: v,
 	}
@@ -155,8 +155,8 @@ func WithProject(v string) *types.Pair {
 
 // WithReadCallbackFunc will apply read_callback_func value to Options
 // This pair is used to // ReadCallbackFunc specify what todo every time we read data from source
-func WithReadCallbackFunc(v func([]byte)) *types.Pair {
-	return &types.Pair{
+func WithReadCallbackFunc(v func([]byte)) types.Pair {
+	return types.Pair{
 		Key:   ReadCallbackFunc,
 		Value: v,
 	}
@@ -164,8 +164,8 @@ func WithReadCallbackFunc(v func([]byte)) *types.Pair {
 
 // WithSize will apply size value to Options
 // This pair is used to // Size specify size for this request, storage will only read limited content data
-func WithSize(v int64) *types.Pair {
-	return &types.Pair{
+func WithSize(v int64) types.Pair {
+	return types.Pair{
 		Key:   Size,
 		Value: v,
 	}
@@ -174,16 +174,16 @@ func WithSize(v int64) *types.Pair {
 // WithWorkDir will apply work_dir value to Options
 // This pair is used to // WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
 //  For fs storage service on windows platform, the behavior is undefined.
-func WithWorkDir(v string) *types.Pair {
-	return &types.Pair{
+func WithWorkDir(v string) types.Pair {
+	return types.Pair{
 		Key:   WorkDir,
 		Value: v,
 	}
 }
 
 // Parse will parse a k-v map to pairs slice.
-func Parse(m map[string]interface{}) ([]*types.Pair, error) {
-	pairs := make([]*types.Pair, 0, len(m))
+func Parse(m map[string]interface{}) ([]types.Pair, error) {
+	pairs := make([]types.Pair, 0, len(m))
 
 	var err error
 
@@ -454,7 +454,7 @@ func Parse(m map[string]interface{}) ([]*types.Pair, error) {
 		default:
 			continue
 		}
-		pairs = append(pairs, &types.Pair{Key: k, Value: pv})
+		pairs = append(pairs, types.Pair{Key: k, Value: pv})
 	}
 
 	return pairs, nil
