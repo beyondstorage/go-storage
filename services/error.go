@@ -27,7 +27,7 @@ type InitError struct {
 	Type string
 	Err  error
 
-	Pairs []*types.Pair
+	Pairs []types.Pair
 }
 
 func (e *InitError) Error() string {
@@ -112,7 +112,7 @@ func (e *MetadataUnrecognizedError) Unwrap() error {
 }
 
 // NewPairUnsupportedError will create a new PairUnsupportedError.
-func NewPairUnsupportedError(pair *types.Pair) *PairUnsupportedError {
+func NewPairUnsupportedError(pair types.Pair) *PairUnsupportedError {
 	return &PairUnsupportedError{
 		Err:  ErrCapabilityInsufficient,
 		Pair: pair,
@@ -123,7 +123,7 @@ func NewPairUnsupportedError(pair *types.Pair) *PairUnsupportedError {
 type PairUnsupportedError struct {
 	Err error
 
-	Pair *types.Pair
+	Pair types.Pair
 }
 
 func (e *PairUnsupportedError) Error() string {

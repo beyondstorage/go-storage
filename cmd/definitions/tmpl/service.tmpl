@@ -51,8 +51,8 @@ const (
 {{- $pname := $v.Name | toPascal }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options
 // This pair is used to {{ $v.Description }}
-func With{{ $pname }}(v {{ $v.Type }}) *Pair {
-        return &Pair{
+func With{{ $pname }}(v {{ $v.Type }}) Pair {
+        return Pair{
         Key: Pair{{ $pname }},
         Value: v,
     }
@@ -127,7 +127,7 @@ func With{{ $pname }}(v {{ $v.Type }}) *Pair {
 
     // pair{{ $pn }}{{ $fnk }} is the parsed struct
     type pair{{ $pn }}{{ $fnk }} struct {
-        pairs []*Pair
+        pairs []Pair
 
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
@@ -148,7 +148,7 @@ func With{{ $pname }}(v {{ $v.Type }}) *Pair {
     }
 
     // parsePair{{ $pn }}{{ $fnk }} will parse *Pair slice into *pair{{ $pn }}{{ $fnk }}
-    func parsePair{{ $pn }}{{ $fnk }}(opts []*Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
+    func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
     result := &pair{{ $pn }}{{ $fnk }}{
         pairs: opts,
     }
