@@ -174,7 +174,7 @@ field "oi" {
   type = "*ObjectIterator"
 }
 field "pairs" {
-  type = "...*Pair"
+  type = "...Pair"
 }
 field "path" {
   type = "string"
