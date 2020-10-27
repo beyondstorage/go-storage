@@ -10,6 +10,6 @@ type Pair struct {
 	Value interface{}
 }
 
-func (p *Pair) String() string {
+func (p Pair) String() string {
 	return fmt.Sprintf("%s: %v", p.Key, p.Value)
 }
