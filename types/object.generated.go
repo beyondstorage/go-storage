@@ -26,12 +26,12 @@ type Object struct {
 	etag        string
 	// ID is the unique key in storage.
 	ID string
-	// Name is either the absolute path or the relative path towards storage's WorkDir.
+	// Name is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Name string
 	size int64
-	// Target is the symlink target for this object, only exist when object type is link
+	// Target is the symlink target for this object, only exist when object type is link.
 	target string
-	// Type cloud be one of `file`, `dir`, `link` or `unknown`.
+	// Type could be one of `file`, `dir`, `link` or `unknown`.
 	Type      ObjectType
 	updatedAt time.Time
 
