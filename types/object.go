@@ -10,9 +10,9 @@ type ObjectType string
 // All available type for object.
 const (
 	ObjectTypeFile    ObjectType = "file"
-	ObjectTypeStream  ObjectType = "stream"
 	ObjectTypeDir     ObjectType = "dir"
-	ObjectTypeInvalid ObjectType = "invalid"
+	ObjectTypeLink    ObjectType = "link"
+	ObjectTypeUnknown ObjectType = "unknown"
 )
 
 func NewObject(client Storager, done bool) *Object {

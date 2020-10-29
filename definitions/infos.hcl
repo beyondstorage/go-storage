@@ -13,20 +13,24 @@ info "object" "meta" "etag" {
 info "object" "meta" "id" {
   type    = "string"
   export  = true
-  comment = "ID is the unique key in service."
+  comment = "ID is the unique key in storage."
 }
 info "object" "meta" "name" {
   type    = "string"
   export  = true
-  comment = "Name is the relative path towards service's WorkDir."
+  comment = "Name is either the absolute path or the relative path towards storage's WorkDir."
 }
 info "object" "meta" "size" {
   type = "int64"
 }
+info "object" "meta" "target" {
+  type    = "string"
+  comment = "Target is the symlink target for this object, only exist when object type is link"
+}
 info "object" "meta" "type" {
   type    = "ObjectType"
   export  = true
-  comment = "Type should be one of `file`, `stream`, `dir` or `invalid`."
+  comment = "Type cloud be one of `file`, `dir`, `link` or `unknown`."
 }
 info "object" "meta" "updated_at" {
   type = "time.Time"
