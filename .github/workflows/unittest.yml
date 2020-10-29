@@ -1,0 +1,32 @@
+name: "Unittest"
+
+on: [push,pull_request]
+
+jobs:
+  unitest:
+    name: Unittest
+    runs-on: [self-hosted, Linux]
+
+    strategy:
+      matrix:
+        go: [ "1.13", "1.14" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install mockgen
+        run: go get github.com/golang/mock/mockgen
+      - name: Install go-bindata
+        run: go get -u github.com/kevinburke/go-bindata/...
+
+      - name: Build
+        run: make build
+
+      - name: Test
+        run: make test

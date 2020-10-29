@@ -12,7 +12,7 @@ help:
 
 # mockgen: go get github.com/golang/mock/mockgen
 # go-bindata: go get -u github.com/kevinburke/go-bindata/...
-tools := mockgen golint go-bindata
+tools := mockgen go-bindata
 
 $(tools):
 	@command -v $@ >/dev/null 2>&1 || echo "$@ is not found, plese install it."
