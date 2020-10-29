@@ -1,5 +1,7 @@
 name: "Unittest"
 
+on: [push,pull_request]
+
 jobs:
   unitest:
     name: Unittest
