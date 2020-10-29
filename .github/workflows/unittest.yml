@@ -7,11 +7,15 @@ jobs:
     name: Unittest
     runs-on: [self-hosted, Linux]
 
+    strategy:
+      matrix:
+        go: [ "1.13", "1.14" ]
+
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.13
+          go-version: ${{ matrix.go }}
 
       - name: Checkout repository
         uses: actions/checkout@v2
