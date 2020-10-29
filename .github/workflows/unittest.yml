@@ -1,0 +1,21 @@
+name: "Unittest"
+
+jobs:
+  unitest:
+    name: Unittest
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.13
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: go build -v .
+
+      - name: Test
+        run: go test -v .
