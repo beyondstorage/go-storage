@@ -5,7 +5,7 @@ on: [push,pull_request]
 jobs:
   unitest:
     name: Unittest
-    runs-on: [self-hosted, linux]
+    runs-on: [self-hosted, Linux]
 
     steps:
       - name: Set up Go 1.x
