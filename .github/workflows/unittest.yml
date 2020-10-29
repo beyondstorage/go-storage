@@ -16,8 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Install mockgen
+        run: go get github.com/golang/mock/mockgen
+      - name: Install go-bindata
+        run: go get -u github.com/kevinburke/go-bindata/...
+
       - name: Build
-        run: go build -v .
+        run: make build
 
       - name: Test
-        run: go test -v .
+        run: make test
