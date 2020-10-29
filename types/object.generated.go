@@ -15,20 +15,23 @@ const (
 	objectIndexID          = 1 << 3
 	objectIndexName        = 1 << 4
 	objectIndexSize        = 1 << 5
-	objectIndexType        = 1 << 6
-	objectIndexUpdatedAt   = 1 << 7
+	objectIndexTarget      = 1 << 6
+	objectIndexType        = 1 << 7
+	objectIndexUpdatedAt   = 1 << 8
 )
 
 type Object struct {
 	contentMd5  string
 	contentType string
 	etag        string
-	// ID is the unique key in service.
+	// ID is the unique key in storage.
 	ID string
-	// Name is the relative path towards service's WorkDir.
+	// Name is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Name string
 	size int64
-	// Type should be one of `file`, `stream`, `dir` or `invalid`.
+	// Target is the symlink target for this object, only exist when object type is link.
+	target string
+	// Type could be one of `file`, `dir`, `link` or `unknown`.
 	Type      ObjectType
 	updatedAt time.Time
 
@@ -154,6 +157,30 @@ func (o *Object) SetSize(v int64) *Object {
 	o.bit |= objectIndexSize
 	return o
 }
+
+func (o *Object) GetTarget() (string, bool) {
+	o.stat()
+
+	if o.bit&objectIndexTarget != 0 {
+		return o.target, true
+	}
+	return "", false
+}
+
+func (o *Object) MustGetTarget() string {
+	o.stat()
+
+	if o.bit&objectIndexTarget == 0 {
+		panic(fmt.Sprintf("object target is not set"))
+	}
+	return o.target
+}
+
+func (o *Object) SetTarget(v string) *Object {
+	o.target = v
+	o.bit |= objectIndexTarget
+	return o
+}
 func (o *Object) GetType() ObjectType {
 	return o.Type
 }
@@ -194,6 +221,7 @@ func (o *Object) clone(xo *Object) {
 	o.ID = xo.ID
 	o.Name = xo.Name
 	o.size = xo.size
+	o.target = xo.target
 	o.Type = xo.Type
 	o.updatedAt = xo.updatedAt
 
