@@ -4,7 +4,7 @@ import (
 	"io"
 )
 
-//go:generate mockgen -package iowrap -destination mock_test.go io Reader,Closer,ReaderAt,Seeker
+//go:generate go run github.com/golang/mock/mockgen -package iowrap -destination mock_test.go io Reader,Closer,ReaderAt,Seeker
 
 // LimitReadCloser will return a limited hasCall closer.
 func LimitReadCloser(r io.ReadCloser, n int64) *LimitedReadCloser {
