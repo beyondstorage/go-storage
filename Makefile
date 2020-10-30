@@ -4,7 +4,7 @@ SHELL := /bin/bash
 
 EXE_SUFFIX := ""
 ifeq (${GOOS}, "windows")
-	EXE_SUFFIX = ".exe"
+	EXE_SUFFIX += ".exe"
 endif
 
 help:
