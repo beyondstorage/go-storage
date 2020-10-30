@@ -92,15 +92,7 @@ func TestParse(t *testing.T) {
 			if tt.err == nil {
 				assert.Nil(t, err)
 			} else {
-				e := &strconv.NumError{}
-				ok := errors.As(err, &e)
-				if ok {
-					assert.True(t, errors.Is(e.Err, tt.err))
-				} else {
-					assert.True(t, errors.Is(err, tt.err))
-				}
-				// FIXME: strconv.NumError doesn't implement Unwrap for now, waiting for go1.14
-				// assert.True(t, errors.Is(err, tt.err))
+				assert.True(t, errors.Is(err, tt.err))
 			}
 			assert.EqualValues(t, tt.value, p)
 		})
