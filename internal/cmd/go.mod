@@ -1,3 +1,3 @@
-module github.com/aos-dev/go-storage/v2/internal/cmd
+module github.com/aos-dev/go-storage/internal/cmd
 
-go 1.13
+go 1.14
