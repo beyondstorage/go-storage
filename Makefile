@@ -2,6 +2,11 @@ SHELL := /bin/bash
 
 .PHONY: all check format vet lint build test generate tidy integration_test
 
+EXE_SUFFIX := ""
+ifeq (${GOOS}, "windows")
+	EXE_SUFFIX = ".exe"
+endif
+
 help:
 	@echo "Please use \`make <target>\` where <target> is one of"
 	@echo "  check               to do static check"
@@ -29,11 +34,10 @@ build_definitions:
 	@echo "build storage generator"
 	@pushd cmd/definitions \
 		&& go generate ./... \
-		&& CGO_ENABLED=0 go build -o ../../bin/definitions.exe . \
+		&& CGO_ENABLED=0 go build -o ../../bin/definitions${EXE_SUFFIX} . \
 		&& popd
 	@echo "build iterator generator"
-	@pushd internal/cmd && go build -o ../bin/iterator ./iterator && popd
-	@echo "${PATHEXT}"
+	@pushd internal/cmd && go build -o ../bin/iterator${EXE_SUFFIX} ./iterator && popd
 	@ls bin/
 	@echo "Done"
 
@@ -63,7 +67,7 @@ integration_test:
 	@echo "ok"
 
 tidy:
-	@pushd internal/cmd && go build -o ../bin/gomod ./gomod && popd
+	@pushd internal/cmd && go build -o ../bin/gomod${EXE_SUFFIX} ./gomod && popd
 	@./internal/bin/gomod
 
 clean:
