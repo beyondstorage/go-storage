@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all check format vet lint build test generate tidy integration_test
 
 EXE_SUFFIX := ""
-ifeq (${GOOS}, "windows")
+ifeq ($(GOOS), "linux")
 	EXE_SUFFIX += ".exe"
 endif
 
@@ -14,9 +14,6 @@ help:
 	@echo "  generate            to generate code"
 	@echo "  test                to run test"
 	@echo "  integration_test    to run integration test"
-
-$(tools):
-	@command -v $@ >/dev/null 2>&1 || echo "$@ is not found, plese install it."
 
 check: vet
 
@@ -34,11 +31,11 @@ build_definitions:
 	@echo "build storage generator"
 	@pushd cmd/definitions \
 		&& go generate ./... \
-		&& CGO_ENABLED=0 go build -o ../../bin/definitions${EXE_SUFFIX} . \
+		&& mkdir -p ../../bin/
+		&& CGO_ENABLED=0 go build -o ../../bin/ . \
 		&& popd
 	@echo "build iterator generator"
-	@pushd internal/cmd && go build -o ../bin/iterator${EXE_SUFFIX} ./iterator && popd
-	@ls bin/
+	@pushd internal/cmd && mkdir -p ../bin/ && go build -o ../bin/ ./iterator && popd
 	@echo "Done"
 
 generate: build_definitions
