@@ -2,11 +2,6 @@ SHELL := /bin/bash
 
 .PHONY: all check format vet lint build test generate tidy integration_test
 
-EXE_SUFFIX := ""
-ifeq ($(GOOS), "linux")
-	EXE_SUFFIX += ".exe"
-endif
-
 help:
 	@echo "Please use \`make <target>\` where <target> is one of"
 	@echo "  check               to do static check"
