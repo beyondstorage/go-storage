@@ -31,7 +31,7 @@ build_definitions:
 	@echo "build storage generator"
 	@pushd cmd/definitions \
 		&& go generate ./... \
-		&& mkdir -p ../../bin/
+		&& mkdir -p ../../bin/ \
 		&& CGO_ENABLED=0 go build -o ../../bin/ . \
 		&& popd
 	@echo "build iterator generator"
