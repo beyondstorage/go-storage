@@ -33,6 +33,7 @@ build_definitions:
 		&& popd
 	@echo "build iterator generator"
 	@pushd internal/cmd && go build -o ../bin/iterator ./iterator && popd
+	@echo "$PATHEXT"
 	@ls bin/
 	@echo "Done"
 
