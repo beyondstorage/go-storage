@@ -10,10 +10,6 @@ help:
 	@echo "  test                to run test"
 	@echo "  integration_test    to run integration test"
 
-# mockgen: go get github.com/golang/mock/mockgen
-# go-bindata: go get -u github.com/kevinburke/go-bindata/...
-tools := mockgen go-bindata
-
 $(tools):
 	@command -v $@ >/dev/null 2>&1 || echo "$@ is not found, plese install it."
 
@@ -29,7 +25,7 @@ vet:
 	@go vet ./...
 	@echo "ok"
 
-build_definitions: go-bindata
+build_definitions:
 	@echo "build storage generator"
 	@pushd cmd/definitions \
 		&& go generate ./... \
@@ -39,7 +35,7 @@ build_definitions: go-bindata
 	@pushd internal/cmd && go build -o ../bin/iterator ./iterator && popd
 	@echo "Done"
 
-generate: build_definitions mockgen
+generate: build_definitions
 	@echo "generate code"
 	@go generate ./...
 	@go fmt ./...

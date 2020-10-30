@@ -9,7 +9,7 @@ import (
 	"github.com/Xuanwo/templateutils"
 )
 
-//go:generate go-bindata -nometadata -ignore "\\.go$" -prefix "../../" ./tmpl ../../definitions
+//go:generate go run github.com/kevinburke/go-bindata/go-bindata -nometadata -ignore "\\.go$" -prefix "../../" ./tmpl ../../definitions
 
 var (
 	infoT      = newTmpl("cmd/definitions/tmpl/info")
