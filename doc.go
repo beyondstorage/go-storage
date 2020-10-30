@@ -39,5 +39,5 @@ Notes
 */
 package storage
 
-//go:generate bin/definitions
+//go:generate bin/definitions.exe
 //go:generate internal/bin/iterator
