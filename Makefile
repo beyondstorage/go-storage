@@ -29,11 +29,11 @@ build_definitions:
 	@echo "build storage generator"
 	@pushd cmd/definitions \
 		&& go generate ./... \
-		&& CGO_ENABLED=0 go build -o ../../bin/definitions . \
+		&& CGO_ENABLED=0 go build -o ../../bin/ . \
 		&& popd
 	@echo "build iterator generator"
-	@pushd internal/cmd && go build -o ../bin/iterator ./iterator && popd
-	@echo "$PATHEXT"
+	@pushd internal/cmd && go build -o ../bin/ ./iterator && popd
+	@echo "${PATHEXT}"
 	@ls bin/
 	@echo "Done"
 
