@@ -12,8 +12,6 @@ import (
 
 // All available pairs.
 const (
-	// Checksum will // Checksum specify checksum for this request, could be used as content md5 or etag
-	Checksum = "checksum"
 	// Context will // Context context in all request
 	Context = "context"
 	// ContinuationToken will // ContinuationToken specify the continuation token for list_dir or list_prefix.
@@ -26,16 +24,12 @@ const (
 	Expire = "expire"
 	// HTTPClientOptions will // HTTPClientOptions sepcify the options for the http client
 	HTTPClientOptions = "http_client_options"
-	// Index will // Index specify the index of this segment
-	Index = "index"
 	// Location will // Location specify the location for service or storage
 	Location = "location"
 	// Name will // Name specify the storage name
 	Name = "name"
 	// Offset will // Offset specify offset for this request, storage will seek to this offset before read
 	Offset = "offset"
-	// Project will // Project specify project name/id for this service or storage
-	Project = "project"
 	// ReadCallbackFunc will // ReadCallbackFunc specify what todo every time we read data from source
 	ReadCallbackFunc = "read_callback_func"
 	// Size will // Size specify size for this request, storage will only read limited content data
@@ -44,15 +38,6 @@ const (
 	//  For fs storage service on windows platform, the behavior is undefined.
 	WorkDir = "work_dir"
 )
-
-// WithChecksum will apply checksum value to Options
-// This pair is used to // Checksum specify checksum for this request, could be used as content md5 or etag
-func WithChecksum(v string) types.Pair {
-	return types.Pair{
-		Key:   Checksum,
-		Value: v,
-	}
-}
 
 // WithContext will apply context value to Options
 // This pair is used to // Context context in all request
@@ -108,15 +93,6 @@ func WithHTTPClientOptions(v *httpclient.Options) types.Pair {
 	}
 }
 
-// WithIndex will apply index value to Options
-// This pair is used to // Index specify the index of this segment
-func WithIndex(v int) types.Pair {
-	return types.Pair{
-		Key:   Index,
-		Value: v,
-	}
-}
-
 // WithLocation will apply location value to Options
 // This pair is used to // Location specify the location for service or storage
 func WithLocation(v string) types.Pair {
@@ -140,15 +116,6 @@ func WithName(v string) types.Pair {
 func WithOffset(v int64) types.Pair {
 	return types.Pair{
 		Key:   Offset,
-		Value: v,
-	}
-}
-
-// WithProject will apply project value to Options
-// This pair is used to // Project specify project name/id for this service or storage
-func WithProject(v string) types.Pair {
-	return types.Pair{
-		Key:   Project,
 		Value: v,
 	}
 }
@@ -190,19 +157,6 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 	for k, v := range m {
 		var pv interface{}
 		switch k {
-		case Checksum:
-			switch rv := v.(type) {
-			case string:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   Checksum,
-					Type:  "string",
-					Value: v,
-				}
-			}
 		case Context:
 			switch rv := v.(type) {
 			case context.Context:
@@ -314,30 +268,6 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					Value: v,
 				}
 			}
-		case Index:
-			switch rv := v.(type) {
-			case int:
-				pv = rv
-			case string:
-				pv, err = parseInt(rv)
-				if err != nil {
-					return nil, &Error{
-						Op:    "parse",
-						Err:   err,
-						Key:   Index,
-						Type:  "int",
-						Value: v,
-					}
-				}
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   Index,
-					Type:  "int",
-					Value: v,
-				}
-			}
 		case Location:
 			switch rv := v.(type) {
 			case string:
@@ -385,19 +315,6 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					Err:   ErrPairTypeMismatch,
 					Key:   Offset,
 					Type:  "int64",
-					Value: v,
-				}
-			}
-		case Project:
-			switch rv := v.(type) {
-			case string:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   Project,
-					Type:  "string",
 					Value: v,
 				}
 			}

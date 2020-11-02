@@ -1,8 +1,4 @@
 
-pair "checksum" {
-  type        = "string"
-  description = "specify checksum for this request, could be used as content md5 or etag"
-}
 pair "context" {
   type        = "context.Context"
   description = "context in all request"
@@ -31,11 +27,6 @@ pair "http_client_options" {
   type        = "*httpclient.Options"
   description = "sepcify the options for the http client"
 }
-pair "index" {
-  type        = "int"
-  description = "specify the index of this segment"
-  parser      = "parseInt"
-}
 pair "location" {
   type        = "string"
   description = "specify the location for service or storage"
@@ -48,10 +39,6 @@ pair "offset" {
   type        = "int64"
   description = "specify offset for this request, storage will seek to this offset before read"
   parser      = "parseInt64"
-}
-pair "project" {
-  type        = "string"
-  description = "specify project name/id for this service or storage"
 }
 pair "read_callback_func" {
   type        = "func([]byte)"
