@@ -1,4 +1,4 @@
-module github.com/aos-dev/go-storage/cmd/definitions/v2
+module github.com/aos-dev/go-storage/cmd/definitions
 
 go 1.14
 
