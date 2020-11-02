@@ -128,9 +128,9 @@ type Servicer interface {
 type Statistician interface {
 
 	// Statistical will count service's statistics, such as Size, Count.
-	Statistical(pairs ...Pair) (statistic StorageStatistic, err error)
+	Statistical(pairs ...Pair) (statistic *StorageStatistic, err error)
 	// StatisticalWithContext will count service's statistics, such as Size, Count.
-	StatisticalWithContext(ctx context.Context, pairs ...Pair) (statistic StorageStatistic, err error)
+	StatisticalWithContext(ctx context.Context, pairs ...Pair) (statistic *StorageStatistic, err error)
 }
 
 // Storager is the interface for storage service.
@@ -143,9 +143,9 @@ type Storager interface {
 	DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
 
 	// Metadata will return current storager's metadata.
-	Metadata(pairs ...Pair) (meta StorageMeta, err error)
+	Metadata(pairs ...Pair) (meta *StorageMeta, err error)
 	// MetadataWithContext will return current storager's metadata.
-	MetadataWithContext(ctx context.Context, pairs ...Pair) (meta StorageMeta, err error)
+	MetadataWithContext(ctx context.Context, pairs ...Pair) (meta *StorageMeta, err error)
 
 	// Read will read the file's data.
 	Read(path string, w io.Writer, pairs ...Pair) (n int64, err error)

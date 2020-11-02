@@ -161,7 +161,7 @@ field "index" {
   type = "int"
 }
 field "meta" {
-  type = "StorageMeta"
+  type = "*StorageMeta"
 }
 field "n" {
   type = "int64"
@@ -200,7 +200,7 @@ field "src" {
   type = "string"
 }
 field "statistic" {
-  type = "StorageStatistic"
+  type = "*StorageStatistic"
 }
 field "sti" {
   type = "*StoragerIterator"
