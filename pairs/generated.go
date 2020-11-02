@@ -12,6 +12,8 @@ import (
 
 // All available pairs.
 const (
+	// ContentType will // ContentType
+	ContentType = "content_type"
 	// Context will // Context context in all request
 	Context = "context"
 	// ContinuationToken will // ContinuationToken specify the continuation token for list_dir or list_prefix.
@@ -32,14 +34,27 @@ const (
 	Name = "name"
 	// Offset will // Offset specify offset for this request, storage will seek to this offset before read
 	Offset = "offset"
+	// PairPolicy will // PairPolicy
+	PairPolicy = "pair_policy"
 	// ReadCallbackFunc will // ReadCallbackFunc specify what todo every time we read data from source
 	ReadCallbackFunc = "read_callback_func"
 	// Size will // Size specify size for this request, storage will only read limited content data
 	Size = "size"
+	// StorageClass will // StorageClass
+	StorageClass = "storage_class"
 	// WorkDir will // WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
 	//  For fs storage service on windows platform, the behavior is undefined.
 	WorkDir = "work_dir"
 )
+
+// WithContentType will apply content_type value to Options
+// This pair is used to // ContentType
+func WithContentType(v string) types.Pair {
+	return types.Pair{
+		Key:   ContentType,
+		Value: v,
+	}
+}
 
 // WithContext will apply context value to Options
 // This pair is used to // Context context in all request
@@ -131,6 +146,15 @@ func WithOffset(v int64) types.Pair {
 	}
 }
 
+// WithPairPolicy will apply pair_policy value to Options
+// This pair is used to // PairPolicy
+func WithPairPolicy(v types.PairPolicy) types.Pair {
+	return types.Pair{
+		Key:   PairPolicy,
+		Value: v,
+	}
+}
+
 // WithReadCallbackFunc will apply read_callback_func value to Options
 // This pair is used to // ReadCallbackFunc specify what todo every time we read data from source
 func WithReadCallbackFunc(v func([]byte)) types.Pair {
@@ -145,6 +169,15 @@ func WithReadCallbackFunc(v func([]byte)) types.Pair {
 func WithSize(v int64) types.Pair {
 	return types.Pair{
 		Key:   Size,
+		Value: v,
+	}
+}
+
+// WithStorageClass will apply storage_class value to Options
+// This pair is used to // StorageClass
+func WithStorageClass(v string) types.Pair {
+	return types.Pair{
+		Key:   StorageClass,
 		Value: v,
 	}
 }
@@ -168,6 +201,19 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 	for k, v := range m {
 		var pv interface{}
 		switch k {
+		case ContentType:
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   ContentType,
+					Type:  "string",
+					Value: v,
+				}
+			}
 		case Context:
 			switch rv := v.(type) {
 			case context.Context:
@@ -342,6 +388,19 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					Value: v,
 				}
 			}
+		case PairPolicy:
+			switch rv := v.(type) {
+			case types.PairPolicy:
+				pv = rv
+			default:
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   PairPolicy,
+					Type:  "types.PairPolicy",
+					Value: v,
+				}
+			}
 		case ReadCallbackFunc:
 			switch rv := v.(type) {
 			case func([]byte):
@@ -376,6 +435,19 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					Err:   ErrPairTypeMismatch,
 					Key:   Size,
 					Type:  "int64",
+					Value: v,
+				}
+			}
+		case StorageClass:
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   StorageClass,
+					Type:  "string",
 					Value: v,
 				}
 			}

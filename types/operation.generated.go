@@ -162,3 +162,12 @@ type Storager interface {
 	// WriteWithContext will write data into a file.
 	WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...Pair) (n int64, err error)
 }
+
+type PairPolicy struct {
+	ReadSize          PairPolicyAction
+	ReadOffset        PairPolicyAction
+	WriteSize         PairPolicyAction
+	WriteOffset       PairPolicyAction
+	WriteStorageClass PairPolicyAction
+	WriteContentType  PairPolicyAction
+}

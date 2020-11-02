@@ -24,3 +24,13 @@ type {{ $i.DisplayName }} interface {
     {{ end }}
 }
 {{- end }}
+
+type PairPolicy struct {
+{{- range $_, $i := .Interfaces }}
+{{- range $_, $op := $i.Ops }}
+{{- range $_, $v := $op.Pairs }}
+    {{ $op.Name | toPascal }}{{ $v | toPascal }} PairPolicyAction
+{{- end }}
+{{- end }}
+{{- end }}
+}

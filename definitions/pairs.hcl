@@ -1,4 +1,7 @@
 
+pair "content_type" {
+  type = "string"
+}
 pair "context" {
   type        = "context.Context"
   description = "context in all request"
@@ -43,6 +46,9 @@ pair "offset" {
   description = "specify offset for this request, storage will seek to this offset before read"
   parser      = "parseInt64"
 }
+pair "pair_policy" {
+  type = "types.PairPolicy"
+}
 pair "read_callback_func" {
   type        = "func([]byte)"
   description = "specify what todo every time we read data from source"
@@ -51,6 +57,9 @@ pair "size" {
   type        = "int64"
   description = "specify size for this request, storage will only read limited content data"
   parser      = "parseInt64"
+}
+pair "storage_class" {
+  type = "string"
 }
 pair "work_dir" {
   type        = "string"

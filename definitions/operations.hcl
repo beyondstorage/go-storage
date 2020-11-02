@@ -132,6 +132,7 @@ interface "storager" {
   op "read" {
     description = "will read the file's data."
     params      = ["path", "w"]
+    pairs       = ["size", "offset"]
     results     = ["n"]
   }
   op "stat" {
@@ -142,6 +143,7 @@ interface "storager" {
   op "write" {
     description = "will write data into a file."
     params      = ["path", "r"]
+    pairs       = ["size", "offset", "storage_class", "content_type"]
     results     = ["n"]
   }
 }

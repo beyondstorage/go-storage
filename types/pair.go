@@ -13,3 +13,10 @@ type Pair struct {
 func (p Pair) String() string {
 	return fmt.Sprintf("%s: %v", p.Key, p.Value)
 }
+
+type PairPolicyAction = uint8
+
+const (
+	PairPolicyActionError PairPolicyAction = iota
+	PairPolicyActionIgnore
+)

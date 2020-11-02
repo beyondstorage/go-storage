@@ -23,6 +23,9 @@ info "object" "meta" "name" {
 info "object" "meta" "size" {
   type = "int64"
 }
+info "object" "meta" "storage-class" {
+  type = "string"
+}
 info "object" "meta" "target" {
   type    = "string"
   comment = "Target is the symlink target for this object, only exist when object type is link."
@@ -32,7 +35,7 @@ info "object" "meta" "type" {
   export  = true
   comment = "Type could be one of `file`, `dir`, `link` or `unknown`."
 }
-info "object" "meta" "updated_at" {
+info "object" "meta" "updated-at" {
   type = "time.Time"
 }
 info "storage" "meta" "location" {
