@@ -1,4 +1,3 @@
-github.com/aos-dev/go-dev-tools v0.0.0-20201102103754-3873ba5c9968 h1:aDMeStd/pKlu/08V0IaDtEKz4Cp93h18qd4+8Blb3UQ=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/mock v1.4.4 h1:l75CXGRSwbaYNpl/Z2X1XIIAMSCquvXgpVZDhwEIJsc=
