@@ -46,6 +46,7 @@ type OperationSpec struct {
 	Name        string   `hcl:",label"`
 	Description string   `hcl:"description,optional"`
 	Params      []string `hcl:"params,optional"`
+	Pairs       []string `hcl:"pairs,optional"`
 	Results     []string `hcl:"results,optional"`
 }
 

@@ -9,15 +9,16 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexContentMd5  = 1 << 0
-	objectIndexContentType = 1 << 1
-	objectIndexEtag        = 1 << 2
-	objectIndexID          = 1 << 3
-	objectIndexName        = 1 << 4
-	objectIndexSize        = 1 << 5
-	objectIndexTarget      = 1 << 6
-	objectIndexType        = 1 << 7
-	objectIndexUpdatedAt   = 1 << 8
+	objectIndexContentMd5   = 1 << 0
+	objectIndexContentType  = 1 << 1
+	objectIndexEtag         = 1 << 2
+	objectIndexID           = 1 << 3
+	objectIndexName         = 1 << 4
+	objectIndexSize         = 1 << 5
+	objectIndexStorageClass = 1 << 6
+	objectIndexTarget       = 1 << 7
+	objectIndexType         = 1 << 8
+	objectIndexUpdatedAt    = 1 << 9
 )
 
 type Object struct {
@@ -27,8 +28,9 @@ type Object struct {
 	// ID is the unique key in storage.
 	ID string
 	// Name is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
-	Name string
-	size int64
+	Name         string
+	size         int64
+	storageClass string
 	// Target is the symlink target for this object, only exist when object type is link.
 	target string
 	// Type could be one of `file`, `dir`, `link` or `unknown`.
@@ -158,6 +160,30 @@ func (o *Object) SetSize(v int64) *Object {
 	return o
 }
 
+func (o *Object) GetStorageClass() (string, bool) {
+	o.stat()
+
+	if o.bit&objectIndexStorageClass != 0 {
+		return o.storageClass, true
+	}
+	return "", false
+}
+
+func (o *Object) MustGetStorageClass() string {
+	o.stat()
+
+	if o.bit&objectIndexStorageClass == 0 {
+		panic(fmt.Sprintf("object storage-class is not set"))
+	}
+	return o.storageClass
+}
+
+func (o *Object) SetStorageClass(v string) *Object {
+	o.storageClass = v
+	o.bit |= objectIndexStorageClass
+	return o
+}
+
 func (o *Object) GetTarget() (string, bool) {
 	o.stat()
 
@@ -203,7 +229,7 @@ func (o *Object) MustGetUpdatedAt() time.Time {
 	o.stat()
 
 	if o.bit&objectIndexUpdatedAt == 0 {
-		panic(fmt.Sprintf("object updated_at is not set"))
+		panic(fmt.Sprintf("object updated-at is not set"))
 	}
 	return o.updatedAt
 }
@@ -221,6 +247,7 @@ func (o *Object) clone(xo *Object) {
 	o.ID = xo.ID
 	o.Name = xo.Name
 	o.size = xo.size
+	o.storageClass = xo.storageClass
 	o.target = xo.target
 	o.Type = xo.Type
 	o.updatedAt = xo.updatedAt

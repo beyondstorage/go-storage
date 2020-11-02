@@ -41,7 +41,11 @@ const (
     {{- if $v.DisplayName }}
         {{- $pname = $v.DisplayName }}
     {{- end }}
-    Info{{ $v.Scope | toPascal }}{{ $v.Category | toPascal }}{{ $pname }} = "{{ $.Name }}-{{ $v.Name }}"
+    {{ $serviceName := printf "%s%s" ($v.Scope | toPascal) ($v.Category | toPascal) }}
+    {{- if eq $v.Scope "object" }}
+        {{ $serviceName = "Object" }}
+    {{- end }}
+    Info{{$serviceName}}{{ $pname }} = "{{ $.Name }}-{{ $v.Name }}"
     {{- end }}
 {{- end }}
 )
@@ -68,8 +72,11 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
         {{ $pname = $v.DisplayName }}
     {{- end }}
     {{ $serviceName := printf "%s%s" ($v.Scope | toPascal) ($v.Category | toPascal) }}
+    {{- if eq $v.Scope "object" }}
+        {{ $serviceName = "Object" }}
+    {{- end }}
     // Get{{ $pname }} will get {{ $v.Name }} value from metadata.
-    func Get{{ $pname }}(m {{ $serviceName }}) ({{ $v.Type }}, bool)  {
+    func Get{{ $pname }}(m *{{ $serviceName }}) ({{ $v.Type }}, bool)  {
     v, ok := m.Get(Info{{ $serviceName }}{{ $pname }})
     if !ok {
     {{- if $v.ZeroValue }}
@@ -82,7 +89,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     }
 
     // set{{ $v.Name }} will set {{ $v.Name }} value into metadata.
-    func set{{ $pname }}(m {{ $serviceName }}, v {{ $v.Type }}) {{ $serviceName }} {
+    func set{{ $pname }}(m *{{ $serviceName }}, v {{ $v.Type }}) *{{ $serviceName }} {
     return m.Set(Info{{ $serviceName }}{{ $pname }}, v)
     }
     {{- end }}

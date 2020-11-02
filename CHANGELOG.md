@@ -365,7 +365,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add qingstor services.
 
 [Unreleased]: https://github.com/Xuanwo/storage/compare/v2.0.0-alpha.1...HEAD
-[v1.2.1]: https://github.com/Xuanwo/storage/compare/v1.2.1...v2.0.0-alpha.1
+[v2.0.0-alpha.1]: https://github.com/Xuanwo/storage/compare/v1.2.1...v2.0.0-alpha.1
 [v1.2.1]: https://github.com/Xuanwo/storage/compare/v1.2.0...v1.2.1
 [v1.2.0]: https://github.com/Xuanwo/storage/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/Xuanwo/storage/compare/v1.0.0...v1.1.0

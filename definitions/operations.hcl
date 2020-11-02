@@ -132,6 +132,7 @@ interface "storager" {
   op "read" {
     description = "will read the file's data."
     params      = ["path", "w"]
+    pairs       = ["size", "offset"]
     results     = ["n"]
   }
   op "stat" {
@@ -142,6 +143,7 @@ interface "storager" {
   op "write" {
     description = "will write data into a file."
     params      = ["path", "r"]
+    pairs       = ["size", "offset", "storage_class", "content_type", "content_md5"]
     results     = ["n"]
   }
 }
@@ -159,7 +161,7 @@ field "index" {
   type = "int"
 }
 field "meta" {
-  type = "StorageMeta"
+  type = "*StorageMeta"
 }
 field "n" {
   type = "int64"
@@ -198,7 +200,7 @@ field "src" {
   type = "string"
 }
 field "statistic" {
-  type = "StorageStatistic"
+  type = "*StorageStatistic"
 }
 field "sti" {
   type = "*StoragerIterator"

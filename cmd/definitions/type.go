@@ -174,6 +174,7 @@ func (i *Interface) DisplayName() string {
 type Operation struct {
 	Name        string
 	Description string
+	Pairs       []string
 	Params      Fields
 	Results     Fields
 }
@@ -195,6 +196,9 @@ func NewOperation(v *OperationSpec, fields map[string]*Field) *Operation {
 	}
 	// Inject error
 	op.Results = append(op.Results, fields["err"])
+
+	// Add pairs
+	op.Pairs = v.Pairs
 
 	return op
 }
