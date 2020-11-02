@@ -24,6 +24,8 @@ const (
 	Expire = "expire"
 	// HTTPClientOptions will // HTTPClientOptions sepcify the options for the http client
 	HTTPClientOptions = "http_client_options"
+	// Interceptor will // Interceptor
+	Interceptor = "interceptor"
 	// Location will // Location specify the location for service or storage
 	Location = "location"
 	// Name will // Name specify the storage name
@@ -89,6 +91,15 @@ func WithExpire(v int) types.Pair {
 func WithHTTPClientOptions(v *httpclient.Options) types.Pair {
 	return types.Pair{
 		Key:   HTTPClientOptions,
+		Value: v,
+	}
+}
+
+// WithInterceptor will apply interceptor value to Options
+// This pair is used to // Interceptor
+func WithInterceptor(v types.Interceptor) types.Pair {
+	return types.Pair{
+		Key:   Interceptor,
 		Value: v,
 	}
 }
@@ -265,6 +276,19 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					Err:   ErrPairTypeMismatch,
 					Key:   HTTPClientOptions,
 					Type:  "*httpclient.Options",
+					Value: v,
+				}
+			}
+		case Interceptor:
+			switch rv := v.(type) {
+			case types.Interceptor:
+				pv = rv
+			default:
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   Interceptor,
+					Type:  "types.Interceptor",
 					Value: v,
 				}
 			}
