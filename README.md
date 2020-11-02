@@ -1,11 +1,8 @@
 # storage
 
 [![Build Status](https://github.com/aos-dev/go-storage/workflows/Unittest/badge.svg?branch=master)](https://github.com/aos-dev/go-storage/actions?query=workflow%3AUnittest)
-[![GoDoc](https://godoc.org/github.com/Xuanwo/storage?status.svg)](https://godoc.org/github.com/Xuanwo/storage)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Xuanwo/storage)](https://goreportcard.com/report/github.com/Xuanwo/storage)
-[![codecov](https://codecov.io/gh/Xuanwo/storage/branch/master/graph/badge.svg)](https://codecov.io/gh/Xuanwo/storage)
+[![Go dev](https://godoc.org/github.com/aos-dev/go-storage?status.svg)](https://godoc.org/github.com/aos-dev/go-storage)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/Xuanwo/storage/blob/master/LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/15867a455afc4f24a763a5ed1011e05a)](https://app.codacy.com/manual/Xuanwo/storage?utm_source=github.com&utm_medium=referral&utm_content=Xuanwo/storage&utm_campaign=Badge_Grade_Settings)
 [![Join the chat](https://img.shields.io/badge/chat-online-blue?style=flat&logo=zulip)](https://aos-dev.zulipchat.com/join/c3sqj64sp53tlau7oojg3yll/)
 
 An application-oriented unified storage layer for Golang.
@@ -68,17 +65,18 @@ Segment/Multipart support
 - CompleteSegment: complete a segment to create a file
 - AbortSegment: abort a segment
 
-### File metadata support
+### Object metadata support
 
 Required metadata
 
 - `id`: unique key in service
 - `name`: relative path towards service's work dir
-- `size`: size of this object
-- `updated_at`: last update time of this object
+- `type`: object type cloud be `file`, `dir`, `link` or `unknown`
 
 Optional metadata
 
+- `size`: object's content size.
+- `updated_at`: object's last updated time.
 - `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
 - `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
 - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
@@ -90,19 +88,21 @@ Optional metadata
 import (
     "log"
 
-    "github.com/Xuanwo/storage"
-    "github.com/Xuanwo/storage/coreutils"
-    "github.com/Xuanwo/storage/types/pairs"
+    "github.com/aos-dev/go-storage/v2"
+    "github.com/aos-dev/go-storage/v2/pairs"
+    "github.com/aos-dev/go-services-fs"
 )
 
 // Init a service.
-store, err := coreutils.OpenStorager("fs", pairs.WithWorkDir("/tmp"))
+store, err := fs.NewStorager(pairs.WithWorkDir("/tmp"))
 if err != nil {
     log.Fatalf("service init failed: %v", err)
 }
 
 // Use Storager API to maintain data.
-r, err := store.Read("path/to/file")
+var buf bytes.Buffer
+
+n, err := store.Read("path/to/file", &buf)
 if err != nil {
     log.Printf("storager read: %v", err)
 }

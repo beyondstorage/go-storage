@@ -19,23 +19,22 @@ Examples
 
 The most common case to use a Storager service could be following:
 
-1. Init a service.
+1. Init a storager.
 
-    store, err := coreutils.OpenStorager("fs", pairs.WithWorkDir("/tmp"))
+    store, err := fs.NewStorager(pairs.WithWorkDir("/tmp"))
 	if err != nil {
 		log.Fatalf("service init failed: %v", err)
 	}
 
 2. Use Storager API to maintain data.
 
-	r, err := store.Read("path/to/file")
+	var buf bytes.Buffer
+
+	n, err := store.Read("path/to/file", &buf)
 	if err != nil {
 		log.Printf("storager read: %v", err)
 	}
 
-Notes
-
-- Storage uses error wrapping added by go 1.13, go version before 1.13 could be behaved as unexpected.
 */
 package storage
 
