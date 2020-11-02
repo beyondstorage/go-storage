@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v2.0.0-alpha.1] - 2020-11-02
+
+### Added
+
+- Support Iterator based list operation
+- types/iterator: Allow store current status in iterator
+- types/object: Support linked set
+- types/iterator: Make Page.Status continuable (#433)
+- types/object: Add link support (#438)
+- types: Add interceptor support (#449)
+
+### Changed
+
+- *: Moving to aos-dev/go-storage (#414)
+- cmd: Move definitions to cmd to support service split (#416)
+- types/object: Move all meta into ObjectMeta
+- Return count in storager when read and write (#427) 
+- types: Refactor into struct for object stat support
+- types/pair: Use struct instead of pointer (#435)
+- *: Improve minimum supported version to go 1.14 (#444)
+- makefile: Manage build tools via go modules (#447)
+
+### Fixed
+
+- types: Fix object stat not updated correctly
+- types: Fix bit operations not correctly (#434)
+
+### Removed
+
+- coreutils: Split into aos-dev/go-coreutils (#417)
+- tests: Move to aos-dev/go-storage-integration-test (#418)
+- services: Split all services into separate repos (#419)
+- types: Remove no used object meta
+
 ## [v1.2.1] - 2020-06-30
 
 ### Changed
@@ -330,7 +364,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v2.0.0-alpha.1...HEAD
+[v1.2.1]: https://github.com/Xuanwo/storage/compare/v1.2.1...v2.0.0-alpha.1
 [v1.2.1]: https://github.com/Xuanwo/storage/compare/v1.2.0...v1.2.1
 [v1.2.0]: https://github.com/Xuanwo/storage/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/Xuanwo/storage/compare/v1.0.0...v1.1.0
