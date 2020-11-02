@@ -12,6 +12,8 @@ import (
 
 // All available pairs.
 const (
+	// ContentMd5 will // ContentMd5
+	ContentMd5 = "content_md5"
 	// ContentType will // ContentType
 	ContentType = "content_type"
 	// Context will // Context context in all request
@@ -46,6 +48,15 @@ const (
 	//  For fs storage service on windows platform, the behavior is undefined.
 	WorkDir = "work_dir"
 )
+
+// WithContentMd5 will apply content_md5 value to Options
+// This pair is used to // ContentMd5
+func WithContentMd5(v string) types.Pair {
+	return types.Pair{
+		Key:   ContentMd5,
+		Value: v,
+	}
+}
 
 // WithContentType will apply content_type value to Options
 // This pair is used to // ContentType
@@ -201,6 +212,19 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 	for k, v := range m {
 		var pv interface{}
 		switch k {
+		case ContentMd5:
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   ContentMd5,
+					Type:  "string",
+					Value: v,
+				}
+			}
 		case ContentType:
 			switch rv := v.(type) {
 			case string:

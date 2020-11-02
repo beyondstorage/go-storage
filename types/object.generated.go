@@ -15,8 +15,8 @@ const (
 	objectIndexID           = 1 << 3
 	objectIndexName         = 1 << 4
 	objectIndexSize         = 1 << 5
-	objectIndexTarget       = 1 << 6
-	objectIndexStorageClass = 1 << 7
+	objectIndexStorageClass = 1 << 6
+	objectIndexTarget       = 1 << 7
 	objectIndexType         = 1 << 8
 	objectIndexUpdatedAt    = 1 << 9
 )
@@ -28,11 +28,11 @@ type Object struct {
 	// ID is the unique key in storage.
 	ID string
 	// Name is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
-	Name string
-	size int64
-	// Target is the symlink target for this object, only exist when object type is link.
-	target       string
+	Name         string
+	size         int64
 	storageClass string
+	// Target is the symlink target for this object, only exist when object type is link.
+	target string
 	// Type could be one of `file`, `dir`, `link` or `unknown`.
 	Type      ObjectType
 	updatedAt time.Time
@@ -160,30 +160,6 @@ func (o *Object) SetSize(v int64) *Object {
 	return o
 }
 
-func (o *Object) GetTarget() (string, bool) {
-	o.stat()
-
-	if o.bit&objectIndexTarget != 0 {
-		return o.target, true
-	}
-	return "", false
-}
-
-func (o *Object) MustGetTarget() string {
-	o.stat()
-
-	if o.bit&objectIndexTarget == 0 {
-		panic(fmt.Sprintf("object target is not set"))
-	}
-	return o.target
-}
-
-func (o *Object) SetTarget(v string) *Object {
-	o.target = v
-	o.bit |= objectIndexTarget
-	return o
-}
-
 func (o *Object) GetStorageClass() (string, bool) {
 	o.stat()
 
@@ -205,6 +181,30 @@ func (o *Object) MustGetStorageClass() string {
 func (o *Object) SetStorageClass(v string) *Object {
 	o.storageClass = v
 	o.bit |= objectIndexStorageClass
+	return o
+}
+
+func (o *Object) GetTarget() (string, bool) {
+	o.stat()
+
+	if o.bit&objectIndexTarget != 0 {
+		return o.target, true
+	}
+	return "", false
+}
+
+func (o *Object) MustGetTarget() string {
+	o.stat()
+
+	if o.bit&objectIndexTarget == 0 {
+		panic(fmt.Sprintf("object target is not set"))
+	}
+	return o.target
+}
+
+func (o *Object) SetTarget(v string) *Object {
+	o.target = v
+	o.bit |= objectIndexTarget
 	return o
 }
 func (o *Object) GetType() ObjectType {
@@ -247,8 +247,8 @@ func (o *Object) clone(xo *Object) {
 	o.ID = xo.ID
 	o.Name = xo.Name
 	o.size = xo.size
-	o.target = xo.target
 	o.storageClass = xo.storageClass
+	o.target = xo.target
 	o.Type = xo.Type
 	o.updatedAt = xo.updatedAt
 

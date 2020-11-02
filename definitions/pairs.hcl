@@ -1,4 +1,7 @@
 
+pair "content_md5" {
+  type = "string"
+}
 pair "content_type" {
   type = "string"
 }

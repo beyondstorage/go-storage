@@ -170,4 +170,5 @@ type PairPolicy struct {
 	WriteOffset       PairPolicyAction
 	WriteStorageClass PairPolicyAction
 	WriteContentType  PairPolicyAction
+	WriteContentMd5   PairPolicyAction
 }

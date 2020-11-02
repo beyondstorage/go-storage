@@ -143,7 +143,7 @@ interface "storager" {
   op "write" {
     description = "will write data into a file."
     params      = ["path", "r"]
-    pairs       = ["size", "offset", "storage_class", "content_type"]
+    pairs       = ["size", "offset", "storage_class", "content_type", "content_md5"]
     results     = ["n"]
   }
 }
