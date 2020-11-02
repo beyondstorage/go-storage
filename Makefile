@@ -59,8 +59,7 @@ integration_test:
 	@echo "ok"
 
 tidy:
-	@pushd internal/cmd && go build -o ../bin/gomod${EXE_SUFFIX} ./gomod && popd
-	@./internal/bin/gomod
+	@go run github.com/aos-dev/go-dev-tools/cmd/tidy
 
 clean:
 	@echo "clean generated files"
