@@ -239,7 +239,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
             {{- if and (eq $path "") (eq $pn "Service") }}
                 {{ $path = ",\"\"" }}
             {{- end }}
-            err = s.formatError(services.Op{{ $fnk }}, err {{ $path }} )
+            err = s.formatError("{{$fn.Name}}", err {{ $path }} )
         }()
         var opt *pair{{ $pn }}{{ $fnk }}
         opt, err = parsePair{{ $pn }}{{ $fnk }}(pairs)

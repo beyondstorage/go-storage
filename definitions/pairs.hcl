@@ -27,6 +27,9 @@ pair "http_client_options" {
   type        = "*httpclient.Options"
   description = "sepcify the options for the http client"
 }
+pair "interceptor" {
+  type = "types.Interceptor"
+}
 pair "location" {
   type        = "string"
   description = "specify the location for service or storage"
