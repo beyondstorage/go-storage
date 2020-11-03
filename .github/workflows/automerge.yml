@@ -25,7 +25,6 @@ jobs:
         uses: "pascalgn/automerge-action@v0.12.0"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          MERGE_LABELS: "lgtm,!work in progress"
-          MERGE_REMOVE_LABELS: "lgtm"
+          MERGE_LABELS: ""
           MERGE_METHOD: "squash"
           MERGE_COMMIT_MESSAGE: "automatic"
