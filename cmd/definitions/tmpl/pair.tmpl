@@ -11,7 +11,7 @@ import (
 )
 
 {{- range $_, $v := .Pairs }}
-{{- $pname := $v.Name | toCamel }}
+{{- $pname := $v.Name | toPascal }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options
 {{ $v.Description }}
 func With{{ $pname }}(v {{ $v.Type }}) Pair {
