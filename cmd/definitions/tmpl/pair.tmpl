@@ -7,33 +7,24 @@ import (
     "github.com/aos-dev/go-storage/v2/pkg/endpoint"
     "github.com/aos-dev/go-storage/v2/pkg/credential"
     "github.com/aos-dev/go-storage/v2/pkg/httpclient"
-    "github.com/aos-dev/go-storage/v2/types"
-)
-
-// All available pairs.
-const (
-{{- range $_, $v := .Pairs }}
-    {{- $pname := $v.Name | toPascal }}
-    // {{ $pname }} will {{ $v.Description }}
-    {{ $pname }} = "{{ $v.Name }}"
-{{- end }}
+    . "github.com/aos-dev/go-storage/v2/types"
 )
 
 {{- range $_, $v := .Pairs }}
-{{- $pname := $v.Name | toPascal }}
+{{- $pname := $v.Name | toCamel }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options
-// This pair is used to {{ $v.Description }}
-func With{{ $pname }}(v {{ $v.Type }}) types.Pair {
-    return types.Pair{
-        Key: {{ $pname }},
+{{ $v.Description }}
+func With{{ $pname }}(v {{ $v.Type }}) Pair {
+    return Pair{
+        Key: "{{ $v.Name }}",
         Value: v,
     }
 }
 {{- end }}
 
 // Parse will parse a k-v map to pairs slice.
-func Parse(m map[string]interface{}) ([]types.Pair, error) {
-    pairs := make([]types.Pair, 0, len(m))
+func Parse(m map[string]interface{}) ([]Pair, error) {
+    pairs := make([]Pair, 0, len(m))
 
     var err error
 
@@ -41,8 +32,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
         var pv interface{}
         switch k {
         {{- range $_, $v := .Pairs }}
-            {{- $pname := $v.Name | toPascal }}
-            case {{ $pname }}:
+            case "{{ $v.Name }}":
                 switch rv := v.(type) {
                 case {{ $v.Type }}:
                     pv = rv
@@ -53,7 +43,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
                         return nil, &Error{
                         Op: "parse",
                         Err: err,
-                        Key: {{ $pname }},
+                        Key: "{{ $v.Name }}",
                         Type: "{{ $v.Type }}",
                         Value: v,
                     }
@@ -63,7 +53,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
                     return nil, &Error{
                         Op: "parse",
                         Err: ErrPairTypeMismatch,
-                        Key: {{ $pname }},
+                        Key: "{{ $v.Name }}",
                         Type: "{{ $v.Type }}",
                         Value: v,
                     }
@@ -72,7 +62,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
             default:
                 continue
         }
-        pairs = append(pairs, types.Pair{Key: k, Value: pv})
+        pairs = append(pairs, Pair{Key: k, Value: pv})
     }
 
     return pairs, nil
