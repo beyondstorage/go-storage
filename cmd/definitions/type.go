@@ -89,9 +89,9 @@ func (p *Pair) Format(s *PairSpec, global bool) {
 // FullName will print full name for current pair
 func (p *Pair) FullName() string {
 	if p.Global {
-		return fmt.Sprintf("ps.%s", templateutils.ToPascal(p.Name))
+		return fmt.Sprintf("\"%s\"", p.Name)
 	}
-	return "Pair" + templateutils.ToPascal(p.Name)
+	return "pair" + templateutils.ToPascal(p.Name)
 }
 
 // Info is the metadata definition.

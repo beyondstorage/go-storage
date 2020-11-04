@@ -10,7 +10,6 @@ import (
     "github.com/aos-dev/go-storage/v2/pkg/httpclient"
     "github.com/aos-dev/go-storage/v2/services"
     . "github.com/aos-dev/go-storage/v2/types"
-    ps "github.com/aos-dev/go-storage/v2/pairs"
 )
 
 var _ credential.Provider
@@ -26,26 +25,8 @@ const Type = "{{ .Name }}"
 const (
 {{- range $_, $v := .Pairs }}
     {{- if not $v.Global }}
-    {{- $pname := $v.Name | toPascal }}
-    // {{ $pname }} will {{ $v.Description }}
-    Pair{{ $pname }} = "{{ $.Name }}_{{ $v.Name }}"
-    {{- end }}
-{{- end }}
-)
-
-// Service available infos.
-const (
-{{- range $_, $v := .Infos }}
-    {{- if not $v.Global }}
-    {{- $pname := $v.Name | toPascal }}
-    {{- if $v.DisplayName }}
-        {{- $pname = $v.DisplayName }}
-    {{- end }}
-    {{ $serviceName := printf "%s%s" ($v.Scope | toPascal) ($v.Category | toPascal) }}
-    {{- if eq $v.Scope "object" }}
-        {{ $serviceName = "Object" }}
-    {{- end }}
-    Info{{$serviceName}}{{ $pname }} = "{{ $.Name }}-{{ $v.Name }}"
+    {{ $v.Description }}
+    {{ $v.FullName }} = "{{ $.Name }}_{{ $v.Name }}"
     {{- end }}
 {{- end }}
 )
@@ -54,10 +35,10 @@ const (
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options
-// This pair is used to {{ $v.Description }}
+{{ $v.Description }}
 func With{{ $pname }}(v {{ $v.Type }}) Pair {
         return Pair{
-        Key: Pair{{ $pname }},
+        Key: {{ $v.FullName }},
         Value: v,
     }
 }
@@ -77,7 +58,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     {{- end }}
     // Get{{ $pname }} will get {{ $v.Name }} value from metadata.
     func Get{{ $pname }}(m *{{ $serviceName }}) ({{ $v.Type }}, bool)  {
-    v, ok := m.Get(Info{{ $serviceName }}{{ $pname }})
+    v, ok := m.Get("{{ $.Name }}-{{ $v.Name }}")
     if !ok {
     {{- if $v.ZeroValue }}
         return {{ $v.ZeroValue }}, false
@@ -90,7 +71,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 
     // set{{ $v.Name }} will set {{ $v.Name }} value into metadata.
     func set{{ $pname }}(m *{{ $serviceName }}, v {{ $v.Type }}) *{{ $serviceName }} {
-    return m.Set(Info{{ $serviceName }}{{ $pname }}, v)
+    return m.Set("{{ $.Name }}-{{ $v.Name }}", v)
     }
     {{- end }}
 {{- end }}
