@@ -463,6 +463,9 @@ func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
 	nsInterface := n.Name + "r"
 
 	// Handle New function
+	if n.New == nil {
+		n.New = &NewSpec{}
+	}
 	ns.New = NewFunction(&Operation{Name: "new"})
 	ns.New.Format(&OpSpec{
 		Required: n.New.Required,
@@ -507,14 +510,22 @@ func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
 func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 	// Inject read_callback_func
 	for _, v := range n.Funcs {
-		if v.Params.HasReader() || v.Results.HasReader() {
-			v.Generated = append(v.Generated, srv.Pairs["read_callback_func"])
+		for _, ps := range v.Pairs {
+			v.Generated = append(v.Generated, srv.Pairs[ps])
 		}
 	}
 
 	// Inject http_client_options
+	storageNewPairs := []string{
+		"http_client_options",
+		"pair_policy",
+		"work_dir",
+	}
 	if n.New != nil {
-		n.New.Generated = append(n.New.Generated, srv.Pairs["http_client_options"])
+		for _, v := range storageNewPairs {
+			n.New.Generated = append(n.New.Generated, srv.Pairs[v])
+		}
+
 	}
 }
 

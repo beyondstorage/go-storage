@@ -164,11 +164,13 @@ type Storager interface {
 }
 
 type PairPolicy struct {
-	ReadSize          PairPolicyAction
-	ReadOffset        PairPolicyAction
-	WriteSize         PairPolicyAction
-	WriteOffset       PairPolicyAction
-	WriteStorageClass PairPolicyAction
-	WriteContentType  PairPolicyAction
-	WriteContentMd5   PairPolicyAction
+	ReadSize              PairPolicyAction
+	ReadOffset            PairPolicyAction
+	ReadReadCallbackFunc  PairPolicyAction
+	WriteSize             PairPolicyAction
+	WriteOffset           PairPolicyAction
+	WriteStorageClass     PairPolicyAction
+	WriteContentType      PairPolicyAction
+	WriteContentMd5       PairPolicyAction
+	WriteReadCallbackFunc PairPolicyAction
 }
