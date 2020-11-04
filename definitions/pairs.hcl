@@ -34,7 +34,7 @@ pair "http_client_options" {
   description = "sepcify the options for the http client"
 }
 pair "interceptor" {
-  type = "types.Interceptor"
+  type = "Interceptor"
 }
 pair "location" {
   type        = "string"
@@ -50,7 +50,7 @@ pair "offset" {
   parser      = "parseInt64"
 }
 pair "pair_policy" {
-  type = "types.PairPolicy"
+  type = "PairPolicy"
 }
 pair "read_callback_func" {
   type        = "func([]byte)"

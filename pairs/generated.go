@@ -7,212 +7,173 @@ import (
 	"github.com/aos-dev/go-storage/v2/pkg/credential"
 	"github.com/aos-dev/go-storage/v2/pkg/endpoint"
 	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
-	"github.com/aos-dev/go-storage/v2/types"
-)
-
-// All available pairs.
-const (
-	// ContentMd5 will // ContentMd5
-	ContentMd5 = "content_md5"
-	// ContentType will // ContentType
-	ContentType = "content_type"
-	// Context will // Context context in all request
-	Context = "context"
-	// ContinuationToken will // ContinuationToken specify the continuation token for list_dir or list_prefix.
-	ContinuationToken = "continuation_token"
-	// Credential will // Credential specify how to provide credential for service or storage
-	Credential = "credential"
-	// Endpoint will // Endpoint specify how to provide endpoint for service or storage
-	Endpoint = "endpoint"
-	// Expire will // Expire specify when the url returned by reach will expire
-	Expire = "expire"
-	// HTTPClientOptions will // HTTPClientOptions sepcify the options for the http client
-	HTTPClientOptions = "http_client_options"
-	// Interceptor will // Interceptor
-	Interceptor = "interceptor"
-	// Location will // Location specify the location for service or storage
-	Location = "location"
-	// Name will // Name specify the storage name
-	Name = "name"
-	// Offset will // Offset specify offset for this request, storage will seek to this offset before read
-	Offset = "offset"
-	// PairPolicy will // PairPolicy
-	PairPolicy = "pair_policy"
-	// ReadCallbackFunc will // ReadCallbackFunc specify what todo every time we read data from source
-	ReadCallbackFunc = "read_callback_func"
-	// Size will // Size specify size for this request, storage will only read limited content data
-	Size = "size"
-	// StorageClass will // StorageClass
-	StorageClass = "storage_class"
-	// WorkDir will // WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
-	//  For fs storage service on windows platform, the behavior is undefined.
-	WorkDir = "work_dir"
+	. "github.com/aos-dev/go-storage/v2/types"
 )
 
 // WithContentMd5 will apply content_md5 value to Options
-// This pair is used to // ContentMd5
-func WithContentMd5(v string) types.Pair {
-	return types.Pair{
-		Key:   ContentMd5,
+// ContentMd5
+func WithContentMd5(v string) Pair {
+	return Pair{
+		Key:   "content_md5",
 		Value: v,
 	}
 }
 
 // WithContentType will apply content_type value to Options
-// This pair is used to // ContentType
-func WithContentType(v string) types.Pair {
-	return types.Pair{
-		Key:   ContentType,
+// ContentType
+func WithContentType(v string) Pair {
+	return Pair{
+		Key:   "content_type",
 		Value: v,
 	}
 }
 
 // WithContext will apply context value to Options
-// This pair is used to // Context context in all request
-func WithContext(v context.Context) types.Pair {
-	return types.Pair{
-		Key:   Context,
+// Context context in all request
+func WithContext(v context.Context) Pair {
+	return Pair{
+		Key:   "context",
 		Value: v,
 	}
 }
 
 // WithContinuationToken will apply continuation_token value to Options
-// This pair is used to // ContinuationToken specify the continuation token for list_dir or list_prefix.
-func WithContinuationToken(v string) types.Pair {
-	return types.Pair{
-		Key:   ContinuationToken,
+// ContinuationToken specify the continuation token for list_dir or list_prefix.
+func WithContinuationToken(v string) Pair {
+	return Pair{
+		Key:   "continuation_token",
 		Value: v,
 	}
 }
 
 // WithCredential will apply credential value to Options
-// This pair is used to // Credential specify how to provide credential for service or storage
-func WithCredential(v *credential.Provider) types.Pair {
-	return types.Pair{
-		Key:   Credential,
+// Credential specify how to provide credential for service or storage
+func WithCredential(v *credential.Provider) Pair {
+	return Pair{
+		Key:   "credential",
 		Value: v,
 	}
 }
 
 // WithEndpoint will apply endpoint value to Options
-// This pair is used to // Endpoint specify how to provide endpoint for service or storage
-func WithEndpoint(v endpoint.Provider) types.Pair {
-	return types.Pair{
-		Key:   Endpoint,
+// Endpoint specify how to provide endpoint for service or storage
+func WithEndpoint(v endpoint.Provider) Pair {
+	return Pair{
+		Key:   "endpoint",
 		Value: v,
 	}
 }
 
 // WithExpire will apply expire value to Options
-// This pair is used to // Expire specify when the url returned by reach will expire
-func WithExpire(v int) types.Pair {
-	return types.Pair{
-		Key:   Expire,
+// Expire specify when the url returned by reach will expire
+func WithExpire(v int) Pair {
+	return Pair{
+		Key:   "expire",
 		Value: v,
 	}
 }
 
 // WithHTTPClientOptions will apply http_client_options value to Options
-// This pair is used to // HTTPClientOptions sepcify the options for the http client
-func WithHTTPClientOptions(v *httpclient.Options) types.Pair {
-	return types.Pair{
-		Key:   HTTPClientOptions,
+// HTTPClientOptions sepcify the options for the http client
+func WithHTTPClientOptions(v *httpclient.Options) Pair {
+	return Pair{
+		Key:   "http_client_options",
 		Value: v,
 	}
 }
 
 // WithInterceptor will apply interceptor value to Options
-// This pair is used to // Interceptor
-func WithInterceptor(v types.Interceptor) types.Pair {
-	return types.Pair{
-		Key:   Interceptor,
+// Interceptor
+func WithInterceptor(v Interceptor) Pair {
+	return Pair{
+		Key:   "interceptor",
 		Value: v,
 	}
 }
 
 // WithLocation will apply location value to Options
-// This pair is used to // Location specify the location for service or storage
-func WithLocation(v string) types.Pair {
-	return types.Pair{
-		Key:   Location,
+// Location specify the location for service or storage
+func WithLocation(v string) Pair {
+	return Pair{
+		Key:   "location",
 		Value: v,
 	}
 }
 
 // WithName will apply name value to Options
-// This pair is used to // Name specify the storage name
-func WithName(v string) types.Pair {
-	return types.Pair{
-		Key:   Name,
+// Name specify the storage name
+func WithName(v string) Pair {
+	return Pair{
+		Key:   "name",
 		Value: v,
 	}
 }
 
 // WithOffset will apply offset value to Options
-// This pair is used to // Offset specify offset for this request, storage will seek to this offset before read
-func WithOffset(v int64) types.Pair {
-	return types.Pair{
-		Key:   Offset,
+// Offset specify offset for this request, storage will seek to this offset before read
+func WithOffset(v int64) Pair {
+	return Pair{
+		Key:   "offset",
 		Value: v,
 	}
 }
 
 // WithPairPolicy will apply pair_policy value to Options
-// This pair is used to // PairPolicy
-func WithPairPolicy(v types.PairPolicy) types.Pair {
-	return types.Pair{
-		Key:   PairPolicy,
+// PairPolicy
+func WithPairPolicy(v PairPolicy) Pair {
+	return Pair{
+		Key:   "pair_policy",
 		Value: v,
 	}
 }
 
 // WithReadCallbackFunc will apply read_callback_func value to Options
-// This pair is used to // ReadCallbackFunc specify what todo every time we read data from source
-func WithReadCallbackFunc(v func([]byte)) types.Pair {
-	return types.Pair{
-		Key:   ReadCallbackFunc,
+// ReadCallbackFunc specify what todo every time we read data from source
+func WithReadCallbackFunc(v func([]byte)) Pair {
+	return Pair{
+		Key:   "read_callback_func",
 		Value: v,
 	}
 }
 
 // WithSize will apply size value to Options
-// This pair is used to // Size specify size for this request, storage will only read limited content data
-func WithSize(v int64) types.Pair {
-	return types.Pair{
-		Key:   Size,
+// Size specify size for this request, storage will only read limited content data
+func WithSize(v int64) Pair {
+	return Pair{
+		Key:   "size",
 		Value: v,
 	}
 }
 
 // WithStorageClass will apply storage_class value to Options
-// This pair is used to // StorageClass
-func WithStorageClass(v string) types.Pair {
-	return types.Pair{
-		Key:   StorageClass,
+// StorageClass
+func WithStorageClass(v string) Pair {
+	return Pair{
+		Key:   "storage_class",
 		Value: v,
 	}
 }
 
 // WithWorkDir will apply work_dir value to Options
-// This pair is used to // WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
+// WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
 //  For fs storage service on windows platform, the behavior is undefined.
-func WithWorkDir(v string) types.Pair {
-	return types.Pair{
-		Key:   WorkDir,
+func WithWorkDir(v string) Pair {
+	return Pair{
+		Key:   "work_dir",
 		Value: v,
 	}
 }
 
 // Parse will parse a k-v map to pairs slice.
-func Parse(m map[string]interface{}) ([]types.Pair, error) {
-	pairs := make([]types.Pair, 0, len(m))
+func Parse(m map[string]interface{}) ([]Pair, error) {
+	pairs := make([]Pair, 0, len(m))
 
 	var err error
 
 	for k, v := range m {
 		var pv interface{}
 		switch k {
-		case ContentMd5:
+		case "content_md5":
 			switch rv := v.(type) {
 			case string:
 				pv = rv
@@ -220,12 +181,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   ContentMd5,
+					Key:   "content_md5",
 					Type:  "string",
 					Value: v,
 				}
 			}
-		case ContentType:
+		case "content_type":
 			switch rv := v.(type) {
 			case string:
 				pv = rv
@@ -233,12 +194,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   ContentType,
+					Key:   "content_type",
 					Type:  "string",
 					Value: v,
 				}
 			}
-		case Context:
+		case "context":
 			switch rv := v.(type) {
 			case context.Context:
 				pv = rv
@@ -246,12 +207,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   Context,
+					Key:   "context",
 					Type:  "context.Context",
 					Value: v,
 				}
 			}
-		case ContinuationToken:
+		case "continuation_token":
 			switch rv := v.(type) {
 			case string:
 				pv = rv
@@ -259,12 +220,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   ContinuationToken,
+					Key:   "continuation_token",
 					Type:  "string",
 					Value: v,
 				}
 			}
-		case Credential:
+		case "credential":
 			switch rv := v.(type) {
 			case *credential.Provider:
 				pv = rv
@@ -274,7 +235,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					return nil, &Error{
 						Op:    "parse",
 						Err:   err,
-						Key:   Credential,
+						Key:   "credential",
 						Type:  "*credential.Provider",
 						Value: v,
 					}
@@ -283,12 +244,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   Credential,
+					Key:   "credential",
 					Type:  "*credential.Provider",
 					Value: v,
 				}
 			}
-		case Endpoint:
+		case "endpoint":
 			switch rv := v.(type) {
 			case endpoint.Provider:
 				pv = rv
@@ -298,7 +259,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					return nil, &Error{
 						Op:    "parse",
 						Err:   err,
-						Key:   Endpoint,
+						Key:   "endpoint",
 						Type:  "endpoint.Provider",
 						Value: v,
 					}
@@ -307,12 +268,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   Endpoint,
+					Key:   "endpoint",
 					Type:  "endpoint.Provider",
 					Value: v,
 				}
 			}
-		case Expire:
+		case "expire":
 			switch rv := v.(type) {
 			case int:
 				pv = rv
@@ -322,7 +283,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					return nil, &Error{
 						Op:    "parse",
 						Err:   err,
-						Key:   Expire,
+						Key:   "expire",
 						Type:  "int",
 						Value: v,
 					}
@@ -331,12 +292,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   Expire,
+					Key:   "expire",
 					Type:  "int",
 					Value: v,
 				}
 			}
-		case HTTPClientOptions:
+		case "http_client_options":
 			switch rv := v.(type) {
 			case *httpclient.Options:
 				pv = rv
@@ -344,38 +305,25 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   HTTPClientOptions,
+					Key:   "http_client_options",
 					Type:  "*httpclient.Options",
 					Value: v,
 				}
 			}
-		case Interceptor:
+		case "interceptor":
 			switch rv := v.(type) {
-			case types.Interceptor:
+			case Interceptor:
 				pv = rv
 			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   Interceptor,
-					Type:  "types.Interceptor",
+					Key:   "interceptor",
+					Type:  "Interceptor",
 					Value: v,
 				}
 			}
-		case Location:
-			switch rv := v.(type) {
-			case string:
-				pv = rv
-			default:
-				return nil, &Error{
-					Op:    "parse",
-					Err:   ErrPairTypeMismatch,
-					Key:   Location,
-					Type:  "string",
-					Value: v,
-				}
-			}
-		case Name:
+		case "location":
 			switch rv := v.(type) {
 			case string:
 				pv = rv
@@ -383,12 +331,25 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   Name,
+					Key:   "location",
 					Type:  "string",
 					Value: v,
 				}
 			}
-		case Offset:
+		case "name":
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   "name",
+					Type:  "string",
+					Value: v,
+				}
+			}
+		case "offset":
 			switch rv := v.(type) {
 			case int64:
 				pv = rv
@@ -398,7 +359,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					return nil, &Error{
 						Op:    "parse",
 						Err:   err,
-						Key:   Offset,
+						Key:   "offset",
 						Type:  "int64",
 						Value: v,
 					}
@@ -407,25 +368,25 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   Offset,
+					Key:   "offset",
 					Type:  "int64",
 					Value: v,
 				}
 			}
-		case PairPolicy:
+		case "pair_policy":
 			switch rv := v.(type) {
-			case types.PairPolicy:
+			case PairPolicy:
 				pv = rv
 			default:
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   PairPolicy,
-					Type:  "types.PairPolicy",
+					Key:   "pair_policy",
+					Type:  "PairPolicy",
 					Value: v,
 				}
 			}
-		case ReadCallbackFunc:
+		case "read_callback_func":
 			switch rv := v.(type) {
 			case func([]byte):
 				pv = rv
@@ -433,12 +394,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   ReadCallbackFunc,
+					Key:   "read_callback_func",
 					Type:  "func([]byte)",
 					Value: v,
 				}
 			}
-		case Size:
+		case "size":
 			switch rv := v.(type) {
 			case int64:
 				pv = rv
@@ -448,7 +409,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 					return nil, &Error{
 						Op:    "parse",
 						Err:   err,
-						Key:   Size,
+						Key:   "size",
 						Type:  "int64",
 						Value: v,
 					}
@@ -457,12 +418,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   Size,
+					Key:   "size",
 					Type:  "int64",
 					Value: v,
 				}
 			}
-		case StorageClass:
+		case "storage_class":
 			switch rv := v.(type) {
 			case string:
 				pv = rv
@@ -470,12 +431,12 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   StorageClass,
+					Key:   "storage_class",
 					Type:  "string",
 					Value: v,
 				}
 			}
-		case WorkDir:
+		case "work_dir":
 			switch rv := v.(type) {
 			case string:
 				pv = rv
@@ -483,7 +444,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 				return nil, &Error{
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
-					Key:   WorkDir,
+					Key:   "work_dir",
 					Type:  "string",
 					Value: v,
 				}
@@ -491,7 +452,7 @@ func Parse(m map[string]interface{}) ([]types.Pair, error) {
 		default:
 			continue
 		}
-		pairs = append(pairs, types.Pair{Key: k, Value: pv})
+		pairs = append(pairs, Pair{Key: k, Value: pv})
 	}
 
 	return pairs, nil
