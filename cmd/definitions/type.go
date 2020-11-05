@@ -510,7 +510,18 @@ func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
 func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 	// Inject read_callback_func
 	for _, v := range n.Funcs {
+		existPairs := map[string]bool{}
+		for _, p := range v.Required {
+			existPairs[p.Name] = true
+		}
+		for _, p := range v.Optional {
+			existPairs[p.Name] = true
+		}
+
 		for _, ps := range v.Pairs {
+			if existPairs[ps] {
+				continue
+			}
 			v.Generated = append(v.Generated, srv.Pairs[ps])
 		}
 	}
