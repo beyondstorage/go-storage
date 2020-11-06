@@ -42,7 +42,7 @@ func (s *Service) Sort() {
 	}
 }
 
-// Namespace contains all info aboue a namespace
+// Namespace contains all info about a namespace
 type Namespace struct {
 	Name  string
 	New   *Function
@@ -533,7 +533,19 @@ func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 		"work_dir",
 	}
 	if n.New != nil {
+		existPairs := map[string]bool{}
+
+		for _, p := range n.New.Required {
+			existPairs[p.Name] = true
+		}
+		for _, p := range n.New.Optional {
+			existPairs[p.Name] = true
+		}
+
 		for _, v := range storageNewPairs {
+			if existPairs[v] {
+				continue
+			}
 			n.New.Generated = append(n.New.Generated, srv.Pairs[v])
 		}
 
