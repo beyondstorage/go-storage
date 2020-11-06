@@ -164,11 +164,53 @@ type Storager interface {
 }
 
 type PairPolicy struct {
-	ReadSize          PairPolicyAction
-	ReadOffset        PairPolicyAction
-	WriteSize         PairPolicyAction
-	WriteOffset       PairPolicyAction
-	WriteStorageClass PairPolicyAction
-	WriteContentType  PairPolicyAction
-	WriteContentMd5   PairPolicyAction
+	All bool
+
+	// pairs for interface Copier
+	Copy bool
+
+	// pairs for interface DirLister
+	ListDir bool
+
+	// pairs for interface DirSegmentsLister
+	ListDirSegments bool
+
+	// pairs for interface IndexSegmenter
+	InitIndexSegment  bool
+	WriteIndexSegment bool
+
+	// pairs for interface Mover
+	Move bool
+
+	// pairs for interface PrefixLister
+	ListPrefix bool
+
+	// pairs for interface PrefixSegmentsLister
+	ListPrefixSegments bool
+
+	// pairs for interface Reacher
+	Reach bool
+
+	// pairs for interface Segmenter
+	AbortSegment    bool
+	CompleteSegment bool
+
+	// pairs for interface Statistician
+	Statistical bool
+
+	// pairs for interface Storager
+	Delete                bool
+	Metadata              bool
+	Read                  bool
+	ReadSize              bool
+	ReadOffset            bool
+	ReadReadCallbackFunc  bool
+	Stat                  bool
+	Write                 bool
+	WriteSize             bool
+	WriteOffset           bool
+	WriteStorageClass     bool
+	WriteContentType      bool
+	WriteContentMd5       bool
+	WriteReadCallbackFunc bool
 }

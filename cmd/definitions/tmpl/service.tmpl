@@ -10,7 +10,6 @@ import (
     "github.com/aos-dev/go-storage/v2/pkg/httpclient"
     "github.com/aos-dev/go-storage/v2/services"
     . "github.com/aos-dev/go-storage/v2/types"
-    ps "github.com/aos-dev/go-storage/v2/pairs"
 )
 
 var _ credential.Provider
@@ -26,26 +25,8 @@ const Type = "{{ .Name }}"
 const (
 {{- range $_, $v := .Pairs }}
     {{- if not $v.Global }}
-    {{- $pname := $v.Name | toPascal }}
-    // {{ $pname }} will {{ $v.Description }}
-    Pair{{ $pname }} = "{{ $.Name }}_{{ $v.Name }}"
-    {{- end }}
-{{- end }}
-)
-
-// Service available infos.
-const (
-{{- range $_, $v := .Infos }}
-    {{- if not $v.Global }}
-    {{- $pname := $v.Name | toPascal }}
-    {{- if $v.DisplayName }}
-        {{- $pname = $v.DisplayName }}
-    {{- end }}
-    {{ $serviceName := printf "%s%s" ($v.Scope | toPascal) ($v.Category | toPascal) }}
-    {{- if eq $v.Scope "object" }}
-        {{ $serviceName = "Object" }}
-    {{- end }}
-    Info{{$serviceName}}{{ $pname }} = "{{ $.Name }}-{{ $v.Name }}"
+    {{ $v.Description }}
+    {{ $v.FullName }} = "{{ $.Name }}_{{ $v.Name }}"
     {{- end }}
 {{- end }}
 )
@@ -54,10 +35,10 @@ const (
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options
-// This pair is used to {{ $v.Description }}
+{{ $v.Description }}
 func With{{ $pname }}(v {{ $v.Type }}) Pair {
         return Pair{
-        Key: Pair{{ $pname }},
+        Key: {{ $v.FullName }},
         Value: v,
     }
 }
@@ -77,7 +58,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     {{- end }}
     // Get{{ $pname }} will get {{ $v.Name }} value from metadata.
     func Get{{ $pname }}(m *{{ $serviceName }}) ({{ $v.Type }}, bool)  {
-    v, ok := m.Get(Info{{ $serviceName }}{{ $pname }})
+    v, ok := m.Get("{{ $.Name }}-{{ $v.Name }}")
     if !ok {
     {{- if $v.ZeroValue }}
         return {{ $v.ZeroValue }}, false
@@ -90,13 +71,13 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 
     // set{{ $v.Name }} will set {{ $v.Name }} value into metadata.
     func set{{ $pname }}(m *{{ $serviceName }}, v {{ $v.Type }}) *{{ $serviceName }} {
-    return m.Set(Info{{ $serviceName }}{{ $pname }}, v)
+    return m.Set("{{ $.Name }}-{{ $v.Name }}", v)
     }
     {{- end }}
 {{- end }}
 
 {{- range $_, $v := .Namespaces }}
-    {{- template "pair" makeSlice ( $v.Name | toPascal ) $v.New }}
+    {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New }}
     {{- template "pairs" makeSlice $v.Name $v.Funcs }}
     {{- template "functions" makeSlice $v.Name $v.Funcs }}
 {{- end }}
@@ -110,34 +91,19 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     {{- end }}
 {{- end}}
 
-{{- define "pair" }}
+{{- define "pair_new" }}
     {{- $pn := index . 0 }}
     {{- $fn := index . 1 }}
 
     {{- $fnk := $fn.Name | toPascal }}
 
-    // pair{{ $pn }}{{ $fnk }}Map holds all available pairs
-    var pair{{ $pn }}{{ $fnk }}Map = map[string]struct{}{
-        // Required pairs
-        {{- range $_, $pair := $fn.Required }}
-        {{ $pair.FullName }}: struct{}{},
-        {{- end }}
-        // Optional pairs
-        {{- range $_, $pair := $fn.Optional }}
-        {{ $pair.FullName }}: struct{}{},
-        {{- end }}
-        // Generated pairs
-        {{- range $_, $pair := $fn.Generated }}
-        {{ $pair.FullName }}: struct{}{},
-        {{- end }}
-    }
-
     // pair{{ $pn }}{{ $fnk }} is the parsed struct
-    type pair{{ $pn }}{{ $fnk }} struct {
+    type pair{{ $pn }}{{$fnk}} struct {
         pairs []Pair
 
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
+        Has{{ $pair.Name | toPascal }}   bool
         {{ $pair.Name | toPascal }}    {{ $pair.Type }}
         {{- end }}
         // Optional pairs
@@ -147,73 +113,124 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
         {{- end }}
         // Generated pairs
         {{- range $_, $pair := $fn.Generated }}
-        {{- if not $pair.Default }}
         Has{{ $pair.Name | toPascal }}   bool
-        {{- end }}
         {{ $pair.Name | toPascal }}    {{ $pair.Type }}
         {{- end }}
     }
 
-    // parsePair{{ $pn }}{{ $fnk }} will parse *Pair slice into *pair{{ $pn }}{{ $fnk }}
-    func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
+// parsePair{{ $pn }}{{ $fnk }} will parse Pair slice into *pair{{ $pn }}{{ $fnk }}
+func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
     result := &pair{{ $pn }}{{ $fnk }}{
         pairs: opts,
     }
 
-    values := make(map[string]interface{})
     for _, v := range opts {
-        {{- if not (hasPrefix $fnk "New") }}
-        if _, ok := pair{{ $pn }}{{ $fnk }}Map[v.Key]; !ok {
-            return nil, services.NewPairUnsupportedError(v)
-        }
+        switch v.Key {
+        {{- range $_, $pair := $fn.Required }}
+        case "{{$pair.Name}}":
+            result.Has{{ $pair.Name | toPascal }} = true
+            result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
-        values[v.Key] = v.Value
-    }
-
-    {{- if or $fn.Required $fn.Optional $fn.Generated }}
-    var v interface{}
-    var ok bool
-    {{- end }}
-
-    // Handle required pairs
-    {{- range $_, $pair := $fn.Required }}
-        {{- $pkey := $pair.Name | toPascal }}
-        v, ok = values[{{- $pair.FullName -}}]
-        if !ok {
-            return nil, services.NewPairRequiredError({{- $pair.FullName -}})
-        }
-        if ok {
-            result.{{ $pkey }} = v.({{ $pair.Type }})
-        }
-    {{- end }}
-    // Handle optional pairs
-    {{- range $_, $pair := $fn.Optional }}
-        {{- $pkey := $pair.Name | toPascal }}
-        v, ok = values[{{- $pair.FullName -}}]
-        if ok {
-        result.Has{{ $pkey }} = true
-        result.{{ $pkey }} = v.({{ $pair.Type }})
-        }
-    {{- end }}
-    // Handle generated pairs
-    {{- range $_, $pair := $fn.Generated }}
-        {{- $pkey := $pair.Name | toPascal }}
-        v, ok = values[{{- $pair.FullName -}}]
-        if ok {
-        {{- if not $pair.Default }}
-            result.Has{{ $pkey }} = true
+        {{- range $_, $pair := $fn.Optional }}
+        case "{{$pair.Name}}":
+            result.Has{{ $pair.Name | toPascal }} = true
+            result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
-        result.{{ $pkey }} = v.({{ $pair.Type }})
-        }
-        {{- if $pair.Default }}
-            if !ok {
-            result.{{ $pkey }} = {{ $pair.Default }}
+        {{- range $_, $pair := $fn.Generated }}
+        case "{{$pair.Name}}":
+            value, ok := convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
+            if ok {
+                result.Has{{ $pair.Name | toPascal }} = true
+                result.{{ $pair.Name | toPascal }} = value
+            } else {
+                 result.Has{{ $pair.Name | toPascal }} = false
             }
         {{- end }}
+        }
+    }
+
+    {{- range $_, $pair := $fn.Required }}
+    if !result.Has{{- $pair.FullName -}} {
+        return nil, services.NewPairRequiredError({{- $pair.FullName -}})
+    }
     {{- end }}
 
     return result, nil
+}
+{{- end }}
+
+{{- define "pair" }}
+    {{- $pn := index . 0 }}
+    {{- $fn := index . 1 }}
+
+    {{- $fnk := $fn.Name | toPascal }}
+
+    // pair{{ $pn }}{{ $fnk }} is the parsed struct
+    type pair{{ $pn }}{{ $fnk }} struct {
+        pairs []Pair
+
+        // Required pairs
+        {{- range $_, $pair := $fn.Required }}
+        Has{{ $pair.Name | toPascal }}   bool
+        {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+        {{- end }}
+        // Optional pairs
+        {{- range $_, $pair := $fn.Optional }}
+        Has{{ $pair.Name | toPascal }}   bool
+        {{ $pair.Name | toPascal }}      {{ $pair.Type }}
+        {{- end }}
+        // Generated pairs
+        {{- range $_, $pair := $fn.Generated }}
+        Has{{ $pair.Name | toPascal }}   bool
+        {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+        {{- end }}
     }
+
+// parsePair{{ $pn }}{{ $fnk }} will parse Pair slice into *pair{{ $pn }}{{ $fnk }}
+func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
+    result := &pair{{ $pn }}{{ $fnk }}{
+        pairs: opts,
+    }
+
+    for _, v := range opts {
+        switch v.Key {
+        {{- range $_, $pair := $fn.Required }}
+        case "{{$pair.Name}}":
+            result.Has{{ $pair.Name | toPascal }} = true
+            result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+        {{- end }}
+        {{- range $_, $pair := $fn.Optional }}
+        case "{{$pair.Name}}":
+            result.Has{{ $pair.Name | toPascal }} = true
+            result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+        {{- end }}
+        {{- range $_, $pair := $fn.Generated }}
+        case "{{$pair.Name}}":
+            value, ok := s.convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
+            if ok {
+                result.Has{{ $pair.Name | toPascal }} = true
+                result.{{ $pair.Name | toPascal }} = value
+            } else {
+                if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} || s.pairPolicy.{{ $fnk }}{{ $pair.Name | toPascal }} {
+                    return nil, services.NewPairUnsupportedError(v)
+                }
+            }
+        {{- end }}
+        default:
+            if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} {
+                return nil, services.NewPairUnsupportedError(v)
+            }
+        }
+    }
+
+    {{- range $_, $pair := $fn.Required }}
+    if !result.Has{{- $pair.FullName -}} {
+        return nil, services.NewPairRequiredError({{- $pair.FullName -}})
+    }
+    {{- end }}
+
+    return result, nil
+}
 {{- end }}
 
 {{- define "functions" }}
@@ -249,7 +266,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
             err = s.formatError("{{$fn.Name}}", err {{ $path }} )
         }()
         var opt *pair{{ $pn }}{{ $fnk }}
-        opt, err = parsePair{{ $pn }}{{ $fnk }}(pairs)
+        opt, err = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
         if err != nil {
             return
         }

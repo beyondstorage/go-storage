@@ -26,10 +26,15 @@ type {{ $i.DisplayName }} interface {
 {{- end }}
 
 type PairPolicy struct {
+    All bool
 {{- range $_, $i := .Interfaces }}
+{{ if ne $i.Name "servicer" }}
+// pairs for interface {{ $i.Name | toPascal }}
 {{- range $_, $op := $i.Ops }}
+    {{ $op.Name | toPascal }}  bool
 {{- range $_, $v := $op.Pairs }}
-    {{ $op.Name | toPascal }}{{ $v | toPascal }} PairPolicyAction
+    {{ $op.Name | toPascal }}{{ $v | toPascal }} bool
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

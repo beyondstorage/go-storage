@@ -42,7 +42,7 @@ func (s *Service) Sort() {
 	}
 }
 
-// Namespace contains all info aboue a namespace
+// Namespace contains all info about a namespace
 type Namespace struct {
 	Name  string
 	New   *Function
@@ -89,9 +89,9 @@ func (p *Pair) Format(s *PairSpec, global bool) {
 // FullName will print full name for current pair
 func (p *Pair) FullName() string {
 	if p.Global {
-		return fmt.Sprintf("ps.%s", templateutils.ToPascal(p.Name))
+		return fmt.Sprintf("\"%s\"", p.Name)
 	}
-	return "Pair" + templateutils.ToPascal(p.Name)
+	return "pair" + templateutils.ToPascal(p.Name)
 }
 
 // Info is the metadata definition.
@@ -463,6 +463,9 @@ func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
 	nsInterface := n.Name + "r"
 
 	// Handle New function
+	if n.New == nil {
+		n.New = &NewSpec{}
+	}
 	ns.New = NewFunction(&Operation{Name: "new"})
 	ns.New.Format(&OpSpec{
 		Required: n.New.Required,
@@ -507,14 +510,45 @@ func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
 func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 	// Inject read_callback_func
 	for _, v := range n.Funcs {
-		if v.Params.HasReader() || v.Results.HasReader() {
-			v.Generated = append(v.Generated, srv.Pairs["read_callback_func"])
+		existPairs := map[string]bool{}
+		for _, p := range v.Required {
+			existPairs[p.Name] = true
+		}
+		for _, p := range v.Optional {
+			existPairs[p.Name] = true
+		}
+
+		for _, ps := range v.Pairs {
+			if existPairs[ps] {
+				continue
+			}
+			v.Generated = append(v.Generated, srv.Pairs[ps])
 		}
 	}
 
 	// Inject http_client_options
+	storageNewPairs := []string{
+		"http_client_options",
+		"pair_policy",
+		"work_dir",
+	}
 	if n.New != nil {
-		n.New.Generated = append(n.New.Generated, srv.Pairs["http_client_options"])
+		existPairs := map[string]bool{}
+
+		for _, p := range n.New.Required {
+			existPairs[p.Name] = true
+		}
+		for _, p := range n.New.Optional {
+			existPairs[p.Name] = true
+		}
+
+		for _, v := range storageNewPairs {
+			if existPairs[v] {
+				continue
+			}
+			n.New.Generated = append(n.New.Generated, srv.Pairs[v])
+		}
+
 	}
 }
 
