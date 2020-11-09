@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v2.0.0-beta] - 2020-11-09
+
+### Added
+
+- types: Implement pair policy (#453)
+- pkg/storageclass: Add sotrageclass support (#456)
+
+### Changed
+
+- build: Use aos-dev/go-dev-tools to tidy go mod files (#454)
+- cmd/install: Move to aos-dev/go-dev-tools/setup
+- pairs: Use dot import to avoid type conflicts (#459)
+- build(deps): bump github.com/google/uuid from 1.1.1 to 1.1.2 (#461)
+
 ## [v2.0.0-alpha.1] - 2020-11-02
 
 ### Added
@@ -365,6 +379,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add qingstor services.
 
 [Unreleased]: https://github.com/Xuanwo/storage/compare/v2.0.0-alpha.1...HEAD
+[v2.0.0-beta]: https://github.com/Xuanwo/storage/compare/v2.0.0-alpha.1...v2.0.0-beta
 [v2.0.0-alpha.1]: https://github.com/Xuanwo/storage/compare/v1.2.1...v2.0.0-alpha.1
 [v1.2.1]: https://github.com/Xuanwo/storage/compare/v1.2.0...v1.2.1
 [v1.2.0]: https://github.com/Xuanwo/storage/compare/v1.1.0...v1.2.0
