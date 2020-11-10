@@ -22,18 +22,7 @@ vet:
 	@go vet ./...
 	@echo "ok"
 
-build_definitions:
-	@echo "build storage generator"
-	@pushd cmd/definitions \
-		&& go generate ./... \
-		&& mkdir -p ../../bin/ \
-		&& CGO_ENABLED=0 go build -o ../../bin/ . \
-		&& popd
-	@echo "build iterator generator"
-	@pushd internal/cmd && mkdir -p ../bin/ && go build -o ../bin/ ./iterator && popd
-	@echo "Done"
-
-generate: build_definitions
+generate:
 	@echo "generate code"
 	@go generate ./...
 	@go fmt ./...
@@ -41,7 +30,7 @@ generate: build_definitions
 
 build: generate tidy check
 	@echo "build storage"
-	@go build ./...
+	@go build -tags tools ./...
 	@echo "ok"
 
 test:
@@ -49,7 +38,6 @@ test:
 	@go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
 	@go tool cover -html="coverage.txt" -o "coverage.html"
 	@echo "ok"
-
 
 integration_test:
 	@echo "run integration test"
@@ -59,7 +47,8 @@ integration_test:
 	@echo "ok"
 
 tidy:
-	@go run github.com/aos-dev/go-dev-tools/cmd/tidy
+	@go mod tidy
+	@go mod verify
 
 clean:
 	@echo "clean generated files"

@@ -1,10 +1,12 @@
+// +build tools
+
 package main
 
 import (
 	"fmt"
-	"text/template"
 	"log"
 	"os"
+	"text/template"
 )
 
 func main() {
