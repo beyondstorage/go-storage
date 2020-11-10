@@ -525,31 +525,6 @@ func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 			v.Generated = append(v.Generated, srv.Pairs[ps])
 		}
 	}
-
-	// Inject http_client_options
-	storageNewPairs := []string{
-		"http_client_options",
-		"pair_policy",
-		"work_dir",
-	}
-	if n.New != nil {
-		existPairs := map[string]bool{}
-
-		for _, p := range n.New.Required {
-			existPairs[p.Name] = true
-		}
-		for _, p := range n.New.Optional {
-			existPairs[p.Name] = true
-		}
-
-		for _, v := range storageNewPairs {
-			if existPairs[v] {
-				continue
-			}
-			n.New.Generated = append(n.New.Generated, srv.Pairs[v])
-		}
-
-	}
 }
 
 // FormatService will formatGlobal services from service spec

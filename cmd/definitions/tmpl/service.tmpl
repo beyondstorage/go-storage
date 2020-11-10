@@ -126,16 +126,19 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error)
 
     for _, v := range opts {
         switch v.Key {
+        // Required pairs
         {{- range $_, $pair := $fn.Required }}
         case "{{$pair.Name}}":
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
+        // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
         case "{{$pair.Name}}":
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
+        // Generated pairs
         {{- range $_, $pair := $fn.Generated }}
         case "{{$pair.Name}}":
             value, ok := convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
@@ -194,16 +197,19 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $
 
     for _, v := range opts {
         switch v.Key {
+        // Required pairs
         {{- range $_, $pair := $fn.Required }}
         case "{{$pair.Name}}":
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
+        // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
         case "{{$pair.Name}}":
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
+        // Generated pairs
         {{- range $_, $pair := $fn.Generated }}
         case "{{$pair.Name}}":
             value, ok := s.convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
@@ -211,15 +217,23 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $
                 result.Has{{ $pair.Name | toPascal }} = true
                 result.{{ $pair.Name | toPascal }} = value
             } else {
+                 {{if ne $pn "Service" }}
                 if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} || s.pairPolicy.{{ $fnk }}{{ $pair.Name | toPascal }} {
                     return nil, services.NewPairUnsupportedError(v)
                 }
+                {{else}}
+                result.Has{{ $pair.Name | toPascal }} = false
+                {{end}}
             }
         {{- end }}
         default:
+            {{if ne $pn "Service" }}
             if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} {
                 return nil, services.NewPairUnsupportedError(v)
             }
+            {{else}}
+                continue
+            {{end}}
         }
     }
 
