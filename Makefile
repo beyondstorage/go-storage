@@ -27,7 +27,7 @@ build_definitions:
 	@pushd cmd/definitions \
 		&& go generate ./... \
 		&& mkdir -p ../../bin/ \
-		&& CGO_ENABLED=0 go build -o ../../bin/ . \
+		&& CGO_ENABLED=0 go build -o ../../bin/ -tags tools . \
 		&& popd
 	@echo "build iterator generator"
 	@pushd internal/cmd && mkdir -p ../bin/ && go build -o ../bin/ ./iterator && popd
@@ -41,7 +41,7 @@ generate: build_definitions
 
 build: generate tidy check
 	@echo "build storage"
-	@go build ./...
+	@go build -tags tools ./...
 	@echo "ok"
 
 test:
