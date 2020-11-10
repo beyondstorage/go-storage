@@ -150,7 +150,7 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error)
     }
 
     {{- range $_, $pair := $fn.Required }}
-    if !result.Has{{- $pair.FullName -}} {
+    if !result.Has{{ $pair.Name | toPascal }} {
         return nil, services.NewPairRequiredError({{- $pair.FullName -}})
     }
     {{- end }}
