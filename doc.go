@@ -38,5 +38,5 @@ The most common case to use a Storager service could be following:
 */
 package storage
 
-//go:generate bin/definitions
-//go:generate internal/bin/iterator
+//go:generate go run -tags tools ./cmd/definitions
+//go:generate go run -tags tools ./internal/cmd/iterator
