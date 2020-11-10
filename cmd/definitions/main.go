@@ -7,11 +7,15 @@ import (
 )
 
 func main() {
-	switch v := len(os.Args); v {
+	run(os.Args)
+}
+
+func run(args []string) {
+	switch v := len(args); v {
 	case 1:
 		actionGlobal()
 	case 2:
-		actionService()
+		actionService(args[1])
 	default:
 		log.Fatalf("args length should be 1 or 2, actual %d", v)
 	}
@@ -25,10 +29,9 @@ func actionGlobal() {
 	formatGlobal(data)
 }
 
-func actionService() {
+func actionService(filePath string) {
 	data := parse()
 
-	filePath := os.Args[1]
 	content, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
