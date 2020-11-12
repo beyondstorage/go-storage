@@ -9,12 +9,6 @@ Goals
 
 - Vendor agnostic: more generic abstraction, less internal details.
 
-Details
-
-There two main public interfaces: Servicer and Storager. Storager is a fully functional storage client, and Servicer is a
-manager of Storager instances, which will be useful for services like object storage. For any service, Storager is
-required to implement and Servicer is optional.
-
 Examples
 
 The most common case to use a Storager service could be following:
