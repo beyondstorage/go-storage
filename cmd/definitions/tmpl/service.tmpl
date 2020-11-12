@@ -92,31 +92,31 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 {{- end}}
 
 {{- define "pair_new" }}
-    {{- $pn := index . 0 }}
-    {{- $fn := index . 1 }}
+{{- $pn := index . 0 }}
+{{- $fn := index . 1 }}
 
-    {{- $fnk := $fn.Name | toPascal }}
+{{- $fnk := $fn.Name | toPascal }}
 
-    // pair{{ $pn }}{{ $fnk }} is the parsed struct
-    type pair{{ $pn }}{{$fnk}} struct {
-        pairs []Pair
+// pair{{ $pn }}{{ $fnk }} is the parsed struct
+type pair{{ $pn }}{{$fnk}} struct {
+    pairs []Pair
 
-        // Required pairs
-        {{- range $_, $pair := $fn.Required }}
-        Has{{ $pair.Name | toPascal }}   bool
-        {{ $pair.Name | toPascal }}    {{ $pair.Type }}
-        {{- end }}
-        // Optional pairs
-        {{- range $_, $pair := $fn.Optional }}
-        Has{{ $pair.Name | toPascal }}   bool
-        {{ $pair.Name | toPascal }}      {{ $pair.Type }}
-        {{- end }}
-        // Generated pairs
-        {{- range $_, $pair := $fn.Generated }}
-        Has{{ $pair.Name | toPascal }}   bool
-        {{ $pair.Name | toPascal }}    {{ $pair.Type }}
-        {{- end }}
-    }
+    // Required pairs
+    {{- range $_, $pair := $fn.Required }}
+    Has{{ $pair.Name | toPascal }}   bool
+    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+    {{- end }}
+    // Optional pairs
+    {{- range $_, $pair := $fn.Optional }}
+    Has{{ $pair.Name | toPascal }}   bool
+    {{ $pair.Name | toPascal }}      {{ $pair.Type }}
+    {{- end }}
+    // Generated pairs
+    {{- range $_, $pair := $fn.Generated }}
+    Has{{ $pair.Name | toPascal }}   bool
+    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+    {{- end }}
+}
 
 // parsePair{{ $pn }}{{ $fnk }} will parse Pair slice into *pair{{ $pn }}{{ $fnk }}
 func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
@@ -128,19 +128,19 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error)
         switch v.Key {
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
-        case "{{$pair.Name}}":
+        case {{ $pair.FullName }}:
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
         // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
-        case "{{$pair.Name}}":
+        case {{ $pair.FullName }}:
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
         // Generated pairs
         {{- range $_, $pair := $fn.Generated }}
-        case "{{$pair.Name}}":
+        case {{ $pair.FullName }}:
             value, ok := convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
             if ok {
                 result.Has{{ $pair.Name | toPascal }} = true
@@ -163,31 +163,31 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error)
 {{- end }}
 
 {{- define "pair" }}
-    {{- $pn := index . 0 }}
-    {{- $fn := index . 1 }}
+{{- $pn := index . 0 }}
+{{- $fn := index . 1 }}
 
-    {{- $fnk := $fn.Name | toPascal }}
+{{- $fnk := $fn.Name | toPascal }}
 
-    // pair{{ $pn }}{{ $fnk }} is the parsed struct
-    type pair{{ $pn }}{{ $fnk }} struct {
-        pairs []Pair
+// pair{{ $pn }}{{ $fnk }} is the parsed struct
+type pair{{ $pn }}{{ $fnk }} struct {
+    pairs []Pair
 
-        // Required pairs
-        {{- range $_, $pair := $fn.Required }}
-        Has{{ $pair.Name | toPascal }}   bool
-        {{ $pair.Name | toPascal }}    {{ $pair.Type }}
-        {{- end }}
-        // Optional pairs
-        {{- range $_, $pair := $fn.Optional }}
-        Has{{ $pair.Name | toPascal }}   bool
-        {{ $pair.Name | toPascal }}      {{ $pair.Type }}
-        {{- end }}
-        // Generated pairs
-        {{- range $_, $pair := $fn.Generated }}
-        Has{{ $pair.Name | toPascal }}   bool
-        {{ $pair.Name | toPascal }}    {{ $pair.Type }}
-        {{- end }}
-    }
+    // Required pairs
+    {{- range $_, $pair := $fn.Required }}
+    Has{{ $pair.Name | toPascal }}   bool
+    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+    {{- end }}
+    // Optional pairs
+    {{- range $_, $pair := $fn.Optional }}
+    Has{{ $pair.Name | toPascal }}   bool
+    {{ $pair.Name | toPascal }}      {{ $pair.Type }}
+    {{- end }}
+    // Generated pairs
+    {{- range $_, $pair := $fn.Generated }}
+    Has{{ $pair.Name | toPascal }}   bool
+    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+    {{- end }}
+}
 
 // parsePair{{ $pn }}{{ $fnk }} will parse Pair slice into *pair{{ $pn }}{{ $fnk }}
 func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
@@ -199,19 +199,19 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $
         switch v.Key {
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
-        case "{{$pair.Name}}":
+        case {{ $pair.FullName }}:
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
         // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
-        case "{{$pair.Name}}":
+        case {{ $pair.FullName }}:
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
         // Generated pairs
         {{- range $_, $pair := $fn.Generated }}
-        case "{{$pair.Name}}":
+        case {{ $pair.FullName }}:
             value, ok := s.convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
             if ok {
                 result.Has{{ $pair.Name | toPascal }} = true
