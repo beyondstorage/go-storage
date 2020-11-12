@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v2.0.0] - 2020-11-12
+
+### Changed
+
+- cmd/definitions: Merge into main modules (#465)
+- cmd: Add tools tag into build (#468)
+
+### Fixed
+
+- cmd/definitions: Fix service not generated correctly (#466)
+- cmd/definitions: Fix server pair not handled correctly (#472)
+
 ## [v2.0.0-beta] - 2020-11-09
 
 ### Added
@@ -378,7 +390,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v2.0.0-alpha.1...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v2.0.0...HEAD
+[v2.0.0]: https://github.com/Xuanwo/storage/compare/v2.0.0-beta...v2.0.0
 [v2.0.0-beta]: https://github.com/Xuanwo/storage/compare/v2.0.0-alpha.1...v2.0.0-beta
 [v2.0.0-alpha.1]: https://github.com/Xuanwo/storage/compare/v1.2.1...v2.0.0-alpha.1
 [v1.2.1]: https://github.com/Xuanwo/storage/compare/v1.2.0...v1.2.1
