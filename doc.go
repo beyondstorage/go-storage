@@ -1,5 +1,5 @@
 /*
-Package storage intend to provide a unified storage layer for Golang.
+Package storage intends to provide a unified storage layer for Golang.
 
 Goals
 
