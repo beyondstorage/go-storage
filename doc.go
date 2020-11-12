@@ -1,5 +1,5 @@
 /*
-Package storage intend to provide a unified storage layer for Golang.
+Package storage intends to provide a unified storage layer for Golang.
 
 Goals
 
@@ -8,12 +8,6 @@ Goals
 - High performance: more code generation, less runtime reflect.
 
 - Vendor agnostic: more generic abstraction, less internal details.
-
-Details
-
-There two main public interfaces: Servicer and Storager. Storager is a fully functional storage client, and Servicer is a
-manager of Storager instances, which will be useful for services like object storage. For any service, Storager is
-required to implement and Servicer is optional.
 
 Examples
 

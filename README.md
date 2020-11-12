@@ -50,7 +50,6 @@ Extended operations
 - Copy: copy a file inside storager
 - Move: move a file inside storager
 - Reach: generate a public accessible url
-- Statistical: get storage service's statistics
 
 Multiple list style support
 
@@ -67,7 +66,7 @@ Segment/Multipart support
 
 ### Object metadata support
 
-Required metadata
+Common metadata
 
 - `id`: unique key in service
 - `name`: relative path towards service's work dir
@@ -76,7 +75,7 @@ Required metadata
 Optional metadata
 
 - `size`: object's content size.
-- `updated_at`: object's last updated time.
+- `updated-at`: object's last updated time.
 - `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
 - `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
 - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)

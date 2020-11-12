@@ -9,12 +9,18 @@ type ObjectType string
 
 // All available type for object.
 const (
-	ObjectTypeFile    ObjectType = "file"
-	ObjectTypeDir     ObjectType = "dir"
-	ObjectTypeLink    ObjectType = "link"
+	// ObjectTypeFile means this object is file-alike object which owns content.
+	ObjectTypeFile ObjectType = "file"
+	// ObjectTypeDir means this object is a dir object which doesn't have content.
+	ObjectTypeDir ObjectType = "dir"
+	// ObjectTypeLink means this object is a link object which contains a link target to
+	// another object.
+	ObjectTypeLink ObjectType = "link"
+	// ObjectTypeUnknown means storager can't recognize which type of this object.
 	ObjectTypeUnknown ObjectType = "unknown"
 )
 
+// NewObject will create a new object with client.
 func NewObject(client Storager, done bool) *Object {
 	o := &Object{
 		client: client,
