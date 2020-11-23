@@ -23,21 +23,21 @@ const (
 func parse() (data *Data) {
 	// Parse pairs
 	pairSpec := &PairsSpec{}
-	err := parseHCL(MustAsset(pairPath), pairPath, pairSpec)
+	err := parseHCL(pairPath, pairSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
 
 	// Parse metadata
 	metaSpec := &InfosSpec{}
-	err = parseHCL(MustAsset(infoPath), infoPath, metaSpec)
+	err = parseHCL(infoPath, metaSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
 
 	// Parse operations
 	operationsSpec := &OperationsSpec{}
-	err = parseHCL(MustAsset(operationPath), operationPath, operationsSpec)
+	err = parseHCL(operationPath, operationsSpec)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
@@ -46,13 +46,19 @@ func parse() (data *Data) {
 	return data
 }
 
-func parseHCL(src []byte, filename string, in interface{}) (err error) {
+func parseHCL(filename string, in interface{}) (err error) {
 	var diags hcl.Diagnostics
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("parse hcl: %w", err)
 		}
 	}()
+
+	src, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Printf("read file %s: %v", filename, err)
+		return err
+	}
 
 	file, diags := hclsyntax.ParseConfig(src, filename, hcl.Pos{Line: 1, Column: 1})
 	if diags.HasErrors() {
