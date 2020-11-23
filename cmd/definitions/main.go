@@ -3,7 +3,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 )
@@ -34,12 +33,8 @@ func actionGlobal() {
 func actionService(filePath string) {
 	data := parse()
 
-	content, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		log.Fatalf("parse: %v", err)
-	}
 	srv := &ServiceSpec{}
-	err = parseHCL(content, filePath, srv)
+	err := parseHCL(filePath, srv)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
