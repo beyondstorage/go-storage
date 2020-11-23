@@ -64,6 +64,10 @@ pair "size" {
 pair "storage_class" {
   type = "string"
 }
+pair "user_agent" {
+  type        = "string"
+  description = "specify the custom user-agent from client"
+}
 pair "work_dir" {
   type        = "string"
   description = "specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set. \n For fs storage service on windows platform, the behavior is undefined."
