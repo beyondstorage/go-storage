@@ -154,6 +154,15 @@ func WithStorageClass(v string) Pair {
 	}
 }
 
+// WithUserAgent will apply user_agent value to Options
+// UserAgent specify the custom user-agent from client
+func WithUserAgent(v string) Pair {
+	return Pair{
+		Key:   "user_agent",
+		Value: v,
+	}
+}
+
 // WithWorkDir will apply work_dir value to Options
 // WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
 //  For fs storage service on windows platform, the behavior is undefined.
@@ -432,6 +441,19 @@ func Parse(m map[string]interface{}) ([]Pair, error) {
 					Op:    "parse",
 					Err:   ErrPairTypeMismatch,
 					Key:   "storage_class",
+					Type:  "string",
+					Value: v,
+				}
+			}
+		case "user_agent":
+			switch rv := v.(type) {
+			case string:
+				pv = rv
+			default:
+				return nil, &Error{
+					Op:    "parse",
+					Err:   ErrPairTypeMismatch,
+					Key:   "user_agent",
 					Type:  "string",
 					Value: v,
 				}
