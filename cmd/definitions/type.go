@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Xuanwo/templateutils"
+	specs "github.com/aos-dev/specs/go"
 )
 
 // Data is the biggest container for all definitions.
@@ -23,10 +24,10 @@ type Data struct {
 	interfacesMap map[string]*Interface
 
 	// Store all specs for encoding
-	pairSpec       *PairsSpec
-	infoSpec       *InfosSpec
-	operationsSpec *OperationsSpec
-	serviceSpec    *ServiceSpec
+	pairSpec       *specs.Pairs
+	infoSpec       *specs.Infos
+	operationsSpec *specs.Operations
+	serviceSpec    *specs.Service
 }
 
 // Service is the service definition.
@@ -77,7 +78,7 @@ type Pair struct {
 }
 
 // Format will formatGlobal current pair
-func (p *Pair) Format(s *PairSpec, global bool) {
+func (p *Pair) Format(s *specs.Pair, global bool) {
 	p.Name = s.Name
 	p.Type = s.Type
 	p.Parser = s.Parser
@@ -112,7 +113,7 @@ type Info struct {
 }
 
 // Format will formatGlobal info spec into Info
-func (i *Info) Format(s *InfoSpec, global bool) {
+func (i *Info) Format(s *specs.Info, global bool) {
 	i.Scope = s.Scope
 	i.Category = s.Category
 	i.Name = s.Name
@@ -149,7 +150,7 @@ type Interface struct {
 }
 
 // NewInterface will create a new interface from spec.
-func NewInterface(in *InterfaceSpec, fields map[string]*Field) *Interface {
+func NewInterface(in *specs.Interface, fields map[string]*Field) *Interface {
 	inter := &Interface{
 		Name:        in.Name,
 		Description: formatDescription(templateutils.ToPascal(in.Name), in.Description),
@@ -182,7 +183,7 @@ type Operation struct {
 }
 
 // NewOperation will create an new operation from operation spec.
-func NewOperation(v *OperationSpec, fields map[string]*Field) *Operation {
+func NewOperation(v *specs.Operation, fields map[string]*Field) *Operation {
 	op := &Operation{
 		Name:        v.Name,
 		Description: formatDescription("", v.Description),
@@ -254,8 +255,8 @@ func NewFunction(o *Operation) *Function {
 	return &Function{Operation: o}
 }
 
-// Format will formatGlobal a function with OpSpec.
-func (f *Function) Format(s *OpSpec, p map[string]*Pair) {
+// Format will formatGlobal a function with Op.
+func (f *Function) Format(s *specs.Op, p map[string]*Pair) {
 	for _, v := range s.Required {
 		f.Required = append(f.Required, p[v])
 	}
@@ -379,13 +380,13 @@ func (f *Field) Caller() string {
 }
 
 // Format will create a new field.
-func (f *Field) Format(s *FieldSpec) {
+func (f *Field) Format(s *specs.Field) {
 	f.Type = s.Type
 	f.Name = s.Name
 }
 
 // FormatPairs will formatGlobal pairs for pair spec
-func (d *Data) FormatPairs(p *PairsSpec, global bool) map[string]*Pair {
+func (d *Data) FormatPairs(p *specs.Pairs, global bool) map[string]*Pair {
 	if p == nil {
 		return nil
 	}
@@ -401,7 +402,7 @@ func (d *Data) FormatPairs(p *PairsSpec, global bool) map[string]*Pair {
 }
 
 // FormatInfos will formatGlobal metas for meta spec
-func (d *Data) FormatInfos(m *InfosSpec, global bool) []*Info {
+func (d *Data) FormatInfos(m *specs.Infos, global bool) []*Info {
 	if m == nil {
 		return nil
 	}
@@ -431,7 +432,7 @@ func (d *Data) FormatInfos(m *InfosSpec, global bool) []*Info {
 }
 
 // FormatOperations will formatGlobal operations from operation spec
-func (d *Data) FormatOperations(o *OperationsSpec) (ins []*Interface, inm map[string]*Interface) {
+func (d *Data) FormatOperations(o *specs.Operations) (ins []*Interface, inm map[string]*Interface) {
 	fileds := make(map[string]*Field)
 	for _, v := range o.Fields {
 		f := &Field{}
@@ -459,17 +460,17 @@ func (d *Data) FormatOperations(o *OperationsSpec) (ins []*Interface, inm map[st
 }
 
 // FormatNamespace will formatGlobal a namespace.
-func (d *Data) FormatNamespace(srv *Service, n *NamespaceSpec) *Namespace {
+func (d *Data) FormatNamespace(srv *Service, n *specs.Namespace) *Namespace {
 	ns := &Namespace{Name: n.Name}
 
 	nsInterface := n.Name + "r"
 
 	// Handle New function
 	if n.New == nil {
-		n.New = &NewSpec{}
+		n.New = &specs.New{}
 	}
 	ns.New = NewFunction(&Operation{Name: "new"})
-	ns.New.Format(&OpSpec{
+	ns.New.Format(&specs.Op{
 		Required: n.New.Required,
 		Optional: n.New.Optional,
 	}, srv.Pairs)
@@ -530,7 +531,7 @@ func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 }
 
 // FormatService will formatGlobal services from service spec
-func (d *Data) FormatService(s *ServiceSpec) *Service {
+func (d *Data) FormatService(s *specs.Service) *Service {
 	d.serviceSpec = s
 
 	srv := &Service{
@@ -564,7 +565,7 @@ func (d *Data) Sort() {
 }
 
 // FormatData will formatGlobal the whole data.
-func FormatData(p *PairsSpec, m *InfosSpec, o *OperationsSpec) *Data {
+func FormatData(p *specs.Pairs, m *specs.Infos, o *specs.Operations) *Data {
 	data := &Data{
 		pairSpec:       p,
 		infoSpec:       m,
