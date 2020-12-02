@@ -26,6 +26,14 @@ interface "dir_segments_lister" {
     results     = ["si"]
   }
 }
+interface "fetcher" {
+  description = "is the interface for Fetch."
+
+  op "fetch" {
+    description = "will fetch from a given url to path."
+    params      = ["path", "url"]
+  }
+}
 interface "index_segmenter" {
   description = "is the interface for index based segment."
   embed       = ["segmenter"]
