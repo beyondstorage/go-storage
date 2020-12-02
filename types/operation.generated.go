@@ -33,6 +33,15 @@ type DirSegmentsLister interface {
 	ListDirSegmentsWithContext(ctx context.Context, dir string, pairs ...Pair) (si *SegmentIterator, err error)
 }
 
+// Fetcher is the interface for Fetch.
+type Fetcher interface {
+
+	// Fetch will fetch from a given url to path.
+	Fetch(path string, url string, pairs ...Pair) (err error)
+	// FetchWithContext will fetch from a given url to path.
+	FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error)
+}
+
 // IndexSegmenter is the interface for index based segment.
 type IndexSegmenter interface {
 	segmenter
@@ -174,6 +183,9 @@ type PairPolicy struct {
 
 	// pairs for interface DirSegmentsLister
 	ListDirSegments bool
+
+	// pairs for interface Fetcher
+	Fetch bool
 
 	// pairs for interface IndexSegmenter
 	InitIndexSegment  bool
