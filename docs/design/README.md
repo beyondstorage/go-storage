@@ -21,3 +21,4 @@
 ## [19-split-storage-list](./19-split-storage-list.md)
 ## [20-remove-loose-mode](./20-remove-loose-mode.md)
 ## [21-split-segmenter](./21-split-segmenter.md)
+## [22-add-default-set-for-operations](./22-add-default-set-for-operations.md)
