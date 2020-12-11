@@ -81,11 +81,16 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 
 ### Check if pair is valid  
 
-We can generate valid check func like `parsePairStorageWrite` when init,
+- Plan A: Checked when init. We can generate valid check func like `parsePairStorageWrite` when init,
 and response with pair policy.
 So that it is pre-checked before call specific operation, at that time,
 it may be inconvenient to change the default pairs.
+- Plan B: Check validate when call specific operation. The inappropriate pair may be overwritten by args, 
+so we should not worry about its validation when init. In this way, we should announce that we do not check
+validation when init, and return error when specific operation was called.
 
+For now, we choose the `Plan B`, and keep `Plan A` as candidate if it meets other inconvenience.
+ 
 ## Rationale
 
 Reuse pairs after set when init, do not need to set the same value every time
