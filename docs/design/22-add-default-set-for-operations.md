@@ -31,6 +31,7 @@ If both `Service` and `Storage` have operations with duplication of name, such a
 we should handle conflict.
 Since the operations with the same name handle different targets (`Servicer` and `Storager`),
 I think we should handle the separately.
+
 ```go
 type DefaultStoragePairs struct {
     Copy   []Pair
@@ -48,6 +49,7 @@ type DefaultServicePairs struct {
 
 Since one service may just implement a part of operations in [storage],
 there are two ways to define default pairs struct:
+
 - Unify struct in [storage], so that we can maintain it only once.
 - Generate struct in each service, so every service would only have operation fields that implemented by itself.
 
@@ -61,23 +63,38 @@ When parsing pairs in specific operation, we should combine default pairs and `p
 and make sure that `pairs from args` can overwrite default pair, and this should be **generated**.
 For example, we parse the pairs sequentially from the slice of pairs,
 so we should create a new slice of pairs and append `pairs from args` to the slice.
+
 ```go
 // generated code in Write operation
 func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...Pair) (n int64, err error) {
-    defer func() {
-        err = s.formatError("write", err, path)
-    }()
-    ps := getWritePairsFromStorage(s)
-    ps = append(ps, pairs...)
-    var opt *pairStorageWrite
-    opt, err = s.parsePairStorageWrite(ps)
-    if err != nil {
-        return
-    }
+	defer func() {
+		err = s.formatError("write", err, path)
+	}()
+	pairs = append(pairs, s.defaultPairs.Write...)
+	var opt *pairStorageWrite
+	opt, err = s.parsePairStorageWrite(pairs)
+	if err != nil {
+		return
+	}
 
-    return s.write(ctx, path, r, opt)
+	return s.write(ctx, path, r, opt)
 }
-```  
+```
+
+```go
+// check if pair was set before, if set, skip
+for _, v := range opts {
+	switch v.Key {
+	// Required pairs
+	case "name":
+		if result.HasName {
+			continue
+		}
+		result.HasName = true
+		result.Name = v.Value.(string)
+	}
+}
+```
 
 ### Check if pair is valid  
 
