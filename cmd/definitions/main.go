@@ -5,6 +5,8 @@ package main
 import (
 	"log"
 	"os"
+
+	specs "github.com/aos-dev/specs/go"
 )
 
 func main() {
@@ -27,14 +29,12 @@ func actionGlobal() {
 	data.Sort()
 
 	generateGlobal(data)
-	formatGlobal(data)
 }
 
 func actionService(filePath string) {
 	data := parse()
 
-	srv := &ServiceSpec{}
-	err := parseHCL(filePath, srv)
+	srv, err := specs.ParseService(filePath)
 	if err != nil {
 		log.Fatalf("parse: %v", err)
 	}
@@ -43,6 +43,5 @@ func actionService(filePath string) {
 	data.Sort()
 
 	generateService(data)
-	formatService(data)
 	log.Printf("%s generate finished", filePath)
 }
