@@ -6,7 +6,9 @@ type Segment struct {
 	ID   string
 }
 
+// Part is the index segment parts.
 type Part struct {
-	Size       int64
-	PartNumber int
+	Index int
+	Size  int64
+	ETag  string
 }

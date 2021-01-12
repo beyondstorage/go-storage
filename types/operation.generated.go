@@ -28,9 +28,9 @@ type IndexSegmenter interface {
 	Segmenter
 
 	// CompleteIndexSegment will complete a segment and merge them into a File.
-	CompleteIndexSegment(seg Segment, pairs ...Pair) (err error)
+	CompleteIndexSegment(seg Segment, parts []*Part, pairs ...Pair) (err error)
 	// CompleteIndexSegmentWithContext will complete a segment and merge them into a File.
-	CompleteIndexSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (err error)
+	CompleteIndexSegmentWithContext(ctx context.Context, seg Segment, parts []*Part, pairs ...Pair) (err error)
 
 	// ListIndexSegment
 	ListIndexSegment(seg Segment, pairs ...Pair) (pi *PartIterator, err error)
