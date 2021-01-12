@@ -14,25 +14,6 @@ type Copier interface {
 	CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
 }
 
-// DirLister is used for directory based storage service to list objects under a dir.
-type DirLister interface {
-
-	// ListDir will return list a specific dir.
-	ListDir(dir string, pairs ...Pair) (oi *ObjectIterator, err error)
-	// ListDirWithContext will return list a specific dir.
-	ListDirWithContext(ctx context.Context, dir string, pairs ...Pair) (oi *ObjectIterator, err error)
-}
-
-// DirSegmentsLister is used for directory based storage service to list segments under a dir.
-type DirSegmentsLister interface {
-	segmenter
-
-	// ListDirSegments will list segments via dir.
-	ListDirSegments(dir string, pairs ...Pair) (si *SegmentIterator, err error)
-	// ListDirSegmentsWithContext will list segments via dir.
-	ListDirSegmentsWithContext(ctx context.Context, dir string, pairs ...Pair) (si *SegmentIterator, err error)
-}
-
 // Fetcher is the interface for Fetch.
 type Fetcher interface {
 
@@ -66,25 +47,6 @@ type Mover interface {
 	MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
 }
 
-// PrefixLister is used for prefix based storage service to list objects under a prefix.
-type PrefixLister interface {
-
-	// ListPrefix will return list a specific dir.
-	ListPrefix(prefix string, pairs ...Pair) (oi *ObjectIterator, err error)
-	// ListPrefixWithContext will return list a specific dir.
-	ListPrefixWithContext(ctx context.Context, prefix string, pairs ...Pair) (oi *ObjectIterator, err error)
-}
-
-// PrefixSegmentsLister is used for prefix based storage service to list segments under a prefix.
-type PrefixSegmentsLister interface {
-	segmenter
-
-	// ListPrefixSegments will list segments.
-	ListPrefixSegments(prefix string, pairs ...Pair) (si *SegmentIterator, err error)
-	// ListPrefixSegmentsWithContext will list segments.
-	ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...Pair) (si *SegmentIterator, err error)
-}
-
 // Reacher is the interface for Reach.
 type Reacher interface {
 
@@ -106,6 +68,16 @@ type segmenter interface {
 	CompleteSegment(seg Segment, pairs ...Pair) (err error)
 	// CompleteSegmentWithContext will complete a segment and merge them into a File.
 	CompleteSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (err error)
+}
+
+// SegmentsLister is used for prefix based storage service to list segments under a prefix.
+type SegmentsLister interface {
+	segmenter
+
+	// ListSegments will list segments.
+	ListSegments(path string, pairs ...Pair) (si *SegmentIterator, err error)
+	// ListSegmentsWithContext will list segments.
+	ListSegmentsWithContext(ctx context.Context, path string, pairs ...Pair) (si *SegmentIterator, err error)
 }
 
 // Servicer can maintain multipart storage services.
@@ -151,6 +123,11 @@ type Storager interface {
 	// DeleteWithContext will delete an Object from service.
 	DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
 
+	// List will return list a specific path.
+	List(path string, pairs ...Pair) (oi *ObjectIterator, err error)
+	// ListWithContext will return list a specific path.
+	ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error)
+
 	// Metadata will return current storager's metadata.
 	Metadata(pairs ...Pair) (meta *StorageMeta, err error)
 	// MetadataWithContext will return current storager's metadata.
@@ -178,12 +155,6 @@ type PairPolicy struct {
 	// pairs for interface Copier
 	Copy bool
 
-	// pairs for interface DirLister
-	ListDir bool
-
-	// pairs for interface DirSegmentsLister
-	ListDirSegments bool
-
 	// pairs for interface Fetcher
 	Fetch bool
 
@@ -194,12 +165,6 @@ type PairPolicy struct {
 	// pairs for interface Mover
 	Move bool
 
-	// pairs for interface PrefixLister
-	ListPrefix bool
-
-	// pairs for interface PrefixSegmentsLister
-	ListPrefixSegments bool
-
 	// pairs for interface Reacher
 	Reach bool
 
@@ -207,11 +172,15 @@ type PairPolicy struct {
 	AbortSegment    bool
 	CompleteSegment bool
 
+	// pairs for interface SegmentsLister
+	ListSegments bool
+
 	// pairs for interface Statistician
 	Statistical bool
 
 	// pairs for interface Storager
 	Delete                bool
+	List                  bool
 	Metadata              bool
 	Read                  bool
 	ReadSize              bool
