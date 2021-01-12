@@ -89,11 +89,82 @@ Notes
 - ErrDone should be return while there are no items any more.
 - Input objects slice should be set every time.
 */
+type NextPartFunc func(ctx context.Context, page *PartPage) error
+
+type PartPage struct {
+	Status Continuable
+	Data   []*Part
+}
+
+type PartIterator struct {
+	ctx  context.Context
+	next NextPartFunc
+
+	index int
+	done  bool
+
+	o PartPage
+}
+
+func NewPartIterator(ctx context.Context, next NextPartFunc, status Continuable) *PartIterator {
+	return &PartIterator{
+		ctx:   ctx,
+		next:  next,
+		index: 0,
+		done:  false,
+		o: PartPage{
+			Status: status,
+		},
+	}
+}
+
+func (it *PartIterator) ContinuationToken() string {
+	return it.o.Status.ContinuationToken()
+}
+
+func (it *PartIterator) Next() (object *Part, err error) {
+	// Consume Data via index.
+	if it.index < len(it.o.Data) {
+		it.index++
+		return it.o.Data[it.index-1], nil
+	}
+	// Return IterateDone if iterator is already done.
+	if it.done {
+		return nil, IterateDone
+	}
+
+	// Reset buf before call next.
+	it.o.Data = it.o.Data[:0]
+
+	err = it.next(it.ctx, &it.o)
+	if err != nil && !errors.Is(err, IterateDone) {
+		return nil, fmt.Errorf("iterator next failed: %w", err)
+	}
+	// Make iterator to done so that we will not fetch from upstream anymore.
+	if err != nil {
+		it.done = true
+	}
+	// Return IterateDone directly if we don't have any data.
+	if len(it.o.Data) == 0 {
+		return nil, IterateDone
+	}
+	// Return the first object.
+	it.index = 1
+	return it.o.Data[0], nil
+}
+
+/*
+NextObjectFunc is the func used in iterator.
+
+Notes
+- ErrDone should be return while there are no items any more.
+- Input objects slice should be set every time.
+*/
 type NextSegmentFunc func(ctx context.Context, page *SegmentPage) error
 
 type SegmentPage struct {
 	Status Continuable
-	Data   []Segment
+	Data   []*Segment
 }
 
 type SegmentIterator struct {
@@ -122,7 +193,7 @@ func (it *SegmentIterator) ContinuationToken() string {
 	return it.o.Status.ContinuationToken()
 }
 
-func (it *SegmentIterator) Next() (object Segment, err error) {
+func (it *SegmentIterator) Next() (object *Segment, err error) {
 	// Consume Data via index.
 	if it.index < len(it.o.Data) {
 		it.index++

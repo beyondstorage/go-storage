@@ -12,8 +12,9 @@ import (
 func main() {
 	data := map[string]string{
 		"Object":   "*Object",
-		"Segment":  "Segment",
+		"Segment":  "*Segment",
 		"Storager": "Storager",
+		"Part":     "*Part",
 	}
 
 	generateT(tmpl, "types/iterator.generated.go", data)

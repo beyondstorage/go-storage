@@ -25,12 +25,17 @@ type Fetcher interface {
 
 // IndexSegmenter is the interface for index based segment.
 type IndexSegmenter interface {
-	segmenter
+	Segmenter
 
-	// InitIndexSegment will init an index based segment.
-	InitIndexSegment(path string, pairs ...Pair) (seg Segment, err error)
-	// InitIndexSegmentWithContext will init an index based segment.
-	InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...Pair) (seg Segment, err error)
+	// CompleteIndexSegment will complete a segment and merge them into a File.
+	CompleteIndexSegment(seg Segment, parts []*Part, pairs ...Pair) (err error)
+	// CompleteIndexSegmentWithContext will complete a segment and merge them into a File.
+	CompleteIndexSegmentWithContext(ctx context.Context, seg Segment, parts []*Part, pairs ...Pair) (err error)
+
+	// ListIndexSegment
+	ListIndexSegment(seg Segment, pairs ...Pair) (pi *PartIterator, err error)
+	// ListIndexSegmentWithContext
+	ListIndexSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (pi *PartIterator, err error)
 
 	// WriteIndexSegment will write a part into an index based segment.
 	WriteIndexSegment(seg Segment, r io.Reader, index int, size int64, pairs ...Pair) (err error)
@@ -47,6 +52,16 @@ type Mover interface {
 	MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
 }
 
+// OffsetSegmenter is the interface for offset based segment.
+type OffsetSegmenter interface {
+	Segmenter
+
+	// WriteOffsetSegment will write a part into an index based segment.
+	WriteOffsetSegment(seg Segment, r io.Reader, offset int64, size int64, pairs ...Pair) (err error)
+	// WriteOffsetSegmentWithContext will write a part into an index based segment.
+	WriteOffsetSegmentWithContext(ctx context.Context, seg Segment, r io.Reader, offset int64, size int64, pairs ...Pair) (err error)
+}
+
 // Reacher is the interface for Reach.
 type Reacher interface {
 
@@ -57,22 +72,17 @@ type Reacher interface {
 }
 
 // Segmenter
-type segmenter interface {
+type Segmenter interface {
 
 	// AbortSegment will abort a segment.
 	AbortSegment(seg Segment, pairs ...Pair) (err error)
 	// AbortSegmentWithContext will abort a segment.
 	AbortSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (err error)
 
-	// CompleteSegment will complete a segment and merge them into a File.
-	CompleteSegment(seg Segment, pairs ...Pair) (err error)
-	// CompleteSegmentWithContext will complete a segment and merge them into a File.
-	CompleteSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (err error)
-}
-
-// SegmentsLister is used for prefix based storage service to list segments under a prefix.
-type SegmentsLister interface {
-	segmenter
+	// InitSegment will init a segment.
+	InitSegment(path string, pairs ...Pair) (seg Segment, err error)
+	// InitSegmentWithContext will init a segment.
+	InitSegmentWithContext(ctx context.Context, path string, pairs ...Pair) (seg Segment, err error)
 
 	// ListSegments will list segments.
 	ListSegments(path string, pairs ...Pair) (si *SegmentIterator, err error)
@@ -128,9 +138,9 @@ type Storager interface {
 	// ListWithContext will return list a specific path.
 	ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error)
 
-	// Metadata will return current storager's metadata.
+	// Metadata will return current storager metadata.
 	Metadata(pairs ...Pair) (meta *StorageMeta, err error)
-	// MetadataWithContext will return current storager's metadata.
+	// MetadataWithContext will return current storager metadata.
 	MetadataWithContext(ctx context.Context, pairs ...Pair) (meta *StorageMeta, err error)
 
 	// Read will read the file's data.
@@ -159,20 +169,22 @@ type PairPolicy struct {
 	Fetch bool
 
 	// pairs for interface IndexSegmenter
-	InitIndexSegment  bool
-	WriteIndexSegment bool
+	CompleteIndexSegment bool
+	ListIndexSegment     bool
+	WriteIndexSegment    bool
 
 	// pairs for interface Mover
 	Move bool
+
+	// pairs for interface OffsetSegmenter
+	WriteOffsetSegment bool
 
 	// pairs for interface Reacher
 	Reach bool
 
 	// pairs for interface Segmenter
-	AbortSegment    bool
-	CompleteSegment bool
-
-	// pairs for interface SegmentsLister
+	AbortSegment bool
+	InitSegment  bool
 	ListSegments bool
 
 	// pairs for interface Statistician
