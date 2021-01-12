@@ -340,7 +340,7 @@ func (f Fields) PathCaller() string {
 	x := make([]string, 0)
 	for _, v := range f {
 		if v.Name == "seg" {
-			x = append(x, "seg.Path()", "seg.ID()")
+			x = append(x, "seg.Path", "seg.ID")
 			continue
 		}
 		if v.Type != "string" {
