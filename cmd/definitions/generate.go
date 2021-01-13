@@ -4,11 +4,16 @@ package main
 
 import (
 	"fmt"
+	"go/parser"
+	"go/token"
 	"log"
 	"os"
+	"sort"
 	"text/template"
 
 	"github.com/Xuanwo/templateutils"
+	"github.com/dave/dst"
+	"github.com/dave/dst/decorator"
 )
 
 //go:generate go run github.com/kevinburke/go-bindata/go-bindata -nometadata -ignore "\\.go$" -prefix "../../" ./tmpl
@@ -38,6 +43,10 @@ func generateGlobal(data *Data) {
 
 func generateService(data *Data) {
 	generateT(serviceT, "generated.go", data.Service)
+	for _, v := range data.Service.Namespaces {
+		appendT(functionT, v.Name+".go", v)
+		formatService(v.Name + ".go")
+	}
 }
 
 func generateT(tmpl *template.Template, filePath string, data interface{}) {
@@ -71,4 +80,51 @@ func newTmpl(name string) *template.Template {
 		template.New(name).
 			Funcs(templateutils.FuncMap()).
 			Parse(string(MustAsset(name + ".tmpl"))))
+}
+
+func formatService(filename string) {
+	fset := token.NewFileSet()
+
+	f, err := decorator.ParseFile(fset, filename, nil, parser.ParseComments)
+	if err != nil {
+		log.Fatalf("parse file: %v", err)
+	}
+
+	// Sort all methods via name.
+	// Only allow functions in service.go and storage.go
+	sort.SliceStable(f.Decls, func(i, j int) bool {
+		fi, ok := f.Decls[i].(*dst.FuncDecl)
+		if !ok {
+			return false
+		}
+		fj, ok := f.Decls[j].(*dst.FuncDecl)
+		if !ok {
+			return false
+		}
+		return fi.Name.Name < fj.Name.Name
+	})
+
+	// Add empty line for every methods.
+	dst.Inspect(f, func(node dst.Node) bool {
+		if node == nil {
+			return false
+		}
+		fn, ok := node.(*dst.FuncDecl)
+		if !ok {
+			return true
+		}
+		fn.Decorations().Before = dst.EmptyLine
+		fn.Decorations().After = dst.EmptyLine
+		return true
+	})
+
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Fatalf("create file %v: %v", filename, err)
+	}
+
+	err = decorator.Fprint(file, f)
+	if err != nil {
+		log.Fatalf("format file %v: %v", filename, err)
+	}
 }

@@ -17,9 +17,9 @@ func parse() (data *Data) {
 	return data
 }
 
-func parseFunc(service, name string) map[string]*templateutils.Method {
+func parseFunc(name string) map[string]*templateutils.Method {
 	data := make(map[string]*templateutils.Method)
-	filename := fmt.Sprintf("../services/%s/%s.go", service, name)
+	filename := fmt.Sprintf("%s.go", name)
 
 	content, err := ioutil.ReadFile(filename)
 	if os.IsNotExist(err) {
