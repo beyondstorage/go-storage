@@ -247,7 +247,7 @@ type Function struct {
 	Optional  []*Pair
 	Generated []*Pair // This op's generated pairs, they will be treated as optional.
 
-	implemented bool
+	Implemented bool // flag for whether this function has been implemented or not.
 }
 
 // NewFunction will createn a new function.
@@ -496,11 +496,11 @@ func (d *Data) FormatNamespace(srv *Service, n *specs.Namespace) *Namespace {
 		fns[v.Name].Format(v, srv.Pairs)
 	}
 
-	implemented := parseFunc(srv.Name, n.Name)
+	implemented := parseFunc(n.Name)
 	for _, fn := range fns {
 		x := templateutils.ToCamel(fn.Name)
 		if _, ok := implemented[x]; ok {
-			fn.implemented = true
+			fn.Implemented = true
 		}
 	}
 
