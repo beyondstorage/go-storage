@@ -11,3 +11,5 @@ require (
 	github.com/kevinburke/go-bindata v3.22.0+incompatible
 	github.com/stretchr/testify v1.6.1
 )
+
+replace github.com/aos-dev/specs/go => ../specs/go
