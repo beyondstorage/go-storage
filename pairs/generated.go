@@ -91,11 +91,11 @@ func WithInterceptor(v Interceptor) Pair {
 	}
 }
 
-// WithListType will apply list_type value to Options
-// ListType
-func WithListType(v ListType) Pair {
+// WithListMode will apply list_mode value to Options
+// ListMode
+func WithListMode(v ListMode) Pair {
 	return Pair{
-		Key:   "list_type",
+		Key:   "list_mode",
 		Value: v,
 	}
 }

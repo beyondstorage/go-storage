@@ -1,12 +1,13 @@
 package types
 
-// ListType is the type for list, underlying type is int.
-type ListType int
+// ListMode is the type for list, underlying type is int.
+type ListMode uint8
 
 const (
 	// ListTypeDir means this list will use dir type.
-	ListTypeDir ListType = 1
+	ListModeDir ListMode = 1 << iota
 	// ListTypePrefix means this list will use prefix type.
-	// NOTE: It's possible for prefix list type to return dirs
-	ListTypePrefix ListType = 2
+	ListModePrefix
+	ListModePart
+	ListModeBlock
 )
