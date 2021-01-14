@@ -8,7 +8,8 @@ type ObjectMode uint32
 
 const (
 	ModeIrregular ObjectMode = 0
-	ModeDir                  = 1 << iota
+
+	ModeDir ObjectMode = 1 << iota
 	ModeRead
 	ModeLink
 	ModePart
@@ -16,6 +17,28 @@ const (
 	ModePage
 	ModeAppend
 )
+
+func (o ObjectMode) IsDir() bool {
+	return o&ModeDir != 0
+}
+func (o ObjectMode) IsRead() bool {
+	return o&ModeRead != 0
+}
+func (o ObjectMode) IsLink() bool {
+	return o&ModeLink != 0
+}
+func (o ObjectMode) IsPart() bool {
+	return o&ModePart != 0
+}
+func (o ObjectMode) IsBlock() bool {
+	return o&ModeBlock != 0
+}
+func (o ObjectMode) IsPage() bool {
+	return o&ModePage != 0
+}
+func (o ObjectMode) IsAppend() bool {
+	return o&ModeAppend != 0
+}
 
 // NewObject will create a new object with client.
 func NewObject(client Storager, done bool) *Object {

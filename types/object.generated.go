@@ -9,16 +9,17 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexContentMd5   = 1 << 0
-	objectIndexContentType  = 1 << 1
-	objectIndexEtag         = 1 << 2
-	objectIndexID           = 1 << 3
-	objectIndexMode         = 1 << 4
-	objectIndexPath         = 1 << 5
-	objectIndexSize         = 1 << 6
-	objectIndexStorageClass = 1 << 7
-	objectIndexTarget       = 1 << 8
-	objectIndexUpdatedAt    = 1 << 9
+	objectIndexContentMd5   uint64 = 1 << 0
+	objectIndexContentType  uint64 = 1 << 1
+	objectIndexEtag         uint64 = 1 << 2
+	objectIndexID           uint64 = 1 << 3
+	objectIndexMode         uint64 = 1 << 4
+	objectIndexPartID       uint64 = 1 << 5
+	objectIndexPath         uint64 = 1 << 6
+	objectIndexSize         uint64 = 1 << 7
+	objectIndexStorageClass uint64 = 1 << 8
+	objectIndexTarget       uint64 = 1 << 9
+	objectIndexUpdatedAt    uint64 = 1 << 10
 )
 
 type Object struct {
@@ -28,11 +29,13 @@ type Object struct {
 	// ID is the unique key in storage.
 	ID   string
 	Mode ObjectMode
+	// PartID is the part id of part object.
+	partID string
 	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Path         string
 	size         int64
 	storageClass string
-	// Target is the symlink target for this object, only exist when object type is link.
+	// Target is the symlink target for link object.
 	target    string
 	updatedAt time.Time
 
@@ -132,6 +135,30 @@ func (o *Object) GetMode() ObjectMode {
 
 func (o *Object) SetMode(v ObjectMode) *Object {
 	o.Mode = v
+	return o
+}
+
+func (o *Object) GetPartID() (string, bool) {
+	o.stat()
+
+	if o.bit&objectIndexPartID != 0 {
+		return o.partID, true
+	}
+	return "", false
+}
+
+func (o *Object) MustGetPartID() string {
+	o.stat()
+
+	if o.bit&objectIndexPartID == 0 {
+		panic(fmt.Sprintf("object part-id is not set"))
+	}
+	return o.partID
+}
+
+func (o *Object) SetPartID(v string) *Object {
+	o.partID = v
+	o.bit |= objectIndexPartID
 	return o
 }
 func (o *Object) GetPath() string {
@@ -245,6 +272,7 @@ func (o *Object) clone(xo *Object) {
 	o.etag = xo.etag
 	o.ID = xo.ID
 	o.Mode = xo.Mode
+	o.partID = xo.partID
 	o.Path = xo.Path
 	o.size = xo.size
 	o.storageClass = xo.storageClass

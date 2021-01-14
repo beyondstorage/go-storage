@@ -10,7 +10,7 @@ import (
 // Field index in object bit
 const (
 {{- range $k, $v := .ObjectMeta }}
-    objectIndex{{ $v.Name | toPascal }} = 1<<{{ $k }}
+    objectIndex{{ $v.Name | toPascal }} uint64 = 1<<{{ $k }}
 {{- end }}
 )
 

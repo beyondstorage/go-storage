@@ -136,6 +136,15 @@ func WithPairPolicy(v PairPolicy) Pair {
 	}
 }
 
+// WithPartID will apply part_id value to Options
+// PartID
+func WithPartID(v string) Pair {
+	return Pair{
+		Key:   "part_id",
+		Value: v,
+	}
+}
+
 // WithReadCallbackFunc will apply read_callback_func value to Options
 // ReadCallbackFunc specify what todo every time we read data from source
 func WithReadCallbackFunc(v func([]byte)) Pair {

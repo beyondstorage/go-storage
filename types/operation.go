@@ -11,3 +11,18 @@ const (
 	ListModePart
 	ListModeBlock
 )
+
+func (l ListMode) IsDir() bool {
+	return l&ListModeDir != 0
+}
+func (l ListMode) IsPrefix() bool {
+	return l&ListModePrefix != 0
+}
+
+func (l ListMode) IsPart() bool {
+	return l&ListModePart != 0
+}
+
+func (l ListMode) IsBlock() bool {
+	return l&ListModeBlock != 0
+}
