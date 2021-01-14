@@ -4,10 +4,10 @@ go 1.14
 
 require (
 	github.com/Xuanwo/templateutils v0.0.0-20201019101431-c73b871118f2
-	github.com/aos-dev/specs/go v0.0.0-20210114085233-f708c7b3ce69
+	github.com/aos-dev/specs/go v0.0.0-20210114110337-265f1fa0f7d8
 	github.com/dave/dst v0.26.2
 	github.com/golang/mock v1.4.4
 	github.com/google/uuid v1.1.4
 	github.com/kevinburke/go-bindata v3.22.0+incompatible
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 )

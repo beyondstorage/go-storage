@@ -13,12 +13,12 @@ const (
 	objectIndexContentType  uint64 = 1 << 1
 	objectIndexEtag         uint64 = 1 << 2
 	objectIndexID           uint64 = 1 << 3
-	objectIndexMode         uint64 = 1 << 4
-	objectIndexPartID       uint64 = 1 << 5
-	objectIndexPath         uint64 = 1 << 6
-	objectIndexSize         uint64 = 1 << 7
-	objectIndexStorageClass uint64 = 1 << 8
-	objectIndexTarget       uint64 = 1 << 9
+	objectIndexLinkTarget   uint64 = 1 << 4
+	objectIndexMode         uint64 = 1 << 5
+	objectIndexMultipartID  uint64 = 1 << 6
+	objectIndexPath         uint64 = 1 << 7
+	objectIndexSize         uint64 = 1 << 8
+	objectIndexStorageClass uint64 = 1 << 9
 	objectIndexUpdatedAt    uint64 = 1 << 10
 )
 
@@ -27,17 +27,17 @@ type Object struct {
 	contentType string
 	etag        string
 	// ID is the unique key in storage.
-	ID   string
-	Mode ObjectMode
-	// PartID is the part id of part object.
-	partID string
+	ID string
+	// LinkTarget is the symlink target for link object.
+	linkTarget string
+	Mode       ObjectMode
+	// MultipartID is the part id of part object.
+	multipartID string
 	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Path         string
 	size         int64
 	storageClass string
-	// Target is the symlink target for link object.
-	target    string
-	updatedAt time.Time
+	updatedAt    time.Time
 
 	// client is the client in which Object is alive.
 	client Storager
@@ -129,6 +129,30 @@ func (o *Object) SetID(v string) *Object {
 	o.ID = v
 	return o
 }
+
+func (o *Object) GetLinkTarget() (string, bool) {
+	o.stat()
+
+	if o.bit&objectIndexLinkTarget != 0 {
+		return o.linkTarget, true
+	}
+	return "", false
+}
+
+func (o *Object) MustGetLinkTarget() string {
+	o.stat()
+
+	if o.bit&objectIndexLinkTarget == 0 {
+		panic(fmt.Sprintf("object link-target is not set"))
+	}
+	return o.linkTarget
+}
+
+func (o *Object) SetLinkTarget(v string) *Object {
+	o.linkTarget = v
+	o.bit |= objectIndexLinkTarget
+	return o
+}
 func (o *Object) GetMode() ObjectMode {
 	return o.Mode
 }
@@ -138,27 +162,27 @@ func (o *Object) SetMode(v ObjectMode) *Object {
 	return o
 }
 
-func (o *Object) GetPartID() (string, bool) {
+func (o *Object) GetMultipartID() (string, bool) {
 	o.stat()
 
-	if o.bit&objectIndexPartID != 0 {
-		return o.partID, true
+	if o.bit&objectIndexMultipartID != 0 {
+		return o.multipartID, true
 	}
 	return "", false
 }
 
-func (o *Object) MustGetPartID() string {
+func (o *Object) MustGetMultipartID() string {
 	o.stat()
 
-	if o.bit&objectIndexPartID == 0 {
-		panic(fmt.Sprintf("object part-id is not set"))
+	if o.bit&objectIndexMultipartID == 0 {
+		panic(fmt.Sprintf("object multipart-id is not set"))
 	}
-	return o.partID
+	return o.multipartID
 }
 
-func (o *Object) SetPartID(v string) *Object {
-	o.partID = v
-	o.bit |= objectIndexPartID
+func (o *Object) SetMultipartID(v string) *Object {
+	o.multipartID = v
+	o.bit |= objectIndexMultipartID
 	return o
 }
 func (o *Object) GetPath() string {
@@ -218,30 +242,6 @@ func (o *Object) SetStorageClass(v string) *Object {
 	return o
 }
 
-func (o *Object) GetTarget() (string, bool) {
-	o.stat()
-
-	if o.bit&objectIndexTarget != 0 {
-		return o.target, true
-	}
-	return "", false
-}
-
-func (o *Object) MustGetTarget() string {
-	o.stat()
-
-	if o.bit&objectIndexTarget == 0 {
-		panic(fmt.Sprintf("object target is not set"))
-	}
-	return o.target
-}
-
-func (o *Object) SetTarget(v string) *Object {
-	o.target = v
-	o.bit |= objectIndexTarget
-	return o
-}
-
 func (o *Object) GetUpdatedAt() (time.Time, bool) {
 	o.stat()
 
@@ -271,12 +271,12 @@ func (o *Object) clone(xo *Object) {
 	o.contentType = xo.contentType
 	o.etag = xo.etag
 	o.ID = xo.ID
+	o.linkTarget = xo.linkTarget
 	o.Mode = xo.Mode
-	o.partID = xo.partID
+	o.multipartID = xo.multipartID
 	o.Path = xo.Path
 	o.size = xo.size
 	o.storageClass = xo.storageClass
-	o.target = xo.target
 	o.updatedAt = xo.updatedAt
 
 	o.meta = xo.meta
