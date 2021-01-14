@@ -4,20 +4,17 @@ import (
 	"sync/atomic"
 )
 
-// ObjectType is the type for object, under layer type is string.
-type ObjectType string
+type ObjectMode uint32
 
-// All available type for object.
 const (
-	// ObjectTypeFile means this object is file-alike object which owns content.
-	ObjectTypeFile ObjectType = "file"
-	// ObjectTypeDir means this object is a dir object which doesn't have content.
-	ObjectTypeDir ObjectType = "dir"
-	// ObjectTypeLink means this object is a link object which contains a link target to
-	// another object.
-	ObjectTypeLink ObjectType = "link"
-	// ObjectTypeUnknown means storager can't recognize which type of this object.
-	ObjectTypeUnknown ObjectType = "unknown"
+	ModeIrregular ObjectMode = 0
+	ModeDir                  = 1 << iota
+	ModeRead
+	ModeLink
+	ModePart
+	ModeBlock
+	ModePage
+	ModeAppend
 )
 
 // NewObject will create a new object with client.
@@ -49,7 +46,7 @@ func (o *Object) statSlow() {
 	// No matter stat success or not, we only execute once.
 	defer atomic.StoreUint32(&o.done, 1)
 
-	ob, err := o.client.Stat(o.Name)
+	ob, err := o.client.Stat(o.Path)
 	if err != nil {
 		// Ignore all errors while object stat, just keep them empty
 		return

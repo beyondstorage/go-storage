@@ -13,11 +13,11 @@ const (
 	objectIndexContentType  = 1 << 1
 	objectIndexEtag         = 1 << 2
 	objectIndexID           = 1 << 3
-	objectIndexName         = 1 << 4
-	objectIndexSize         = 1 << 5
-	objectIndexStorageClass = 1 << 6
-	objectIndexTarget       = 1 << 7
-	objectIndexType         = 1 << 8
+	objectIndexMode         = 1 << 4
+	objectIndexPath         = 1 << 5
+	objectIndexSize         = 1 << 6
+	objectIndexStorageClass = 1 << 7
+	objectIndexTarget       = 1 << 8
 	objectIndexUpdatedAt    = 1 << 9
 )
 
@@ -26,15 +26,14 @@ type Object struct {
 	contentType string
 	etag        string
 	// ID is the unique key in storage.
-	ID string
-	// Name is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
-	Name         string
+	ID   string
+	Mode ObjectMode
+	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
+	Path         string
 	size         int64
 	storageClass string
 	// Target is the symlink target for this object, only exist when object type is link.
-	target string
-	// Type could be one of `file`, `dir`, `link` or `unknown`.
-	Type      ObjectType
+	target    string
 	updatedAt time.Time
 
 	// client is the client in which Object is alive.
@@ -127,12 +126,20 @@ func (o *Object) SetID(v string) *Object {
 	o.ID = v
 	return o
 }
-func (o *Object) GetName() string {
-	return o.Name
+func (o *Object) GetMode() ObjectMode {
+	return o.Mode
 }
 
-func (o *Object) SetName(v string) *Object {
-	o.Name = v
+func (o *Object) SetMode(v ObjectMode) *Object {
+	o.Mode = v
+	return o
+}
+func (o *Object) GetPath() string {
+	return o.Path
+}
+
+func (o *Object) SetPath(v string) *Object {
+	o.Path = v
 	return o
 }
 
@@ -207,14 +214,6 @@ func (o *Object) SetTarget(v string) *Object {
 	o.bit |= objectIndexTarget
 	return o
 }
-func (o *Object) GetType() ObjectType {
-	return o.Type
-}
-
-func (o *Object) SetType(v ObjectType) *Object {
-	o.Type = v
-	return o
-}
 
 func (o *Object) GetUpdatedAt() (time.Time, bool) {
 	o.stat()
@@ -245,11 +244,11 @@ func (o *Object) clone(xo *Object) {
 	o.contentType = xo.contentType
 	o.etag = xo.etag
 	o.ID = xo.ID
-	o.Name = xo.Name
+	o.Mode = xo.Mode
+	o.Path = xo.Path
 	o.size = xo.size
 	o.storageClass = xo.storageClass
 	o.target = xo.target
-	o.Type = xo.Type
 	o.updatedAt = xo.updatedAt
 
 	o.meta = xo.meta
