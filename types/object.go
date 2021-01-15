@@ -6,15 +6,21 @@ import (
 
 type ObjectMode uint32
 
+// All available object mode
 const (
-	ModeIrregular ObjectMode = 0
-
+	// ModeDir means this Object represents a dir which can be used to list with dir mode.
 	ModeDir ObjectMode = 1 << iota
+	// ModeRead means this Object can be used to read content.
 	ModeRead
+	// ModeLink means this Object is a link which targets to another Object.
 	ModeLink
+	// ModePart means this Object is a Multipart Object which can be used for multipart operations.
 	ModePart
+	// ModeBlock means this Object is a Block Object which can be used for block operations.
 	ModeBlock
+	// ModePage means this Object is a Page Object which can be used for random write with offset.
 	ModePage
+	// ModeAppend means this Object is a Append Object which can be used for append.
 	ModeAppend
 )
 
@@ -38,6 +44,19 @@ func (o ObjectMode) IsPage() bool {
 }
 func (o ObjectMode) IsAppend() bool {
 	return o&ModeAppend != 0
+}
+
+// Part is the part of Multipart Object.
+type Part struct {
+	Index int
+	Size  int64
+	ETag  string
+}
+
+// Block is the block of Block Object.
+type Block struct {
+	ID   string
+	Size int64
 }
 
 // NewObject will create a new object with client.
