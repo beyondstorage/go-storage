@@ -12,10 +12,6 @@ type {{ $i.DisplayName }} interface {
     String() string
     {{- end }}
 
-    {{- range $_, $embed := $i.Embed }}
-        {{ $embed.DisplayName }}
-    {{- end }}
-
     {{ range $_, $op := $i.Ops }}
     // {{ $op.Name | toPascal }} {{ $op.Description }}
     {{ $op.Name | toPascal }}({{ $op.FormatParams }}) ({{ $op.FormatResultsWithPackageName "storage" }})
