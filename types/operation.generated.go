@@ -5,6 +5,44 @@ import (
 	"io"
 )
 
+// Appender is the interface for Append related operations.
+type Appender interface {
+
+	// CreateAppend will create an append object.
+	CreateAppend(path string, pairs ...Pair) (o *Object, err error)
+	// CreateAppendWithContext will create an append object.
+	CreateAppendWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
+
+	// WriteAppend will append content to an append object.
+	WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
+	// WriteAppendWithContext will append content to an append object.
+	WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
+}
+
+// Blocker is the interface for Block related operations.
+type Blocker interface {
+
+	// CombineBlock will combine blocks into an object.
+	CombineBlock(o *Object, bids []string, pairs ...Pair) (err error)
+	// CombineBlockWithContext will combine blocks into an object.
+	CombineBlockWithContext(ctx context.Context, o *Object, bids []string, pairs ...Pair) (err error)
+
+	// CreateBlock will create a new block object.
+	CreateBlock(path string, pairs ...Pair) (o *Object, err error)
+	// CreateBlockWithContext will create a new block object.
+	CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
+
+	// ListBlock will list blocks belong to this object.
+	ListBlock(o *Object, pairs ...Pair) (bi *BlockIterator, err error)
+	// ListBlockWithContext will list blocks belong to this object.
+	ListBlockWithContext(ctx context.Context, o *Object, pairs ...Pair) (bi *BlockIterator, err error)
+
+	// WriteBlock will write content to a block.
+	WriteBlock(o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
+	// WriteBlockWithContext will write content to a block.
+	WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
+}
+
 // Copier is the interface for Copy.
 type Copier interface {
 
@@ -23,26 +61,6 @@ type Fetcher interface {
 	FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error)
 }
 
-// IndexSegmenter is the interface for index based segment.
-type IndexSegmenter interface {
-	Segmenter
-
-	// CompleteIndexSegment will complete a segment and merge them into a File.
-	CompleteIndexSegment(seg Segment, parts []*Part, pairs ...Pair) (err error)
-	// CompleteIndexSegmentWithContext will complete a segment and merge them into a File.
-	CompleteIndexSegmentWithContext(ctx context.Context, seg Segment, parts []*Part, pairs ...Pair) (err error)
-
-	// ListIndexSegment
-	ListIndexSegment(seg Segment, pairs ...Pair) (pi *PartIterator, err error)
-	// ListIndexSegmentWithContext
-	ListIndexSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (pi *PartIterator, err error)
-
-	// WriteIndexSegment will write a part into an index based segment.
-	WriteIndexSegment(seg Segment, r io.Reader, index int, size int64, pairs ...Pair) (err error)
-	// WriteIndexSegmentWithContext will write a part into an index based segment.
-	WriteIndexSegmentWithContext(ctx context.Context, seg Segment, r io.Reader, index int, size int64, pairs ...Pair) (err error)
-}
-
 // Mover is the interface for Move.
 type Mover interface {
 
@@ -52,14 +70,42 @@ type Mover interface {
 	MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
 }
 
-// OffsetSegmenter is the interface for offset based segment.
-type OffsetSegmenter interface {
-	Segmenter
+// Multiparter is the interface for Multipart related operations.
+type Multiparter interface {
 
-	// WriteOffsetSegment will write a part into an index based segment.
-	WriteOffsetSegment(seg Segment, r io.Reader, offset int64, size int64, pairs ...Pair) (err error)
-	// WriteOffsetSegmentWithContext will write a part into an index based segment.
-	WriteOffsetSegmentWithContext(ctx context.Context, seg Segment, r io.Reader, offset int64, size int64, pairs ...Pair) (err error)
+	// CompleteMultipart will complete a multipart upload and construct an Object.
+	CompleteMultipart(o *Object, parts []*Part, pairs ...Pair) (err error)
+	// CompleteMultipartWithContext will complete a multipart upload and construct an Object.
+	CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error)
+
+	// CreateMultipart will create a new multipart.
+	CreateMultipart(path string, pairs ...Pair) (o *Object, err error)
+	// CreateMultipartWithContext will create a new multipart.
+	CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
+
+	// ListMultipart will list parts belong to this multipart.
+	ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error)
+	// ListMultipartWithContext will list parts belong to this multipart.
+	ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error)
+
+	// WriteMultipart will write content to a multipart.
+	WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error)
+	// WriteMultipartWithContext will write content to a multipart.
+	WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error)
+}
+
+// Pager is the interface for Page related operations which support random write.
+type Pager interface {
+
+	// CreatePage will create a new page object.
+	CreatePage(path string, pairs ...Pair) (o *Object, err error)
+	// CreatePageWithContext will create a new page object.
+	CreatePageWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
+
+	// WritePage will write content to specific offset.
+	WritePage(o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
+	// WritePageWithContext will write content to specific offset.
+	WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
 }
 
 // Reacher is the interface for Reach.
@@ -69,25 +115,6 @@ type Reacher interface {
 	Reach(path string, pairs ...Pair) (url string, err error)
 	// ReachWithContext will provide a way, which can reach the object.
 	ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error)
-}
-
-// Segmenter
-type Segmenter interface {
-
-	// AbortSegment will abort a segment.
-	AbortSegment(seg Segment, pairs ...Pair) (err error)
-	// AbortSegmentWithContext will abort a segment.
-	AbortSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (err error)
-
-	// InitSegment will init a segment.
-	InitSegment(path string, pairs ...Pair) (seg Segment, err error)
-	// InitSegmentWithContext will init a segment.
-	InitSegmentWithContext(ctx context.Context, path string, pairs ...Pair) (seg Segment, err error)
-
-	// ListSegments will list segments.
-	ListSegments(path string, pairs ...Pair) (si *SegmentIterator, err error)
-	// ListSegmentsWithContext will list segments.
-	ListSegmentsWithContext(ctx context.Context, path string, pairs ...Pair) (si *SegmentIterator, err error)
 }
 
 // Servicer can maintain multipart storage services.
@@ -154,13 +181,23 @@ type Storager interface {
 	StatWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// Write will write data into a file.
-	Write(path string, r io.Reader, pairs ...Pair) (n int64, err error)
+	Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 	// WriteWithContext will write data into a file.
-	WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...Pair) (n int64, err error)
+	WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 }
 
 type PairPolicy struct {
 	All bool
+
+	// pairs for interface Appender
+	CreateAppend bool
+	WriteAppend  bool
+
+	// pairs for interface Blocker
+	CombineBlock bool
+	CreateBlock  bool
+	ListBlock    bool
+	WriteBlock   bool
 
 	// pairs for interface Copier
 	Copy bool
@@ -168,24 +205,21 @@ type PairPolicy struct {
 	// pairs for interface Fetcher
 	Fetch bool
 
-	// pairs for interface IndexSegmenter
-	CompleteIndexSegment bool
-	ListIndexSegment     bool
-	WriteIndexSegment    bool
-
 	// pairs for interface Mover
 	Move bool
 
-	// pairs for interface OffsetSegmenter
-	WriteOffsetSegment bool
+	// pairs for interface Multiparter
+	CompleteMultipart bool
+	CreateMultipart   bool
+	ListMultipart     bool
+	WriteMultipart    bool
+
+	// pairs for interface Pager
+	CreatePage bool
+	WritePage  bool
 
 	// pairs for interface Reacher
 	Reach bool
-
-	// pairs for interface Segmenter
-	AbortSegment bool
-	InitSegment  bool
-	ListSegments bool
 
 	// pairs for interface Statistician
 	Statistical bool
@@ -193,6 +227,7 @@ type PairPolicy struct {
 	// pairs for interface Storager
 	Delete                bool
 	List                  bool
+	ListListMode          bool
 	Metadata              bool
 	Read                  bool
 	ReadSize              bool
@@ -200,8 +235,6 @@ type PairPolicy struct {
 	ReadReadCallbackFunc  bool
 	Stat                  bool
 	Write                 bool
-	WriteSize             bool
-	WriteOffset           bool
 	WriteStorageClass     bool
 	WriteContentType      bool
 	WriteContentMd5       bool

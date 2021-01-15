@@ -9,16 +9,17 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexContentMd5   = 1 << 0
-	objectIndexContentType  = 1 << 1
-	objectIndexEtag         = 1 << 2
-	objectIndexID           = 1 << 3
-	objectIndexName         = 1 << 4
-	objectIndexSize         = 1 << 5
-	objectIndexStorageClass = 1 << 6
-	objectIndexTarget       = 1 << 7
-	objectIndexType         = 1 << 8
-	objectIndexUpdatedAt    = 1 << 9
+	objectIndexContentMd5   uint64 = 1 << 0
+	objectIndexContentType  uint64 = 1 << 1
+	objectIndexEtag         uint64 = 1 << 2
+	objectIndexID           uint64 = 1 << 3
+	objectIndexLinkTarget   uint64 = 1 << 4
+	objectIndexMode         uint64 = 1 << 5
+	objectIndexMultipartID  uint64 = 1 << 6
+	objectIndexPath         uint64 = 1 << 7
+	objectIndexSize         uint64 = 1 << 8
+	objectIndexStorageClass uint64 = 1 << 9
+	objectIndexUpdatedAt    uint64 = 1 << 10
 )
 
 type Object struct {
@@ -27,15 +28,16 @@ type Object struct {
 	etag        string
 	// ID is the unique key in storage.
 	ID string
-	// Name is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
-	Name         string
+	// LinkTarget is the symlink target for link object.
+	linkTarget string
+	Mode       ObjectMode
+	// MultipartID is the part id of part object.
+	multipartID string
+	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
+	Path         string
 	size         int64
 	storageClass string
-	// Target is the symlink target for this object, only exist when object type is link.
-	target string
-	// Type could be one of `file`, `dir`, `link` or `unknown`.
-	Type      ObjectType
-	updatedAt time.Time
+	updatedAt    time.Time
 
 	// client is the client in which Object is alive.
 	client Storager
@@ -127,12 +129,68 @@ func (o *Object) SetID(v string) *Object {
 	o.ID = v
 	return o
 }
-func (o *Object) GetName() string {
-	return o.Name
+
+func (o *Object) GetLinkTarget() (string, bool) {
+	o.stat()
+
+	if o.bit&objectIndexLinkTarget != 0 {
+		return o.linkTarget, true
+	}
+	return "", false
 }
 
-func (o *Object) SetName(v string) *Object {
-	o.Name = v
+func (o *Object) MustGetLinkTarget() string {
+	o.stat()
+
+	if o.bit&objectIndexLinkTarget == 0 {
+		panic(fmt.Sprintf("object link-target is not set"))
+	}
+	return o.linkTarget
+}
+
+func (o *Object) SetLinkTarget(v string) *Object {
+	o.linkTarget = v
+	o.bit |= objectIndexLinkTarget
+	return o
+}
+func (o *Object) GetMode() ObjectMode {
+	return o.Mode
+}
+
+func (o *Object) SetMode(v ObjectMode) *Object {
+	o.Mode = v
+	return o
+}
+
+func (o *Object) GetMultipartID() (string, bool) {
+	o.stat()
+
+	if o.bit&objectIndexMultipartID != 0 {
+		return o.multipartID, true
+	}
+	return "", false
+}
+
+func (o *Object) MustGetMultipartID() string {
+	o.stat()
+
+	if o.bit&objectIndexMultipartID == 0 {
+		panic(fmt.Sprintf("object multipart-id is not set"))
+	}
+	return o.multipartID
+}
+
+func (o *Object) SetMultipartID(v string) *Object {
+	o.multipartID = v
+	o.bit |= objectIndexMultipartID
+	return o
+}
+func (o *Object) GetPath() string {
+	return o.Path
+}
+
+func (o *Object) SetPath(v string) *Object {
+	o.Path = v
 	return o
 }
 
@@ -184,38 +242,6 @@ func (o *Object) SetStorageClass(v string) *Object {
 	return o
 }
 
-func (o *Object) GetTarget() (string, bool) {
-	o.stat()
-
-	if o.bit&objectIndexTarget != 0 {
-		return o.target, true
-	}
-	return "", false
-}
-
-func (o *Object) MustGetTarget() string {
-	o.stat()
-
-	if o.bit&objectIndexTarget == 0 {
-		panic(fmt.Sprintf("object target is not set"))
-	}
-	return o.target
-}
-
-func (o *Object) SetTarget(v string) *Object {
-	o.target = v
-	o.bit |= objectIndexTarget
-	return o
-}
-func (o *Object) GetType() ObjectType {
-	return o.Type
-}
-
-func (o *Object) SetType(v ObjectType) *Object {
-	o.Type = v
-	return o
-}
-
 func (o *Object) GetUpdatedAt() (time.Time, bool) {
 	o.stat()
 
@@ -245,11 +271,12 @@ func (o *Object) clone(xo *Object) {
 	o.contentType = xo.contentType
 	o.etag = xo.etag
 	o.ID = xo.ID
-	o.Name = xo.Name
+	o.linkTarget = xo.linkTarget
+	o.Mode = xo.Mode
+	o.multipartID = xo.multipartID
+	o.Path = xo.Path
 	o.size = xo.size
 	o.storageClass = xo.storageClass
-	o.target = xo.target
-	o.Type = xo.Type
 	o.updatedAt = xo.updatedAt
 
 	o.meta = xo.meta

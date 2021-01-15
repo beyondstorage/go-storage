@@ -91,11 +91,11 @@ func WithInterceptor(v Interceptor) Pair {
 	}
 }
 
-// WithListType will apply list_type value to Options
-// ListType
-func WithListType(v ListType) Pair {
+// WithListMode will apply list_mode value to Options
+// ListMode
+func WithListMode(v ListMode) Pair {
 	return Pair{
-		Key:   "list_type",
+		Key:   "list_mode",
 		Value: v,
 	}
 }
@@ -132,6 +132,15 @@ func WithOffset(v int64) Pair {
 func WithPairPolicy(v PairPolicy) Pair {
 	return Pair{
 		Key:   "pair_policy",
+		Value: v,
+	}
+}
+
+// WithPartID will apply part_id value to Options
+// PartID
+func WithPartID(v string) Pair {
+	return Pair{
+		Key:   "part_id",
 		Value: v,
 	}
 }
