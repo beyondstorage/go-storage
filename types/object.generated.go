@@ -50,16 +50,17 @@ type Object struct {
 	m    sync.Mutex
 }
 
-func (o *Object) GetContentMD5() (string, bool) {
+func (o *Object) GetContentMd5() (string, bool) {
 	o.stat()
 
 	if o.bit&objectIndexContentMd5 != 0 {
 		return o.contentMd5, true
 	}
+
 	return "", false
 }
 
-func (o *Object) MustGetContentMD5() string {
+func (o *Object) MustGetContentMd5() string {
 	o.stat()
 
 	if o.bit&objectIndexContentMd5 == 0 {
@@ -68,7 +69,7 @@ func (o *Object) MustGetContentMD5() string {
 	return o.contentMd5
 }
 
-func (o *Object) SetContentMD5(v string) *Object {
+func (o *Object) SetContentMd5(v string) *Object {
 	o.contentMd5 = v
 	o.bit |= objectIndexContentMd5
 	return o
@@ -80,6 +81,7 @@ func (o *Object) GetContentType() (string, bool) {
 	if o.bit&objectIndexContentType != 0 {
 		return o.contentType, true
 	}
+
 	return "", false
 }
 
@@ -98,16 +100,17 @@ func (o *Object) SetContentType(v string) *Object {
 	return o
 }
 
-func (o *Object) GetETag() (string, bool) {
+func (o *Object) GetEtag() (string, bool) {
 	o.stat()
 
 	if o.bit&objectIndexEtag != 0 {
 		return o.etag, true
 	}
+
 	return "", false
 }
 
-func (o *Object) MustGetETag() string {
+func (o *Object) MustGetEtag() string {
 	o.stat()
 
 	if o.bit&objectIndexEtag == 0 {
@@ -116,7 +119,7 @@ func (o *Object) MustGetETag() string {
 	return o.etag
 }
 
-func (o *Object) SetETag(v string) *Object {
+func (o *Object) SetEtag(v string) *Object {
 	o.etag = v
 	o.bit |= objectIndexEtag
 	return o
@@ -136,6 +139,7 @@ func (o *Object) GetLinkTarget() (string, bool) {
 	if o.bit&objectIndexLinkTarget != 0 {
 		return o.linkTarget, true
 	}
+
 	return "", false
 }
 
@@ -168,6 +172,7 @@ func (o *Object) GetMultipartID() (string, bool) {
 	if o.bit&objectIndexMultipartID != 0 {
 		return o.multipartID, true
 	}
+
 	return "", false
 }
 
@@ -200,6 +205,7 @@ func (o *Object) GetSize() (int64, bool) {
 	if o.bit&objectIndexSize != 0 {
 		return o.size, true
 	}
+
 	return 0, false
 }
 
@@ -224,6 +230,7 @@ func (o *Object) GetStorageClass() (string, bool) {
 	if o.bit&objectIndexStorageClass != 0 {
 		return o.storageClass, true
 	}
+
 	return "", false
 }
 
@@ -248,6 +255,7 @@ func (o *Object) GetUpdatedAt() (time.Time, bool) {
 	if o.bit&objectIndexUpdatedAt != 0 {
 		return o.updatedAt, true
 	}
+
 	return time.Time{}, false
 }
 

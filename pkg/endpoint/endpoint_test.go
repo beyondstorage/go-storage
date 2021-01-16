@@ -33,13 +33,13 @@ func TestParse(t *testing.T) {
 	cases := []struct {
 		name  string
 		cfg   string
-		value Provider
+		value Value
 		err   error
 	}{
 		{
 			"invalid string",
 			"abcx",
-			nil,
+			Value{},
 			ErrInvalidValue,
 		},
 		{
@@ -57,7 +57,7 @@ func TestParse(t *testing.T) {
 		{
 			"wrong port number in http",
 			"http:example.com:xxx",
-			nil,
+			Value{},
 			strconv.ErrSyntax,
 		},
 		{
@@ -75,13 +75,13 @@ func TestParse(t *testing.T) {
 		{
 			"wrong port number in https",
 			"https:example.com:xxx",
-			nil,
+			Value{},
 			strconv.ErrSyntax,
 		},
 		{
 			"not supported protocol",
 			"notsupported:abc.com",
-			nil,
+			Value{},
 			ErrUnsupportedProtocol,
 		},
 	}

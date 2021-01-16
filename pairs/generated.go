@@ -4,8 +4,6 @@ package pairs
 import (
 	"context"
 
-	"github.com/aos-dev/go-storage/v2/pkg/credential"
-	"github.com/aos-dev/go-storage/v2/pkg/endpoint"
 	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
 	. "github.com/aos-dev/go-storage/v2/types"
 )
@@ -29,7 +27,7 @@ func WithContentType(v string) Pair {
 }
 
 // WithContext will apply context value to Options
-// Context context in all request
+// Context
 func WithContext(v context.Context) Pair {
 	return Pair{
 		Key:   "context",
@@ -38,7 +36,7 @@ func WithContext(v context.Context) Pair {
 }
 
 // WithContinuationToken will apply continuation_token value to Options
-// ContinuationToken specify the continuation token for list_dir or list_prefix.
+// ContinuationToken specify the continuation token for list
 func WithContinuationToken(v string) Pair {
 	return Pair{
 		Key:   "continuation_token",
@@ -48,7 +46,7 @@ func WithContinuationToken(v string) Pair {
 
 // WithCredential will apply credential value to Options
 // Credential specify how to provide credential for service or storage
-func WithCredential(v *credential.Provider) Pair {
+func WithCredential(v string) Pair {
 	return Pair{
 		Key:   "credential",
 		Value: v,
@@ -57,7 +55,7 @@ func WithCredential(v *credential.Provider) Pair {
 
 // WithEndpoint will apply endpoint value to Options
 // Endpoint specify how to provide endpoint for service or storage
-func WithEndpoint(v endpoint.Provider) Pair {
+func WithEndpoint(v string) Pair {
 	return Pair{
 		Key:   "endpoint",
 		Value: v,
@@ -74,7 +72,7 @@ func WithExpire(v int) Pair {
 }
 
 // WithHTTPClientOptions will apply http_client_options value to Options
-// HTTPClientOptions sepcify the options for the http client
+// HTTPClientOptions
 func WithHTTPClientOptions(v *httpclient.Options) Pair {
 	return Pair{
 		Key:   "http_client_options",
@@ -87,6 +85,15 @@ func WithHTTPClientOptions(v *httpclient.Options) Pair {
 func WithInterceptor(v Interceptor) Pair {
 	return Pair{
 		Key:   "interceptor",
+		Value: v,
+	}
+}
+
+// WithIoCallback will apply io_callback value to Options
+// IoCallback specify what todo every time we read data from source
+func WithIoCallback(v func([]byte)) Pair {
+	return Pair{
+		Key:   "io_callback",
 		Value: v,
 	}
 }
@@ -105,6 +112,15 @@ func WithListMode(v ListMode) Pair {
 func WithLocation(v string) Pair {
 	return Pair{
 		Key:   "location",
+		Value: v,
+	}
+}
+
+// WithMultipartID will apply multipart_id value to Options
+// MultipartID
+func WithMultipartID(v string) Pair {
+	return Pair{
+		Key:   "multipart_id",
 		Value: v,
 	}
 }
@@ -132,24 +148,6 @@ func WithOffset(v int64) Pair {
 func WithPairPolicy(v PairPolicy) Pair {
 	return Pair{
 		Key:   "pair_policy",
-		Value: v,
-	}
-}
-
-// WithPartID will apply part_id value to Options
-// PartID
-func WithPartID(v string) Pair {
-	return Pair{
-		Key:   "part_id",
-		Value: v,
-	}
-}
-
-// WithReadCallbackFunc will apply read_callback_func value to Options
-// ReadCallbackFunc specify what todo every time we read data from source
-func WithReadCallbackFunc(v func([]byte)) Pair {
-	return Pair{
-		Key:   "read_callback_func",
 		Value: v,
 	}
 }
@@ -182,8 +180,10 @@ func WithUserAgent(v string) Pair {
 }
 
 // WithWorkDir will apply work_dir value to Options
-// WorkDir specify the work dir for service or storage, every operation will be relative to this dir. work_dir MUST start with / for every storage services. work_dir will be default to / if not set.
-//  For fs storage service on windows platform, the behavior is undefined.
+// WorkDir specify the work dir for service or storage, every operation will be relative to this dir.
+// work_dir MUST start with / for every storage services.
+// work_dir will be default to / if not set.
+// For fs storage service on windows platform, the behavior is undefined.
 func WithWorkDir(v string) Pair {
 	return Pair{
 		Key:   "work_dir",

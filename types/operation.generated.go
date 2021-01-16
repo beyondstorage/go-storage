@@ -142,15 +142,6 @@ type Servicer interface {
 	ListWithContext(ctx context.Context, pairs ...Pair) (sti *StoragerIterator, err error)
 }
 
-// Statistician is the interface for Statistical.
-type Statistician interface {
-
-	// Statistical will count service's statistics, such as Size, Count.
-	Statistical(pairs ...Pair) (statistic *StorageStatistic, err error)
-	// StatisticalWithContext will count service's statistics, such as Size, Count.
-	StatisticalWithContext(ctx context.Context, pairs ...Pair) (statistic *StorageStatistic, err error)
-}
-
 // Storager is the interface for storage service.
 type Storager interface {
 	String() string
@@ -221,22 +212,19 @@ type PairPolicy struct {
 	// pairs for interface Reacher
 	Reach bool
 
-	// pairs for interface Statistician
-	Statistical bool
-
 	// pairs for interface Storager
-	Delete                bool
-	List                  bool
-	ListListMode          bool
-	Metadata              bool
-	Read                  bool
-	ReadSize              bool
-	ReadOffset            bool
-	ReadReadCallbackFunc  bool
-	Stat                  bool
-	Write                 bool
-	WriteStorageClass     bool
-	WriteContentType      bool
-	WriteContentMd5       bool
-	WriteReadCallbackFunc bool
+	Delete            bool
+	List              bool
+	ListListMode      bool
+	Metadata          bool
+	Read              bool
+	ReadSize          bool
+	ReadOffset        bool
+	ReadIoCallback    bool
+	Stat              bool
+	Write             bool
+	WriteStorageClass bool
+	WriteContentType  bool
+	WriteContentMd5   bool
+	WriteIoCallback   bool
 }

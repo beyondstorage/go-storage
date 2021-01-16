@@ -41,11 +41,7 @@ func (m *{{ $serviceName | toPascal }}) Get{{ $v.DisplayName }}() ({{ $v.Type }}
     if m.bit & {{$serviceName}}Index{{ $v.Name | toPascal }} != 0 {
         return m.{{ $v.TypeName }}, true
     }
-    {{- if $v.ZeroValue }}
-        return {{ $v.ZeroValue }}, false
-    {{- else }}
-        return {{ $v.Type | zeroValue }}, false
-    {{- end }}
+    return {{ $v.Type | zeroValue }}, false
 }
 
 func (m *{{ $serviceName | toPascal }}) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {

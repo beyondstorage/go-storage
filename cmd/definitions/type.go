@@ -24,10 +24,10 @@ type Data struct {
 	interfacesMap map[string]*Interface
 
 	// Store all specs for encoding
-	pairSpec       *specs.Pairs
-	infoSpec       *specs.Infos
-	operationsSpec *specs.Operations
-	serviceSpec    *specs.Service
+	pairSpec       specs.Pairs
+	infoSpec       specs.Infos
+	operationsSpec specs.Operations
+	serviceSpec    specs.Service
 }
 
 // Service is the service definition.
@@ -67,23 +67,23 @@ func (n *Namespace) Sort() {
 
 // Pair is the pair definition.
 type Pair struct {
-	Name    string
-	Type    string
-	Parser  string
-	Default string
+	Name string
+
+	ptype string
 
 	// Runtime generated
 	Global      bool
 	Description string
 }
 
-// Format will formatGlobal current pair
-func (p *Pair) Format(s *specs.Pair, global bool) {
-	p.Name = s.Name
-	p.Type = s.Type
-	p.Parser = s.Parser
-	p.Default = s.Default
+func (p *Pair) Type() string {
+	return parseType(p.ptype)
+}
 
+// Format will formatGlobal current pair
+func (p *Pair) Format(s specs.Pair, global bool) {
+	p.Name = s.Name
+	p.ptype = s.Type
 	p.Global = global
 
 	p.Description = formatDescription(templateutils.ToPascal(p.Name), s.Description)
@@ -99,31 +99,31 @@ func (p *Pair) FullName() string {
 
 // Info is the metadata definition.
 type Info struct {
-	Scope     string
-	Category  string
-	Name      string
-	Type      string
-	ZeroValue string
-	Export    bool
-	Comment   string
+	Scope       string
+	Category    string
+	Name        string
+	Export      bool
+	Description string
+
+	itype string
 
 	Global bool
-
-	displayName string
 }
 
 // Format will formatGlobal info spec into Info
-func (i *Info) Format(s *specs.Info, global bool) {
+func (i *Info) Format(s specs.Info, global bool) {
 	i.Scope = s.Scope
 	i.Category = s.Category
 	i.Name = s.Name
-	i.Type = s.Type
-	i.displayName = s.DisplayName
-	i.ZeroValue = s.ZeroValue
+	i.itype = s.Type
 	i.Export = s.Export
-	i.Comment = s.Comment
+	i.Description = s.Description
 
 	i.Global = global
+}
+
+func (i *Info) Type() string {
+	return parseType(i.itype)
 }
 
 func (i *Info) TypeName() string {
@@ -134,9 +134,6 @@ func (i *Info) TypeName() string {
 	}
 }
 func (i *Info) DisplayName() string {
-	if i.displayName != "" {
-		return i.displayName
-	}
 	return templateutils.ToPascal(i.Name)
 }
 
@@ -144,17 +141,14 @@ func (i *Info) DisplayName() string {
 type Interface struct {
 	Name        string
 	Description string
-	Internal    bool
-	Embed       []*Interface
 	Ops         map[string]*Operation
 }
 
 // NewInterface will create a new interface from spec.
-func NewInterface(in *specs.Interface, fields map[string]*Field) *Interface {
+func NewInterface(in specs.Interface, fields map[string]*Field) *Interface {
 	inter := &Interface{
 		Name:        in.Name,
 		Description: formatDescription(templateutils.ToPascal(in.Name), in.Description),
-		Internal:    in.Internal,
 		Ops:         make(map[string]*Operation),
 	}
 	for _, v := range in.Ops {
@@ -167,9 +161,6 @@ func NewInterface(in *specs.Interface, fields map[string]*Field) *Interface {
 
 // DisplayName will output interface's display name.
 func (i *Interface) DisplayName() string {
-	if i.Internal {
-		return templateutils.ToCamel(i.Name)
-	}
 	return templateutils.ToPascal(i.Name)
 }
 
@@ -183,7 +174,7 @@ type Operation struct {
 }
 
 // NewOperation will create an new operation from operation spec.
-func NewOperation(v *specs.Operation, fields map[string]*Field) *Operation {
+func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
 	op := &Operation{
 		Name:        v.Name,
 		Description: formatDescription("", v.Description),
@@ -230,8 +221,8 @@ func (o *Operation) FormatResults() string {
 func (o *Operation) FormatResultsWithPackageName(packageName string) string {
 	s := make([]string, 0)
 	for _, v := range o.Results {
-		if strings.HasPrefix(v.Type, packageName) {
-			s = append(s, v.Name+" "+strings.TrimPrefix(v.Type, packageName+"."))
+		if strings.HasPrefix(v.ftype, packageName) {
+			s = append(s, v.Name+" "+strings.TrimPrefix(v.ftype, packageName+"."))
 			continue
 		}
 		s = append(s, v.String())
@@ -256,12 +247,20 @@ func NewFunction(o *Operation) *Function {
 }
 
 // Format will formatGlobal a function with Op.
-func (f *Function) Format(s *specs.Op, p map[string]*Pair) {
+func (f *Function) Format(s specs.Op, p map[string]*Pair) {
 	for _, v := range s.Required {
-		f.Required = append(f.Required, p[v])
+		pair, ok := p[v]
+		if !ok {
+			log.Fatalf("pair %s is not exist", v)
+		}
+		f.Required = append(f.Required, pair)
 	}
 	for _, v := range s.Optional {
-		f.Optional = append(f.Optional, p[v])
+		pair, ok := p[v]
+		if !ok {
+			log.Fatalf("pair %s is not exist", v)
+		}
+		f.Optional = append(f.Optional, pair)
 	}
 }
 
@@ -314,7 +313,7 @@ func (f Fields) Caller() string {
 // HasReader will check whether we have reader here.
 func (f Fields) HasReader() bool {
 	for _, v := range f {
-		if v.Type == "io.Reader" || v.Type == "io.ReadCloser" {
+		if v.ftype == "io.Reader" || v.ftype == "io.ReadCloser" {
 			return true
 		}
 	}
@@ -339,11 +338,7 @@ func (f Fields) TrimLast() Fields {
 func (f Fields) PathCaller() string {
 	x := make([]string, 0)
 	for _, v := range f {
-		if v.Name == "seg" {
-			x = append(x, "seg.Path", "seg.ID")
-			continue
-		}
-		if v.Type != "string" {
+		if v.ftype != "string" {
 			break
 		}
 
@@ -359,56 +354,52 @@ func (f Fields) PathCaller() string {
 
 // Field represent a field.
 type Field struct {
-	Name string
-	Type string
+	Name  string
+	ftype string
 }
 
 // String will print field in string formatGlobal.
 func (f *Field) String() string {
 	if f.Name == "" {
-		return f.Type
+		return f.Type()
 	}
-	return fmt.Sprintf("%s %s", f.Name, f.Type)
+	return fmt.Sprintf("%s %s", f.Name, f.Type())
+}
+
+func (f *Field) Type() string {
+	return parseType(f.ftype)
 }
 
 // Caller will print the caller formatGlobal of field.
 func (f *Field) Caller() string {
-	if strings.HasPrefix(f.Type, "...") {
+	if strings.HasPrefix(f.Type(), "...") {
 		return f.Name + "..."
 	}
 	return f.Name
 }
 
 // Format will create a new field.
-func (f *Field) Format(s *specs.Field) {
-	f.Type = s.Type
+func (f *Field) Format(s specs.Field) {
+	f.ftype = s.Type
 	f.Name = s.Name
 }
 
 // FormatPairs will formatGlobal pairs for pair spec
-func (d *Data) FormatPairs(p *specs.Pairs, global bool) map[string]*Pair {
-	if p == nil {
-		return nil
-	}
-
+func (d *Data) FormatPairs(p specs.Pairs, global bool) map[string]*Pair {
 	m := make(map[string]*Pair)
-	for _, v := range p.Pairs {
-		p := &Pair{}
-		p.Format(v, global)
+	for _, v := range p {
+		pair := &Pair{}
+		pair.Format(v, global)
 
-		m[p.Name] = p
+		m[pair.Name] = pair
 	}
 	return m
 }
 
 // FormatInfos will formatGlobal metas for meta spec
-func (d *Data) FormatInfos(m *specs.Infos, global bool) []*Info {
-	if m == nil {
-		return nil
-	}
-
-	is := make([]*Info, 0, len(m.Infos))
-	for _, v := range m.Infos {
+func (d *Data) FormatInfos(m specs.Infos, global bool) []*Info {
+	is := make([]*Info, 0, len(m))
+	for _, v := range m {
 		i := &Info{}
 		i.Format(v, global)
 
@@ -432,7 +423,7 @@ func (d *Data) FormatInfos(m *specs.Infos, global bool) []*Info {
 }
 
 // FormatOperations will formatGlobal operations from operation spec
-func (d *Data) FormatOperations(o *specs.Operations) (ins []*Interface, inm map[string]*Interface) {
+func (d *Data) FormatOperations(o specs.Operations) (ins []*Interface, inm map[string]*Interface) {
 	fileds := make(map[string]*Field)
 	for _, v := range o.Fields {
 		f := &Field{}
@@ -450,27 +441,18 @@ func (d *Data) FormatOperations(o *specs.Operations) (ins []*Interface, inm map[
 		inm[inter.Name] = inter
 	}
 
-	// Handle embed interface
-	for _, in := range o.Interfaces {
-		for _, v := range in.Embed {
-			inm[in.Name].Embed = append(inm[in.Name].Embed, inm[v])
-		}
-	}
 	return
 }
 
 // FormatNamespace will formatGlobal a namespace.
-func (d *Data) FormatNamespace(srv *Service, n *specs.Namespace) *Namespace {
+func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 	ns := &Namespace{Name: n.Name}
 
 	nsInterface := n.Name + "r"
 
 	// Handle New function
-	if n.New == nil {
-		n.New = &specs.New{}
-	}
 	ns.New = NewFunction(&Operation{Name: "new"})
-	ns.New.Format(&specs.Op{
+	ns.New.Format(specs.Op{
 		Required: n.New.Required,
 		Optional: n.New.Optional,
 	}, srv.Pairs)
@@ -525,13 +507,17 @@ func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 			if existPairs[ps] {
 				continue
 			}
-			v.Generated = append(v.Generated, srv.Pairs[ps])
+			pair, ok := srv.Pairs[ps]
+			if !ok {
+				log.Fatalf("pair %s is not exist", ps)
+			}
+			v.Generated = append(v.Generated, pair)
 		}
 	}
 }
 
 // FormatService will formatGlobal services from service spec
-func (d *Data) FormatService(s *specs.Service) *Service {
+func (d *Data) FormatService(s specs.Service) *Service {
 	d.serviceSpec = s
 
 	srv := &Service{
@@ -556,16 +542,15 @@ func (d *Data) Sort() {
 	d.infoSpec.Sort()
 	d.operationsSpec.Sort()
 
-	if d.serviceSpec != nil {
-		d.serviceSpec.Sort()
-	}
+	d.serviceSpec.Sort()
+
 	if d.Service != nil {
 		d.Service.Sort()
 	}
 }
 
 // FormatData will formatGlobal the whole data.
-func FormatData(p *specs.Pairs, m *specs.Infos, o *specs.Operations) *Data {
+func FormatData(p specs.Pairs, m specs.Infos, o specs.Operations) *Data {
 	data := &Data{
 		pairSpec:       p,
 		infoSpec:       m,

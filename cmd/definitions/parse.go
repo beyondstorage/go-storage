@@ -13,8 +13,27 @@ import (
 )
 
 func parse() (data *Data) {
-	data = FormatData(&specs.ParsedPairs, &specs.ParsedInfos, &specs.ParsedOperations)
+	injectPairs()
+
+	data = FormatData(specs.ParsedPairs, specs.ParsedInfos, specs.ParsedOperations)
 	return data
+}
+
+func injectPairs() {
+	ps := []specs.Pair{
+		{
+			Name: "context",
+			Type: "context",
+		},
+		{
+			Name: "http_client_options",
+			Type: "http_client_options",
+		},
+	}
+
+	for _, v := range ps {
+		specs.ParsedPairs = append(specs.ParsedPairs, v)
+	}
 }
 
 func parseFunc(name string) map[string]*templateutils.Method {
@@ -40,4 +59,46 @@ func parseFunc(name string) map[string]*templateutils.Method {
 		data[v.Name] = v
 	}
 	return data
+}
+
+var typeMap = map[string]string{
+	// Golang basic types
+	"error":  "error",
+	"string": "string",
+	"int":    "int",
+	"int64":  "int64",
+	"bool":   "bool",
+
+	// Golang self-defined types.
+	"context":             "context.Context",
+	"http_client_options": "*httpclient.Options",
+
+	// Compose types
+	"string_array":     "[]string",
+	"time":             "time.Time",
+	"BlockIterator":    "*BlockIterator",
+	"ListMode":         "ListMode",
+	"Interceptor":      "Interceptor",
+	"IoCallback":       "func([]byte)",
+	"Object":           "*Object",
+	"ObjectMode":       "ObjectMode",
+	"ObjectIterator":   "*ObjectIterator",
+	"Pairs":            "...Pair",
+	"Parts":            "[]*Part",
+	"PartIterator":     "*PartIterator",
+	"PairPolicy":       "PairPolicy",
+	"Reader":           "io.Reader",
+	"Storager":         "Storager",
+	"StoragerIterator": "*StoragerIterator",
+	"StorageMeta":      "*StorageMeta",
+	"Writer":           "io.Writer",
+}
+
+func parseType(v string) string {
+	s, ok := typeMap[v]
+	if ok {
+		return s
+	}
+	log.Fatalf("type %s is not supported.", v)
+	return ""
 }
