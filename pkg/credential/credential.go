@@ -39,110 +39,112 @@ type Provider struct {
 }
 
 // Protocol provides current credential's protocol.
-func (p *Provider) Protocol() string {
+func (p Provider) Protocol() string {
 	return p.protocol
 }
 
 // Value provides current credential's value in string array.
-func (p *Provider) Value() []string {
+func (p Provider) Value() []string {
 	return p.args
 }
 
+// Value provides current credential's value in string array.
+func (p Provider) String() string {
+	if len(p.args) == 0 {
+		return p.protocol
+	}
+	return p.protocol + ":" + strings.Join(p.args, ":")
+}
+
+func (p Provider) Hmac() (accessKey, secretKey string) {
+	if p.protocol != ProtocolHmac {
+		panic(Error{
+			Op:       "hmac",
+			Err:      ErrInvalidValue,
+			Protocol: p.protocol,
+			Values:   p.args,
+		})
+	}
+	return p.args[0], p.args[1]
+}
+
+func (p Provider) APIKey() (apiKey string) {
+	if p.protocol != ProtocolAPIKey {
+		panic(Error{
+			Op:       "api_key",
+			Err:      ErrInvalidValue,
+			Protocol: p.protocol,
+			Values:   p.args,
+		})
+	}
+	return p.args[0]
+}
+
+func (p Provider) File() (path string) {
+	if p.protocol != ProtocolFile {
+		panic(Error{
+			Op:       "file",
+			Err:      ErrInvalidValue,
+			Protocol: p.protocol,
+			Values:   p.args,
+		})
+	}
+	return p.args[0]
+}
+
+func (p Provider) Base64() (value string) {
+	if p.protocol != ProtocolBase64 {
+		panic(Error{
+			Op:       "base64",
+			Err:      ErrInvalidValue,
+			Protocol: p.protocol,
+			Values:   p.args,
+		})
+	}
+	return p.args[0]
+}
+
 // Parse will parse config string to create a credential Provider.
-func Parse(cfg string) (*Provider, error) {
+func Parse(cfg string) (Provider, error) {
 	s := strings.Split(cfg, ":")
 
 	switch s[0] {
 	case ProtocolHmac:
-		return NewHmac(s[1:]...)
+		return NewHmac(s[1], s[2]), nil
 	case ProtocolAPIKey:
-		return NewAPIKey(s[1:]...)
+		return NewAPIKey(s[1]), nil
 	case ProtocolFile:
-		return NewFile(s[1:]...)
+		return NewFile(s[1]), nil
 	case ProtocolEnv:
-		return NewEnv()
+		return NewEnv(), nil
 	case ProtocolBase64:
-		return NewBase64(s[1:]...)
+		return NewBase64(s[1]), nil
 	default:
-		return nil, &Error{"parse", ErrUnsupportedProtocol, s[0], nil}
+		return Provider{}, &Error{"parse", ErrUnsupportedProtocol, s[0], nil}
 	}
 }
 
 // NewHmac create a hmac provider.
-func NewHmac(value ...string) (*Provider, error) {
-	if len(value) != 2 {
-		return nil, &Error{"new", ErrInvalidValue, ProtocolHmac, value}
-	}
-	return &Provider{ProtocolHmac, []string{value[0], value[1]}}, nil
-}
-
-// MustNewHmac make sure Provider must be created if no panic happened.
-func MustNewHmac(value ...string) *Provider {
-	p, err := NewHmac(value...)
-	if err != nil {
-		panic(err)
-	}
-	return p
+func NewHmac(accessKey, secretKey string) Provider {
+	return Provider{ProtocolHmac, []string{accessKey, secretKey}}
 }
 
 // NewAPIKey create a api key provider.
-func NewAPIKey(value ...string) (*Provider, error) {
-	if len(value) != 1 {
-		return nil, &Error{"new", ErrInvalidValue, ProtocolAPIKey, value}
-	}
-	return &Provider{ProtocolAPIKey, []string{value[0]}}, nil
-}
-
-// MustNewAPIKey make sure Provider must be created if no panic happened.
-func MustNewAPIKey(value ...string) *Provider {
-	p, err := NewAPIKey(value...)
-	if err != nil {
-		panic(err)
-	}
-	return p
+func NewAPIKey(apiKey string) Provider {
+	return Provider{ProtocolAPIKey, []string{apiKey}}
 }
 
 // NewFile create a file provider.
-func NewFile(value ...string) (*Provider, error) {
-	if len(value) != 1 {
-		return nil, &Error{"new", ErrInvalidValue, ProtocolFile, value}
-	}
-	return &Provider{ProtocolFile, []string{value[0]}}, nil
-}
-
-// MustNewFile make sure Provider must be created if no panic happened.
-func MustNewFile(value ...string) *Provider {
-	p, err := NewFile(value...)
-	if err != nil {
-		panic(err)
-	}
-	return p
+func NewFile(filePath string) Provider {
+	return Provider{ProtocolFile, []string{filePath}}
 }
 
 // NewEnv create a env provider.
-func NewEnv(_ ...string) (*Provider, error) {
-	return &Provider{ProtocolEnv, nil}, nil
-}
-
-// MustNewEnv make sure Provider must be created if no panic happened.
-func MustNewEnv(value ...string) *Provider {
-	p, _ := NewEnv(value...)
-	return p
+func NewEnv() Provider {
+	return Provider{ProtocolEnv, nil}
 }
 
 // NewBase64 create a base64 provider.
-func NewBase64(value ...string) (*Provider, error) {
-	if len(value) != 1 {
-		return nil, &Error{"new", ErrInvalidValue, ProtocolFile, value}
-	}
-	return &Provider{ProtocolBase64, value}, nil
-}
-
-// MustNewBase64 make sure Provider must be created if no panic happened.
-func MustNewBase64(value ...string) *Provider {
-	p, err := NewBase64(value...)
-	if err != nil {
-		panic(err)
-	}
-	return p
+func NewBase64(value string) Provider {
+	return Provider{ProtocolBase64, []string{value}}
 }

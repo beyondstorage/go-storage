@@ -13,7 +13,7 @@ import (
 )
 
 var _ credential.Provider
-var _ endpoint.Provider
+var _ endpoint.Value
 var _ Storager
 var _ services.ServiceError
 var _ httpclient.Options
@@ -60,11 +60,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     func Get{{ $pname }}(m *{{ $serviceName }}) ({{ $v.Type }}, bool)  {
     v, ok := m.Get("{{ $.Name }}-{{ $v.Name }}")
     if !ok {
-    {{- if $v.ZeroValue }}
-        return {{ $v.ZeroValue }}, false
-    {{- else }}
         return {{ $v.Type | zeroValue }}, false
-    {{- end }}
     }
     return v.({{ $v.Type }}), true
     }

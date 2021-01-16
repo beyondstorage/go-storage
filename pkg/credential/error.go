@@ -21,7 +21,7 @@ type Error struct {
 	Values   []string
 }
 
-func (e *Error) Error() string {
+func (e Error) Error() string {
 	if e.Values == nil {
 		return fmt.Sprintf("%s: %s: %s", e.Op, e.Protocol, e.Err.Error())
 	}
@@ -29,6 +29,6 @@ func (e *Error) Error() string {
 }
 
 // Unwrap implements xerrors.Wrapper
-func (e *Error) Unwrap() error {
+func (e Error) Unwrap() error {
 	return e.Err
 }

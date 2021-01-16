@@ -73,7 +73,7 @@ func WithExpire(v int) Pair {
 
 // WithHTTPClientOptions will apply http_client_options value to Options
 // HTTPClientOptions
-func WithHTTPClientOptions(v httpclient.Options) Pair {
+func WithHTTPClientOptions(v *httpclient.Options) Pair {
 	return Pair{
 		Key:   "http_client_options",
 		Value: v,

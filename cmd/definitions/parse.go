@@ -67,10 +67,11 @@ var typeMap = map[string]string{
 	"string": "string",
 	"int":    "int",
 	"int64":  "int64",
+	"bool":   "bool",
 
 	// Golang self-defined types.
 	"context":             "context.Context",
-	"http_client_options": "httpclient.Options",
+	"http_client_options": "*httpclient.Options",
 
 	// Compose types
 	"string_array":     "[]string",
@@ -88,7 +89,7 @@ var typeMap = map[string]string{
 	"PairPolicy":       "PairPolicy",
 	"Reader":           "io.Reader",
 	"Storager":         "Storager",
-	"StoragerIterator": "StoragerIterator",
+	"StoragerIterator": "*StoragerIterator",
 	"StorageMeta":      "*StorageMeta",
 	"Writer":           "io.Writer",
 }

@@ -137,9 +137,9 @@ type Servicer interface {
 	GetWithContext(ctx context.Context, name string, pairs ...Pair) (store Storager, err error)
 
 	// List will list all storager instances under this service.
-	List(pairs ...Pair) (sti StoragerIterator, err error)
+	List(pairs ...Pair) (sti *StoragerIterator, err error)
 	// ListWithContext will list all storager instances under this service.
-	ListWithContext(ctx context.Context, pairs ...Pair) (sti StoragerIterator, err error)
+	ListWithContext(ctx context.Context, pairs ...Pair) (sti *StoragerIterator, err error)
 }
 
 // Storager is the interface for storage service.
@@ -213,18 +213,18 @@ type PairPolicy struct {
 	Reach bool
 
 	// pairs for interface Storager
-	Delete               bool
-	List                 bool
-	ListListMode         bool
-	Metadata             bool
-	Read                 bool
-	ReadSize             bool
-	ReadOffset           bool
-	ReadReadCallbackFunc bool
-	Stat                 bool
-	Write                bool
-	WriteStorageClass    bool
-	WriteContentType     bool
-	WriteContentMd5      bool
-	WriteIoCallback      bool
+	Delete            bool
+	List              bool
+	ListListMode      bool
+	Metadata          bool
+	Read              bool
+	ReadSize          bool
+	ReadOffset        bool
+	ReadIoCallback    bool
+	Stat              bool
+	Write             bool
+	WriteStorageClass bool
+	WriteContentType  bool
+	WriteContentMd5   bool
+	WriteIoCallback   bool
 }

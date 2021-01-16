@@ -67,9 +67,7 @@ func (n *Namespace) Sort() {
 
 // Pair is the pair definition.
 type Pair struct {
-	Name    string
-	Parser  string
-	Default string
+	Name string
 
 	ptype string
 
@@ -249,12 +247,20 @@ func NewFunction(o *Operation) *Function {
 }
 
 // Format will formatGlobal a function with Op.
-func (f *Function) Format(s *specs.Op, p map[string]*Pair) {
+func (f *Function) Format(s specs.Op, p map[string]*Pair) {
 	for _, v := range s.Required {
-		f.Required = append(f.Required, p[v])
+		pair, ok := p[v]
+		if !ok {
+			log.Fatalf("pair %s is not exist", v)
+		}
+		f.Required = append(f.Required, pair)
 	}
 	for _, v := range s.Optional {
-		f.Optional = append(f.Optional, p[v])
+		pair, ok := p[v]
+		if !ok {
+			log.Fatalf("pair %s is not exist", v)
+		}
+		f.Optional = append(f.Optional, pair)
 	}
 }
 
@@ -332,10 +338,6 @@ func (f Fields) TrimLast() Fields {
 func (f Fields) PathCaller() string {
 	x := make([]string, 0)
 	for _, v := range f {
-		if v.Name == "seg" {
-			x = append(x, "seg.Path", "seg.ID")
-			continue
-		}
 		if v.ftype != "string" {
 			break
 		}
@@ -386,10 +388,10 @@ func (f *Field) Format(s specs.Field) {
 func (d *Data) FormatPairs(p specs.Pairs, global bool) map[string]*Pair {
 	m := make(map[string]*Pair)
 	for _, v := range p {
-		p := &Pair{}
-		p.Format(v, global)
+		pair := &Pair{}
+		pair.Format(v, global)
 
-		m[p.Name] = p
+		m[pair.Name] = pair
 	}
 	return m
 }
@@ -449,11 +451,8 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 	nsInterface := n.Name + "r"
 
 	// Handle New function
-	if n.New == nil {
-		n.New = &specs.New{}
-	}
 	ns.New = NewFunction(&Operation{Name: "new"})
-	ns.New.Format(&specs.Op{
+	ns.New.Format(specs.Op{
 		Required: n.New.Required,
 		Optional: n.New.Optional,
 	}, srv.Pairs)
@@ -508,7 +507,11 @@ func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 			if existPairs[ps] {
 				continue
 			}
-			v.Generated = append(v.Generated, srv.Pairs[ps])
+			pair, ok := srv.Pairs[ps]
+			if !ok {
+				log.Fatalf("pair %s is not exist", ps)
+			}
+			v.Generated = append(v.Generated, pair)
 		}
 	}
 }

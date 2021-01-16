@@ -6,10 +6,12 @@ import (
 	"strings"
 )
 
-// Provider will return all info needed to connect a service.
-type Provider interface {
-	Value() Value
-}
+const (
+	// ProtocolHTTPS is the https credential protocol.
+	ProtocolHTTPS = "https"
+	// ProtocolHTTP is the http credential protocol.
+	ProtocolHTTP = "http"
+)
 
 // Value is the required info to connect a service.
 type Value struct {
@@ -27,10 +29,10 @@ func (v Value) String() string {
 }
 
 // Parse will parse config string to create a endpoint Provider.
-func Parse(cfg string) (p Provider, err error) {
+func Parse(cfg string) (p Value, err error) {
 	s := strings.Split(cfg, ":")
 	if len(s) < 2 {
-		return nil, &Error{"parse", ErrInvalidValue, s[0], nil}
+		return Value{}, &Error{"parse", ErrInvalidValue, s[0], nil}
 	}
 
 	defer func() {
@@ -43,7 +45,7 @@ func Parse(cfg string) (p Provider, err error) {
 	if len(s) >= 3 {
 		xport, err := strconv.ParseInt(s[2], 10, 64)
 		if err != nil {
-			return nil, err
+			return Value{}, err
 		}
 		port = int(xport)
 	}
@@ -60,7 +62,25 @@ func Parse(cfg string) (p Provider, err error) {
 		}
 		return NewHTTP(s[1], port), nil
 	default:
-		return nil, ErrUnsupportedProtocol
+		return Value{}, ErrUnsupportedProtocol
+	}
+}
+
+// NewHTTPS will create a static endpoint from parsed URL.
+func NewHTTPS(host string, port int) Value {
+	return Value{
+		Protocol: ProtocolHTTPS,
+		Host:     host,
+		Port:     port,
+	}
+}
+
+// NewHTTP will create a static endpoint from parsed URL.
+func NewHTTP(host string, port int) Value {
+	return Value{
+		Protocol: ProtocolHTTP,
+		Host:     host,
+		Port:     port,
 	}
 }
 
