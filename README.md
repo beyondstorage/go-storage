@@ -87,8 +87,8 @@ Optional metadata
 import (
     "log"
 
-    "github.com/aos-dev/go-storage/v2"
-    "github.com/aos-dev/go-storage/v2/pairs"
+    "github.com/aos-dev/go-storage/v3"
+    "github.com/aos-dev/go-storage/v3/pairs"
     "github.com/aos-dev/go-services-fs"
 )
 
