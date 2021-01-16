@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - cmd/definitions: Don't need to store definitions to bindata (#476)
 - cmd: Introduce aos-dev/specs to maintain specs (#481)
 - docs: Migrate design to aos-dev/specs (#488)
+- cmd: Migrate from hcl to toml (#496)
 
 ## [v2.0.0] - 2020-11-12
 
