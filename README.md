@@ -39,11 +39,12 @@ An application-oriented unified storage layer for Golang.
 
 Basic operations
 
-- Metadata: get storager's metadata
+- Metadata: get storager metadata
 - Read: read file content
 - Write: write content into file
 - Stat: get file's metadata
 - Delete: delete a file or directory
+- List: list file in prefix or dir styles
 
 Extended operations
 
@@ -51,18 +52,12 @@ Extended operations
 - Move: move a file inside storager
 - Reach: generate a public accessible url
 
-Multiple list style support
+Multi object modes support
 
-- ListDir: list files and directories under a directory
-- ListPrefix: list files under a prefix
-
-Segment/Multipart support
-
-- ListPrefixSegment: list segments under a prefix
-- InitIndexSegment: initiate an index type segment
-- WriteIndexSegment: write content into an index type segment
-- CompleteSegment: complete a segment to create a file
-- AbortSegment: abort a segment
+- Multipart: allow doing multipart uploads
+- Append: allow appending to an object
+- Block: allow combining an object with block ids.
+- Page: allow doing random writes
 
 ### Object metadata support
 
@@ -79,7 +74,8 @@ Optional metadata
 - `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
 - `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
 - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
-- `storage-class`: object's storage class as defined in [storage proposal](./docs/design/8-normalize-metadata-storage-class.md)
+- `storage-class`: object's storage class as defined
+  in [storage proposal](./docs/design/8-normalize-metadata-storage-class.md)
 
 ## Quick Start
 
