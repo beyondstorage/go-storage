@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.0.0] - 2021-01-15
+
+### Added
+
+- pairs: Add support for user-agent (#477)
+- operation: Add fetcher (#480)
+- Proposal: Add default pair for operations (#484)
+- types: Implement proposal Unify List Operation (#489)
+- types: Implement proposal segment api redesign (#490)
+- cmd: Implement code generate and format (#491)
+- types: Implement proposal Object Mode (#493)
+
+### Changed
+
+- cmd/definitions: Don't need to store definitions to bindata (#476)
+- cmd: Introduce aos-dev/specs to maintain specs (#481)
+- docs: Migrate design to aos-dev/specs (#488)
+- cmd: Migrate from hcl to toml (#496)
+
 ## [v2.0.0] - 2020-11-12
 
 ### Changed
@@ -390,7 +409,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v3.0.0...HEAD
+[v3.0.0]: https://github.com/Xuanwo/storage/compare/v2.0.0...v3.0.0
 [v2.0.0]: https://github.com/Xuanwo/storage/compare/v2.0.0-beta...v2.0.0
 [v2.0.0-beta]: https://github.com/Xuanwo/storage/compare/v2.0.0-alpha.1...v2.0.0-beta
 [v2.0.0-alpha.1]: https://github.com/Xuanwo/storage/compare/v1.2.1...v2.0.0-alpha.1

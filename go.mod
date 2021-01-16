@@ -1,4 +1,4 @@
-module github.com/aos-dev/go-storage/v2
+module github.com/aos-dev/go-storage/v3
 
 go 1.14
 
