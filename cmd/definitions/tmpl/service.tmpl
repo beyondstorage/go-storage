@@ -31,6 +31,21 @@ const (
 {{- end }}
 )
 
+// Service available metadata.
+const (
+{{- range $_, $v := .Infos }}
+    {{- if not $v.Global }}
+    {{ $pname := $v.Name | toPascal }}
+    {{- if $v.DisplayName }}
+        {{ $pname = $v.DisplayName }}
+    {{- end }}
+    {{ $v.Description }}
+    Metadata{{ $pname }} = "{{ $.Name }}-{{ $v.Name }}"
+    {{- end }}
+{{- end }}
+)
+
+
 {{- range $_, $v := .Pairs }}
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
@@ -43,33 +58,6 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     }
 }
 {{- end }}
-{{- end }}
-
-
-{{- range $_, $v := .Infos }}
-    {{- if not $v.Global }}
-    {{ $pname := $v.Name | toPascal }}
-    {{- if $v.DisplayName }}
-        {{ $pname = $v.DisplayName }}
-    {{- end }}
-    {{ $serviceName := printf "%s%s" ($v.Scope | toPascal) ($v.Category | toPascal) }}
-    {{- if eq $v.Scope "object" }}
-        {{ $serviceName = "Object" }}
-    {{- end }}
-    // Get{{ $pname }} will get {{ $v.Name }} value from metadata.
-    func Get{{ $pname }}(m *{{ $serviceName }}) ({{ $v.Type }}, bool)  {
-    v, ok := m.Get("{{ $.Name }}-{{ $v.Name }}")
-    if !ok {
-        return {{ $v.Type | zeroValue }}, false
-    }
-    return v.({{ $v.Type }}), true
-    }
-
-    // set{{ $v.Name }} will set {{ $v.Name }} value into metadata.
-    func set{{ $pname }}(m *{{ $serviceName }}, v {{ $v.Type }}) *{{ $serviceName }} {
-    return m.Set("{{ $.Name }}-{{ $v.Name }}", v)
-    }
-    {{- end }}
 {{- end }}
 
 {{- range $_, $v := .Namespaces }}
