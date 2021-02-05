@@ -16,8 +16,6 @@ import (
 	"github.com/dave/dst/decorator"
 )
 
-//go:generate go run github.com/kevinburke/go-bindata/go-bindata -nometadata -ignore "\\.go$" -prefix "../../" ./tmpl
-
 var (
 	infoT      = newTmpl("cmd/definitions/tmpl/info")
 	pairT      = newTmpl("cmd/definitions/tmpl/pair")

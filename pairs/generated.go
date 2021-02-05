@@ -161,24 +161,6 @@ func WithSize(v int64) Pair {
 	}
 }
 
-// WithStorageClass will apply storage_class value to Options
-// StorageClass
-func WithStorageClass(v string) Pair {
-	return Pair{
-		Key:   "storage_class",
-		Value: v,
-	}
-}
-
-// WithUserAgent will apply user_agent value to Options
-// UserAgent specify the custom user-agent from client
-func WithUserAgent(v string) Pair {
-	return Pair{
-		Key:   "user_agent",
-		Value: v,
-	}
-}
-
 // WithWorkDir will apply work_dir value to Options
 // WorkDir specify the work dir for service or storage, every operation will be relative to this dir.
 // work_dir MUST start with / for every storage services.

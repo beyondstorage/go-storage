@@ -9,45 +9,78 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexContentMd5   uint64 = 1 << 0
-	objectIndexContentType  uint64 = 1 << 1
-	objectIndexEtag         uint64 = 1 << 2
-	objectIndexID           uint64 = 1 << 3
-	objectIndexLinkTarget   uint64 = 1 << 4
-	objectIndexMode         uint64 = 1 << 5
-	objectIndexMultipartID  uint64 = 1 << 6
-	objectIndexPath         uint64 = 1 << 7
-	objectIndexSize         uint64 = 1 << 8
-	objectIndexStorageClass uint64 = 1 << 9
-	objectIndexUpdatedAt    uint64 = 1 << 10
+	objectIndexContentLength   uint64 = 1 << 0
+	objectIndexContentMd5      uint64 = 1 << 1
+	objectIndexContentType     uint64 = 1 << 2
+	objectIndexEtag            uint64 = 1 << 3
+	objectIndexID              uint64 = 1 << 4
+	objectIndexLastModified    uint64 = 1 << 5
+	objectIndexLinkTarget      uint64 = 1 << 6
+	objectIndexMode            uint64 = 1 << 7
+	objectIndexMultipartID     uint64 = 1 << 8
+	objectIndexPath            uint64 = 1 << 9
+	objectIndexServiceMetadata uint64 = 1 << 10
+	objectIndexUserMetadata    uint64 = 1 << 11
 )
 
+// Object is the smallest unit in go-storage.
+//
+// NOTES:
+//   - Object's fields SHOULD not be changed outside services.
+//   - Object CANNOT be copied
+//   - Object is concurrent safe.
 type Object struct {
-	contentMd5  string
-	contentType string
-	etag        string
+	contentLength int64
+	contentMd5    string
+	contentType   string
+	etag          string
 	// ID is the unique key in storage.
-	ID string
+	ID           string
+	lastModified time.Time
 	// LinkTarget is the symlink target for link object.
 	linkTarget string
 	Mode       ObjectMode
 	// MultipartID is the part id of part object.
 	multipartID string
 	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
-	Path         string
-	size         int64
-	storageClass string
-	updatedAt    time.Time
+	Path string
+	// ServiceMetadata stores service defined metadata
+	serviceMetadata map[string]string
+	// UserMetadata stores user defined metadata
+	userMetadata map[string]string
 
 	// client is the client in which Object is alive.
 	client Storager
-	// m stores storage related metadata.
-	meta map[string]interface{}
 
 	// bit used as a bitmap for object value, 0 means not set, 1 means set
 	bit  uint64
 	done uint32
 	m    sync.Mutex
+}
+
+func (o *Object) GetContentLength() (int64, bool) {
+	o.stat()
+
+	if o.bit&objectIndexContentLength != 0 {
+		return o.contentLength, true
+	}
+
+	return 0, false
+}
+
+func (o *Object) MustGetContentLength() int64 {
+	o.stat()
+
+	if o.bit&objectIndexContentLength == 0 {
+		panic(fmt.Sprintf("object content-length is not set"))
+	}
+	return o.contentLength
+}
+
+func (o *Object) SetContentLength(v int64) *Object {
+	o.contentLength = v
+	o.bit |= objectIndexContentLength
+	return o
 }
 
 func (o *Object) GetContentMd5() (string, bool) {
@@ -133,6 +166,31 @@ func (o *Object) SetID(v string) *Object {
 	return o
 }
 
+func (o *Object) GetLastModified() (time.Time, bool) {
+	o.stat()
+
+	if o.bit&objectIndexLastModified != 0 {
+		return o.lastModified, true
+	}
+
+	return time.Time{}, false
+}
+
+func (o *Object) MustGetLastModified() time.Time {
+	o.stat()
+
+	if o.bit&objectIndexLastModified == 0 {
+		panic(fmt.Sprintf("object last-modified is not set"))
+	}
+	return o.lastModified
+}
+
+func (o *Object) SetLastModified(v time.Time) *Object {
+	o.lastModified = v
+	o.bit |= objectIndexLastModified
+	return o
+}
+
 func (o *Object) GetLinkTarget() (string, bool) {
 	o.stat()
 
@@ -199,95 +257,69 @@ func (o *Object) SetPath(v string) *Object {
 	return o
 }
 
-func (o *Object) GetSize() (int64, bool) {
+func (o *Object) GetServiceMetadata() (map[string]string, bool) {
 	o.stat()
 
-	if o.bit&objectIndexSize != 0 {
-		return o.size, true
+	if o.bit&objectIndexServiceMetadata != 0 {
+		return o.serviceMetadata, true
 	}
 
-	return 0, false
+	return map[string]string{}, false
 }
 
-func (o *Object) MustGetSize() int64 {
+func (o *Object) MustGetServiceMetadata() map[string]string {
 	o.stat()
 
-	if o.bit&objectIndexSize == 0 {
-		panic(fmt.Sprintf("object size is not set"))
+	if o.bit&objectIndexServiceMetadata == 0 {
+		panic(fmt.Sprintf("object service-metadata is not set"))
 	}
-	return o.size
+	return o.serviceMetadata
 }
 
-func (o *Object) SetSize(v int64) *Object {
-	o.size = v
-	o.bit |= objectIndexSize
+func (o *Object) SetServiceMetadata(v map[string]string) *Object {
+	o.serviceMetadata = v
+	o.bit |= objectIndexServiceMetadata
 	return o
 }
 
-func (o *Object) GetStorageClass() (string, bool) {
+func (o *Object) GetUserMetadata() (map[string]string, bool) {
 	o.stat()
 
-	if o.bit&objectIndexStorageClass != 0 {
-		return o.storageClass, true
+	if o.bit&objectIndexUserMetadata != 0 {
+		return o.userMetadata, true
 	}
 
-	return "", false
+	return map[string]string{}, false
 }
 
-func (o *Object) MustGetStorageClass() string {
+func (o *Object) MustGetUserMetadata() map[string]string {
 	o.stat()
 
-	if o.bit&objectIndexStorageClass == 0 {
-		panic(fmt.Sprintf("object storage-class is not set"))
+	if o.bit&objectIndexUserMetadata == 0 {
+		panic(fmt.Sprintf("object user-metadata is not set"))
 	}
-	return o.storageClass
+	return o.userMetadata
 }
 
-func (o *Object) SetStorageClass(v string) *Object {
-	o.storageClass = v
-	o.bit |= objectIndexStorageClass
-	return o
-}
-
-func (o *Object) GetUpdatedAt() (time.Time, bool) {
-	o.stat()
-
-	if o.bit&objectIndexUpdatedAt != 0 {
-		return o.updatedAt, true
-	}
-
-	return time.Time{}, false
-}
-
-func (o *Object) MustGetUpdatedAt() time.Time {
-	o.stat()
-
-	if o.bit&objectIndexUpdatedAt == 0 {
-		panic(fmt.Sprintf("object updated-at is not set"))
-	}
-	return o.updatedAt
-}
-
-func (o *Object) SetUpdatedAt(v time.Time) *Object {
-	o.updatedAt = v
-	o.bit |= objectIndexUpdatedAt
+func (o *Object) SetUserMetadata(v map[string]string) *Object {
+	o.userMetadata = v
+	o.bit |= objectIndexUserMetadata
 	return o
 }
 
 func (o *Object) clone(xo *Object) {
+	o.contentLength = xo.contentLength
 	o.contentMd5 = xo.contentMd5
 	o.contentType = xo.contentType
 	o.etag = xo.etag
 	o.ID = xo.ID
+	o.lastModified = xo.lastModified
 	o.linkTarget = xo.linkTarget
 	o.Mode = xo.Mode
 	o.multipartID = xo.multipartID
 	o.Path = xo.Path
-	o.size = xo.size
-	o.storageClass = xo.storageClass
-	o.updatedAt = xo.updatedAt
-
-	o.meta = xo.meta
+	o.serviceMetadata = xo.serviceMetadata
+	o.userMetadata = xo.userMetadata
 
 	o.bit = xo.bit
 }

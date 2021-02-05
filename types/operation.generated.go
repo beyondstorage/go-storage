@@ -213,18 +213,17 @@ type PairPolicy struct {
 	Reach bool
 
 	// pairs for interface Storager
-	Delete            bool
-	List              bool
-	ListListMode      bool
-	Metadata          bool
-	Read              bool
-	ReadSize          bool
-	ReadOffset        bool
-	ReadIoCallback    bool
-	Stat              bool
-	Write             bool
-	WriteStorageClass bool
-	WriteContentType  bool
-	WriteContentMd5   bool
-	WriteIoCallback   bool
+	Delete           bool
+	List             bool
+	ListListMode     bool
+	Metadata         bool
+	Read             bool
+	ReadSize         bool
+	ReadOffset       bool
+	ReadIoCallback   bool
+	Stat             bool
+	Write            bool
+	WriteContentType bool
+	WriteContentMd5  bool
+	WriteIoCallback  bool
 }

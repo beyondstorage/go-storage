@@ -14,6 +14,12 @@ const (
 {{- end }}
 )
 
+// Object is the smallest unit in go-storage.
+//
+// NOTES:
+//   - Object's fields SHOULD not be changed outside services.
+//   - Object CANNOT be copied
+//   - Object is concurrent safe.
 type Object struct {
 {{- range $k, $v := .ObjectMeta }}
     {{- if $v.Description }}
@@ -24,8 +30,6 @@ type Object struct {
 
 	// client is the client in which Object is alive.
 	client Storager
-	// m stores storage related metadata.
-    meta map[string]interface{}
 
     // bit used as a bitmap for object value, 0 means not set, 1 means set
     bit uint64
@@ -77,8 +81,6 @@ func (o *Object) clone(xo *Object) {
     {{- range $k, $v := .ObjectMeta }}
     o.{{ $v.TypeName }} = xo.{{ $v.TypeName }}
     {{- end }}
-
-    o.meta = xo.meta
 
     o.bit = xo.bit
 }

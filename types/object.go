@@ -63,7 +63,6 @@ type Block struct {
 func NewObject(client Storager, done bool) *Object {
 	o := &Object{
 		client: client,
-		meta:   make(map[string]interface{}),
 	}
 
 	if done {
@@ -95,21 +94,4 @@ func (o *Object) statSlow() {
 	}
 
 	o.clone(ob)
-}
-
-// Get will get meta from object meta.
-func (o *Object) Get(key string) (interface{}, bool) {
-	o.stat()
-
-	v, ok := o.meta[key]
-	if !ok {
-		return nil, false
-	}
-	return v, true
-}
-
-// Set will get meta from object meta.
-func (o *Object) Set(key string, value interface{}) *Object {
-	o.meta[key] = value
-	return o
 }
