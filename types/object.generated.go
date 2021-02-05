@@ -23,6 +23,12 @@ const (
 	objectIndexUserMetadata    uint64 = 1 << 11
 )
 
+// Object is the smallest unit in go-storage.
+//
+// NOTES:
+//   - Object's fields SHOULD not be changed outside services.
+//   - Object CANNOT be copied
+//   - Object is concurrent safe.
 type Object struct {
 	contentLength int64
 	contentMd5    string
