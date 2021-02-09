@@ -103,8 +103,8 @@ type pair{{ $pn }}{{$fnk}} struct {
 }
 
 // parsePair{{ $pn }}{{ $fnk }} will parse Pair slice into *pair{{ $pn }}{{ $fnk }}
-func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
-    result := &pair{{ $pn }}{{ $fnk }}{
+func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) {
+    result := pair{{ $pn }}{{ $fnk }}{
         pairs: opts,
     }
 
@@ -138,7 +138,7 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error)
 
     {{- range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
-        return nil, services.NewPairRequiredError({{- $pair.FullName -}})
+        return pair{{ $pn }}{{ $fnk }}{}, services.NewPairRequiredError({{- $pair.FullName -}})
     }
     {{- end }}
 
@@ -174,8 +174,8 @@ type pair{{ $pn }}{{ $fnk }} struct {
 }
 
 // parsePair{{ $pn }}{{ $fnk }} will parse Pair slice into *pair{{ $pn }}{{ $fnk }}
-func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $fnk }}, error) {
-    result := &pair{{ $pn }}{{ $fnk }}{
+func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) {
+    result := pair{{ $pn }}{{ $fnk }}{
         pairs: opts,
     }
 
@@ -203,7 +203,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $
             } else {
                  {{if ne $pn "Service" }}
                 if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} || s.pairPolicy.{{ $fnk }}{{ $pair.Name | toPascal }} {
-                    return nil, services.NewPairUnsupportedError(v)
+                    return pair{{ $pn }}{{ $fnk }}{}, services.NewPairUnsupportedError(v)
                 }
                 {{else}}
                 result.Has{{ $pair.Name | toPascal }} = false
@@ -213,7 +213,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $
         default:
             {{if ne $pn "Service" }}
             if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} {
-                return nil, services.NewPairUnsupportedError(v)
+                return pair{{ $pn }}{{ $fnk }}{}, services.NewPairUnsupportedError(v)
             }
             {{else}}
                 continue
@@ -223,7 +223,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $
 
     {{- range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
-        return nil, services.NewPairRequiredError({{- $pair.FullName -}})
+        return pair{{ $pn }}{{ $fnk }}{}, services.NewPairRequiredError({{- $pair.FullName -}})
     }
     {{- end }}
 
@@ -263,7 +263,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (*pair{{ $pn }}{{ $
             {{- end }}
             err = s.formatError("{{$fn.Name}}", err {{ $path }} )
         }()
-        var opt *pair{{ $pn }}{{ $fnk }}
+        var opt pair{{ $pn }}{{ $fnk }}
         opt, err = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
         if err != nil {
             return
