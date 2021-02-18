@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.1.0] - 2021-02-18
+
+### Added
+
+- *: Implement proposal unify object metadata (#498)
+
+### Changed
+
+- cmd/definitions: Remove parsed pairs pointer (#500)
+
+### Removed
+
+- pkg: Remove not used storageclass package
+
 ## [v3.0.0] - 2021-01-15
 
 ### Added
@@ -409,7 +423,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v3.1.0...HEAD
+[v3.1.0]: https://github.com/Xuanwo/storage/compare/v3.0.0...v3.1.0
 [v3.0.0]: https://github.com/Xuanwo/storage/compare/v2.0.0...v3.0.0
 [v2.0.0]: https://github.com/Xuanwo/storage/compare/v2.0.0-beta...v2.0.0
 [v2.0.0-beta]: https://github.com/Xuanwo/storage/compare/v2.0.0-alpha.1...v2.0.0-beta
