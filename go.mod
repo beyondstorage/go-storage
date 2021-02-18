@@ -1,6 +1,6 @@
 module github.com/aos-dev/go-storage/v3
 
-go 1.14
+go 1.15
 
 require (
 	github.com/Xuanwo/templateutils v0.0.0-20201019101431-c73b871118f2
