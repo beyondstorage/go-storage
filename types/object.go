@@ -1,6 +1,7 @@
 package types
 
 import (
+	"strings"
 	"sync/atomic"
 )
 
@@ -23,6 +24,36 @@ const (
 	// ModeAppend means this Object is a Append Object which can be used for append.
 	ModeAppend
 )
+
+// String implement Stringer for ObjectMode.
+//
+// An object with Read,Append will print like "read|append"
+func (o ObjectMode) String() string {
+	s := make([]string, 0)
+	if o.IsDir() {
+		s = append(s, "dir")
+	}
+	if o.IsRead() {
+		s = append(s, "read")
+	}
+	if o.IsLink() {
+		s = append(s, "link")
+	}
+	if o.IsPart() {
+		s = append(s, "part")
+	}
+	if o.IsBlock() {
+		s = append(s, "block")
+	}
+	if o.IsPage() {
+		s = append(s, "page")
+	}
+	if o.IsAppend() {
+		s = append(s, "append")
+	}
+
+	return strings.Join(s, "|")
+}
 
 func (o ObjectMode) IsDir() bool {
 	return o&ModeDir != 0
