@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.2.0] - 2021-02-22
+
+### Added
+
+- iowrap: Implement CallbackWriter (#502)
+- types: Implement Stringer for ObjectMode (#503)
+- service: Add template for generating default pair for each service (#504)
+
 ## [v3.1.0] - 2021-02-18
 
 ### Added
