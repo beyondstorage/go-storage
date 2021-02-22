@@ -70,10 +70,17 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     {{- $pn := index . 0 | toPascal }}
     {{- $data := index . 1 }}
 
+// Default{{ $pn }}Pairs is default pairs for specific action
+type Default{{ $pn }}Pairs struct {
+    {{- range $_, $v := $data }}
+    {{ $v.Name | toPascal }} []Pair
+    {{- end }}
+}
+
     {{- range $_, $v := $data }}
         {{- template "pair" makeSlice $pn $v}}
     {{- end }}
-{{- end}}
+{{- end }}
 
 {{- define "pair_new" }}
 {{- $pn := index . 0 }}
@@ -113,12 +120,18 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
         case {{ $pair.FullName }}:
+            if result.Has{{ $pair.Name | toPascal }} {
+                continue
+            }
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
         // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
         case {{ $pair.FullName }}:
+            if result.Has{{ $pair.Name | toPascal }} {
+                continue
+            }
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
@@ -127,10 +140,13 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         case {{ $pair.FullName }}:
             value, ok := convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
             if ok {
+                if result.Has{{ $pair.Name | toPascal }} {
+                    continue
+                }
                 result.Has{{ $pair.Name | toPascal }} = true
                 result.{{ $pair.Name | toPascal }} = value
             } else {
-                 result.Has{{ $pair.Name | toPascal }} = false
+                result.Has{{ $pair.Name | toPascal }} = false
             }
         {{- end }}
         }
@@ -263,6 +279,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             {{- end }}
             err = s.formatError("{{$fn.Name}}", err {{ $path }} )
         }()
+        pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
         var opt pair{{ $pn }}{{ $fnk }}
         opt, err = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
         if err != nil {
