@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.2.0] - 2021-02-22
+
+### Added
+
+- iowrap: Implement CallbackWriter (#502)
+- types: Implement Stringer for ObjectMode (#503)
+- service: Add template for generating default pair for each service (#504)
+
 ## [v3.1.0] - 2021-02-18
 
 ### Added
@@ -423,7 +431,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v3.2.0...HEAD
+[v3.2.0]: https://github.com/Xuanwo/storage/compare/v3.1.0...v3.2.0
 [v3.1.0]: https://github.com/Xuanwo/storage/compare/v3.0.0...v3.1.0
 [v3.0.0]: https://github.com/Xuanwo/storage/compare/v2.0.0...v3.0.0
 [v2.0.0]: https://github.com/Xuanwo/storage/compare/v2.0.0-beta...v2.0.0
