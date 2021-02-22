@@ -138,7 +138,7 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         // Generated pairs
         {{- range $_, $pair := $fn.Generated }}
         case {{ $pair.FullName }}:
-            value, ok := v.Value.({{ $pair.Type }})
+            value, ok := convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
             if ok {
                 if result.Has{{ $pair.Name | toPascal }} {
                     continue

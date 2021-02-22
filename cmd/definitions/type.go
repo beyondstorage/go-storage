@@ -456,8 +456,6 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 		Required: n.New.Required,
 		Optional: n.New.Optional,
 	}, srv.Pairs)
-	// add default pairs into generated
-	ns.New.Generated = append(ns.New.Generated, srv.Pairs[defaultPairName(n.Name)])
 
 	// Handle other interfaces.
 	fns := make(map[string]*Function)
@@ -529,35 +527,12 @@ func (d *Data) FormatService(s specs.Service) *Service {
 	}
 
 	for _, v := range s.Namespaces {
-		// merge default pairs into service
-		pair := generateDefaultPair(v.Name)
-		srv.Pairs = mergePairs(srv.Pairs, map[string]*Pair{
-			pair.Name: &pair,
-		})
-
 		ns := d.FormatNamespace(srv, v)
 
 		srv.Namespaces = append(srv.Namespaces, ns)
 	}
 
 	return srv
-}
-
-// defaultPairName format default pair name with given namespace
-func defaultPairName(namespace string) string {
-	return fmt.Sprintf("default_%s_pairs", namespace)
-}
-
-// generateDefaultPair format Pair with given namespace
-func generateDefaultPair(namespace string) Pair {
-	defaultPairName := defaultPairName(namespace)
-	defaultPairDesc := fmt.Sprintf("set default pairs for %s actions", namespace)
-	return Pair{
-		Name:        defaultPairName,
-		ptype:       templateutils.ToPascal(defaultPairName),
-		Global:      false,
-		Description: formatDescription(templateutils.ToPascal(defaultPairName), defaultPairDesc),
-	}
 }
 
 // Sort will sort the data.
