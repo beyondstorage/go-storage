@@ -23,6 +23,13 @@ const Type = "{{ .Name }}"
 
 // Service available pairs.
 const (
+// default pairs
+{{- range $_, $v := .Namespaces }}
+    {{- $pn := $v.Name | toPascal}}
+    // pairDefault{{ $pn }}Pairs set default pairs for {{ $v.Name }} actions
+    pairDefault{{ $pn }}Pairs = "{{ $.Name }}_default_{{ $v.Name }}_pair"
+{{- end }}
+
 {{- range $_, $v := .Pairs }}
     {{- if not $v.Global }}
     {{ $v.Description }}
@@ -46,6 +53,17 @@ const (
 )
 
 
+{{- range $_, $v := .Namespaces }}
+{{- $pn := $v.Name | toPascal }}
+    // WithDefault{{ $pn }}Pairs will apply default {{ $v.Name }} paris to Options
+    func WithDefault{{ $pn }}Pairs(v Default{{ $pn }}Pairs) Pair {
+            return Pair{
+            Key: pairDefault{{ $pn }}Pairs,
+            Value: v,
+        }
+    }
+{{- end }}
+
 {{- range $_, $v := .Pairs }}
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
@@ -63,7 +81,20 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 {{- range $_, $v := .Namespaces }}
     {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New }}
     {{- template "pairs" makeSlice $v.Name $v.Funcs }}
+    {{- template "default_pairs" makeSlice $v.Name $v.Funcs }}
     {{- template "functions" makeSlice $v.Name $v.Funcs }}
+{{- end }}
+
+{{- define "default_pairs" }}
+    {{- $pno := index . 0 }}
+    {{- $pn := index . 0 | toPascal }}
+    {{- $data := index . 1 }}
+// Default{{ $pn }}Pairs is default pairs for specific action
+type Default{{ $pn }}Pairs struct {
+    {{- range $_, $v := $data }}
+    {{ $v.Name | toPascal }} []Pair
+    {{- end }}
+}
 {{- end }}
 
 {{- define "pairs" }}
@@ -73,7 +104,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     {{- range $_, $v := $data }}
         {{- template "pair" makeSlice $pn $v}}
     {{- end }}
-{{- end}}
+{{- end }}
 
 {{- define "pair_new" }}
 {{- $pn := index . 0 }}
@@ -90,6 +121,9 @@ type pair{{ $pn }}{{$fnk}} struct {
     Has{{ $pair.Name | toPascal }}   bool
     {{ $pair.Name | toPascal }}    {{ $pair.Type }}
     {{- end }}
+    // Generated pairs
+    HasDefault{{ $pn }}Pairs     bool
+    Default{{ $pn }}Pairs        Default{{ $pn }}Pairs
     // Optional pairs
     {{- range $_, $pair := $fn.Optional }}
     Has{{ $pair.Name | toPascal }}   bool
@@ -113,12 +147,22 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
         case {{ $pair.FullName }}:
+            if result.Has{{ $pair.Name | toPascal }} {
+                continue
+            }
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
+        // Default pairs
+        case pairDefault{{ $pn }}Pairs:
+            result.HasDefault{{ $pn }}Pairs = true
+            result.Default{{ $pn }}Pairs = v.Value.(Default{{ $pn }}Pairs)
         // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
         case {{ $pair.FullName }}:
+            if result.Has{{ $pair.Name | toPascal }} {
+                continue
+            }
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
@@ -127,10 +171,13 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         case {{ $pair.FullName }}:
             value, ok := convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
             if ok {
+                if result.Has{{ $pair.Name | toPascal }} {
+                    continue
+                }
                 result.Has{{ $pair.Name | toPascal }} = true
                 result.{{ $pair.Name | toPascal }} = value
             } else {
-                 result.Has{{ $pair.Name | toPascal }} = false
+                result.Has{{ $pair.Name | toPascal }} = false
             }
         {{- end }}
         }
@@ -263,6 +310,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             {{- end }}
             err = s.formatError("{{$fn.Name}}", err {{ $path }} )
         }()
+        pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
         var opt pair{{ $pn }}{{ $fnk }}
         opt, err = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
         if err != nil {
