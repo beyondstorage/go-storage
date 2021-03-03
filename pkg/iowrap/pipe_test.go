@@ -9,24 +9,37 @@ import (
 )
 
 func TestPipe(t *testing.T) {
-	expected := make([]byte, 16*1024*1024)
-	_, err := randbytes.NewRand().Read(expected)
-	if err != nil {
-		t.Error(err)
+	cases := []struct {
+		name string
+		size int
+	}{
+		{"1B", 1},
+		{"4k", 4 * 1024},
+		{"16m", 16 * 1024 * 1024},
 	}
 
-	r, w := Pipe()
-	io.Pipe()
+	for _, v := range cases {
+		t.Run(v.name, func(t *testing.T) {
+			expected := make([]byte, v.size)
+			_, err := randbytes.NewRand().Read(expected)
+			if err != nil {
+				t.Error(err)
+			}
 
-	go func() {
-		defer w.Close()
+			r, w := Pipe()
+			io.Pipe()
 
-		_, _ = w.Write(expected)
-	}()
+			go func() {
+				defer w.Close()
 
-	actual, err := ioutil.ReadAll(r)
-	if err != nil {
-		t.Error(err)
+				_, _ = w.Write(expected)
+			}()
+
+			actual, err := ioutil.ReadAll(r)
+			if err != nil {
+				t.Error(err)
+			}
+			assert.EqualValues(t, expected, actual)
+		})
 	}
-	assert.EqualValues(t, expected, actual)
 }

@@ -12,12 +12,6 @@ import (
 // It can be used to connect code expecting an io.Reader
 // with code expecting an io.Writer.
 //
-// Reads and Writes on the pipe are matched one to one
-// except when multiple Reads are needed to consume a single Write.
-// That is, each Write to the PipeWriter blocks until it has satisfied
-// one or more Reads from the PipeReader that fully consume
-// the written data.
-//
 // NOTES:
 //   - PipeReader and PipeWriter is not thread safe
 //   - Internal buffer will never be grow up, so write could be block while no space to write.
@@ -92,7 +86,7 @@ func (r *PipeReader) Read(p []byte) (n int, err error) {
 		r.rwait.Wait()
 	}
 
-	n = copy(p, r.buf[r.offset:])
+	n = copy(p, r.buf[r.offset:r.size])
 	r.offset += n
 	return n, nil
 }
