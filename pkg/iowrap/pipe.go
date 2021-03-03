@@ -43,9 +43,6 @@ type bufpipe struct {
 	wwait sync.Cond
 	rwait sync.Cond
 
-	wl sync.Mutex
-	rl sync.Mutex
-
 	werr error
 	rerr error
 }
@@ -71,9 +68,6 @@ type PipeReader struct {
 }
 
 func (r *PipeReader) Read(p []byte) (n int, err error) {
-	r.rl.Lock()
-	defer r.rl.Unlock()
-
 	// Lock here to prevent concurrent read/write on buffer.
 	r.l.Lock()
 	// Send signal to wwait to allow next write.
