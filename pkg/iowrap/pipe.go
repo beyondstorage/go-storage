@@ -43,6 +43,9 @@ type bufpipe struct {
 	wwait sync.Cond
 	rwait sync.Cond
 
+	wl sync.Mutex
+	rl sync.Mutex
+
 	werr error
 	rerr error
 }
@@ -68,6 +71,9 @@ type PipeReader struct {
 }
 
 func (r *PipeReader) Read(p []byte) (n int, err error) {
+	r.rl.Lock()
+	defer r.rl.Unlock()
+
 	// Lock here to prevent concurrent read/write on buffer.
 	r.l.Lock()
 	// Send signal to wwait to allow next write.
@@ -107,7 +113,14 @@ func (r *PipeReader) CloseWithError(err error) {
 	if err == nil {
 		err = io.ErrClosedPipe
 	}
-	r.rerr = err
+
+	r.l.Lock()
+	defer r.l.Unlock()
+	if r.rerr == nil {
+		r.rerr = err
+		r.rwait.Signal()
+		r.wwait.Signal()
+	}
 	return
 }
 
@@ -160,6 +173,13 @@ func (w *PipeWriter) CloseWithError(err error) {
 	if err == nil {
 		err = io.EOF
 	}
-	w.werr = err
+
+	w.l.Lock()
+	defer w.l.Unlock()
+	if w.werr == nil {
+		w.werr = err
+		w.rwait.Signal()
+		w.wwait.Signal()
+	}
 	return
 }
