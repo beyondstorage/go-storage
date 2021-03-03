@@ -2,6 +2,7 @@ package iowrap
 
 import (
 	"io"
+	"io/ioutil"
 	"testing"
 
 	"github.com/aos-dev/go-storage/v3/pkg/randbytes"
@@ -28,7 +29,7 @@ func BenchmarkStdPipe(b *testing.B) {
 			r, w := io.Pipe()
 
 			go func() {
-				_, _ = io.Copy(io.Discard, r)
+				_, _ = io.Copy(ioutil.Discard, r)
 			}()
 
 			b.SetBytes(int64(v.size))
@@ -62,7 +63,7 @@ func BenchmarkIowrapPipe(b *testing.B) {
 			r, w := Pipe()
 
 			go func() {
-				_, _ = io.Copy(io.Discard, r)
+				_, _ = io.Copy(ioutil.Discard, r)
 			}()
 
 			b.SetBytes(int64(v.size))

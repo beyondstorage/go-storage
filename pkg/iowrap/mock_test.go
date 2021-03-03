@@ -5,34 +5,35 @@
 package iowrap
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockReader is a mock of Reader interface
+// MockReader is a mock of Reader interface.
 type MockReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockReaderMockRecorder
 }
 
-// MockReaderMockRecorder is the mock recorder for MockReader
+// MockReaderMockRecorder is the mock recorder for MockReader.
 type MockReaderMockRecorder struct {
 	mock *MockReader
 }
 
-// NewMockReader creates a new mock instance
+// NewMockReader creates a new mock instance.
 func NewMockReader(ctrl *gomock.Controller) *MockReader {
 	mock := &MockReader{ctrl: ctrl}
 	mock.recorder = &MockReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockReader) EXPECT() *MockReaderMockRecorder {
 	return m.recorder
 }
 
-// Read mocks base method
+// Read mocks base method.
 func (m *MockReader) Read(arg0 []byte) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", arg0)
@@ -41,36 +42,36 @@ func (m *MockReader) Read(arg0 []byte) (int, error) {
 	return ret0, ret1
 }
 
-// Read indicates an expected call of Read
+// Read indicates an expected call of Read.
 func (mr *MockReaderMockRecorder) Read(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockReader)(nil).Read), arg0)
 }
 
-// MockCloser is a mock of Closer interface
+// MockCloser is a mock of Closer interface.
 type MockCloser struct {
 	ctrl     *gomock.Controller
 	recorder *MockCloserMockRecorder
 }
 
-// MockCloserMockRecorder is the mock recorder for MockCloser
+// MockCloserMockRecorder is the mock recorder for MockCloser.
 type MockCloserMockRecorder struct {
 	mock *MockCloser
 }
 
-// NewMockCloser creates a new mock instance
+// NewMockCloser creates a new mock instance.
 func NewMockCloser(ctrl *gomock.Controller) *MockCloser {
 	mock := &MockCloser{ctrl: ctrl}
 	mock.recorder = &MockCloserMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCloser) EXPECT() *MockCloserMockRecorder {
 	return m.recorder
 }
 
-// Close mocks base method
+// Close mocks base method.
 func (m *MockCloser) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
@@ -78,36 +79,36 @@ func (m *MockCloser) Close() error {
 	return ret0
 }
 
-// Close indicates an expected call of Close
+// Close indicates an expected call of Close.
 func (mr *MockCloserMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockCloser)(nil).Close))
 }
 
-// MockReaderAt is a mock of ReaderAt interface
+// MockReaderAt is a mock of ReaderAt interface.
 type MockReaderAt struct {
 	ctrl     *gomock.Controller
 	recorder *MockReaderAtMockRecorder
 }
 
-// MockReaderAtMockRecorder is the mock recorder for MockReaderAt
+// MockReaderAtMockRecorder is the mock recorder for MockReaderAt.
 type MockReaderAtMockRecorder struct {
 	mock *MockReaderAt
 }
 
-// NewMockReaderAt creates a new mock instance
+// NewMockReaderAt creates a new mock instance.
 func NewMockReaderAt(ctrl *gomock.Controller) *MockReaderAt {
 	mock := &MockReaderAt{ctrl: ctrl}
 	mock.recorder = &MockReaderAtMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockReaderAt) EXPECT() *MockReaderAtMockRecorder {
 	return m.recorder
 }
 
-// ReadAt mocks base method
+// ReadAt mocks base method.
 func (m *MockReaderAt) ReadAt(arg0 []byte, arg1 int64) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadAt", arg0, arg1)
@@ -116,36 +117,36 @@ func (m *MockReaderAt) ReadAt(arg0 []byte, arg1 int64) (int, error) {
 	return ret0, ret1
 }
 
-// ReadAt indicates an expected call of ReadAt
+// ReadAt indicates an expected call of ReadAt.
 func (mr *MockReaderAtMockRecorder) ReadAt(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAt", reflect.TypeOf((*MockReaderAt)(nil).ReadAt), arg0, arg1)
 }
 
-// MockSeeker is a mock of Seeker interface
+// MockSeeker is a mock of Seeker interface.
 type MockSeeker struct {
 	ctrl     *gomock.Controller
 	recorder *MockSeekerMockRecorder
 }
 
-// MockSeekerMockRecorder is the mock recorder for MockSeeker
+// MockSeekerMockRecorder is the mock recorder for MockSeeker.
 type MockSeekerMockRecorder struct {
 	mock *MockSeeker
 }
 
-// NewMockSeeker creates a new mock instance
+// NewMockSeeker creates a new mock instance.
 func NewMockSeeker(ctrl *gomock.Controller) *MockSeeker {
 	mock := &MockSeeker{ctrl: ctrl}
 	mock.recorder = &MockSeekerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSeeker) EXPECT() *MockSeekerMockRecorder {
 	return m.recorder
 }
 
-// Seek mocks base method
+// Seek mocks base method.
 func (m *MockSeeker) Seek(arg0 int64, arg1 int) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Seek", arg0, arg1)
@@ -154,36 +155,36 @@ func (m *MockSeeker) Seek(arg0 int64, arg1 int) (int64, error) {
 	return ret0, ret1
 }
 
-// Seek indicates an expected call of Seek
+// Seek indicates an expected call of Seek.
 func (mr *MockSeekerMockRecorder) Seek(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Seek", reflect.TypeOf((*MockSeeker)(nil).Seek), arg0, arg1)
 }
 
-// MockWriter is a mock of Writer interface
+// MockWriter is a mock of Writer interface.
 type MockWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockWriterMockRecorder
 }
 
-// MockWriterMockRecorder is the mock recorder for MockWriter
+// MockWriterMockRecorder is the mock recorder for MockWriter.
 type MockWriterMockRecorder struct {
 	mock *MockWriter
 }
 
-// NewMockWriter creates a new mock instance
+// NewMockWriter creates a new mock instance.
 func NewMockWriter(ctrl *gomock.Controller) *MockWriter {
 	mock := &MockWriter{ctrl: ctrl}
 	mock.recorder = &MockWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockWriter) EXPECT() *MockWriterMockRecorder {
 	return m.recorder
 }
 
-// Write mocks base method
+// Write mocks base method.
 func (m *MockWriter) Write(arg0 []byte) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Write", arg0)
@@ -192,7 +193,7 @@ func (m *MockWriter) Write(arg0 []byte) (int, error) {
 	return ret0, ret1
 }
 
-// Write indicates an expected call of Write
+// Write indicates an expected call of Write.
 func (mr *MockWriterMockRecorder) Write(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockWriter)(nil).Write), arg0)

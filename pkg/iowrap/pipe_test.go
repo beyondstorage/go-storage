@@ -4,6 +4,7 @@ import (
 	"github.com/aos-dev/go-storage/v3/pkg/randbytes"
 	"github.com/stretchr/testify/assert"
 	"io"
+	"io/ioutil"
 	"testing"
 )
 
@@ -23,7 +24,7 @@ func TestPipe(t *testing.T) {
 		_, _ = w.Write(expected)
 	}()
 
-	actual, err := io.ReadAll(r)
+	actual, err := ioutil.ReadAll(r)
 	if err != nil {
 		t.Error(err)
 	}
