@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.3.0] - 2021-03-04
+
+### Added
+
+- pkg/iowrap: Implement Pipe (#508)
+- types: Add "New" operation to create an object locally (#509)
+
 ## [v3.2.0] - 2021-02-22
 
 ### Added
@@ -431,7 +438,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/Xuanwo/storage/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/Xuanwo/storage/compare/v3.3.0...HEAD
+[v3.3.0]: https://github.com/Xuanwo/storage/compare/v3.2.0...v3.3.0
 [v3.2.0]: https://github.com/Xuanwo/storage/compare/v3.1.0...v3.2.0
 [v3.1.0]: https://github.com/Xuanwo/storage/compare/v3.0.0...v3.1.0
 [v3.0.0]: https://github.com/Xuanwo/storage/compare/v2.0.0...v3.0.0
