@@ -171,12 +171,14 @@ type Operation struct {
 	Pairs       []string
 	Params      Fields
 	Results     Fields
+	Local       bool
 }
 
 // NewOperation will create an new operation from operation spec.
 func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
 	op := &Operation{
 		Name:        v.Name,
+		Local:       v.Local,
 		Description: formatDescription("", v.Description),
 	}
 	for _, f := range v.Params {
@@ -188,8 +190,11 @@ func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
 	for _, f := range v.Results {
 		op.Results = append(op.Results, fields[f])
 	}
-	// Inject error
-	op.Results = append(op.Results, fields["err"])
+	// As long as the function is not local, an error may be occur
+	if !op.Local {
+		// Inject error for non-local functions.
+		op.Results = append(op.Results, fields["err"])
+	}
 
 	// Add pairs
 	op.Pairs = v.Pairs
