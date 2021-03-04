@@ -1,7 +1,7 @@
 github.com/Xuanwo/templateutils v0.0.0-20201216100309-46f73cd4e4b1 h1:SQ8kQujQ0yl39YBMU0xZ+yyfxx/qSWfGWlCPNzHp5kw=
 github.com/Xuanwo/templateutils v0.0.0-20201216100309-46f73cd4e4b1/go.mod h1:x0qS7gfgEm24b8V9U+0zBEBAu/VpxZhO/+EWtpgEgDw=
-github.com/aos-dev/specs/go v0.0.0-20210304071525-10359b2459a5 h1:pHz4FJVtzlxd4lou1qjU3MsSeWiWv3v9rNdxMjzkp5Q=
-github.com/aos-dev/specs/go v0.0.0-20210304071525-10359b2459a5/go.mod h1:XTNlLZtPA1inITyDH5hNnQXVjvvKUvo+lurs5GYB8NA=
+github.com/aos-dev/specs/go v0.0.0-20210304082749-d044cb2d3362 h1:QqfusB82p+7kHhzXMW/z9V+QHob3CIRxLwUY+L9Qk84=
+github.com/aos-dev/specs/go v0.0.0-20210304082749-d044cb2d3362/go.mod h1:XTNlLZtPA1inITyDH5hNnQXVjvvKUvo+lurs5GYB8NA=
 github.com/dave/dst v0.26.2 h1:lnxLAKI3tx7MgLNVDirFCsDTlTG9nKTk7GcptKcWSwY=
 github.com/dave/dst v0.26.2/go.mod h1:UMDJuIRPfyUCC78eFuB+SV/WI8oDeyFDvM/JR6NI3IU=
 github.com/dave/gopackages v0.0.0-20170318123100-46e7023ec56e/go.mod h1:i00+b/gKdIDIxuLDFob7ustLAVqhsZRk2qVZrArELGQ=
