@@ -1,8 +1,14 @@
 {{- range $_, $v := $.Funcs }}
 {{- if not $v.Implemented }}
 {{- $fnk := $v.Name | toCamel }}
+{{ if $v.Local }}
+func (s *{{ $.Name | toPascal }}) {{$fnk}}({{$v.Params.TrimLast.StringEndswithComma}} opt pair{{ $.Name | toPascal }}{{ $fnk | toPascal }})({{$v.Results.String}}) {
+    panic("not implemented")
+}
+{{ else }}
 func (s *{{ $.Name | toPascal }}) {{$fnk}}(ctx context.Context, {{$v.Params.TrimLast.StringEndswithComma}} opt pair{{ $.Name | toPascal }}{{ $fnk | toPascal }})({{$v.Results.String}}) {
     panic("not implemented")
 }
+{{- end }}
 {{- end }}
 {{- end }}
