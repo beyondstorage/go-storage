@@ -28,7 +28,7 @@ generate:
 	@go fmt ./...
 	@echo "ok"
 
-build: generate tidy check
+build: tidy generate check
 	@echo "build storage"
 	@go build -tags tools ./...
 	@echo "ok"

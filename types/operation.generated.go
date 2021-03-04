@@ -161,6 +161,9 @@ type Storager interface {
 	// MetadataWithContext will return current storager metadata.
 	MetadataWithContext(ctx context.Context, pairs ...Pair) (meta *StorageMeta, err error)
 
+	// New will create a new object without any api call.
+	New(path string, pairs ...Pair) (o *Object)
+
 	// Read will read the file's data.
 	Read(path string, w io.Writer, pairs ...Pair) (n int64, err error)
 	// ReadWithContext will read the file's data.
@@ -217,6 +220,7 @@ type PairPolicy struct {
 	List             bool
 	ListListMode     bool
 	Metadata         bool
+	New              bool
 	Read             bool
 	ReadSize         bool
 	ReadOffset       bool
