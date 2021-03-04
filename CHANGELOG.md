@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.4.1] - 2021-03-04
+
+### Fixed
+
+- cmd: Fix support for local function generation (#513)
+
 ## [v3.4.0] - 2021-03-04
 
 ### Fixed
@@ -444,7 +450,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.4.0...HEAD
+[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.4.1...HEAD
+[v3.4.1]: https://github.com/aos-dev/go-storage/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/aos-dev/go-storage/compare/v3.3.0...v3.4.0
 [v3.3.0]: https://github.com/aos-dev/go-storage/compare/v3.2.0...v3.3.0
 [v3.2.0]: https://github.com/aos-dev/go-storage/compare/v3.1.0...v3.2.0
