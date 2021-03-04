@@ -146,6 +146,9 @@ type Servicer interface {
 type Storager interface {
 	String() string
 
+	// Create will create a new object without any api call.
+	Create(path string, pairs ...Pair) (o *Object)
+
 	// Delete will delete an Object from service.
 	Delete(path string, pairs ...Pair) (err error)
 	// DeleteWithContext will delete an Object from service.
@@ -160,9 +163,6 @@ type Storager interface {
 	Metadata(pairs ...Pair) (meta *StorageMeta, err error)
 	// MetadataWithContext will return current storager metadata.
 	MetadataWithContext(ctx context.Context, pairs ...Pair) (meta *StorageMeta, err error)
-
-	// New will create a new object without any api call.
-	New(path string, pairs ...Pair) (o *Object)
 
 	// Read will read the file's data.
 	Read(path string, w io.Writer, pairs ...Pair) (n int64, err error)
@@ -216,11 +216,11 @@ type PairPolicy struct {
 	Reach bool
 
 	// pairs for interface Storager
+	Create           bool
 	Delete           bool
 	List             bool
 	ListListMode     bool
 	Metadata         bool
-	New              bool
 	Read             bool
 	ReadSize         bool
 	ReadOffset       bool
