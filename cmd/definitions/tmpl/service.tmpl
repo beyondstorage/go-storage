@@ -252,7 +252,11 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
     {{- $data := index . 1 }}
 
     {{- range $_, $v := $data }}
+        {{- if $v.Local }}
+        {{- template "local_function" makeSlice $pn $v}}
+        {{- else }}
         {{- template "function" makeSlice $pn $v}}
+        {{- end }}
     {{- end }}
 {{- end }}
 
@@ -272,6 +276,9 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
 
     // {{ $fnk }}WithContext {{ $fn.Description }}
     func (s *{{$pn}}) {{ $fnk }}WithContext(ctx context.Context, {{$fn.Params.String}}) ({{$fn.Results.String}}) {
+        pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
+        var opt pair{{ $pn }}{{ $fnk }}
+
         defer func(){
             {{- $path := $fn.Params.PathCaller }}
             {{- if and (eq $path "") (eq $pn "Service") }}
@@ -279,13 +286,32 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             {{- end }}
             err = s.formatError("{{$fn.Name}}", err {{ $path }} )
         }()
-        pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
-        var opt pair{{ $pn }}{{ $fnk }}
+
         opt, err = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
         if err != nil {
             return
         }
 
         return s.{{  $fn.Name | toCamel }}(ctx, {{$fn.Params.TrimLast.CallerEndswithComma}} opt)
+    }
+{{- end }}
+
+{{- define "local_function" }}
+    {{- $pn := index . 0 }}
+    {{- $fn := index . 1 }}
+
+    {{ $fnk := $fn.Name | toPascal }}
+
+    // {{ $fnk }} {{ $fn.Description }}
+    //
+    // This function will create a context by default.
+    func (s *{{$pn}}) {{ $fnk }}({{$fn.Params.String}}) ({{$fn.Results.String}}) {
+        pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
+        var opt pair{{ $pn }}{{ $fnk }}
+
+        // Ignore error while handling local funtions.
+        opt, _ = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
+
+        return s.{{  $fn.Name | toCamel }}({{$fn.Params.TrimLast.CallerEndswithComma}} opt)
     }
 {{- end }}
