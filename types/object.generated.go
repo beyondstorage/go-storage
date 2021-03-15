@@ -9,18 +9,21 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexContentLength   uint64 = 1 << 0
-	objectIndexContentMd5      uint64 = 1 << 1
-	objectIndexContentType     uint64 = 1 << 2
-	objectIndexEtag            uint64 = 1 << 3
-	objectIndexID              uint64 = 1 << 4
-	objectIndexLastModified    uint64 = 1 << 5
-	objectIndexLinkTarget      uint64 = 1 << 6
-	objectIndexMode            uint64 = 1 << 7
-	objectIndexMultipartID     uint64 = 1 << 8
-	objectIndexPath            uint64 = 1 << 9
-	objectIndexServiceMetadata uint64 = 1 << 10
-	objectIndexUserMetadata    uint64 = 1 << 11
+	objectIndexContentLength          uint64 = 1 << 0
+	objectIndexContentMd5             uint64 = 1 << 1
+	objectIndexContentType            uint64 = 1 << 2
+	objectIndexEtag                   uint64 = 1 << 3
+	objectIndexID                     uint64 = 1 << 4
+	objectIndexLastModified           uint64 = 1 << 5
+	objectIndexLinkTarget             uint64 = 1 << 6
+	objectIndexMode                   uint64 = 1 << 7
+	objectIndexMultipartID            uint64 = 1 << 8
+	objectIndexMultipartNumberMaximum uint64 = 1 << 9
+	objectIndexMultipartSizeMaximum   uint64 = 1 << 10
+	objectIndexMultipartSizeMinimum   uint64 = 1 << 11
+	objectIndexPath                   uint64 = 1 << 12
+	objectIndexServiceMetadata        uint64 = 1 << 13
+	objectIndexUserMetadata           uint64 = 1 << 14
 )
 
 // Object is the smallest unit in go-storage.
@@ -42,6 +45,12 @@ type Object struct {
 	Mode       ObjectMode
 	// MultipartID is the part id of part object.
 	multipartID string
+	// Maximum part number in multipart operation
+	multipartNumberMaximum int
+	// Maximum part size defined by storager
+	multipartSizeMaximum int64
+	// Minimum part size defined by storager
+	multipartSizeMinimum int64
 	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Path string
 	// ServiceMetadata stores service defined metadata
@@ -248,6 +257,81 @@ func (o *Object) SetMultipartID(v string) *Object {
 	o.bit |= objectIndexMultipartID
 	return o
 }
+
+func (o *Object) GetMultipartNumberMaximum() (int, bool) {
+	o.stat()
+
+	if o.bit&objectIndexMultipartNumberMaximum != 0 {
+		return o.multipartNumberMaximum, true
+	}
+
+	return 0, false
+}
+
+func (o *Object) MustGetMultipartNumberMaximum() int {
+	o.stat()
+
+	if o.bit&objectIndexMultipartNumberMaximum == 0 {
+		panic(fmt.Sprintf("object multipart-number-maximum is not set"))
+	}
+	return o.multipartNumberMaximum
+}
+
+func (o *Object) SetMultipartNumberMaximum(v int) *Object {
+	o.multipartNumberMaximum = v
+	o.bit |= objectIndexMultipartNumberMaximum
+	return o
+}
+
+func (o *Object) GetMultipartSizeMaximum() (int64, bool) {
+	o.stat()
+
+	if o.bit&objectIndexMultipartSizeMaximum != 0 {
+		return o.multipartSizeMaximum, true
+	}
+
+	return 0, false
+}
+
+func (o *Object) MustGetMultipartSizeMaximum() int64 {
+	o.stat()
+
+	if o.bit&objectIndexMultipartSizeMaximum == 0 {
+		panic(fmt.Sprintf("object multipart-size-maximum is not set"))
+	}
+	return o.multipartSizeMaximum
+}
+
+func (o *Object) SetMultipartSizeMaximum(v int64) *Object {
+	o.multipartSizeMaximum = v
+	o.bit |= objectIndexMultipartSizeMaximum
+	return o
+}
+
+func (o *Object) GetMultipartSizeMinimum() (int64, bool) {
+	o.stat()
+
+	if o.bit&objectIndexMultipartSizeMinimum != 0 {
+		return o.multipartSizeMinimum, true
+	}
+
+	return 0, false
+}
+
+func (o *Object) MustGetMultipartSizeMinimum() int64 {
+	o.stat()
+
+	if o.bit&objectIndexMultipartSizeMinimum == 0 {
+		panic(fmt.Sprintf("object multipart-size-minimum is not set"))
+	}
+	return o.multipartSizeMinimum
+}
+
+func (o *Object) SetMultipartSizeMinimum(v int64) *Object {
+	o.multipartSizeMinimum = v
+	o.bit |= objectIndexMultipartSizeMinimum
+	return o
+}
 func (o *Object) GetPath() string {
 	return o.Path
 }
@@ -317,6 +401,9 @@ func (o *Object) clone(xo *Object) {
 	o.linkTarget = xo.linkTarget
 	o.Mode = xo.Mode
 	o.multipartID = xo.multipartID
+	o.multipartNumberMaximum = xo.multipartNumberMaximum
+	o.multipartSizeMaximum = xo.multipartSizeMaximum
+	o.multipartSizeMinimum = xo.multipartSizeMinimum
 	o.Path = xo.Path
 	o.serviceMetadata = xo.serviceMetadata
 	o.userMetadata = xo.userMetadata
