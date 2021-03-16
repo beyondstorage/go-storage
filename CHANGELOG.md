@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.4.2] - 2021-03-16
+
+### Added
+
+- object: Add Multipart related fields into object (#516)
+
 ## [v3.4.1] - 2021-03-04
 
 ### Fixed
@@ -450,7 +456,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.4.1...HEAD
+[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.4.2...HEAD
+[v3.4.2]: https://github.com/aos-dev/go-storage/compare/v3.4.1...v3.4.2
 [v3.4.1]: https://github.com/aos-dev/go-storage/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/aos-dev/go-storage/compare/v3.3.0...v3.4.0
 [v3.3.0]: https://github.com/aos-dev/go-storage/compare/v3.2.0...v3.3.0
