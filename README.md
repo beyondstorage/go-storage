@@ -85,7 +85,7 @@ import (
 
     "github.com/aos-dev/go-storage/v3"
     "github.com/aos-dev/go-storage/v3/pairs"
-    "github.com/aos-dev/go-services-fs"
+    "github.com/aos-dev/go-service-fs/v2"
 )
 
 // Init a service.
