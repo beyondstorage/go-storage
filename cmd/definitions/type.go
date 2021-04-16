@@ -34,15 +34,38 @@ type Data struct {
 type Service struct {
 	Name       string
 	Namespaces []*Namespace
-	Pairs      map[string]*Pair
+	pairs      map[string]*Pair
 	Infos      []*Info
 }
 
 // Sort will sort the service
 func (s *Service) Sort() {
+	// Make sure namespaces sorted by name.
+	sort.Slice(s.Namespaces, func(i, j int) bool {
+		n := s.Namespaces
+
+		return n[i].Name < n[j].Name
+	})
+
 	for _, v := range s.Namespaces {
 		v.Sort()
 	}
+}
+
+// Pairs returns a sorted pair.
+func (s *Service) Pairs() []*Pair {
+	keys := make([]string, 0, len(s.pairs))
+
+	for k := range s.pairs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	ps := make([]*Pair, 0, len(s.pairs))
+	for _, v := range keys {
+		ps = append(ps, s.pairs[v])
+	}
+	return ps
 }
 
 // Namespace contains all info about a namespace
@@ -460,7 +483,7 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 	ns.New.Format(specs.Op{
 		Required: n.New.Required,
 		Optional: n.New.Optional,
-	}, srv.Pairs)
+	}, srv.pairs)
 
 	// Handle other interfaces.
 	fns := make(map[string]*Function)
@@ -480,7 +503,7 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 	}
 
 	for _, v := range n.Op {
-		fns[v.Name].Format(v, srv.Pairs)
+		fns[v.Name].Format(v, srv.pairs)
 	}
 
 	implemented := parseFunc(n.Name)
@@ -512,7 +535,7 @@ func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 			if existPairs[ps] {
 				continue
 			}
-			pair, ok := srv.Pairs[ps]
+			pair, ok := srv.pairs[ps]
 			if !ok {
 				log.Fatalf("pair %s is not exist", ps)
 			}
@@ -527,7 +550,7 @@ func (d *Data) FormatService(s specs.Service) *Service {
 
 	srv := &Service{
 		Name:  s.Name,
-		Pairs: mergePairs(d.Pairs, d.FormatPairs(s.Pairs, false)),
+		pairs: mergePairs(d.Pairs, d.FormatPairs(s.Pairs, false)),
 		Infos: mergeInfos(d.Infos, d.FormatInfos(s.Infos, false)),
 	}
 
