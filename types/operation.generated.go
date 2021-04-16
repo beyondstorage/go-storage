@@ -19,6 +19,31 @@ type Appender interface {
 	WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 }
 
+// UnimplementedAppender must be embedded to have forward compatible implementations.
+type UnimplementedAppender struct{}
+
+func (s UnimplementedAppender) String() string {
+	return "UnimplementedAppender"
+}
+
+func (s UnimplementedAppender) CreateAppend(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_append")
+	return
+}
+func (s UnimplementedAppender) CreateAppendWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_append")
+	return
+}
+
+func (s UnimplementedAppender) WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_append")
+	return
+}
+func (s UnimplementedAppender) WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_append")
+	return
+}
+
 // Blocker is the interface for Block related operations.
 type Blocker interface {
 
@@ -43,6 +68,49 @@ type Blocker interface {
 	WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
 }
 
+// UnimplementedBlocker must be embedded to have forward compatible implementations.
+type UnimplementedBlocker struct{}
+
+func (s UnimplementedBlocker) String() string {
+	return "UnimplementedBlocker"
+}
+
+func (s UnimplementedBlocker) CombineBlock(o *Object, bids []string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("combine_block")
+	return
+}
+func (s UnimplementedBlocker) CombineBlockWithContext(ctx context.Context, o *Object, bids []string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("combine_block")
+	return
+}
+
+func (s UnimplementedBlocker) CreateBlock(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_block")
+	return
+}
+func (s UnimplementedBlocker) CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_block")
+	return
+}
+
+func (s UnimplementedBlocker) ListBlock(o *Object, pairs ...Pair) (bi *BlockIterator, err error) {
+	err = NewOperationNotImplementedError("list_block")
+	return
+}
+func (s UnimplementedBlocker) ListBlockWithContext(ctx context.Context, o *Object, pairs ...Pair) (bi *BlockIterator, err error) {
+	err = NewOperationNotImplementedError("list_block")
+	return
+}
+
+func (s UnimplementedBlocker) WriteBlock(o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_block")
+	return
+}
+func (s UnimplementedBlocker) WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_block")
+	return
+}
+
 // Copier is the interface for Copy.
 type Copier interface {
 
@@ -50,6 +118,22 @@ type Copier interface {
 	Copy(src string, dst string, pairs ...Pair) (err error)
 	// CopyWithContext will copy an Object or multiple object in the service.
 	CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
+}
+
+// UnimplementedCopier must be embedded to have forward compatible implementations.
+type UnimplementedCopier struct{}
+
+func (s UnimplementedCopier) String() string {
+	return "UnimplementedCopier"
+}
+
+func (s UnimplementedCopier) Copy(src string, dst string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("copy")
+	return
+}
+func (s UnimplementedCopier) CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("copy")
+	return
 }
 
 // Fetcher is the interface for Fetch.
@@ -61,6 +145,22 @@ type Fetcher interface {
 	FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error)
 }
 
+// UnimplementedFetcher must be embedded to have forward compatible implementations.
+type UnimplementedFetcher struct{}
+
+func (s UnimplementedFetcher) String() string {
+	return "UnimplementedFetcher"
+}
+
+func (s UnimplementedFetcher) Fetch(path string, url string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("fetch")
+	return
+}
+func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("fetch")
+	return
+}
+
 // Mover is the interface for Move.
 type Mover interface {
 
@@ -68,6 +168,22 @@ type Mover interface {
 	Move(src string, dst string, pairs ...Pair) (err error)
 	// MoveWithContext will move an object in the service.
 	MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
+}
+
+// UnimplementedMover must be embedded to have forward compatible implementations.
+type UnimplementedMover struct{}
+
+func (s UnimplementedMover) String() string {
+	return "UnimplementedMover"
+}
+
+func (s UnimplementedMover) Move(src string, dst string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("move")
+	return
+}
+func (s UnimplementedMover) MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("move")
+	return
 }
 
 // Multiparter is the interface for Multipart related operations.
@@ -94,6 +210,49 @@ type Multiparter interface {
 	WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error)
 }
 
+// UnimplementedMultiparter must be embedded to have forward compatible implementations.
+type UnimplementedMultiparter struct{}
+
+func (s UnimplementedMultiparter) String() string {
+	return "UnimplementedMultiparter"
+}
+
+func (s UnimplementedMultiparter) CompleteMultipart(o *Object, parts []*Part, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("complete_multipart")
+	return
+}
+func (s UnimplementedMultiparter) CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("complete_multipart")
+	return
+}
+
+func (s UnimplementedMultiparter) CreateMultipart(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_multipart")
+	return
+}
+func (s UnimplementedMultiparter) CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_multipart")
+	return
+}
+
+func (s UnimplementedMultiparter) ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error) {
+	err = NewOperationNotImplementedError("list_multipart")
+	return
+}
+func (s UnimplementedMultiparter) ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error) {
+	err = NewOperationNotImplementedError("list_multipart")
+	return
+}
+
+func (s UnimplementedMultiparter) WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_multipart")
+	return
+}
+func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_multipart")
+	return
+}
+
 // Pager is the interface for Page related operations which support random write.
 type Pager interface {
 
@@ -108,6 +267,31 @@ type Pager interface {
 	WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
 }
 
+// UnimplementedPager must be embedded to have forward compatible implementations.
+type UnimplementedPager struct{}
+
+func (s UnimplementedPager) String() string {
+	return "UnimplementedPager"
+}
+
+func (s UnimplementedPager) CreatePage(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_page")
+	return
+}
+func (s UnimplementedPager) CreatePageWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_page")
+	return
+}
+
+func (s UnimplementedPager) WritePage(o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_page")
+	return
+}
+func (s UnimplementedPager) WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_page")
+	return
+}
+
 // Reacher is the interface for Reach.
 type Reacher interface {
 
@@ -115,6 +299,22 @@ type Reacher interface {
 	Reach(path string, pairs ...Pair) (url string, err error)
 	// ReachWithContext will provide a way, which can reach the object.
 	ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error)
+}
+
+// UnimplementedReacher must be embedded to have forward compatible implementations.
+type UnimplementedReacher struct{}
+
+func (s UnimplementedReacher) String() string {
+	return "UnimplementedReacher"
+}
+
+func (s UnimplementedReacher) Reach(path string, pairs ...Pair) (url string, err error) {
+	err = NewOperationNotImplementedError("reach")
+	return
+}
+func (s UnimplementedReacher) ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error) {
+	err = NewOperationNotImplementedError("reach")
+	return
 }
 
 // Servicer can maintain multipart storage services.
@@ -140,6 +340,49 @@ type Servicer interface {
 	List(pairs ...Pair) (sti *StoragerIterator, err error)
 	// ListWithContext will list all storager instances under this service.
 	ListWithContext(ctx context.Context, pairs ...Pair) (sti *StoragerIterator, err error)
+}
+
+// UnimplementedServicer must be embedded to have forward compatible implementations.
+type UnimplementedServicer struct{}
+
+func (s UnimplementedServicer) String() string {
+	return "UnimplementedServicer"
+}
+
+func (s UnimplementedServicer) Create(name string, pairs ...Pair) (store Storager, err error) {
+	err = NewOperationNotImplementedError("create")
+	return
+}
+func (s UnimplementedServicer) CreateWithContext(ctx context.Context, name string, pairs ...Pair) (store Storager, err error) {
+	err = NewOperationNotImplementedError("create")
+	return
+}
+
+func (s UnimplementedServicer) Delete(name string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("delete")
+	return
+}
+func (s UnimplementedServicer) DeleteWithContext(ctx context.Context, name string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("delete")
+	return
+}
+
+func (s UnimplementedServicer) Get(name string, pairs ...Pair) (store Storager, err error) {
+	err = NewOperationNotImplementedError("get")
+	return
+}
+func (s UnimplementedServicer) GetWithContext(ctx context.Context, name string, pairs ...Pair) (store Storager, err error) {
+	err = NewOperationNotImplementedError("get")
+	return
+}
+
+func (s UnimplementedServicer) List(pairs ...Pair) (sti *StoragerIterator, err error) {
+	err = NewOperationNotImplementedError("list")
+	return
+}
+func (s UnimplementedServicer) ListWithContext(ctx context.Context, pairs ...Pair) (sti *StoragerIterator, err error) {
+	err = NewOperationNotImplementedError("list")
+	return
 }
 
 // Storager is the interface for storage service.
@@ -178,6 +421,71 @@ type Storager interface {
 	Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 	// WriteWithContext will write data into a file.
 	WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
+}
+
+// UnimplementedStorager must be embedded to have forward compatible implementations.
+type UnimplementedStorager struct{}
+
+func (s UnimplementedStorager) String() string {
+	return "UnimplementedStorager"
+}
+
+func (s UnimplementedStorager) Create(path string, pairs ...Pair) (o *Object) {
+	return
+}
+
+func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("delete")
+	return
+}
+func (s UnimplementedStorager) DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("delete")
+	return
+}
+
+func (s UnimplementedStorager) List(path string, pairs ...Pair) (oi *ObjectIterator, err error) {
+	err = NewOperationNotImplementedError("list")
+	return
+}
+func (s UnimplementedStorager) ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error) {
+	err = NewOperationNotImplementedError("list")
+	return
+}
+
+func (s UnimplementedStorager) Metadata(pairs ...Pair) (meta *StorageMeta, err error) {
+	err = NewOperationNotImplementedError("metadata")
+	return
+}
+func (s UnimplementedStorager) MetadataWithContext(ctx context.Context, pairs ...Pair) (meta *StorageMeta, err error) {
+	err = NewOperationNotImplementedError("metadata")
+	return
+}
+
+func (s UnimplementedStorager) Read(path string, w io.Writer, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("read")
+	return
+}
+func (s UnimplementedStorager) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("read")
+	return
+}
+
+func (s UnimplementedStorager) Stat(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("stat")
+	return
+}
+func (s UnimplementedStorager) StatWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("stat")
+	return
+}
+
+func (s UnimplementedStorager) Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write")
+	return
+}
+func (s UnimplementedStorager) WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write")
+	return
 }
 
 type PairPolicy struct {

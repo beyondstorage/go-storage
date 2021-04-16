@@ -21,6 +21,28 @@ type {{ $i.DisplayName }} interface {
     {{ end }}
     {{ end }}
 }
+
+// Unimplemented{{ $i.DisplayName }} must be embedded to have forward compatible implementations.
+type Unimplemented{{ $i.DisplayName }} struct {}
+
+func (s Unimplemented{{ $i.DisplayName }}) String() string {
+    return "Unimplemented{{ $i.DisplayName }}"
+}
+
+{{ range $_, $op := $i.Ops }}
+func (s Unimplemented{{ $i.DisplayName }})  {{ $op.Name | toPascal }}({{ $op.FormatParams }}) ({{ $op.FormatResultsWithPackageName "storage" }}) {
+    {{- if not $op.Local }}
+    err = NewOperationNotImplementedError("{{ $op.Name }}")
+    {{- end }}
+    return
+}
+{{- if not $op.Local }}
+func (s Unimplemented{{ $i.DisplayName }}) {{ $op.Name | toPascal }}WithContext(ctx context.Context,{{ $op.FormatParams }}) ({{ $op.FormatResultsWithPackageName "storage" }}) {
+    err = NewOperationNotImplementedError("{{ $op.Name }}")
+    return
+}
+{{ end }}
+{{ end }}
 {{- end }}
 
 type PairPolicy struct {
