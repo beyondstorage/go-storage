@@ -20,10 +20,14 @@ type {{ $i.DisplayName }} interface {
     {{ $op.Name | toPascal }}WithContext(ctx context.Context,{{ $op.FormatParams }}) ({{ $op.FormatResultsWithPackageName "storage" }})
     {{ end }}
     {{ end }}
+
+    mustEmbedUnimplemented{{ $i.DisplayName }}()
 }
 
 // Unimplemented{{ $i.DisplayName }} must be embedded to have forward compatible implementations.
 type Unimplemented{{ $i.DisplayName }} struct {}
+
+func (s Unimplemented{{ $i.DisplayName }}) mustEmbedUnimplemented{{ $i.DisplayName }}() {}
 
 func (s Unimplemented{{ $i.DisplayName }}) String() string {
     return "Unimplemented{{ $i.DisplayName }}"

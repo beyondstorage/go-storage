@@ -17,10 +17,14 @@ type Appender interface {
 	WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 	// WriteAppendWithContext will append content to an append object.
 	WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
+
+	mustEmbedUnimplementedAppender()
 }
 
 // UnimplementedAppender must be embedded to have forward compatible implementations.
 type UnimplementedAppender struct{}
+
+func (s UnimplementedAppender) mustEmbedUnimplementedAppender() {}
 
 func (s UnimplementedAppender) String() string {
 	return "UnimplementedAppender"
@@ -66,10 +70,14 @@ type Blocker interface {
 	WriteBlock(o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
 	// WriteBlockWithContext will write content to a block.
 	WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
+
+	mustEmbedUnimplementedBlocker()
 }
 
 // UnimplementedBlocker must be embedded to have forward compatible implementations.
 type UnimplementedBlocker struct{}
+
+func (s UnimplementedBlocker) mustEmbedUnimplementedBlocker() {}
 
 func (s UnimplementedBlocker) String() string {
 	return "UnimplementedBlocker"
@@ -118,10 +126,14 @@ type Copier interface {
 	Copy(src string, dst string, pairs ...Pair) (err error)
 	// CopyWithContext will copy an Object or multiple object in the service.
 	CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
+
+	mustEmbedUnimplementedCopier()
 }
 
 // UnimplementedCopier must be embedded to have forward compatible implementations.
 type UnimplementedCopier struct{}
+
+func (s UnimplementedCopier) mustEmbedUnimplementedCopier() {}
 
 func (s UnimplementedCopier) String() string {
 	return "UnimplementedCopier"
@@ -143,10 +155,14 @@ type Fetcher interface {
 	Fetch(path string, url string, pairs ...Pair) (err error)
 	// FetchWithContext will fetch from a given url to path.
 	FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error)
+
+	mustEmbedUnimplementedFetcher()
 }
 
 // UnimplementedFetcher must be embedded to have forward compatible implementations.
 type UnimplementedFetcher struct{}
+
+func (s UnimplementedFetcher) mustEmbedUnimplementedFetcher() {}
 
 func (s UnimplementedFetcher) String() string {
 	return "UnimplementedFetcher"
@@ -168,10 +184,14 @@ type Mover interface {
 	Move(src string, dst string, pairs ...Pair) (err error)
 	// MoveWithContext will move an object in the service.
 	MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
+
+	mustEmbedUnimplementedMover()
 }
 
 // UnimplementedMover must be embedded to have forward compatible implementations.
 type UnimplementedMover struct{}
+
+func (s UnimplementedMover) mustEmbedUnimplementedMover() {}
 
 func (s UnimplementedMover) String() string {
 	return "UnimplementedMover"
@@ -208,10 +228,14 @@ type Multiparter interface {
 	WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error)
 	// WriteMultipartWithContext will write content to a multipart.
 	WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error)
+
+	mustEmbedUnimplementedMultiparter()
 }
 
 // UnimplementedMultiparter must be embedded to have forward compatible implementations.
 type UnimplementedMultiparter struct{}
+
+func (s UnimplementedMultiparter) mustEmbedUnimplementedMultiparter() {}
 
 func (s UnimplementedMultiparter) String() string {
 	return "UnimplementedMultiparter"
@@ -265,10 +289,14 @@ type Pager interface {
 	WritePage(o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
 	// WritePageWithContext will write content to specific offset.
 	WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
+
+	mustEmbedUnimplementedPager()
 }
 
 // UnimplementedPager must be embedded to have forward compatible implementations.
 type UnimplementedPager struct{}
+
+func (s UnimplementedPager) mustEmbedUnimplementedPager() {}
 
 func (s UnimplementedPager) String() string {
 	return "UnimplementedPager"
@@ -299,10 +327,14 @@ type Reacher interface {
 	Reach(path string, pairs ...Pair) (url string, err error)
 	// ReachWithContext will provide a way, which can reach the object.
 	ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error)
+
+	mustEmbedUnimplementedReacher()
 }
 
 // UnimplementedReacher must be embedded to have forward compatible implementations.
 type UnimplementedReacher struct{}
+
+func (s UnimplementedReacher) mustEmbedUnimplementedReacher() {}
 
 func (s UnimplementedReacher) String() string {
 	return "UnimplementedReacher"
@@ -340,10 +372,14 @@ type Servicer interface {
 	List(pairs ...Pair) (sti *StoragerIterator, err error)
 	// ListWithContext will list all storager instances under this service.
 	ListWithContext(ctx context.Context, pairs ...Pair) (sti *StoragerIterator, err error)
+
+	mustEmbedUnimplementedServicer()
 }
 
 // UnimplementedServicer must be embedded to have forward compatible implementations.
 type UnimplementedServicer struct{}
+
+func (s UnimplementedServicer) mustEmbedUnimplementedServicer() {}
 
 func (s UnimplementedServicer) String() string {
 	return "UnimplementedServicer"
@@ -421,10 +457,14 @@ type Storager interface {
 	Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 	// WriteWithContext will write data into a file.
 	WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
+
+	mustEmbedUnimplementedStorager()
 }
 
 // UnimplementedStorager must be embedded to have forward compatible implementations.
 type UnimplementedStorager struct{}
+
+func (s UnimplementedStorager) mustEmbedUnimplementedStorager() {}
 
 func (s UnimplementedStorager) String() string {
 	return "UnimplementedStorager"
