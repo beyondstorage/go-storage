@@ -1,4 +1,4 @@
-// Inspired by following project:
+// Package iowrap's Pipe Inspired by following project:
 // - golang stdlib: io.Pipe and bytes.Buffer
 // - https://github.com/djherbis/nio
 package iowrap
