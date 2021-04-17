@@ -4,8 +4,6 @@ import (
 	"io"
 )
 
-//go:generate go run github.com/golang/mock/mockgen -package iowrap -destination mock_test.go io Reader,Closer,ReaderAt,Seeker,Writer
-
 // LimitReadCloser will return a limited hasCall closer.
 func LimitReadCloser(r io.ReadCloser, n int64) *LimitedReadCloser {
 	return &LimitedReadCloser{r, io.LimitReader(r, n)}
@@ -13,7 +11,7 @@ func LimitReadCloser(r io.ReadCloser, n int64) *LimitedReadCloser {
 
 // LimitedReadCloser hasCall from underlying r and provide Close as well.
 type LimitedReadCloser struct {
-	r  io.ReadCloser
+	c  io.Closer
 	lr io.Reader
 }
 
@@ -24,23 +22,17 @@ func (l *LimitedReadCloser) Read(p []byte) (n int, err error) {
 
 // Close will close underlying reader.
 func (l *LimitedReadCloser) Close() error {
-	return l.r.Close()
+	return l.c.Close()
 }
 
 // SectionReadCloser will return a sectioned hasCall closer.
-func SectionReadCloser(r interface {
-	io.Closer
-	io.ReaderAt
-}, off, n int64) *SectionedReadCloser {
+func SectionReadCloser(r ReadAtCloser, off, n int64) *SectionedReadCloser {
 	return &SectionedReadCloser{r, io.NewSectionReader(r, off, n)}
 }
 
 // SectionedReadCloser hasCall from underlying r and provide Close as well.
 type SectionedReadCloser struct {
-	r interface {
-		io.Closer
-		io.ReaderAt
-	}
+	c  io.Closer
 	sr *io.SectionReader
 }
 
@@ -51,7 +43,7 @@ func (s *SectionedReadCloser) Read(p []byte) (n int, err error) {
 
 // Close will close underlying reader.
 func (s *SectionedReadCloser) Close() error {
-	return s.r.Close()
+	return s.c.Close()
 }
 
 // ReadSeekCloser wraps a io.Reader returning a SeekCloseableReader. Allows the

@@ -1,6 +1,8 @@
 package iowrap
 
-import "io"
+import (
+	"io"
+)
 
 // CallbackWriter will create a new CallbackifyWriter.
 func CallbackWriter(w io.Writer, fn func([]byte)) *CallbackifyWriter {
