@@ -12,7 +12,7 @@ type CancelableReader interface {
 
 // CancelableReadFrom allow user to cancel a read_from call.
 type CancelableReadFrom interface {
-	ReadFromWithContext(ctx context.Context, r io.Reader) (n int64, err error)
+	ReadFromWithContext(ctx context.Context, r io.Reader, l int64) (n int64, err error)
 }
 
 // CancelableWriter allow user to cancel a write call.
@@ -22,7 +22,7 @@ type CancelableWriter interface {
 
 // CancelableWriteTo allow user to cancel a write_to call.
 type CancelableWriteTo interface {
-	WriteToWithContext(ctx context.Context, w io.Writer) (n int64, err error)
+	WriteToWithContext(ctx context.Context, w io.Writer, l int64) (n int64, err error)
 }
 
 // CancelableCloser allow user to cancel a close call.
