@@ -9,21 +9,22 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexContentLength          uint64 = 1 << 0
-	objectIndexContentMd5             uint64 = 1 << 1
-	objectIndexContentType            uint64 = 1 << 2
-	objectIndexEtag                   uint64 = 1 << 3
-	objectIndexID                     uint64 = 1 << 4
-	objectIndexLastModified           uint64 = 1 << 5
-	objectIndexLinkTarget             uint64 = 1 << 6
-	objectIndexMode                   uint64 = 1 << 7
-	objectIndexMultipartID            uint64 = 1 << 8
-	objectIndexMultipartNumberMaximum uint64 = 1 << 9
-	objectIndexMultipartSizeMaximum   uint64 = 1 << 10
-	objectIndexMultipartSizeMinimum   uint64 = 1 << 11
-	objectIndexPath                   uint64 = 1 << 12
-	objectIndexServiceMetadata        uint64 = 1 << 13
-	objectIndexUserMetadata           uint64 = 1 << 14
+	objectIndexAppendOffset           uint64 = 1 << 0
+	objectIndexContentLength          uint64 = 1 << 1
+	objectIndexContentMd5             uint64 = 1 << 2
+	objectIndexContentType            uint64 = 1 << 3
+	objectIndexEtag                   uint64 = 1 << 4
+	objectIndexID                     uint64 = 1 << 5
+	objectIndexLastModified           uint64 = 1 << 6
+	objectIndexLinkTarget             uint64 = 1 << 7
+	objectIndexMode                   uint64 = 1 << 8
+	objectIndexMultipartID            uint64 = 1 << 9
+	objectIndexMultipartNumberMaximum uint64 = 1 << 10
+	objectIndexMultipartSizeMaximum   uint64 = 1 << 11
+	objectIndexMultipartSizeMinimum   uint64 = 1 << 12
+	objectIndexPath                   uint64 = 1 << 13
+	objectIndexServiceMetadata        uint64 = 1 << 14
+	objectIndexUserMetadata           uint64 = 1 << 15
 )
 
 // Object is the smallest unit in go-storage.
@@ -33,6 +34,8 @@ const (
 //   - Object CANNOT be copied
 //   - Object is concurrent safe.
 type Object struct {
+	// AppendOffset is the offset of the append object
+	appendOffset  int64
 	contentLength int64
 	contentMd5    string
 	contentType   string
@@ -65,6 +68,31 @@ type Object struct {
 	bit  uint64
 	done uint32
 	m    sync.Mutex
+}
+
+func (o *Object) GetAppendOffset() (int64, bool) {
+	o.stat()
+
+	if o.bit&objectIndexAppendOffset != 0 {
+		return o.appendOffset, true
+	}
+
+	return 0, false
+}
+
+func (o *Object) MustGetAppendOffset() int64 {
+	o.stat()
+
+	if o.bit&objectIndexAppendOffset == 0 {
+		panic(fmt.Sprintf("object append-offset is not set"))
+	}
+	return o.appendOffset
+}
+
+func (o *Object) SetAppendOffset(v int64) *Object {
+	o.appendOffset = v
+	o.bit |= objectIndexAppendOffset
+	return o
 }
 
 func (o *Object) GetContentLength() (int64, bool) {
@@ -392,6 +420,7 @@ func (o *Object) SetUserMetadata(v map[string]string) *Object {
 }
 
 func (o *Object) clone(xo *Object) {
+	o.appendOffset = xo.appendOffset
 	o.contentLength = xo.contentLength
 	o.contentMd5 = xo.contentMd5
 	o.contentType = xo.contentType
