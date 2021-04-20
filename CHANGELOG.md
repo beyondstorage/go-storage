@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.5.0] - 2021-04-20
+
+### Added
+
+- cmd/definitions: Add tests service (#518)
+- cmd/definitions: Increase stablility of generated code (#526)
+- types: Add UnimplementedStub to have forward compatible implementations (#524)
+- pkg/iowrap: Add cancelable io wrappers (#528)
+
+### Changed
+
+- docs: Update README
+- docs: Migrate zulip to matrix
+
+### Fixed
+
+- docs: Fix quick start is not runnable
+
 ## [v3.4.2] - 2021-03-16
 
 ### Added
@@ -456,7 +474,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.4.2...HEAD
+[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.5.0...HEAD
+[v3.5.0]: https://github.com/aos-dev/go-storage/compare/v3.4.2...v3.5.0
 [v3.4.2]: https://github.com/aos-dev/go-storage/compare/v3.4.1...v3.4.2
 [v3.4.1]: https://github.com/aos-dev/go-storage/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/aos-dev/go-storage/compare/v3.3.0...v3.4.0
