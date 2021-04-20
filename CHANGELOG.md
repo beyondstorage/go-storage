@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.5.0] - 2021-04-20
+
+### Added
+
+- cmd/definitions: Add tests service (#518)
+- cmd/definitions: Increase stability of generated code (#526)
+- types: Add UnimplementedStub to have forward compatible implementations (#524)
+- pkg/iowrap: Add ReadAtCloser (#528)
+
 ## [v3.4.2] - 2021-03-16
 
 ### Added
@@ -456,7 +465,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.4.2...HEAD
+[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.5.0...HEAD
+[v3.5.0]: https://github.com/aos-dev/go-storage/compare/v3.4.2...v3.5.0
 [v3.4.2]: https://github.com/aos-dev/go-storage/compare/v3.4.1...v3.4.2
 [v3.4.1]: https://github.com/aos-dev/go-storage/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/aos-dev/go-storage/compare/v3.3.0...v3.4.0
