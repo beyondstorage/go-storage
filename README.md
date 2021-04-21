@@ -17,16 +17,16 @@ An application-oriented unified storage layer for Golang.
 
 ### Widely services support
 
-- [azblob](./services/azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
-- [cos](./services/cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
-- [dropbox](./services/dropbox/): [Dropbox](https://www.dropbox.com)
-- [fs](./services/fs/): Local file system
-- [gcs](./services/gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
-- [kodo](./services/kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
-- [oss](./services/oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
-- [qingstor](./services/qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
-- [s3](./services/s3/): [Amazon S3](https://aws.amazon.com/s3/)
-- [uss](./services/uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
+- [azblob](https://github.com/aos-dev/go-service-azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [cos](https://github.com/aos-dev/go-service-cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
+- [dropbox](https://github.com/aos-dev/go-service-dropbox/): [Dropbox](https://www.dropbox.com)
+- [fs](https://github.com/aos-dev/go-service-fs/): Local file system
+- [gcs](https://github.com/aos-dev/go-service-gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [kodo](https://github.com/aos-dev/go-service-kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
+- [oss](https://github.com/aos-dev/go-service-oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
+- [qingstor](https://github.com/aos-dev/go-service-qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
+- [s3](https://github.com/aos-dev/go-service-s3/): [Amazon S3](https://aws.amazon.com/s3/)
+- [uss](https://github.com/aos-dev/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 
 ### Servicer operation support
 
@@ -75,7 +75,7 @@ Optional metadata
 - `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
 - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
 - `storage-class`: object's storage class as defined
-  in [storage proposal](./docs/design/8-normalize-metadata-storage-class.md)
+  in [storage proposal](https://github.com/aos-dev/specs/tree/master/rfcs/8-normalize-metadata-storage-class.md)
 
 ## Quick Start
 
