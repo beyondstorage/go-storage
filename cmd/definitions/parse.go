@@ -74,6 +74,7 @@ var typeMap = map[string]string{
 	"http_client_options": "*httpclient.Options",
 
 	// Compose types
+	"byte_array":          "[]byte",
 	"string_array":        "[]string",
 	"string_string_map":   "map[string]string",
 	"time":                "time.Time",
