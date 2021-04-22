@@ -33,11 +33,11 @@ Error should always represent as a struct which carries contextual error informa
 ```go
 type Error struct {
 	Op  string
-    Err error
+	Err error
 
 	ContextA string
-    ContextB structB
-    ...
+	ContextB structB
+	...
 }
 ```
 
@@ -91,7 +91,7 @@ Error struct
 // Error represents error related to endpoint.
 type Error struct {
 	Op string
-    Err error
+	Err error
 
 	Protocol string
 	Values   []string
@@ -121,7 +121,7 @@ Unexpected error occurs
 ```go
 port, err := strconv.ParseInt(s[2], 10, 64)
 if err != nil {
-    return nil, &Error{"parse", ProtocolHTTP, s[1:], err}
+	return nil, &Error{"parse", ProtocolHTTP, s[1:], err}
 }
 ```
 
