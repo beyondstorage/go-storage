@@ -17,6 +17,11 @@ var (
 	_ http.File = httpFileWrapper{}
 )
 
+// HttpFs convert a Storager to http.FileSystem
+func HttpFs(s types.Storager) http.FileSystem {
+	return httpFsWrapper{s}
+}
+
 type httpFsWrapper struct {
 	store types.Storager
 }

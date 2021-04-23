@@ -27,6 +27,11 @@ var (
 	_ fs.DirEntry = &dirEntryWrapper{}
 )
 
+// Fs convert a Storager to fs.FS
+func Fs(s types.Storager) fs.FS {
+	return fsWrapper{s}
+}
+
 type fsWrapper struct {
 	store types.Storager
 }
