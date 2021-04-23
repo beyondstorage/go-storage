@@ -35,3 +35,18 @@ func (o fileInfoWrapper) IsDir() bool {
 func (o fileInfoWrapper) Sys() interface{} {
 	return o.object
 }
+
+func formatFileMode(om types.ObjectMode) os.FileMode {
+	var m os.FileMode
+
+	if om.IsDir() {
+		m |= os.ModeDir
+	}
+	if om.IsAppend() {
+		m |= os.ModeAppend
+	}
+	if om.IsLink() {
+		m |= os.ModeSymlink
+	}
+	return m
+}

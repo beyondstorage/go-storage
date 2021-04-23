@@ -161,18 +161,3 @@ func (d dirEntryWrapper) Type() fs.FileMode {
 func (d dirEntryWrapper) Info() (fs.FileInfo, error) {
 	return &fileInfoWrapper{d.object}, nil
 }
-
-func formatFileMode(om types.ObjectMode) fs.FileMode {
-	var m fs.FileMode
-
-	if om.IsDir() {
-		m |= fs.ModeDir
-	}
-	if om.IsAppend() {
-		m |= fs.ModeAppend
-	}
-	if om.IsLink() {
-		m |= fs.ModeSymlink
-	}
-	return m
-}
