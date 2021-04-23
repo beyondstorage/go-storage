@@ -1,13 +1,12 @@
 //+build go1.16
 
-package iofswrap
+package fswrap
 
 import (
 	"bytes"
 	"errors"
 	"io/fs"
 	"path"
-	"time"
 
 	"github.com/aos-dev/go-storage/v3/pairs"
 	"github.com/aos-dev/go-storage/v3/types"
@@ -141,35 +140,6 @@ func (o fileWrapper) Close() error {
 	o.object = nil
 	o.offset = 0
 	return nil
-}
-
-type fileInfoWrapper struct {
-	object *types.Object
-}
-
-func (o fileInfoWrapper) Name() string {
-	return o.object.Path
-}
-
-func (o fileInfoWrapper) Size() int64 {
-	return o.object.MustGetContentLength()
-}
-
-func (o fileInfoWrapper) Mode() fs.FileMode {
-	return formatFileMode(o.object.Mode)
-}
-
-func (o fileInfoWrapper) ModTime() time.Time {
-	return o.object.MustGetLastModified()
-}
-
-func (o fileInfoWrapper) IsDir() bool {
-	return o.object.Mode.IsDir()
-}
-
-// Sys will return internal Object.
-func (o fileInfoWrapper) Sys() interface{} {
-	return o.object
 }
 
 type dirEntryWrapper struct {
