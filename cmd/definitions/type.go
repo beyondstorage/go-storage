@@ -140,7 +140,7 @@ func (i *Info) Format(s specs.Info, global bool) {
 	i.Name = s.Name
 	i.itype = s.Type
 	i.Export = s.Export
-	i.Description = s.Description
+	i.Description = formatDescription(templateutils.ToPascal(s.Name), s.Description)
 
 	i.Global = global
 }

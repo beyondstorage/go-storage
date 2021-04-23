@@ -31,20 +31,38 @@ const (
 {{- end }}
 )
 
-// Service available metadata.
-const (
+// ObjectMetadata stores service metadata for object.
+type ObjectMetadata struct {
 {{- range $_, $v := .Infos }}
     {{- if not $v.Global }}
-    {{ $pname := $v.Name | toPascal }}
+    {{- $pname := $v.Name | toPascal }}
     {{- if $v.DisplayName }}
-        {{ $pname = $v.DisplayName }}
+        {{- $pname = $v.DisplayName }}
     {{- end }}
     {{ $v.Description }}
-    Metadata{{ $pname }} = "{{ $.Name }}-{{ $v.Name }}"
+    {{ $pname }} {{ $v.Type }}
     {{- end }}
 {{- end }}
-)
+}
 
+// GetObjectMetadata will get ObjectMetadata from Object.
+//
+// - This function should not be called by service implementer.
+// - The returning ObjectMetadata is read only and should not be modified.
+func GetObjectMetadata(o *Object) ObjectMetadata {
+    om, ok := o.GetServiceMetadata()
+    if ok {
+        return om.(ObjectMetadata)
+    }
+    return ObjectMetadata{}
+}
+
+// setObjectMetadata will set ObjectMetadata into Object.
+//
+// - This function should only be called once, please make sure all data has been written before set.
+func setObjectMetadata(o *Object, om ObjectMetadata) {
+    o.SetServiceMetadata(om)
+}
 
 {{- range $_, $v := .Pairs }}
 {{- if not $v.Global }}
