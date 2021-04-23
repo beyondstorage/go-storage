@@ -34,31 +34,37 @@ const (
 //   - Object CANNOT be copied
 //   - Object is concurrent safe.
 type Object struct {
-	// AppendOffset is the offset of the append object
-	appendOffset  int64
+	// // AppendOffset AppendOffset is the offset of the append object
+	appendOffset int64
+	// // ContentLength
 	contentLength int64
-	contentMd5    string
-	contentType   string
-	etag          string
-	// ID is the unique key in storage.
-	ID           string
+	// // ContentMd5
+	contentMd5 string
+	// // ContentType
+	contentType string
+	// // Etag
+	etag string
+	// // ID ID is the unique key in storage.
+	ID string
+	// // LastModified
 	lastModified time.Time
-	// LinkTarget is the symlink target for link object.
+	// // LinkTarget LinkTarget is the symlink target for link object.
 	linkTarget string
-	Mode       ObjectMode
-	// MultipartID is the part id of part object.
+	// // Mode
+	Mode ObjectMode
+	// // MultipartID MultipartID is the part id of part object.
 	multipartID string
-	// Maximum part number in multipart operation
+	// // MultipartNumberMaximum Maximum part number in multipart operation
 	multipartNumberMaximum int
-	// Maximum part size defined by storager
+	// // MultipartSizeMaximum Maximum part size defined by storager
 	multipartSizeMaximum int64
-	// Minimum part size defined by storager
+	// // MultipartSizeMinimum Minimum part size defined by storager
 	multipartSizeMinimum int64
-	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
+	// // Path Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Path string
-	// ServiceMetadata stores service defined metadata
-	serviceMetadata map[string]string
-	// UserMetadata stores user defined metadata
+	// // ServiceMetadata ServiceMetadata stores service defined metadata
+	serviceMetadata interface{}
+	// // UserMetadata UserMetadata stores user defined metadata
 	userMetadata map[string]string
 
 	// client is the client in which Object is alive.
@@ -369,17 +375,17 @@ func (o *Object) SetPath(v string) *Object {
 	return o
 }
 
-func (o *Object) GetServiceMetadata() (map[string]string, bool) {
+func (o *Object) GetServiceMetadata() (interface{}, bool) {
 	o.stat()
 
 	if o.bit&objectIndexServiceMetadata != 0 {
 		return o.serviceMetadata, true
 	}
 
-	return map[string]string{}, false
+	return nil, false
 }
 
-func (o *Object) MustGetServiceMetadata() map[string]string {
+func (o *Object) MustGetServiceMetadata() interface{} {
 	o.stat()
 
 	if o.bit&objectIndexServiceMetadata == 0 {
@@ -388,7 +394,7 @@ func (o *Object) MustGetServiceMetadata() map[string]string {
 	return o.serviceMetadata
 }
 
-func (o *Object) SetServiceMetadata(v map[string]string) *Object {
+func (o *Object) SetServiceMetadata(v interface{}) *Object {
 	o.serviceMetadata = v
 	o.bit |= objectIndexServiceMetadata
 	return o
