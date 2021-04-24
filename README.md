@@ -117,6 +117,10 @@ func main() {
 }
 ```
 
+## Examples
+
+All examples are maintained in <https://github.com/aos-dev/go-storage-example>.
+
 ## Sponsor
 
 <a href="https://vercel.com?utm_source=aos-dev&utm_campaign=oss">
