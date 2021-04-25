@@ -49,7 +49,8 @@ const (
 {{- range $_, $v := .Pairs }}
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
-// With{{ $pname }} will apply {{ $v.Name }} value to Options
+// With{{ $pname }} will apply {{ $v.Name }} value to Options.
+//
 {{ $v.Description }}
 func With{{ $pname }}(v {{ $v.Type }}) Pair {
         return Pair{

@@ -8,7 +8,8 @@ import (
 	. "github.com/aos-dev/go-storage/v3/types"
 )
 
-// WithContentMd5 will apply content_md5 value to Options
+// WithContentMd5 will apply content_md5 value to Options.
+//
 // ContentMd5
 func WithContentMd5(v string) Pair {
 	return Pair{
@@ -17,7 +18,8 @@ func WithContentMd5(v string) Pair {
 	}
 }
 
-// WithContentType will apply content_type value to Options
+// WithContentType will apply content_type value to Options.
+//
 // ContentType
 func WithContentType(v string) Pair {
 	return Pair{
@@ -26,7 +28,8 @@ func WithContentType(v string) Pair {
 	}
 }
 
-// WithContext will apply context value to Options
+// WithContext will apply context value to Options.
+//
 // Context
 func WithContext(v context.Context) Pair {
 	return Pair{
@@ -35,7 +38,8 @@ func WithContext(v context.Context) Pair {
 	}
 }
 
-// WithContinuationToken will apply continuation_token value to Options
+// WithContinuationToken will apply continuation_token value to Options.
+//
 // ContinuationToken specify the continuation token for list
 func WithContinuationToken(v string) Pair {
 	return Pair{
@@ -44,7 +48,8 @@ func WithContinuationToken(v string) Pair {
 	}
 }
 
-// WithCredential will apply credential value to Options
+// WithCredential will apply credential value to Options.
+//
 // Credential specify how to provide credential for service or storage
 func WithCredential(v string) Pair {
 	return Pair{
@@ -53,7 +58,8 @@ func WithCredential(v string) Pair {
 	}
 }
 
-// WithEndpoint will apply endpoint value to Options
+// WithEndpoint will apply endpoint value to Options.
+//
 // Endpoint specify how to provide endpoint for service or storage
 func WithEndpoint(v string) Pair {
 	return Pair{
@@ -62,7 +68,8 @@ func WithEndpoint(v string) Pair {
 	}
 }
 
-// WithExpire will apply expire value to Options
+// WithExpire will apply expire value to Options.
+//
 // Expire specify when the url returned by reach will expire
 func WithExpire(v int) Pair {
 	return Pair{
@@ -71,7 +78,8 @@ func WithExpire(v int) Pair {
 	}
 }
 
-// WithHTTPClientOptions will apply http_client_options value to Options
+// WithHTTPClientOptions will apply http_client_options value to Options.
+//
 // HTTPClientOptions
 func WithHTTPClientOptions(v *httpclient.Options) Pair {
 	return Pair{
@@ -80,7 +88,8 @@ func WithHTTPClientOptions(v *httpclient.Options) Pair {
 	}
 }
 
-// WithInterceptor will apply interceptor value to Options
+// WithInterceptor will apply interceptor value to Options.
+//
 // Interceptor
 func WithInterceptor(v Interceptor) Pair {
 	return Pair{
@@ -89,7 +98,8 @@ func WithInterceptor(v Interceptor) Pair {
 	}
 }
 
-// WithIoCallback will apply io_callback value to Options
+// WithIoCallback will apply io_callback value to Options.
+//
 // IoCallback specify what todo every time we read data from source
 func WithIoCallback(v func([]byte)) Pair {
 	return Pair{
@@ -98,7 +108,8 @@ func WithIoCallback(v func([]byte)) Pair {
 	}
 }
 
-// WithListMode will apply list_mode value to Options
+// WithListMode will apply list_mode value to Options.
+//
 // ListMode
 func WithListMode(v ListMode) Pair {
 	return Pair{
@@ -107,7 +118,8 @@ func WithListMode(v ListMode) Pair {
 	}
 }
 
-// WithLocation will apply location value to Options
+// WithLocation will apply location value to Options.
+//
 // Location specify the location for service or storage
 func WithLocation(v string) Pair {
 	return Pair{
@@ -116,7 +128,8 @@ func WithLocation(v string) Pair {
 	}
 }
 
-// WithMultipartID will apply multipart_id value to Options
+// WithMultipartID will apply multipart_id value to Options.
+//
 // MultipartID
 func WithMultipartID(v string) Pair {
 	return Pair{
@@ -125,7 +138,8 @@ func WithMultipartID(v string) Pair {
 	}
 }
 
-// WithName will apply name value to Options
+// WithName will apply name value to Options.
+//
 // Name specify the storage name
 func WithName(v string) Pair {
 	return Pair{
@@ -134,7 +148,8 @@ func WithName(v string) Pair {
 	}
 }
 
-// WithOffset will apply offset value to Options
+// WithOffset will apply offset value to Options.
+//
 // Offset specify offset for this request, storage will seek to this offset before read
 func WithOffset(v int64) Pair {
 	return Pair{
@@ -143,7 +158,8 @@ func WithOffset(v int64) Pair {
 	}
 }
 
-// WithPairPolicy will apply pair_policy value to Options
+// WithPairPolicy will apply pair_policy value to Options.
+//
 // PairPolicy
 func WithPairPolicy(v PairPolicy) Pair {
 	return Pair{
@@ -152,7 +168,8 @@ func WithPairPolicy(v PairPolicy) Pair {
 	}
 }
 
-// WithSize will apply size value to Options
+// WithSize will apply size value to Options.
+//
 // Size specify size for this request, storage will only read limited content data
 func WithSize(v int64) Pair {
 	return Pair{
@@ -161,7 +178,8 @@ func WithSize(v int64) Pair {
 	}
 }
 
-// WithWorkDir will apply work_dir value to Options
+// WithWorkDir will apply work_dir value to Options.
+//
 // WorkDir specify the work dir for service or storage, every operation will be relative to this dir.
 // work_dir MUST start with / for every storage services.
 // work_dir will be default to / if not set.
