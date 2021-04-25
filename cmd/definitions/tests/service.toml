@@ -54,3 +54,4 @@ description = "set default pairs for storager actions"
 
 [infos.object.meta.storage-class]
 type = "string"
+description = "is the storage class for this object"

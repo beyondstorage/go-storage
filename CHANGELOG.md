@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v3.6.0] - 2021-04-24
+
+### Added
+
+- object: Add AppendOffset for appendable object (#532)
+- cmd/definitions: Add a new type byte_array (#534)
+- pkg: Implement wrapper for fs.FS and http.FileSystem (#538)
+- cmd/definitions: Implement AOS-40 (#541)
+
+### Changed
+
+- docs: Fix broken links in README (#533)
+- docs/specs: Replace spaces by tab in the code in 1-error-handling (#535)
+
 ## [v3.5.0] - 2021-04-20
 
 ### Added
@@ -474,7 +488,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.5.0...HEAD
+[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.6.0...HEAD
+[v3.6.0]: https://github.com/aos-dev/go-storage/compare/v3.5.0...v3.6.0
 [v3.5.0]: https://github.com/aos-dev/go-storage/compare/v3.4.2...v3.5.0
 [v3.4.2]: https://github.com/aos-dev/go-storage/compare/v3.4.1...v3.4.2
 [v3.4.1]: https://github.com/aos-dev/go-storage/compare/v3.4.0...v3.4.1

@@ -48,8 +48,7 @@ func parseFunc(name string) map[string]*templateutils.Method {
 		log.Fatalf("read file failed: %v", err)
 	}
 
-	source := &templateutils.Source{}
-	err = source.ParseContent(filename, content)
+	source, err := templateutils.ParseContent(filename, content)
 	if err != nil {
 		log.Fatalf("parse content: %v", err)
 	}
@@ -74,6 +73,7 @@ var typeMap = map[string]string{
 	"http_client_options": "*httpclient.Options",
 
 	// Compose types
+	"any":                 "interface{}",
 	"byte_array":          "[]byte",
 	"string_array":        "[]string",
 	"string_string_map":   "map[string]string",

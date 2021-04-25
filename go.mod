@@ -3,8 +3,8 @@ module github.com/aos-dev/go-storage/v3
 go 1.15
 
 require (
-	github.com/Xuanwo/templateutils v0.0.0-20201216100309-46f73cd4e4b1
-	github.com/aos-dev/specs/go v0.0.0-20210420062803-1a60efa2eae3
+	github.com/Xuanwo/templateutils v0.1.0
+	github.com/aos-dev/specs/go v0.0.0-20210423110314-8361397c2bf3
 	github.com/dave/dst v0.26.2
 	github.com/golang/mock v1.5.0
 	github.com/google/uuid v1.2.0
