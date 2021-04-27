@@ -8,6 +8,11 @@ import (
 // Appender is the interface for Append related operations.
 type Appender interface {
 
+	// CommitAppend will commit and finish an append process.
+	CommitAppend(o *Object, pairs ...Pair) (err error)
+	// CommitAppendWithContext will commit and finish an append process.
+	CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error)
+
 	// CreateAppend will create an append object.
 	CreateAppend(path string, pairs ...Pair) (o *Object, err error)
 	// CreateAppendWithContext will create an append object.
@@ -28,6 +33,15 @@ func (s UnimplementedAppender) mustEmbedUnimplementedAppender() {}
 
 func (s UnimplementedAppender) String() string {
 	return "UnimplementedAppender"
+}
+
+func (s UnimplementedAppender) CommitAppend(o *Object, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("commit_append")
+	return
+}
+func (s UnimplementedAppender) CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("commit_append")
+	return
 }
 
 func (s UnimplementedAppender) CreateAppend(path string, pairs ...Pair) (o *Object, err error) {
@@ -532,6 +546,7 @@ type PairPolicy struct {
 	All bool
 
 	// pairs for interface Appender
+	CommitAppend bool
 	CreateAppend bool
 	WriteAppend  bool
 
