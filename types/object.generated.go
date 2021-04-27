@@ -9,22 +9,25 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexAppendOffset           uint64 = 1 << 0
-	objectIndexContentLength          uint64 = 1 << 1
-	objectIndexContentMd5             uint64 = 1 << 2
-	objectIndexContentType            uint64 = 1 << 3
-	objectIndexEtag                   uint64 = 1 << 4
-	objectIndexID                     uint64 = 1 << 5
-	objectIndexLastModified           uint64 = 1 << 6
-	objectIndexLinkTarget             uint64 = 1 << 7
-	objectIndexMode                   uint64 = 1 << 8
-	objectIndexMultipartID            uint64 = 1 << 9
-	objectIndexMultipartNumberMaximum uint64 = 1 << 10
-	objectIndexMultipartSizeMaximum   uint64 = 1 << 11
-	objectIndexMultipartSizeMinimum   uint64 = 1 << 12
-	objectIndexPath                   uint64 = 1 << 13
-	objectIndexServiceMetadata        uint64 = 1 << 14
-	objectIndexUserMetadata           uint64 = 1 << 15
+	objectIndexAppendNumberMaximum    uint64 = 1 << 0
+	objectIndexAppendOffset           uint64 = 1 << 1
+	objectIndexAppendSizeMaximum      uint64 = 1 << 2
+	objectIndexAppendTotalSizeMaximum uint64 = 1 << 3
+	objectIndexContentLength          uint64 = 1 << 4
+	objectIndexContentMd5             uint64 = 1 << 5
+	objectIndexContentType            uint64 = 1 << 6
+	objectIndexEtag                   uint64 = 1 << 7
+	objectIndexID                     uint64 = 1 << 8
+	objectIndexLastModified           uint64 = 1 << 9
+	objectIndexLinkTarget             uint64 = 1 << 10
+	objectIndexMode                   uint64 = 1 << 11
+	objectIndexMultipartID            uint64 = 1 << 12
+	objectIndexMultipartNumberMaximum uint64 = 1 << 13
+	objectIndexMultipartSizeMaximum   uint64 = 1 << 14
+	objectIndexMultipartSizeMinimum   uint64 = 1 << 15
+	objectIndexPath                   uint64 = 1 << 16
+	objectIndexServiceMetadata        uint64 = 1 << 17
+	objectIndexUserMetadata           uint64 = 1 << 18
 )
 
 // Object is the smallest unit in go-storage.
@@ -34,8 +37,14 @@ const (
 //   - Object CANNOT be copied
 //   - Object is concurrent safe.
 type Object struct {
+	// // AppendNumberMaximum Max append numbers in append operation
+	appendNumberMaximum int
 	// // AppendOffset AppendOffset is the offset of the append object
 	appendOffset int64
+	// // AppendSizeMaximum Max append size in per append operation
+	appendSizeMaximum int64
+	// // AppendTotalSizeMaximum Max append total size in append operation
+	appendTotalSizeMaximum int64
 	// // ContentLength
 	contentLength int64
 	// // ContentMd5
@@ -76,6 +85,31 @@ type Object struct {
 	m    sync.Mutex
 }
 
+func (o *Object) GetAppendNumberMaximum() (int, bool) {
+	o.stat()
+
+	if o.bit&objectIndexAppendNumberMaximum != 0 {
+		return o.appendNumberMaximum, true
+	}
+
+	return 0, false
+}
+
+func (o *Object) MustGetAppendNumberMaximum() int {
+	o.stat()
+
+	if o.bit&objectIndexAppendNumberMaximum == 0 {
+		panic(fmt.Sprintf("object append-number-maximum is not set"))
+	}
+	return o.appendNumberMaximum
+}
+
+func (o *Object) SetAppendNumberMaximum(v int) *Object {
+	o.appendNumberMaximum = v
+	o.bit |= objectIndexAppendNumberMaximum
+	return o
+}
+
 func (o *Object) GetAppendOffset() (int64, bool) {
 	o.stat()
 
@@ -98,6 +132,56 @@ func (o *Object) MustGetAppendOffset() int64 {
 func (o *Object) SetAppendOffset(v int64) *Object {
 	o.appendOffset = v
 	o.bit |= objectIndexAppendOffset
+	return o
+}
+
+func (o *Object) GetAppendSizeMaximum() (int64, bool) {
+	o.stat()
+
+	if o.bit&objectIndexAppendSizeMaximum != 0 {
+		return o.appendSizeMaximum, true
+	}
+
+	return 0, false
+}
+
+func (o *Object) MustGetAppendSizeMaximum() int64 {
+	o.stat()
+
+	if o.bit&objectIndexAppendSizeMaximum == 0 {
+		panic(fmt.Sprintf("object append-size-maximum is not set"))
+	}
+	return o.appendSizeMaximum
+}
+
+func (o *Object) SetAppendSizeMaximum(v int64) *Object {
+	o.appendSizeMaximum = v
+	o.bit |= objectIndexAppendSizeMaximum
+	return o
+}
+
+func (o *Object) GetAppendTotalSizeMaximum() (int64, bool) {
+	o.stat()
+
+	if o.bit&objectIndexAppendTotalSizeMaximum != 0 {
+		return o.appendTotalSizeMaximum, true
+	}
+
+	return 0, false
+}
+
+func (o *Object) MustGetAppendTotalSizeMaximum() int64 {
+	o.stat()
+
+	if o.bit&objectIndexAppendTotalSizeMaximum == 0 {
+		panic(fmt.Sprintf("object append-total-size-maximum is not set"))
+	}
+	return o.appendTotalSizeMaximum
+}
+
+func (o *Object) SetAppendTotalSizeMaximum(v int64) *Object {
+	o.appendTotalSizeMaximum = v
+	o.bit |= objectIndexAppendTotalSizeMaximum
 	return o
 }
 
@@ -426,7 +510,10 @@ func (o *Object) SetUserMetadata(v map[string]string) *Object {
 }
 
 func (o *Object) clone(xo *Object) {
+	o.appendNumberMaximum = xo.appendNumberMaximum
 	o.appendOffset = xo.appendOffset
+	o.appendSizeMaximum = xo.appendSizeMaximum
+	o.appendTotalSizeMaximum = xo.appendTotalSizeMaximum
 	o.contentLength = xo.contentLength
 	o.contentMd5 = xo.contentMd5
 	o.contentType = xo.contentType
