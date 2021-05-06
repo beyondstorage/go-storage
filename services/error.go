@@ -8,6 +8,8 @@ import (
 )
 
 var (
+	ErrUnexpected = errors.New("go-storage can't handle this error")
+
 	// ErrCapabilityInsufficient means this service doesn't have this capability
 	ErrCapabilityInsufficient = errors.New("capability insufficient")
 	// ErrRestrictionDissatisfied means this operation doesn't meat service's restriction.
