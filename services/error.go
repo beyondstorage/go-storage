@@ -18,12 +18,12 @@ var (
 
 	// ErrObjectNotExist means the object to be operated is not exist.
 	ErrObjectNotExist = errors.New("object not exist")
+	// ErrObjectModeInvalid means the provided object mode is invalid.
+	ErrObjectModeInvalid = errors.New("invalid object mode")
 	// ErrPermissionDenied means this operation doesn't have enough permission.
 	ErrPermissionDenied = errors.New("permission denied")
-	// ErrObjectNotPart means the object to be operated is not a part object.
-	ErrObjectNotPart = errors.New("object is not a part object")
-	// ErrInvalidListMode means the provided list mode is invalid.
-	ErrInvalidListMode = errors.New("invalid list mode")
+	// ErrListModeInvalid means the provided list mode is invalid.
+	ErrListModeInvalid = errors.New("invalid list mode")
 )
 
 // InitError means this service init failed.
