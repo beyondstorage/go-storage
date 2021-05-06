@@ -88,7 +88,6 @@ func (e *StorageError) Unwrap() error {
 // NewMetadataNotRecognizedError will create a new MetadataUnrecognizedError.
 func NewMetadataNotRecognizedError(key string, value interface{}) *MetadataUnrecognizedError {
 	return &MetadataUnrecognizedError{
-		Err:   ErrCapabilityInsufficient,
 		Key:   key,
 		Value: value,
 	}
@@ -96,65 +95,57 @@ func NewMetadataNotRecognizedError(key string, value interface{}) *MetadataUnrec
 
 // MetadataUnrecognizedError means this operation meets unrecognized metadata.
 type MetadataUnrecognizedError struct {
-	Err error
-
 	Key   string
 	Value interface{}
 }
 
 func (e *MetadataUnrecognizedError) Error() string {
-	return fmt.Sprintf("metadata unrecognized, %s, %v: %s", e.Key, e.Value, e.Err.Error())
+	return fmt.Sprintf("metadata unrecognized, %s, %v: %s", e.Key, e.Value, ErrCapabilityInsufficient.Error())
 }
 
 // Unwrap implements xerrors.Wrapper
 func (e *MetadataUnrecognizedError) Unwrap() error {
-	return e.Err
+	return ErrCapabilityInsufficient
 }
 
 // NewPairUnsupportedError will create a new PairUnsupportedError.
 func NewPairUnsupportedError(pair types.Pair) *PairUnsupportedError {
 	return &PairUnsupportedError{
-		Err:  ErrCapabilityInsufficient,
 		Pair: pair,
 	}
 }
 
 // PairUnsupportedError means this operation has unsupported pair.
 type PairUnsupportedError struct {
-	Err error
-
 	Pair types.Pair
 }
 
 func (e *PairUnsupportedError) Error() string {
-	return fmt.Sprintf("pair unsupported, %s: %s", e.Pair, e.Err.Error())
+	return fmt.Sprintf("pair unsupported, %s: %s", e.Pair, ErrCapabilityInsufficient.Error())
 }
 
 // Unwrap implements xerrors.Wrapper
 func (e *PairUnsupportedError) Unwrap() error {
-	return e.Err
+	return ErrCapabilityInsufficient
 }
 
 // NewPairRequiredError will create a new PairRequiredError.
 func NewPairRequiredError(keys ...string) *PairRequiredError {
 	return &PairRequiredError{
-		Err:  ErrRestrictionDissatisfied,
 		Keys: keys,
 	}
 }
 
 // PairRequiredError means this operation has required pair but missing.
 type PairRequiredError struct {
-	Err error
-
 	Keys []string
 }
 
 func (e *PairRequiredError) Error() string {
-	return fmt.Sprintf("pair required, %v: %s", e.Keys, e.Err.Error())
+	return fmt.Sprintf("pair required, %v: %s", e.Keys, ErrRestrictionDissatisfied.Error())
 }
 
 // Unwrap implements xerrors.Wrapper
 func (e *PairRequiredError) Unwrap() error {
-	return e.Err
+	return ErrRestrictionDissatisfied
 }
