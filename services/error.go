@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	// ErrUnexpected means this is an unexpected error which go-storage can't handle
 	ErrUnexpected = errors.New("go-storage can't handle this error")
 
 	// ErrCapabilityInsufficient means this service doesn't have this capability
@@ -19,6 +20,10 @@ var (
 	ErrObjectNotExist = errors.New("object not exist")
 	// ErrPermissionDenied means this operation doesn't have enough permission.
 	ErrPermissionDenied = errors.New("permission denied")
+	// ErrObjectNotPart means the object to be operated is not a part object.
+	ErrObjectNotPart = errors.New("object is not a part object")
+	// ErrInvalidListMode means the provided list mode is invalid.
+	ErrInvalidListMode = errors.New("invalid list mode")
 )
 
 // InitError means this service init failed.
