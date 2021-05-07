@@ -18,12 +18,8 @@ var (
 
 	// ErrObjectNotExist means the object to be operated is not exist.
 	ErrObjectNotExist = errors.New("object not exist")
-	// ErrObjectModeInvalid means the provided object mode is invalid.
-	ErrObjectModeInvalid = errors.New("invalid object mode")
 	// ErrPermissionDenied means this operation doesn't have enough permission.
 	ErrPermissionDenied = errors.New("permission denied")
-	// ErrListModeInvalid means the provided list mode is invalid.
-	ErrListModeInvalid = errors.New("invalid list mode")
 )
 
 // InitError means this service init failed.
@@ -133,4 +129,23 @@ func (e PairRequiredError) Error() string {
 // Unwrap implements xerrors.Wrapper
 func (e PairRequiredError) Unwrap() error {
 	return ErrRestrictionDissatisfied
+}
+
+// ObjectModeInvalidError means the provided object mode is invalid.
+type ObjectModeInvalidError struct {
+	Expected types.ObjectMode
+	Actual   types.ObjectMode
+}
+
+func (e ObjectModeInvalidError) Error() string {
+	return fmt.Sprintf("object mode invalid, expected %b, actual %b", e.Expected, e.Actual)
+}
+
+// ListModeInvalidError means the provided list mode is invalid.
+type ListModeInvalidError struct {
+	Actual types.ListMode
+}
+
+func (e ListModeInvalidError) Error() string {
+	return fmt.Sprintf("list mode invalid, actual %b", e.Actual)
 }
