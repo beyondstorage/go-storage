@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/aos-dev/go-storage/v3/types"
@@ -37,7 +36,7 @@ func NewServicer(ty string, ps ...types.Pair) (types.Servicer, error) {
 
 	fn, ok := serviceFnMap[ty]
 	if !ok {
-		return nil, errors.New("not registered")
+		return nil, &InitError{Op: "new_servicer", Type: ty, Err: ErrNewFuncNotRegistered, Pairs: ps}
 	}
 
 	return fn(ps...)
@@ -58,7 +57,7 @@ func NewStorager(ty string, ps ...types.Pair) (types.Storager, error) {
 
 	fn, ok := storagerFnMap[ty]
 	if !ok {
-		return nil, errors.New("not registered")
+		return nil, &InitError{Op: "new_storager", Type: ty, Err: ErrNewFuncNotRegistered, Pairs: ps}
 	}
 
 	return fn(ps...)
