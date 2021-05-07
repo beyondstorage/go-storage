@@ -9,7 +9,7 @@ import (
 
 var (
 	// ErrUnexpected means this is an unexpected error which go-storage can't handle
-	ErrUnexpected = errors.New("go-storage can't handle this error")
+	ErrUnexpected = errors.New("unexpected")
 
 	// ErrCapabilityInsufficient means this service doesn't have this capability
 	ErrCapabilityInsufficient = errors.New("capability insufficient")
