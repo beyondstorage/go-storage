@@ -1,5 +1,7 @@
 package types
 
+import "strings"
+
 // ListMode is the type for list, underlying type is int.
 type ListMode uint8
 
@@ -11,6 +13,26 @@ const (
 	ListModePart
 	ListModeBlock
 )
+
+// String implement Stringer for ListMode.
+//
+// An object with Dir,Part will print like "dir|part"
+func (o ListMode) String() string {
+	s := make([]string, 0)
+	if o.IsDir() {
+		s = append(s, "dir")
+	}
+	if o.IsPrefix() {
+		s = append(s, "prefix")
+	}
+	if o.IsPart() {
+		s = append(s, "part")
+	}
+	if o.IsBlock() {
+		s = append(s, "block")
+	}
+	return strings.Join(s, "|")
+}
 
 func (l ListMode) IsDir() bool {
 	return l&ListModeDir != 0

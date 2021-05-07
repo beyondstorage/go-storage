@@ -140,7 +140,7 @@ type ObjectModeInvalidError struct {
 }
 
 func (e ObjectModeInvalidError) Error() string {
-	return fmt.Sprintf("object mode invalid, expected %b, actual %b", e.Expected, e.Actual)
+	return fmt.Sprintf("object mode invalid, expected %v, actual %v", e.Expected, e.Actual)
 }
 
 // ListModeInvalidError means the provided list mode is invalid.
@@ -149,5 +149,5 @@ type ListModeInvalidError struct {
 }
 
 func (e ListModeInvalidError) Error() string {
-	return fmt.Sprintf("list mode invalid, actual %b", e.Actual)
+	return fmt.Sprintf("list mode invalid, actual %v", e.Actual)
 }
