@@ -35,12 +35,12 @@ type InitError struct {
 	Pairs []types.Pair
 }
 
-func (e *InitError) Error() string {
+func (e InitError) Error() string {
 	return fmt.Sprintf("%s %s: %v: %s", e.Type, e.Op, e.Pairs, e.Err.Error())
 }
 
 // Unwrap implements xerrors.Wrapper
-func (e *InitError) Unwrap() error {
+func (e InitError) Unwrap() error {
 	return e.Err
 }
 
@@ -55,7 +55,7 @@ type ServiceError struct {
 	Name string
 }
 
-func (e *ServiceError) Error() string {
+func (e ServiceError) Error() string {
 	if e.Name == "" {
 		return fmt.Sprintf("%s: %s: %s", e.Op, e.Servicer, e.Err.Error())
 	}
@@ -63,7 +63,7 @@ func (e *ServiceError) Error() string {
 }
 
 // Unwrap implements xerrors.Wrapper
-func (e *ServiceError) Unwrap() error {
+func (e ServiceError) Unwrap() error {
 	return e.Err
 }
 
@@ -78,7 +78,7 @@ type StorageError struct {
 	Path []string
 }
 
-func (e *StorageError) Error() string {
+func (e StorageError) Error() string {
 	if e.Path == nil {
 		return fmt.Sprintf("%s: %s: %s", e.Op, e.Storager, e.Err.Error())
 	}
@@ -86,7 +86,7 @@ func (e *StorageError) Error() string {
 }
 
 // Unwrap implements xerrors.Wrapper
-func (e *StorageError) Unwrap() error {
+func (e StorageError) Unwrap() error {
 	return e.Err
 }
 
