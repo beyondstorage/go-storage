@@ -334,3 +334,9 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
         return s.{{  $fn.Name | toCamel }}({{$fn.Params.TrimLast.CallerEndswithComma}} opt)
     }
 {{- end }}
+
+func init() {
+    {{- range $_, $v := .Namespaces }}
+        services.Register{{ $v.Name | toPascal }}r(Type, New{{ $v.Name | toPascal }}r)
+    {{- end }}
+}
