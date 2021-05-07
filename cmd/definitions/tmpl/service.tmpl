@@ -173,7 +173,7 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
 
     {{- range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
-        return pair{{ $pn }}{{ $fnk }}{}, services.NewPairRequiredError({{- $pair.FullName -}})
+        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ {{- $pair.FullName -}} } }
     }
     {{- end }}
 
@@ -238,7 +238,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             } else {
                  {{if ne $pn "Service" }}
                 if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} || s.pairPolicy.{{ $fnk }}{{ $pair.Name | toPascal }} {
-                    return pair{{ $pn }}{{ $fnk }}{}, services.NewPairUnsupportedError(v)
+                    return pair{{ $pn }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
                 }
                 {{else}}
                 result.Has{{ $pair.Name | toPascal }} = false
@@ -248,7 +248,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
         default:
             {{if ne $pn "Service" }}
             if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} {
-                return pair{{ $pn }}{{ $fnk }}{}, services.NewPairUnsupportedError(v)
+                return pair{{ $pn }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
             }
             {{else}}
                 continue
@@ -258,7 +258,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
 
     {{- range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
-        return pair{{ $pn }}{{ $fnk }}{}, services.NewPairRequiredError({{- $pair.FullName -}})
+        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{Keys:[]string{ {{- $pair.FullName -}} }}
     }
     {{- end }}
 
