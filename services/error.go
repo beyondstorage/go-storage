@@ -20,8 +20,8 @@ var (
 	ErrObjectNotExist = errors.New("object not exist")
 	// ErrPermissionDenied means this operation doesn't have enough permission.
 	ErrPermissionDenied = errors.New("permission denied")
-	// ErrNewFuncNotRegistered means the new function of this service is not registered.
-	ErrNewFuncNotRegistered = errors.New("new function not registered")
+	// ErrServiceNotRegistered means this service is not registered.
+	ErrServiceNotRegistered = errors.New("service not registered")
 )
 
 // InitError means this service init failed.
