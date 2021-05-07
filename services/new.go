@@ -36,7 +36,7 @@ func NewServicer(ty string, ps ...types.Pair) (types.Servicer, error) {
 
 	fn, ok := serviceFnMap[ty]
 	if !ok {
-		return nil, &InitError{Op: "new_servicer", Type: ty, Err: ErrServiceNotRegistered, Pairs: ps}
+		return nil, InitError{Op: "new_servicer", Type: ty, Err: ErrServiceNotRegistered, Pairs: ps}
 	}
 
 	return fn(ps...)
@@ -57,7 +57,7 @@ func NewStorager(ty string, ps ...types.Pair) (types.Storager, error) {
 
 	fn, ok := storagerFnMap[ty]
 	if !ok {
-		return nil, &InitError{Op: "new_storager", Type: ty, Err: ErrServiceNotRegistered, Pairs: ps}
+		return nil, InitError{Op: "new_storager", Type: ty, Err: ErrServiceNotRegistered, Pairs: ps}
 	}
 
 	return fn(ps...)
