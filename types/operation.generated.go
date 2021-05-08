@@ -162,6 +162,35 @@ func (s UnimplementedCopier) CopyWithContext(ctx context.Context, src string, ds
 	return
 }
 
+// Direr is the interface for Directory.
+type Direr interface {
+
+	// CreateDir will create a new dir object.
+	CreateDir(path string, pairs ...Pair) (err error)
+	// CreateDirWithContext will create a new dir object.
+	CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
+
+	mustEmbedUnimplementedDirer()
+}
+
+// UnimplementedDirer must be embedded to have forward compatible implementations.
+type UnimplementedDirer struct{}
+
+func (s UnimplementedDirer) mustEmbedUnimplementedDirer() {}
+
+func (s UnimplementedDirer) String() string {
+	return "UnimplementedDirer"
+}
+
+func (s UnimplementedDirer) CreateDir(path string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("create_dir")
+	return
+}
+func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("create_dir")
+	return
+}
+
 // Fetcher is the interface for Fetch.
 type Fetcher interface {
 
@@ -558,6 +587,9 @@ type PairPolicy struct {
 
 	// pairs for interface Copier
 	Copy bool
+
+	// pairs for interface Direr
+	CreateDir bool
 
 	// pairs for interface Fetcher
 	Fetch bool
