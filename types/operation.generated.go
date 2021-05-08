@@ -166,9 +166,9 @@ func (s UnimplementedCopier) CopyWithContext(ctx context.Context, src string, ds
 type Direr interface {
 
 	// CreateDir will create a new dir object.
-	CreateDir(path string, pairs ...Pair) (err error)
+	CreateDir(path string, pairs ...Pair) (o *Object, err error)
 	// CreateDirWithContext will create a new dir object.
-	CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
+	CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	mustEmbedUnimplementedDirer()
 }
@@ -182,11 +182,11 @@ func (s UnimplementedDirer) String() string {
 	return "UnimplementedDirer"
 }
 
-func (s UnimplementedDirer) CreateDir(path string, pairs ...Pair) (err error) {
+func (s UnimplementedDirer) CreateDir(path string, pairs ...Pair) (o *Object, err error) {
 	err = NewOperationNotImplementedError("create_dir")
 	return
 }
-func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (err error) {
+func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
 	err = NewOperationNotImplementedError("create_dir")
 	return
 }
