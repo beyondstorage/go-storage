@@ -1,31 +1,57 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/aos-dev/go-storage/v3/types"
 )
 
+type AosError interface {
+	// IsAosError SHOULD and SHOULD ONLY be implemented by error definitions in go-storage & go-service-*.
+	// We depends on the AosError interface to distinguish our errors.
+	// There's no need for user code to implement or use this function and interface.
+	IsAosError()
+}
+
+// Create a new error code.
+//
+// Developers SHOULD use this function to define error codes (sentinel errors), instead of `NewErrorCode`
+//
+// Users SHOULD NOT call this function. Use defined error codes instead.
+func NewErrorCode(text string) error {
+	return errorCode{text}
+}
+
+type errorCode struct {
+	s string
+}
+
+func (e errorCode) Error() string {
+	return e.s
+}
+
+// implements AosError
+func (e errorCode) IsAosError() {}
+
 var (
 	// ErrUnexpected means this is an unexpected error which go-storage can't handle
-	ErrUnexpected = errors.New("unexpected")
+	ErrUnexpected = NewErrorCode("unexpected")
 
 	// ErrCapabilityInsufficient means this service doesn't have this capability
-	ErrCapabilityInsufficient = errors.New("capability insufficient")
+	ErrCapabilityInsufficient = NewErrorCode("capability insufficient")
 	// ErrRestrictionDissatisfied means this operation doesn't meat service's restriction.
-	ErrRestrictionDissatisfied = errors.New("restriction dissatisfied")
+	ErrRestrictionDissatisfied = NewErrorCode("restriction dissatisfied")
 
 	// ErrObjectNotExist means the object to be operated is not exist.
-	ErrObjectNotExist = errors.New("object not exist")
+	ErrObjectNotExist = NewErrorCode("object not exist")
 	// ErrObjectModeInvalid means the provided object mode is invalid.
-	ErrObjectModeInvalid = errors.New("object mode invalid")
+	ErrObjectModeInvalid = NewErrorCode("object mode invalid")
 	// ErrPermissionDenied means this operation doesn't have enough permission.
-	ErrPermissionDenied = errors.New("permission denied")
+	ErrPermissionDenied = NewErrorCode("permission denied")
 	// ErrListModeInvalid means the provided list mode is invalid.
-	ErrListModeInvalid = errors.New("list mode invalid")
+	ErrListModeInvalid = NewErrorCode("list mode invalid")
 	// ErrServiceNotRegistered means this service is not registered.
-	ErrServiceNotRegistered = errors.New("service not registered")
+	ErrServiceNotRegistered = NewErrorCode("service not registered")
 )
 
 // InitError means this service init failed.
@@ -109,6 +135,9 @@ func (e MetadataUnrecognizedError) Unwrap() error {
 	return ErrCapabilityInsufficient
 }
 
+// implements AosError
+func (e MetadataUnrecognizedError) IsAosError() {}
+
 // PairUnsupportedError means this operation has unsupported pair.
 type PairUnsupportedError struct {
 	Pair types.Pair
@@ -122,6 +151,9 @@ func (e PairUnsupportedError) Error() string {
 func (e PairUnsupportedError) Unwrap() error {
 	return ErrCapabilityInsufficient
 }
+
+// implements AosError
+func (e PairUnsupportedError) IsAosError() {}
 
 // PairRequiredError means this operation has required pair but missing.
 type PairRequiredError struct {
@@ -137,6 +169,9 @@ func (e PairRequiredError) Unwrap() error {
 	return ErrRestrictionDissatisfied
 }
 
+// implements AosError
+func (e PairRequiredError) IsAosError() {}
+
 // ObjectModeInvalidError means the provided object mode is invalid.
 type ObjectModeInvalidError struct {
 	Expected types.ObjectMode
@@ -151,6 +186,9 @@ func (e ObjectModeInvalidError) Unwrap() error {
 	return ErrObjectModeInvalid
 }
 
+// implements AosError
+func (e ObjectModeInvalidError) IsAosError() {}
+
 // ListModeInvalidError means the provided list mode is invalid.
 type ListModeInvalidError struct {
 	Actual types.ListMode
@@ -163,3 +201,6 @@ func (e ListModeInvalidError) Error() string {
 func (e ListModeInvalidError) Unwrap() error {
 	return ErrListModeInvalid
 }
+
+// implements AosError
+func (e ListModeInvalidError) IsAosError() {}

@@ -1,7 +1,7 @@
 github.com/Xuanwo/templateutils v0.1.0 h1:WpkWOqQtIQ2vAIpJLa727DdN8WtxhUkkbDGa6UhntJY=
 github.com/Xuanwo/templateutils v0.1.0/go.mod h1:OdE0DJ+CJxDBq6psX5DPV+gOZi8bhuHuVUpPCG++Wb8=
-github.com/aos-dev/specs/go v0.0.0-20210508081534-1608befd5c17 h1:35JLI+Z8VEd9dROdGi+G2qCJIAlpENy7XdUIEGFdhNc=
-github.com/aos-dev/specs/go v0.0.0-20210508081534-1608befd5c17/go.mod h1:gNah3KaPJEfysh7uCCX+sYjQC3g2yx2VgBkFlT945Ws=
+github.com/aos-dev/specs/go v0.0.0-20210510065836-ba70d7b05cda h1:D9DV8kz38iPT6mCHSCTlxYN4Zg9DUfHmWKJKVBvZmfY=
+github.com/aos-dev/specs/go v0.0.0-20210510065836-ba70d7b05cda/go.mod h1:gNah3KaPJEfysh7uCCX+sYjQC3g2yx2VgBkFlT945Ws=
 github.com/dave/dst v0.26.2 h1:lnxLAKI3tx7MgLNVDirFCsDTlTG9nKTk7GcptKcWSwY=
 github.com/dave/dst v0.26.2/go.mod h1:UMDJuIRPfyUCC78eFuB+SV/WI8oDeyFDvM/JR6NI3IU=
 github.com/dave/gopackages v0.0.0-20170318123100-46e7023ec56e/go.mod h1:i00+b/gKdIDIxuLDFob7ustLAVqhsZRk2qVZrArELGQ=
