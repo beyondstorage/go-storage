@@ -37,43 +37,43 @@ const (
 //   - Object CANNOT be copied
 //   - Object is concurrent safe.
 type Object struct {
-	// // AppendNumberMaximum Max append numbers in append operation
+	// AppendNumberMaximum Max append numbers in append operation
 	appendNumberMaximum int
-	// // AppendOffset AppendOffset is the offset of the append object
+	// AppendOffset AppendOffset is the offset of the append object
 	appendOffset int64
-	// // AppendSizeMaximum Max append size in per append operation
+	// AppendSizeMaximum Max append size in per append operation
 	appendSizeMaximum int64
-	// // AppendTotalSizeMaximum Max append total size in append operation
+	// AppendTotalSizeMaximum Max append total size in append operation
 	appendTotalSizeMaximum int64
-	// // ContentLength
+	// ContentLength
 	contentLength int64
-	// // ContentMd5
+	// ContentMd5
 	contentMd5 string
-	// // ContentType
+	// ContentType
 	contentType string
-	// // Etag
+	// Etag
 	etag string
-	// // ID ID is the unique key in storage.
+	// ID ID is the unique key in storage.
 	ID string
-	// // LastModified
+	// LastModified
 	lastModified time.Time
-	// // LinkTarget LinkTarget is the symlink target for link object.
+	// LinkTarget LinkTarget is the symlink target for link object.
 	linkTarget string
-	// // Mode
+	// Mode
 	Mode ObjectMode
-	// // MultipartID MultipartID is the part id of part object.
+	// MultipartID MultipartID is the part id of part object.
 	multipartID string
-	// // MultipartNumberMaximum Maximum part number in multipart operation
+	// MultipartNumberMaximum Maximum part number in multipart operation
 	multipartNumberMaximum int
-	// // MultipartSizeMaximum Maximum part size defined by storager
+	// MultipartSizeMaximum Maximum part size defined by storager
 	multipartSizeMaximum int64
-	// // MultipartSizeMinimum Minimum part size defined by storager
+	// MultipartSizeMinimum Minimum part size defined by storager
 	multipartSizeMinimum int64
-	// // Path Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
+	// Path Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Path string
-	// // ServiceMetadata ServiceMetadata stores service defined metadata
+	// ServiceMetadata ServiceMetadata stores service defined metadata
 	serviceMetadata interface{}
-	// // UserMetadata UserMetadata stores user defined metadata
+	// UserMetadata UserMetadata stores user defined metadata
 	userMetadata map[string]string
 
 	// client is the client in which Object is alive.
