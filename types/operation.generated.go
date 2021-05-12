@@ -268,9 +268,9 @@ type Multiparter interface {
 	ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error)
 
 	// WriteMultipart will write content to a multipart.
-	WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error)
+	WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error)
 	// WriteMultipartWithContext will write content to a multipart.
-	WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error)
+	WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error)
 
 	mustEmbedUnimplementedMultiparter()
 }
@@ -311,11 +311,11 @@ func (s UnimplementedMultiparter) ListMultipartWithContext(ctx context.Context, 
 	return
 }
 
-func (s UnimplementedMultiparter) WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error) {
+func (s UnimplementedMultiparter) WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error) {
 	err = NewOperationNotImplementedError("write_multipart")
 	return
 }
-func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error) {
+func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error) {
 	err = NewOperationNotImplementedError("write_multipart")
 	return
 }
