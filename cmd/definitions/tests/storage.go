@@ -68,6 +68,6 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	panic("not implemented")
 }
 
-func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, err error) {
+func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *Part, err error) {
 	panic("not implemented")
 }

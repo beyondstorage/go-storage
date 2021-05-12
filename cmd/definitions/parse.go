@@ -88,6 +88,7 @@ var typeMap = map[string]string{
 	"ObjectMode":          "ObjectMode",
 	"ObjectIterator":      "*ObjectIterator",
 	"Pairs":               "...Pair",
+	"Part":                "*Part",
 	"Parts":               "[]*Part",
 	"PartIterator":        "*PartIterator",
 	"PairPolicy":          "PairPolicy",
