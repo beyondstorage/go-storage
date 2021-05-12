@@ -303,7 +303,13 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             err = s.formatError("{{$fn.Name}}", err {{ $path }} )
         }()
 
-        {{- template "mode_check" makeSlice $fn.ObjectMode $fn.Params.ObjectParamName }}
+        {{- if ne $fn.ObjectMode ""}}
+            {{- $modeP := $fn.ObjectMode | toPascal }}
+            if !{{ $fn.Params.ObjectParamName }}.Mode.Is{{ $modeP }}() {
+                err = services.ObjectModeInvalidError{Expected: Mode{{ $modeP }}, Actual: {{$fn.Params.ObjectParamName}}.Mode}
+                return
+            }
+        {{- end }}
 
         pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
         var opt pair{{ $pn }}{{ $fnk }}
@@ -335,17 +341,6 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
 
         return s.{{  $fn.Name | toCamel }}({{$fn.Params.TrimLast.CallerEndswithComma}} opt)
     }
-{{- end }}
-
-{{- define "mode_check" }}
-    {{- $mode := index . 0 | toPascal }}
-    {{- $o := index . 1 }}
-    {{- if ne $mode ""}}
-    if !{{ $o }}.Mode.Is{{ $mode }}() {
-        err = services.ObjectModeInvalidError{Expected: Mode{{ $mode }}, Actual: o.Mode}
-        return
-    }
-    {{- end }}
 {{- end }}
 
 func init() {
