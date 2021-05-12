@@ -304,9 +304,9 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
         }()
 
         {{- if ne $fn.ObjectMode ""}}
-            {{- $modeP := $fn.ObjectMode | toPascal }}
-            if !{{ $fn.Params.ObjectParamName }}.Mode.Is{{ $modeP }}() {
-                err = services.ObjectModeInvalidError{Expected: Mode{{ $modeP }}, Actual: {{$fn.Params.ObjectParamName}}.Mode}
+            {{- $mode := $fn.ObjectMode | toPascal }}
+            if !o.Mode.Is{{ $mode }}() {
+                err = services.ObjectModeInvalidError{Expected: Mode{{ $mode }}, Actual: o.Mode}
                 return
             }
         {{- end }}

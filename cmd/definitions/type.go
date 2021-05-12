@@ -350,16 +350,6 @@ func (f Fields) HasReader() bool {
 	return false
 }
 
-// ObjectParamName returns Object's param name.
-func (f Fields) ObjectParamName() string {
-	for _, v := range f {
-		if v.ftype == "Object" || v.ftype == "*Object" {
-			return v.Name
-		}
-	}
-	return "o"
-}
-
 // CallerEndswithComma will print caller with comma aware.
 func (f Fields) CallerEndswithComma() string {
 	content := f.Caller()
