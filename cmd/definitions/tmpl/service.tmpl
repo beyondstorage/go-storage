@@ -295,9 +295,6 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
 
     // {{ $fnk }}WithContext {{ $fn.Description }}
     func (s *{{$pn}}) {{ $fnk }}WithContext(ctx context.Context, {{$fn.Params.String}}) ({{$fn.Results.String}}) {
-        pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
-        var opt pair{{ $pn }}{{ $fnk }}
-
         defer func(){
             {{- $path := $fn.Params.PathCaller }}
             {{- if and (eq $path "") (eq $pn "Service") }}
@@ -305,6 +302,17 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             {{- end }}
             err = s.formatError("{{$fn.Name}}", err {{ $path }} )
         }()
+
+        {{- if ne $fn.ObjectMode ""}}
+            {{- $mode := $fn.ObjectMode | toPascal }}
+            if !o.Mode.Is{{ $mode }}() {
+                err = services.ObjectModeInvalidError{Expected: Mode{{ $mode }}, Actual: o.Mode}
+                return
+            }
+        {{- end }}
+
+        pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
+        var opt pair{{ $pn }}{{ $fnk }}
 
         opt, err = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
         if err != nil {

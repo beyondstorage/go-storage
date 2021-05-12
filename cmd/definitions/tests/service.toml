@@ -17,7 +17,7 @@ optional = ["location"]
 optional = ["location"]
 
 [namespace.storage]
-implement = ["copier", "fetcher", "mover", "multiparter", "reacher"]
+implement = ["copier", "fetcher", "mover", "multiparter", "reacher", "appender"]
 
 [namespace.storage.new]
 required = ["name"]

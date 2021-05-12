@@ -194,6 +194,7 @@ type Operation struct {
 	Pairs       []string
 	Params      Fields
 	Results     Fields
+	ObjectMode  string
 	Local       bool
 }
 
@@ -202,6 +203,7 @@ func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
 	op := &Operation{
 		Name:        v.Name,
 		Local:       v.Local,
+		ObjectMode:  v.ObjectMode,
 		Description: formatDescription("", v.Description),
 	}
 	for _, f := range v.Params {
