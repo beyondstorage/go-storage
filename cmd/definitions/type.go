@@ -194,6 +194,7 @@ type Operation struct {
 	Pairs       []string
 	Params      Fields
 	Results     Fields
+	ObjectMode  string
 	Local       bool
 }
 
@@ -202,6 +203,7 @@ func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
 	op := &Operation{
 		Name:        v.Name,
 		Local:       v.Local,
+		ObjectMode:  v.ObjectMode,
 		Description: formatDescription("", v.Description),
 	}
 	for _, f := range v.Params {
@@ -346,6 +348,16 @@ func (f Fields) HasReader() bool {
 		}
 	}
 	return false
+}
+
+// ObjectParamName returns Object's param name.
+func (f Fields) ObjectParamName() string {
+	for _, v := range f {
+		if v.ftype == "Object" || v.ftype == "*Object" {
+			return v.Name
+		}
+	}
+	return "o"
 }
 
 // CallerEndswithComma will print caller with comma aware.

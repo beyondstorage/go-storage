@@ -12,6 +12,10 @@ type Storage struct {
 	defaultPairs DefaultStoragePairs
 }
 
+func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
+	panic("not implemented")
+}
+
 func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
 	panic("not implemented")
 }
@@ -21,6 +25,10 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 }
 
 func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+	panic("not implemented")
+}
+
+func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
 	panic("not implemented")
 }
 
@@ -65,6 +73,10 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 }
 
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt pairStorageWrite) (n int64, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
 	panic("not implemented")
 }
 
