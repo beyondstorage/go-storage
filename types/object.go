@@ -55,6 +55,12 @@ func (o ObjectMode) String() string {
 	return strings.Join(s, "|")
 }
 
+func (o ObjectMode) Add(mode ObjectMode) {
+	o |= mode
+}
+func (o ObjectMode) Del(mode ObjectMode) {
+	o &= ^mode
+}
 func (o ObjectMode) IsDir() bool {
 	return o&ModeDir != 0
 }
