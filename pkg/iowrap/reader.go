@@ -15,6 +15,11 @@ type LimitedReadCloser struct {
 	lr io.Reader
 }
 
+var (
+	_ io.Reader = &LimitedReadCloser{}
+	_ io.Closer = &LimitedReadCloser{}
+)
+
 // Read is copied from io.LimitedReader's Read.
 func (l *LimitedReadCloser) Read(p []byte) (n int, err error) {
 	return l.lr.Read(p)
@@ -35,6 +40,11 @@ type SectionedReadCloser struct {
 	c  io.Closer
 	sr *io.SectionReader
 }
+
+var (
+	_ io.Reader = &SectionedReadCloser{}
+	_ io.Closer = &SectionedReadCloser{}
+)
 
 // Read is copied from io.SectionReader's Read.
 func (s *SectionedReadCloser) Read(p []byte) (n int, err error) {
@@ -71,6 +81,12 @@ type SeekCloseableReader struct {
 	r    io.Reader
 	size int64
 }
+
+var (
+	_ io.Reader = &SeekCloseableReader{}
+	_ io.Seeker = &SeekCloseableReader{}
+	_ io.Closer = &SeekCloseableReader{}
+)
 
 // Read reads from the reader up to size of p. The number of bytes read, and
 // error if it occurred will be returned.
@@ -132,6 +148,10 @@ type CallbackifyReader struct {
 	fn func([]byte)
 }
 
+var (
+	_ io.Reader = &CallbackifyReader{}
+)
+
 // Read will read from underlying Reader.
 func (r *CallbackifyReader) Read(p []byte) (int, error) {
 	n, err := r.r.Read(p)
@@ -152,6 +172,11 @@ type CallbackifyReadCloser struct {
 	r  io.ReadCloser
 	fn func([]byte)
 }
+
+var (
+	_ io.Reader = &CallbackifyReadCloser{}
+	_ io.Closer = &CallbackifyReadCloser{}
+)
 
 // Read will read from underlying Reader.
 func (r *CallbackifyReadCloser) Read(p []byte) (int, error) {
