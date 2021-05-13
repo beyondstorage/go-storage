@@ -43,18 +43,20 @@ func TestObjectMode_IsDir(t *testing.T) {
 func TestObjectMode_Add(t *testing.T) {
 	cases := []struct {
 		name   string
+		base   ObjectMode
 		input  ObjectMode
-		args   ObjectMode
 		expect ObjectMode
 	}{
 		{"simple case", ModeRead, ModeAppend, ModeRead | ModeAppend},
 		{"complex case", ModeDir, ModeLink | ModeRead, ModeDir | ModeLink | ModeRead},
+		{"complex case", ModeRead, ModeRead, ModeRead},
+		{"complex case", ModeRead, ModeAppend | ModeRead, ModeRead | ModeAppend},
 	}
 
 	for _, v := range cases {
 		t.Run(v.name, func(t *testing.T) {
-			v.input.Add(v.args)
-			assert.Equal(t, v.expect, v.input)
+			v.base.Add(v.input)
+			assert.Equal(t, v.expect, v.base)
 		})
 	}
 }
@@ -62,19 +64,20 @@ func TestObjectMode_Add(t *testing.T) {
 func TestObjectMode_Del(t *testing.T) {
 	cases := []struct {
 		name   string
+		base   ObjectMode
 		input  ObjectMode
-		args   ObjectMode
 		expect ObjectMode
 	}{
 		{"simple case", ModeRead | ModeAppend, ModeAppend, ModeRead},
 		{"complex case", ModeDir, ModeRead, ModeDir},
+		{"complex case", ModeRead, ModeRead, 0},
+		{"complex case", ModeRead | ModeDir, ModeRead | ModeAppend, ModeDir},
 	}
 
 	for _, v := range cases {
-
 		t.Run(v.name, func(t *testing.T) {
-			v.input.Del(v.args)
-			assert.Equal(t, v.expect, v.input)
+			v.base.Del(v.input)
+			assert.Equal(t, v.expect, v.base)
 		})
 	}
 }
@@ -88,4 +91,5 @@ func ExampleObjectMode_Add() {
 func ExampleObjectMode_Del() {
 	o := ModeRead | ModeAppend
 	o.Del(ModeAppend)
+	o.Del(ModeRead | ModeAppend)
 }
