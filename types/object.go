@@ -55,10 +55,17 @@ func (o ObjectMode) String() string {
 	return strings.Join(s, "|")
 }
 
+// Add support add ObjectMode into current one.
 func (o ObjectMode) Add(mode ObjectMode) {
 	o |= mode
 }
+
+// Del support delete ObjectMode from current one.
 func (o ObjectMode) Del(mode ObjectMode) {
+	if o&mode == 0 {
+		return
+	}
+
 	o &= ^mode
 }
 func (o ObjectMode) IsDir() bool {
