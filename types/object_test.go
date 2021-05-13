@@ -47,10 +47,10 @@ func TestObjectMode_Add(t *testing.T) {
 		input  ObjectMode
 		expect ObjectMode
 	}{
-		{"simple case", ModeRead, ModeAppend, ModeRead | ModeAppend},
-		{"complex case", ModeDir, ModeLink | ModeRead, ModeDir | ModeLink | ModeRead},
-		{"complex case", ModeRead, ModeRead, ModeRead},
-		{"complex case", ModeRead, ModeAppend | ModeRead, ModeRead | ModeAppend},
+		{"add single new mode", ModeRead, ModeAppend, ModeRead | ModeAppend},
+		{"add multiple new modes", ModeDir, ModeLink | ModeRead, ModeDir | ModeLink | ModeRead},
+		{"add its own", ModeRead, ModeRead, ModeRead},
+		{"add exist mode", ModeRead, ModeAppend | ModeRead, ModeRead | ModeAppend},
 	}
 
 	for _, v := range cases {
@@ -68,10 +68,10 @@ func TestObjectMode_Del(t *testing.T) {
 		input  ObjectMode
 		expect ObjectMode
 	}{
-		{"simple case", ModeRead | ModeAppend, ModeAppend, ModeRead},
-		{"complex case", ModeDir, ModeRead, ModeDir},
-		{"complex case", ModeRead, ModeRead, 0},
-		{"complex case", ModeRead | ModeDir, ModeRead | ModeAppend, ModeDir},
+		{"delete exist mode", ModeRead | ModeAppend, ModeAppend, ModeRead},
+		{"delete absent mode", ModeDir, ModeRead, ModeDir},
+		{"delete its own", ModeRead, ModeRead, 0},
+		{"delete exist and absent mode", ModeRead | ModeDir, ModeRead | ModeAppend, ModeDir},
 	}
 
 	for _, v := range cases {
