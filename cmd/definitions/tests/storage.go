@@ -52,7 +52,7 @@ func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageL
 	panic("not implemented")
 }
 
-func (s *Storage) metadata(ctx context.Context, opt pairStorageMetadata) (meta *StorageMeta, err error) {
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
 	panic("not implemented")
 }
 
