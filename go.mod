@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/Xuanwo/templateutils v0.1.0
-	github.com/beyondstorage/specs/go v0.0.0-20210519100806-7c2422999ec5
+	github.com/beyondstorage/specs/go v0.0.0-20210521044836-3d41c1d9c97f
 	github.com/dave/dst v0.26.2
 	github.com/golang/mock v1.5.0
 	github.com/google/uuid v1.2.0

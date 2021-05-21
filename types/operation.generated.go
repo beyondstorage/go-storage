@@ -482,9 +482,7 @@ type Storager interface {
 	ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error)
 
 	// Metadata will return current storager metadata.
-	Metadata(pairs ...Pair) (meta *StorageMeta, err error)
-	// MetadataWithContext will return current storager metadata.
-	MetadataWithContext(ctx context.Context, pairs ...Pair) (meta *StorageMeta, err error)
+	Metadata(pairs ...Pair) (meta *StorageMeta)
 
 	// Read will read the file's data.
 	Read(path string, w io.Writer, pairs ...Pair) (n int64, err error)
@@ -535,12 +533,7 @@ func (s UnimplementedStorager) ListWithContext(ctx context.Context, path string,
 	return
 }
 
-func (s UnimplementedStorager) Metadata(pairs ...Pair) (meta *StorageMeta, err error) {
-	err = NewOperationNotImplementedError("metadata")
-	return
-}
-func (s UnimplementedStorager) MetadataWithContext(ctx context.Context, pairs ...Pair) (meta *StorageMeta, err error) {
-	err = NewOperationNotImplementedError("metadata")
+func (s UnimplementedStorager) Metadata(pairs ...Pair) (meta *StorageMeta) {
 	return
 }
 
