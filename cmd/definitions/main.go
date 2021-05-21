@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	specs "github.com/aos-dev/specs/go"
+	specs "github.com/beyondstorage/specs/go"
 )
 
 func main() {

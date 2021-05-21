@@ -8,8 +8,8 @@ import (
 	"io/fs"
 	"path"
 
-	"github.com/aos-dev/go-storage/v3/pairs"
-	"github.com/aos-dev/go-storage/v3/types"
+	"github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-storage/v4/types"
 )
 
 var (

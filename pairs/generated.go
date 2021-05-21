@@ -4,8 +4,8 @@ package pairs
 import (
 	"context"
 
-	"github.com/aos-dev/go-storage/v3/pkg/httpclient"
-	. "github.com/aos-dev/go-storage/v3/types"
+	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
+	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
 // WithContentMd5 will apply content_md5 value to Options.

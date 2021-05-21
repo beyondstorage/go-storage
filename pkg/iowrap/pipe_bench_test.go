@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/aos-dev/go-storage/v3/pkg/randbytes"
+	"github.com/beyondstorage/go-storage/v4/pkg/randbytes"
 )
 
 func BenchmarkStdPipe(b *testing.B) {

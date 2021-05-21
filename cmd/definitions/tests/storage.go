@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	. "github.com/aos-dev/go-storage/v3/types"
+	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
 type Storage struct {

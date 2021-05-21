@@ -6,4 +6,4 @@ If the test failed, the generator SHOULD NOT be used in specific service.
 
 package tests
 
-//go:generate go run -tags tools github.com/aos-dev/go-storage/v3/cmd/definitions service.toml
+//go:generate go run -tags tools github.com/beyondstorage/go-storage/v4/cmd/definitions service.toml
