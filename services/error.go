@@ -3,14 +3,14 @@ package services
 import (
 	"fmt"
 
-	"github.com/aos-dev/go-storage/v3/types"
+	"github.com/beyondstorage/go-storage/v4/types"
 )
 
-type AosError interface {
-	// IsAosError SHOULD and SHOULD ONLY be implemented by error definitions in go-storage & go-service-*.
-	// We depends on the AosError interface to distinguish our errors.
+type InternalError interface {
+	// IsInternalError SHOULD and SHOULD ONLY be implemented by error definitions in go-storage & go-service-*.
+	// We depends on the InternalError interface to distinguish our errors.
 	// There's no need for user code to implement or use this function and interface.
-	IsAosError()
+	IsInternalError()
 }
 
 // Create a new error code.
@@ -30,8 +30,8 @@ func (e errorCode) Error() string {
 	return e.s
 }
 
-// implements AosError
-func (e errorCode) IsAosError() {}
+// implements InternalError
+func (e errorCode) IsInternalError() {}
 
 var (
 	// ErrUnexpected means this is an unexpected error which go-storage can't handle
@@ -135,8 +135,8 @@ func (e MetadataUnrecognizedError) Unwrap() error {
 	return ErrCapabilityInsufficient
 }
 
-// implements AosError
-func (e MetadataUnrecognizedError) IsAosError() {}
+// implements InternalError
+func (e MetadataUnrecognizedError) IsInternalError() {}
 
 // PairUnsupportedError means this operation has unsupported pair.
 type PairUnsupportedError struct {
@@ -152,8 +152,8 @@ func (e PairUnsupportedError) Unwrap() error {
 	return ErrCapabilityInsufficient
 }
 
-// implements AosError
-func (e PairUnsupportedError) IsAosError() {}
+// implements InternalError
+func (e PairUnsupportedError) IsInternalError() {}
 
 // PairRequiredError means this operation has required pair but missing.
 type PairRequiredError struct {
@@ -169,8 +169,8 @@ func (e PairRequiredError) Unwrap() error {
 	return ErrRestrictionDissatisfied
 }
 
-// implements AosError
-func (e PairRequiredError) IsAosError() {}
+// implements InternalError
+func (e PairRequiredError) IsInternalError() {}
 
 // ObjectModeInvalidError means the provided object mode is invalid.
 type ObjectModeInvalidError struct {
@@ -186,8 +186,8 @@ func (e ObjectModeInvalidError) Unwrap() error {
 	return ErrObjectModeInvalid
 }
 
-// implements AosError
-func (e ObjectModeInvalidError) IsAosError() {}
+// implements InternalError
+func (e ObjectModeInvalidError) IsInternalError() {}
 
 // ListModeInvalidError means the provided list mode is invalid.
 type ListModeInvalidError struct {
@@ -202,5 +202,5 @@ func (e ListModeInvalidError) Unwrap() error {
 	return ErrListModeInvalid
 }
 
-// implements AosError
-func (e ListModeInvalidError) IsAosError() {}
+// implements InternalError
+func (e ListModeInvalidError) IsInternalError() {}

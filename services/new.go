@@ -3,7 +3,7 @@ package services
 import (
 	"sync"
 
-	"github.com/aos-dev/go-storage/v3/types"
+	"github.com/beyondstorage/go-storage/v4/types"
 )
 
 type (

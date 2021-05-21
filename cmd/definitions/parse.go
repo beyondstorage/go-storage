@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/Xuanwo/templateutils"
-	specs "github.com/aos-dev/specs/go"
+	specs "github.com/beyondstorage/specs/go"
 )
 
 func parse() (data *Data) {

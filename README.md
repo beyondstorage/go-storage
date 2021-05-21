@@ -1,11 +1,11 @@
 # storage
 
-[![Build Status](https://github.com/aos-dev/go-storage/workflows/Unit%20Test/badge.svg?branch=master)](https://github.com/aos-dev/go-storage/actions?query=workflow%3A%22Unit+Test%22)
-[![Go dev](https://pkg.go.dev/badge/github.com/aos-dev/go-storage/v3)](https://pkg.go.dev/github.com/aos-dev/go-storage/v3)
-[![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/aos-dev/go-storage/v3/blob/master/LICENSE)
-[![go storage dev](https://img.shields.io/matrix/go-storage:aos.dev.svg?server_fqdn=chat.aos.dev&label=%23go-storage%3Aaos.dev&logo=matrix)](https://matrix.to/#/#go-storage:aos.dev)
+[![Build Status](https://github.com/beyondstorage/go-storage/workflows/Unit%20Test/badge.svg?branch=master)](https://github.com/beyondstorage/go-storage/actions?query=workflow%3A%22Unit+Test%22)
+[![Go dev](https://pkg.go.dev/badge/github.com/beyondstorage/go-storage/v4)](https://pkg.go.dev/github.com/beyondstorage/go-storage/v4)
+[![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/beyondstorage/go-storage/blob/master/LICENSE)
+[![go storage dev](https://img.shields.io/matrix/go-storage:aos.dev.svg?server_fqdn=chat.aos.dev&label=%23go-storage%3Aaos.dev&logo=matrix)](https://matrix.to/#/#go-storage:aos.dev) <!-- Need update after matrix updated -->
 
-An application-oriented unified storage layer for Golang.
+A storage abstraction beyond the existing storage services.
 
 ## Goal
 
@@ -17,16 +17,16 @@ An application-oriented unified storage layer for Golang.
 
 ### Widely services support
 
-- [azblob](https://github.com/aos-dev/go-service-azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
-- [cos](https://github.com/aos-dev/go-service-cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
-- [dropbox](https://github.com/aos-dev/go-service-dropbox/): [Dropbox](https://www.dropbox.com)
-- [fs](https://github.com/aos-dev/go-service-fs/): Local file system
-- [gcs](https://github.com/aos-dev/go-service-gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
-- [kodo](https://github.com/aos-dev/go-service-kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
-- [oss](https://github.com/aos-dev/go-service-oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
-- [qingstor](https://github.com/aos-dev/go-service-qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
-- [s3](https://github.com/aos-dev/go-service-s3/): [Amazon S3](https://aws.amazon.com/s3/)
-- [uss](https://github.com/aos-dev/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
+- [azblob](https://github.com/beyondstorage/go-service-azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [cos](https://github.com/beyondstorage/go-service-cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
+- [dropbox](https://github.com/beyondstorage/go-service-dropbox/): [Dropbox](https://www.dropbox.com)
+- [fs](https://github.com/beyondstorage/go-service-fs/): Local file system
+- [gcs](https://github.com/beyondstorage/go-service-gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [kodo](https://github.com/beyondstorage/go-service-kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
+- [oss](https://github.com/beyondstorage/go-service-oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
+- [qingstor](https://github.com/beyondstorage/go-service-qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
+- [s3](https://github.com/beyondstorage/go-service-s3/): [Amazon S3](https://aws.amazon.com/s3/)
+- [uss](https://github.com/beyondstorage/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 
 ### Servicer operation support
 
@@ -86,8 +86,8 @@ import (
 	"bytes"
 	"log"
 
-	"github.com/aos-dev/go-storage/v3/pairs"
-	"github.com/aos-dev/go-service-fs/v2"
+	"github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-service-fs/v2"
 )
 
 func main() {
@@ -119,10 +119,10 @@ func main() {
 
 ## Examples
 
-All examples are maintained in <https://github.com/aos-dev/go-storage-example>.
+All examples are maintained in <https://github.com/beyondstorage/go-storage-example>.
 
 ## Sponsor
 
-<a href="https://vercel.com?utm_source=aos-dev&utm_campaign=oss">
+<a href="https://vercel.com?utm_source=beyondstorage&utm_campaign=oss">
     <img src="./docs/images/vercel.svg">
 </a>

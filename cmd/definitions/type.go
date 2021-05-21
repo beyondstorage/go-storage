@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/Xuanwo/templateutils"
-	specs "github.com/aos-dev/specs/go"
+	specs "github.com/beyondstorage/specs/go"
 )
 
 // Data is the biggest container for all definitions.

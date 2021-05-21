@@ -1,7 +1,7 @@
 package iowrap
 
 import (
-	"github.com/aos-dev/go-storage/v3/pkg/randbytes"
+	"github.com/beyondstorage/go-storage/v4/pkg/randbytes"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
