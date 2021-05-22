@@ -6,9 +6,9 @@ import "strings"
 type ListMode uint8
 
 const (
-	// ListTypeDir means this list will use dir type.
+	// ListModeDir means this list will use dir type.
 	ListModeDir ListMode = 1 << iota
-	// ListTypePrefix means this list will use prefix type.
+	// ListModePrefix means this list will use prefix type.
 	ListModePrefix
 	ListModePart
 	ListModeBlock
@@ -17,18 +17,18 @@ const (
 // String implement Stringer for ListMode.
 //
 // An object with Dir,Part will print like "dir|part"
-func (o ListMode) String() string {
+func (l ListMode) String() string {
 	s := make([]string, 0)
-	if o.IsDir() {
+	if l.IsDir() {
 		s = append(s, "dir")
 	}
-	if o.IsPrefix() {
+	if l.IsPrefix() {
 		s = append(s, "prefix")
 	}
-	if o.IsPart() {
+	if l.IsPart() {
 		s = append(s, "part")
 	}
-	if o.IsBlock() {
+	if l.IsBlock() {
 		s = append(s, "block")
 	}
 	return strings.Join(s, "|")
@@ -37,6 +37,7 @@ func (o ListMode) String() string {
 func (l ListMode) IsDir() bool {
 	return l&ListModeDir != 0
 }
+
 func (l ListMode) IsPrefix() bool {
 	return l&ListModePrefix != 0
 }
