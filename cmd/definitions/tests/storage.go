@@ -10,6 +10,14 @@ import (
 type Storage struct {
 	pairPolicy   PairPolicy
 	defaultPairs DefaultStoragePairs
+
+	UnimplementedCopier
+	UnimplementedFetcher
+	UnimplementedMover
+	UnimplementedMultiparter
+	UnimplementedReacher
+	UnimplementedAppender
+	UnimplementedStorager
 }
 
 func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {

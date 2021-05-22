@@ -80,6 +80,7 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 {{- end }}
 
 {{- range $_, $v := .Namespaces }}
+    {{- template "interfaces" makeSlice $v.Name $v.Interfaces }}
     {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New }}
     {{- template "pairs" makeSlice $v.Name $v.Funcs }}
     {{- template "functions" makeSlice $v.Name $v.Funcs }}
@@ -99,6 +100,16 @@ type Default{{ $pn }}Pairs struct {
     {{- range $_, $v := $data }}
         {{- template "pair" makeSlice $pn $v}}
     {{- end }}
+{{- end }}
+
+{{- define "interfaces" }}
+{{- $pn := index . 0 }}
+{{- $inters := index . 1 }}
+var (
+    {{- range $_, $v := $inters }}
+    _ {{ $v.Name | toPascal }} = &{{ $pn | toPascal }}{}
+    {{- end }}
+)
 {{- end }}
 
 {{- define "pair_new" }}
