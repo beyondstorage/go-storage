@@ -70,9 +70,10 @@ func (s *Service) Pairs() []*Pair {
 
 // Namespace contains all info about a namespace
 type Namespace struct {
-	Name  string
-	New   *Function
-	Funcs []*Function
+	Name       string
+	New        *Function
+	Funcs      []*Function
+	Interfaces []*Interface
 }
 
 // Sort will sort the namespace
@@ -495,6 +496,10 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 	for _, interfaceName := range implements {
 		inter := d.interfacesMap[interfaceName]
 
+		// Add interface into namespace's interface list.
+		ns.Interfaces = append(ns.Interfaces, inter)
+
+		// Add all functions under interface into namespace's func list.
 		for k, v := range inter.Ops {
 			v := v
 

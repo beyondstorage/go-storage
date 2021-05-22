@@ -8,6 +8,8 @@ import (
 
 type Service struct {
 	defaultPairs DefaultServicePairs
+
+	UnimplementedServicer
 }
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store Storager, err error) {
