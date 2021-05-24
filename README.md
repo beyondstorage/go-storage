@@ -75,7 +75,7 @@ Optional metadata
 - `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
 - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
 - `storage-class`: object's storage class as defined
-  in [storage proposal](https://github.com/aos-dev/specs/tree/master/rfcs/8-normalize-metadata-storage-class.md)
+  in [storage proposal](https://github.com/beyondstorage/specs/tree/master/rfcs/8-normalize-metadata-storage-class.md)
 
 ## Quick Start
 
@@ -87,7 +87,7 @@ import (
 	"log"
 
 	"github.com/beyondstorage/go-storage/v4/pairs"
-	"github.com/beyondstorage/go-service-fs/v2"
+	"github.com/beyondstorage/go-service-fs/v3"
 )
 
 func main() {
