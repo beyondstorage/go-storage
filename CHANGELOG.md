@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.0.0] - 2021-05-24
+
+### Added
+
+- storage: Implement GSP-44 (#547)
+- services: Implement GSP-48 Service Registry (#556)
+- services: Implement GSP-47 Additional Error Specification (#555)
+- storage: Implement GSP-49 Add CreateDir Operation (#561)
+- services: Implement GSP-51 Distinguish Errors by IsInternalError (#564)
+- types: Implement GSP-61 Add object mode check for operations (#573)
+- cmd/definitions: Add functions Add and Del for ObjectMode (#574)
+- cmd/definitions: Declare supports interfaces in generator (#584)
+
+### Changed:
+
+- cmd/definitions: Remove redundent // in object.tmpl (#565)
+- docs: Move spec to specs (#568)
+- docs: Add comment to illustrate ignoring generated.go in tests package (#567)
+- cmd/definitions: Update obsolete file paths in comments (#570)
+- object: Implement GSP-62 WriteMultipart returns Part (#572)
+- iowrap: Explicit declare implemented interface (#576)
+- *: Implement GSP-73 Organization Rename (#578)
+- storage: Implement GSP-76 Local Function Metadata (#77) (#580)
+
+### Fixed
+
+- types: Fix IterateDone doesn't implement InternalError (#582)
+
 ## [v3.6.0] - 2021-04-24
 
 ### Added
@@ -14,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - object: Add AppendOffset for appendable object (#532)
 - cmd/definitions: Add a new type byte_array (#534)
 - pkg: Implement wrapper for fs.FS and http.FileSystem (#538)
-- cmd/definitions: Implement AOS-40 (#541)
+- cmd/definitions: Implement GSP-40 (#541)
 
 ### Changed
 
@@ -101,8 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - cmd/definitions: Don't need to store definitions to bindata (#476)
-- cmd: Introduce aos-dev/specs to maintain specs (#481)
-- docs: Migrate design to aos-dev/specs (#488)
+- cmd: Introduce beyondstorage/specs to maintain specs (#481)
+- docs: Migrate design to beyondstorage/specs (#488)
 - cmd: Migrate from hcl to toml (#496)
 
 ## [v2.0.0] - 2020-11-12
@@ -126,8 +154,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- build: Use aos-dev/go-dev-tools to tidy go mod files (#454)
-- cmd/install: Move to aos-dev/go-dev-tools/setup
+- build: Use beyondstorage/go-dev-tools to tidy go mod files (#454)
+- cmd/install: Move to beyondstorage/go-dev-tools/setup
 - pairs: Use dot import to avoid type conflicts (#459)
 - build(deps): bump github.com/google/uuid from 1.1.1 to 1.1.2 (#461)
 
@@ -144,7 +172,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- *: Moving to aos-dev/go-storage (#414)
+- *: Moving to beyondstorage/go-storage (#414)
 - cmd: Move definitions to cmd to support service split (#416)
 - types/object: Move all meta into ObjectMeta
 - Return count in storager when read and write (#427) 
@@ -160,8 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Removed
 
-- coreutils: Split into aos-dev/go-coreutils (#417)
-- tests: Move to aos-dev/go-storage-integration-test (#418)
+- coreutils: Split into beyondstorage/go-coreutils (#417)
+- tests: Move to beyondstorage/go-storage-integration-test (#418)
 - services: Split all services into separate repos (#419)
 - types: Remove no used object meta
 
@@ -488,30 +516,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/aos-dev/go-storage/compare/v3.6.0...HEAD
-[v3.6.0]: https://github.com/aos-dev/go-storage/compare/v3.5.0...v3.6.0
-[v3.5.0]: https://github.com/aos-dev/go-storage/compare/v3.4.2...v3.5.0
-[v3.4.2]: https://github.com/aos-dev/go-storage/compare/v3.4.1...v3.4.2
-[v3.4.1]: https://github.com/aos-dev/go-storage/compare/v3.4.0...v3.4.1
-[v3.4.0]: https://github.com/aos-dev/go-storage/compare/v3.3.0...v3.4.0
-[v3.3.0]: https://github.com/aos-dev/go-storage/compare/v3.2.0...v3.3.0
-[v3.2.0]: https://github.com/aos-dev/go-storage/compare/v3.1.0...v3.2.0
-[v3.1.0]: https://github.com/aos-dev/go-storage/compare/v3.0.0...v3.1.0
-[v3.0.0]: https://github.com/aos-dev/go-storage/compare/v2.0.0...v3.0.0
-[v2.0.0]: https://github.com/aos-dev/go-storage/compare/v2.0.0-beta...v2.0.0
-[v2.0.0-beta]: https://github.com/aos-dev/go-storage/compare/v2.0.0-alpha.1...v2.0.0-beta
-[v2.0.0-alpha.1]: https://github.com/aos-dev/go-storage/compare/v1.2.1...v2.0.0-alpha.1
-[v1.2.1]: https://github.com/aos-dev/go-storage/compare/v1.2.0...v1.2.1
-[v1.2.0]: https://github.com/aos-dev/go-storage/compare/v1.1.0...v1.2.0
-[v1.1.0]: https://github.com/aos-dev/go-storage/compare/v1.0.0...v1.1.0
-[v1.0.0]: https://github.com/aos-dev/go-storage/compare/v0.9.0...v1.0.0
-[v0.9.0]: https://github.com/aos-dev/go-storage/compare/v0.8.0...v0.9.0
-[v0.8.0]: https://github.com/aos-dev/go-storage/compare/v0.7.2...v0.8.0
-[v0.7.2]: https://github.com/aos-dev/go-storage/compare/v0.7.1...v0.7.2
-[v0.7.1]: https://github.com/aos-dev/go-storage/compare/v0.7.0...v0.7.1
-[v0.7.0]: https://github.com/aos-dev/go-storage/compare/v0.6.0...v0.7.0
-[v0.6.0]: https://github.com/aos-dev/go-storage/compare/v0.5.0...v0.6.0
-[v0.5.0]: https://github.com/aos-dev/go-storage/compare/v0.4.0...v0.5.0
-[v0.4.0]: https://github.com/aos-dev/go-storage/compare/v0.3.0...v0.4.0
-[v0.3.0]: https://github.com/aos-dev/go-storage/compare/v0.2.0...v0.3.0
-[v0.2.0]: https://github.com/aos-dev/go-storage/compare/v0.1.0...v0.2.0
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.0.0...HEAD
+[v4.0.0]: https://github.com/beyondstorage/go-storage/compare/v3.6.0...v4.0.0
+[v3.6.0]: https://github.com/beyondstorage/go-storage/compare/v3.5.0...v3.6.0
+[v3.5.0]: https://github.com/beyondstorage/go-storage/compare/v3.4.2...v3.5.0
+[v3.4.2]: https://github.com/beyondstorage/go-storage/compare/v3.4.1...v3.4.2
+[v3.4.1]: https://github.com/beyondstorage/go-storage/compare/v3.4.0...v3.4.1
+[v3.4.0]: https://github.com/beyondstorage/go-storage/compare/v3.3.0...v3.4.0
+[v3.3.0]: https://github.com/beyondstorage/go-storage/compare/v3.2.0...v3.3.0
+[v3.2.0]: https://github.com/beyondstorage/go-storage/compare/v3.1.0...v3.2.0
+[v3.1.0]: https://github.com/beyondstorage/go-storage/compare/v3.0.0...v3.1.0
+[v3.0.0]: https://github.com/beyondstorage/go-storage/compare/v2.0.0...v3.0.0
+[v2.0.0]: https://github.com/beyondstorage/go-storage/compare/v2.0.0-beta...v2.0.0
+[v2.0.0-beta]: https://github.com/beyondstorage/go-storage/compare/v2.0.0-alpha.1...v2.0.0-beta
+[v2.0.0-alpha.1]: https://github.com/beyondstorage/go-storage/compare/v1.2.1...v2.0.0-alpha.1
+[v1.2.1]: https://github.com/beyondstorage/go-storage/compare/v1.2.0...v1.2.1
+[v1.2.0]: https://github.com/beyondstorage/go-storage/compare/v1.1.0...v1.2.0
+[v1.1.0]: https://github.com/beyondstorage/go-storage/compare/v1.0.0...v1.1.0
+[v1.0.0]: https://github.com/beyondstorage/go-storage/compare/v0.9.0...v1.0.0
+[v0.9.0]: https://github.com/beyondstorage/go-storage/compare/v0.8.0...v0.9.0
+[v0.8.0]: https://github.com/beyondstorage/go-storage/compare/v0.7.2...v0.8.0
+[v0.7.2]: https://github.com/beyondstorage/go-storage/compare/v0.7.1...v0.7.2
+[v0.7.1]: https://github.com/beyondstorage/go-storage/compare/v0.7.0...v0.7.1
+[v0.7.0]: https://github.com/beyondstorage/go-storage/compare/v0.6.0...v0.7.0
+[v0.6.0]: https://github.com/beyondstorage/go-storage/compare/v0.5.0...v0.6.0
+[v0.5.0]: https://github.com/beyondstorage/go-storage/compare/v0.4.0...v0.5.0
+[v0.4.0]: https://github.com/beyondstorage/go-storage/compare/v0.3.0...v0.4.0
+[v0.3.0]: https://github.com/beyondstorage/go-storage/compare/v0.2.0...v0.3.0
+[v0.2.0]: https://github.com/beyondstorage/go-storage/compare/v0.1.0...v0.2.0
