@@ -290,7 +290,6 @@ func (f *Function) Format(s specs.Op, p map[string]*Pair) {
 		}
 		f.Required = append(f.Required, pair)
 	}
-
 	for _, v := range s.Optional {
 		pair, ok := p[v]
 		if !ok {

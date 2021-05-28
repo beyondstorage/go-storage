@@ -213,6 +213,10 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
 type pair{{ $pn }}{{ $fnk }} struct {
     pairs []Pair
 
+    {{- range $_, $pair := $fn.Required }}
+    Has{{ $pair.Name | toPascal }}   bool
+    {{ $pair.Name | toPascal }}      {{ $pair.Type }}
+    {{- end }}
     {{- range $_, $pair := $fn.Optional }}
     Has{{ $pair.Name | toPascal }}   bool
     {{ $pair.Name | toPascal }}      {{ $pair.Type }}
@@ -234,14 +238,29 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
         isUnsupportedPair := false
 
         switch v.Key {
+        {{- range $_, $pair := $fn.Required }}
+        case {{ $pair.FullName }}:
+            if result.Has{{ $pair.Name | toPascal }} {
+                continue
+            }
+            result.Has{{ $pair.Name | toPascal }} = true
+            result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+            continue
+        {{- end }}
         {{- range $_, $pair := $fn.Optional }}
         case {{ $pair.FullName }}:
+            if result.Has{{ $pair.Name | toPascal }} {
+                continue
+            }
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
             continue
         {{- end }}
         {{- range $_, $pair := $fn.Virtual }}
         case {{ $pair.FullName }}:
+            if result.Has{{ $pair.Name | toPascal }} {
+                continue
+            }
             // If user enables the virtual pair feature, we can pass the virtual pair into it.
             if s.features.VirtualPairAll || s.features.VirtualPair{{ $fnk }}All || s.features.VirtualPair{{ $fnk }}{{ $pair.Name | toPascal }} {
                 result.Has{{ $pair.Name | toPascal }} = true
@@ -264,6 +283,13 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
         }
         return pair{{ $pn }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
     }
+
+    // Check required pairs.
+    {{- range $_, $pair := $fn.Required }}
+    if !result.Has{{ $pair.Name | toPascal }} {
+        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ {{- $pair.FullName -}} } }
+    }
+    {{- end }}
 
     return result, nil
 }
