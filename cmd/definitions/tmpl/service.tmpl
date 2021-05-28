@@ -81,25 +81,10 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 
 {{- range $_, $v := .Namespaces }}
     {{- template "interfaces" makeSlice $v.Name $v.Interfaces }}
+    {{- template "features" makeSlice $v.Name $v.Funcs }}
     {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New }}
     {{- template "pairs" makeSlice $v.Name $v.Funcs }}
     {{- template "functions" makeSlice $v.Name $v.Funcs }}
-{{- end }}
-
-{{- define "pairs" }}
-    {{- $pn := index . 0 | toPascal }}
-    {{- $data := index . 1 }}
-
-// Default{{ $pn }}Pairs is default pairs for specific action
-type Default{{ $pn }}Pairs struct {
-    {{- range $_, $v := $data }}
-    {{ $v.Name | toPascal }} []Pair
-    {{- end }}
-}
-
-    {{- range $_, $v := $data }}
-        {{- template "pair" makeSlice $pn $v}}
-    {{- end }}
 {{- end }}
 
 {{- define "interfaces" }}
@@ -110,6 +95,35 @@ var (
     _ {{ $v.Name | toPascal }} = &{{ $pn | toPascal }}{}
     {{- end }}
 )
+{{- end }}
+
+{{- define "features" }}
+    {{- $pn := index . 0 | toPascal }}
+    {{- $fns := index . 1 }}
+
+type {{ $pn }}Features struct {
+    LooseOperationAll bool
+    {{- range $_, $v := $fns }}
+    LooseOperation{{ $v.Name | toPascal }} bool
+    {{- end }}
+
+    VirtualOperationAll bool
+    {{- range $_, $fn := $fns }}
+    {{- if $fn.Simulated }}
+    VirtualOperation{{ $fn.Name | toPascal }} bool
+    {{- end }}
+    {{- end }}
+
+    VirtualPairAll bool
+    {{- range $_, $fn := $fns }}
+    {{- if len $fn.Virtual}}
+    VirtualPair{{ $fn.Name | toPascal }}All bool
+    {{- end }}
+    {{- range $_, $v := $fn.Virtual }}
+    VirtualPair{{ $fn.Name | toPascal }}{{ $v.Name | toPascal }} bool
+    {{- end }}
+    {{- end }}
+}
 {{- end }}
 
 {{- define "pair_new" }}
@@ -131,11 +145,6 @@ type pair{{ $pn }}{{$fnk}} struct {
     {{- range $_, $pair := $fn.Optional }}
     Has{{ $pair.Name | toPascal }}   bool
     {{ $pair.Name | toPascal }}      {{ $pair.Type }}
-    {{- end }}
-    // Generated pairs
-    {{- range $_, $pair := $fn.Generated }}
-    Has{{ $pair.Name | toPascal }}   bool
-    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
     {{- end }}
 }
 
@@ -165,20 +174,6 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
-        // Generated pairs
-        {{- range $_, $pair := $fn.Generated }}
-        case {{ $pair.FullName }}:
-            value, ok := convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
-            if ok {
-                if result.Has{{ $pair.Name | toPascal }} {
-                    continue
-                }
-                result.Has{{ $pair.Name | toPascal }} = true
-                result.{{ $pair.Name | toPascal }} = value
-            } else {
-                result.Has{{ $pair.Name | toPascal }} = false
-            }
-        {{- end }}
         }
     }
 
@@ -192,6 +187,22 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
 }
 {{- end }}
 
+{{- define "pairs" }}
+    {{- $pn := index . 0 | toPascal }}
+    {{- $data := index . 1 }}
+
+    // Default{{ $pn }}Pairs is default pairs for specific action
+    type Default{{ $pn }}Pairs struct {
+    {{- range $_, $v := $data }}
+        {{ $v.Name | toPascal }} []Pair
+    {{- end }}
+    }
+
+    {{- range $_, $v := $data }}
+        {{- template "pair" makeSlice $pn $v}}
+    {{- end }}
+{{- end }}
+
 {{- define "pair" }}
 {{- $pn := index . 0 }}
 {{- $fn := index . 1 }}
@@ -202,20 +213,13 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
 type pair{{ $pn }}{{ $fnk }} struct {
     pairs []Pair
 
-    // Required pairs
-    {{- range $_, $pair := $fn.Required }}
-    Has{{ $pair.Name | toPascal }}   bool
-    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
-    {{- end }}
-    // Optional pairs
     {{- range $_, $pair := $fn.Optional }}
     Has{{ $pair.Name | toPascal }}   bool
     {{ $pair.Name | toPascal }}      {{ $pair.Type }}
     {{- end }}
-    // Generated pairs
-    {{- range $_, $pair := $fn.Generated }}
+    {{- range $_, $pair := $fn.Virtual }}
     Has{{ $pair.Name | toPascal }}   bool
-    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+    {{ $pair.Name | toPascal }}      {{ $pair.Type }}
     {{- end }}
 }
 
@@ -226,52 +230,40 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
     }
 
     for _, v := range opts {
+        // isUnsupportedPair records whether current pair is unsupported.
+        isUnsupportedPair := false
+
         switch v.Key {
-        // Required pairs
-        {{- range $_, $pair := $fn.Required }}
-        case {{ $pair.FullName }}:
-            result.Has{{ $pair.Name | toPascal }} = true
-            result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
-        {{- end }}
-        // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
         case {{ $pair.FullName }}:
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+            continue
         {{- end }}
-        // Generated pairs
-        {{- range $_, $pair := $fn.Generated }}
+        {{- range $_, $pair := $fn.Virtual }}
         case {{ $pair.FullName }}:
-            value, ok := s.convert{{ $fnk }}{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }}))
-            if ok {
+            // If user enables the virtual pair feature, we can pass the virtual pair into it.
+            if s.features.VirtualPairAll || s.features.VirtualPair{{ $fnk }}All || s.features.VirtualPair{{ $fnk }}{{ $pair.Name | toPascal }} {
                 result.Has{{ $pair.Name | toPascal }} = true
-                result.{{ $pair.Name | toPascal }} = value
-            } else {
-                 {{if ne $pn "Service" }}
-                if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} || s.pairPolicy.{{ $fnk }}{{ $pair.Name | toPascal }} {
-                    return pair{{ $pn }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
-                }
-                {{else}}
-                result.Has{{ $pair.Name | toPascal }} = false
-                {{end}}
+                result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+                continue
             }
+            isUnsupportedPair = true
         {{- end }}
         default:
-            {{if ne $pn "Service" }}
-            if s.pairPolicy.All || s.pairPolicy.{{ $fnk }} {
-                return pair{{ $pn }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
-            }
-            {{else}}
-                continue
-            {{end}}
+            isUnsupportedPair = true
         }
-    }
 
-    {{- range $_, $pair := $fn.Required }}
-    if !result.Has{{ $pair.Name | toPascal }} {
-        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{Keys:[]string{ {{- $pair.FullName -}} }}
+        if !isUnsupportedPair {
+            continue
+        }
+
+        // If user enables the loose operation feature, we will ignore PairUnsupportedError.
+        if s.features.LooseOperationAll || s.features.LooseOperation{{ $fnk }} {
+            continue
+        }
+        return pair{{ $pn }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
     }
-    {{- end }}
 
     return result, nil
 }
@@ -320,6 +312,14 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
                 err = services.ObjectModeInvalidError{Expected: Mode{{ $mode }}, Actual: o.Mode}
                 return
             }
+        {{- end }}
+
+        {{- if $fn.Simulated }}
+        // If virtual operation feature is not enabled, we will act like this operation is not implemented.
+        if !s.features.VirtualOperationAll && !s.features.VirtualOperation{{ $fnk }} {
+            err = NewOperationNotImplementedError("{{ $fn.Name }}")
+            return
+        }
         {{- end }}
 
         pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
