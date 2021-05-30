@@ -1,7 +1,7 @@
 github.com/Xuanwo/templateutils v0.1.0 h1:WpkWOqQtIQ2vAIpJLa727DdN8WtxhUkkbDGa6UhntJY=
 github.com/Xuanwo/templateutils v0.1.0/go.mod h1:OdE0DJ+CJxDBq6psX5DPV+gOZi8bhuHuVUpPCG++Wb8=
-github.com/beyondstorage/specs/go v0.0.0-20210530041546-b58fbb1d6106 h1:Jv9pt7LsWRRfzjf07jM9HmiBiDAWTIOWIZ5TTx2eA58=
-github.com/beyondstorage/specs/go v0.0.0-20210530041546-b58fbb1d6106/go.mod h1:f5VvmLHc/dNJwl+/yAv/TOHdev3phvuEswx8DIXiSQQ=
+github.com/beyondstorage/specs/go v0.0.0-20210530044123-3ff75e192bc9 h1:YSiF27cAHlDZk9q+oaEHQbA8dH8XTvYxeTOoPzNCwOQ=
+github.com/beyondstorage/specs/go v0.0.0-20210530044123-3ff75e192bc9/go.mod h1:f5VvmLHc/dNJwl+/yAv/TOHdev3phvuEswx8DIXiSQQ=
 github.com/dave/dst v0.26.2 h1:lnxLAKI3tx7MgLNVDirFCsDTlTG9nKTk7GcptKcWSwY=
 github.com/dave/dst v0.26.2/go.mod h1:UMDJuIRPfyUCC78eFuB+SV/WI8oDeyFDvM/JR6NI3IU=
 github.com/dave/gopackages v0.0.0-20170318123100-46e7023ec56e/go.mod h1:i00+b/gKdIDIxuLDFob7ustLAVqhsZRk2qVZrArELGQ=
