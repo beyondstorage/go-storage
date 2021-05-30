@@ -98,8 +98,8 @@ var (
 {{- end }}
 
 {{- define "features" }}
-    {{- $pn := index . 0 | toPascal }}
-    {{- $fns := index . 1 }}
+{{- $pn := index . 0 | toPascal }}
+{{- $fns := index . 1 }}
 
 type {{ $pn }}Features struct {
     LooseOperationAll bool
