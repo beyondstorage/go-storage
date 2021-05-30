@@ -309,55 +309,55 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
 {{- end }}
 
 {{- define "function" }}
-    {{- $pn := index . 0 }}
-    {{- $fn := index . 1 }}
+{{- $pn := index . 0 }}
+{{- $fn := index . 1 }}
 
-    {{ $fnk := $fn.Name | toPascal }}
+{{ $fnk := $fn.Name | toPascal }}
 
-    // {{ $fnk }} {{ $fn.Description }}
-    //
-    // This function will create a context by default.
-    func (s *{{$pn}}) {{ $fnk }}({{$fn.Params.String}}) ({{$fn.Results.String}}) {
-        ctx := context.Background()
-        return s.{{ $fnk }}WithContext(ctx, {{$fn.Params.Caller}})
+// {{ $fnk }} {{ $fn.Description }}
+//
+// This function will create a context by default.
+func (s *{{$pn}}) {{ $fnk }}({{$fn.Params.String}}) ({{$fn.Results.String}}) {
+    ctx := context.Background()
+    return s.{{ $fnk }}WithContext(ctx, {{$fn.Params.Caller}})
+}
+
+// {{ $fnk }}WithContext {{ $fn.Description }}
+func (s *{{$pn}}) {{ $fnk }}WithContext(ctx context.Context, {{$fn.Params.String}}) ({{$fn.Results.String}}) {
+    defer func(){
+        {{- $path := $fn.Params.PathCaller }}
+        {{- if and (eq $path "") (eq $pn "Service") }}
+            {{ $path = ",\"\"" }}
+        {{- end }}
+        err = s.formatError("{{$fn.Name}}", err {{ $path }} )
+    }()
+
+    {{- if $fn.Simulated }}
+    // If virtual operation feature is not enabled, we will act like this operation is not implemented.
+    if !s.features.VirtualOperationAll && !s.features.VirtualOperation{{ $fnk }} {
+        err = NewOperationNotImplementedError("{{ $fn.Name }}")
+        return
+    }
+    {{- end }}
+
+    {{- if ne $fn.ObjectMode "" }}
+    {{- $mode := $fn.ObjectMode | toPascal }}
+    if !o.Mode.Is{{ $mode }}() {
+        err = services.ObjectModeInvalidError{Expected: Mode{{ $mode }}, Actual: o.Mode}
+        return
+    }
+    {{- end }}
+
+    pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
+    var opt pair{{ $pn }}{{ $fnk }}
+
+    opt, err = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
+    if err != nil {
+        return
     }
 
-    // {{ $fnk }}WithContext {{ $fn.Description }}
-    func (s *{{$pn}}) {{ $fnk }}WithContext(ctx context.Context, {{$fn.Params.String}}) ({{$fn.Results.String}}) {
-        defer func(){
-            {{- $path := $fn.Params.PathCaller }}
-            {{- if and (eq $path "") (eq $pn "Service") }}
-                {{ $path = ",\"\"" }}
-            {{- end }}
-            err = s.formatError("{{$fn.Name}}", err {{ $path }} )
-        }()
-
-        {{- if ne $fn.ObjectMode ""}}
-            {{- $mode := $fn.ObjectMode | toPascal }}
-            if !o.Mode.Is{{ $mode }}() {
-                err = services.ObjectModeInvalidError{Expected: Mode{{ $mode }}, Actual: o.Mode}
-                return
-            }
-        {{- end }}
-
-        {{- if $fn.Simulated }}
-        // If virtual operation feature is not enabled, we will act like this operation is not implemented.
-        if !s.features.VirtualOperationAll && !s.features.VirtualOperation{{ $fnk }} {
-            err = NewOperationNotImplementedError("{{ $fn.Name }}")
-            return
-        }
-        {{- end }}
-
-        pairs = append(pairs, s.defaultPairs.{{ $fnk }}...)
-        var opt pair{{ $pn }}{{ $fnk }}
-
-        opt, err = s.parsePair{{ $pn }}{{ $fnk }}(pairs)
-        if err != nil {
-            return
-        }
-
-        return s.{{  $fn.Name | toCamel }}(ctx, {{$fn.Params.TrimLast.CallerEndswithComma}} opt)
-    }
+    return s.{{ $fn.Name | toCamel }}(ctx, {{$fn.Params.TrimLast.CallerEndswithComma}} opt)
+}
 {{- end }}
 
 {{- define "local_function" }}
