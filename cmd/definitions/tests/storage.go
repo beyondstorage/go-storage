@@ -8,8 +8,8 @@ import (
 )
 
 type Storage struct {
-	pairPolicy   PairPolicy
 	defaultPairs DefaultStoragePairs
+	features     StorageFeatures
 
 	UnimplementedCopier
 	UnimplementedFetcher

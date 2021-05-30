@@ -265,9 +265,11 @@ func (o *Operation) FormatResultsWithPackageName(packageName string) string {
 type Function struct {
 	*Operation
 
-	Required  []*Pair
-	Optional  []*Pair
-	Generated []*Pair // This op's generated pairs, they will be treated as optional.
+	Simulated bool // This op is simulated, user can decide whether use the virtual function or not.
+
+	Required []*Pair // TODO: other functions could not have required pairs.
+	Optional []*Pair
+	Virtual  []*Pair // This op's virtual pairs, user can decide whether use the virtual pairs.
 
 	Implemented bool // flag for whether this function has been implemented or not.
 }
@@ -279,6 +281,8 @@ func NewFunction(o *Operation) *Function {
 
 // Format will formatGlobal a function with Op.
 func (f *Function) Format(s specs.Op, p map[string]*Pair) {
+	f.Simulated = s.Simulated
+
 	for _, v := range s.Required {
 		pair, ok := p[v]
 		if !ok {
@@ -293,6 +297,13 @@ func (f *Function) Format(s specs.Op, p map[string]*Pair) {
 		}
 		f.Optional = append(f.Optional, pair)
 	}
+	for _, v := range s.Virtual {
+		pair, ok := p[v]
+		if !ok {
+			log.Fatalf("pair %s is not exist", v)
+		}
+		f.Virtual = append(f.Virtual, pair)
+	}
 }
 
 // Sort will sort this function.
@@ -303,10 +314,6 @@ func (f *Function) Sort() {
 	})
 	sort.Slice(f.Optional, func(i, j int) bool {
 		x := f.Optional
-		return x[i].Name < x[j].Name
-	})
-	sort.Slice(f.Generated, func(i, j int) bool {
-		x := f.Generated
 		return x[i].Name < x[j].Name
 	})
 }
@@ -521,20 +528,23 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 		}
 	}
 
-	// Inject generated pair.
-	d.InjectNamespace(srv, ns)
+	d.ValidateNamespace(srv, ns)
 	return ns
 }
 
-// InjectNamespace will inject a namespace to insert generated pairs.
-func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
-	// Inject read_callback_func
+// ValidateNamespace will inject a namespace to insert generated pairs.
+func (d *Data) ValidateNamespace(srv *Service, n *Namespace) {
 	for _, v := range n.Funcs {
+		// For now, we only disallow required pairs for Storage.
+		if n.Name == "Storage" && len(v.Required) > 0 {
+			log.Fatalf("Operation [%s] cannot specify required pairs.", v.Name)
+		}
+
 		existPairs := map[string]bool{}
-		for _, p := range v.Required {
+		for _, p := range v.Optional {
 			existPairs[p.Name] = true
 		}
-		for _, p := range v.Optional {
+		for _, p := range v.Virtual {
 			existPairs[p.Name] = true
 		}
 
@@ -542,11 +552,7 @@ func (d *Data) InjectNamespace(srv *Service, n *Namespace) {
 			if existPairs[ps] {
 				continue
 			}
-			pair, ok := srv.pairs[ps]
-			if !ok {
-				log.Fatalf("pair %s is not exist", ps)
-			}
-			v.Generated = append(v.Generated, pair)
+			log.Fatalf("Operation [%s] requires Pair [%s] support, please add virtual implementation for this pair.", v.Name, ps)
 		}
 	}
 }

@@ -8,6 +8,7 @@ import (
 
 type Service struct {
 	defaultPairs DefaultServicePairs
+	features     ServiceFeatures
 
 	UnimplementedServicer
 }
