@@ -2,7 +2,7 @@ name = "tests"
 
 [namespace.service.new]
 required = ["credential"]
-optional = ["default_service_pairs", "endpoint", "http_client_options"]
+optional = ["service_features", "default_service_pairs", "endpoint", "http_client_options"]
 
 [namespace.service.op.create]
 required = ["location"]
@@ -21,7 +21,7 @@ implement = ["copier", "fetcher", "mover", "multiparter", "reacher", "appender"]
 
 [namespace.storage.new]
 required = ["name"]
-optional = ["default_storage_pairs", "disable_uri_cleaning", "http_client_options", "location", "pair_policy", "work_dir"]
+optional = ["storage_features", "default_storage_pairs", "disable_uri_cleaning", "http_client_options", "location", "work_dir"]
 
 [namespace.storage.op.delete]
 optional = ["multipart_id"]
@@ -53,6 +53,14 @@ description = "set default pairs for service actions"
 [pairs.default_storage_pairs]
 type = "DefaultStoragePairs"
 description = "set default pairs for storager actions"
+
+[pairs.service_features]
+type = "ServiceFeatures"
+description = "set service features"
+
+[pairs.storage_features]
+type = "StorageFeatures"
+description = "set storage features"
 
 [infos.object.meta.storage-class]
 type = "string"

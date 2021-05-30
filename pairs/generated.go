@@ -158,16 +158,6 @@ func WithOffset(v int64) Pair {
 	}
 }
 
-// WithPairPolicy will apply pair_policy value to Options.
-//
-// PairPolicy
-func WithPairPolicy(v PairPolicy) Pair {
-	return Pair{
-		Key:   "pair_policy",
-		Value: v,
-	}
-}
-
 // WithSize will apply size value to Options.
 //
 // Size specify size for this request, storage will only read limited content data
