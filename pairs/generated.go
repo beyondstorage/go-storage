@@ -3,6 +3,7 @@ package pairs
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
 	. "github.com/beyondstorage/go-storage/v4/types"
@@ -178,5 +179,27 @@ func WithWorkDir(v string) Pair {
 	return Pair{
 		Key:   "work_dir",
 		Value: v,
+	}
+}
+
+func globalPairs() PairMap {
+	return PairMap{
+		"content_md5":         reflect.TypeOf((*string)(nil)).Elem(),
+		"content_type":        reflect.TypeOf((*string)(nil)).Elem(),
+		"context":             reflect.TypeOf((*context.Context)(nil)).Elem(),
+		"continuation_token":  reflect.TypeOf((*string)(nil)).Elem(),
+		"credential":          reflect.TypeOf((*string)(nil)).Elem(),
+		"endpoint":            reflect.TypeOf((*string)(nil)).Elem(),
+		"expire":              reflect.TypeOf((*int)(nil)).Elem(),
+		"http_client_options": reflect.TypeOf((**httpclient.Options)(nil)).Elem(),
+		"interceptor":         reflect.TypeOf((*Interceptor)(nil)).Elem(),
+		"io_callback":         reflect.TypeOf((*func([]byte))(nil)).Elem(),
+		"list_mode":           reflect.TypeOf((*ListMode)(nil)).Elem(),
+		"location":            reflect.TypeOf((*string)(nil)).Elem(),
+		"multipart_id":        reflect.TypeOf((*string)(nil)).Elem(),
+		"name":                reflect.TypeOf((*string)(nil)).Elem(),
+		"offset":              reflect.TypeOf((*int64)(nil)).Elem(),
+		"size":                reflect.TypeOf((*int64)(nil)).Elem(),
+		"work_dir":            reflect.TypeOf((*string)(nil)).Elem(),
 	}
 }

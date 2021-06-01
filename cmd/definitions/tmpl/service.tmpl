@@ -4,10 +4,12 @@ package {{ .Name }}
 import (
     "context"
     "io"
+    "reflect"
 
     "github.com/beyondstorage/go-storage/v4/pkg/endpoint"
     "github.com/beyondstorage/go-storage/v4/pkg/credential"
     "github.com/beyondstorage/go-storage/v4/pkg/httpclient"
+    "github.com/beyondstorage/go-storage/v4/pairs"
     "github.com/beyondstorage/go-storage/v4/services"
     . "github.com/beyondstorage/go-storage/v4/types"
 )
@@ -78,6 +80,17 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 }
 {{- end }}
 {{- end }}
+
+func servicePairs() pairs.PairMap {
+	return pairs.PairMap{
+		{{- range $_, $v := .Pairs }}
+        {{- if not $v.Global }}
+        {{- $pname := $v.Name | toPascal }}
+		"{{ $v.Name }}": reflect.TypeOf((*{{ $v.Type }})(nil)).Elem(),
+		{{- end }}
+		{{- end }}
+	}
+}
 
 {{- range $_, $v := .Namespaces }}
     {{- template "interfaces" makeSlice $v.Name $v.Interfaces }}
@@ -384,4 +397,5 @@ func init() {
     {{- range $_, $v := .Namespaces }}
         services.Register{{ $v.Name | toPascal }}r(Type, New{{ $v.Name | toPascal }}r)
     {{- end }}
+    pairs.RegisterServicePairMap(Type, servicePairs())
 }
