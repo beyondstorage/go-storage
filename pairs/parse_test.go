@@ -6,7 +6,6 @@ import (
 	"math"
 	"reflect"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/beyondstorage/go-storage/v4/services"
@@ -60,8 +59,6 @@ func TestParseIdentical(t *testing.T) {
 				f.Fuzz(vPtr.Interface())
 				v := vPtr.Elem().Interface()
 				value, err := parser(fmt.Sprint(v))
-				t.Logf("%v %#v %v", v, v, strings.Split(fmt.Sprint(v), "|"))
-
 				b := assert.Nil(t, err)
 				// We check they have same type and string representation,
 				// since in special cases like ListMode, two different value have same string representation.
