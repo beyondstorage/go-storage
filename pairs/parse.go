@@ -34,14 +34,15 @@ func ParseMap(ty string, m map[string]string) (ps []Pair, err error) {
 	}
 
 	for k, v := range m {
-		pair := Pair{Key: k}
+		var pair Pair
 		if _, ok := globalPairMap[k]; ok {
-			pair.Value, err = globalPairMap.parse(k, v)
+			pair, err = globalPairMap.parse(k, v)
 		} else {
-			pair.Value, err = servicePairMap.parse(k, v)
+			pair, err = servicePairMap.parse(k, v)
+			pair.Key = ty + "_" + pair.Key
 		}
 		if err != nil {
-			return
+			return nil, err
 		}
 		ps = append(ps, pair)
 	}
@@ -57,10 +58,15 @@ func Parse(ty string, k string, v string) (pair Pair, err error) {
 	}
 
 	if _, ok := globalPairMap[k]; ok {
-		return globalPairMap.parse(k, v)
+		pair, err = globalPairMap.parse(k, v)
 	} else {
-		return servicePairMap.parse(k, v)
+		pair, err = servicePairMap.parse(k, v)
+		pair.Key = ty + "_" + pair.Key
 	}
+	if err != nil {
+		pair = Pair{}
+	}
+	return
 }
 
 func (m PairMap) parse(k string, v string) (pair Pair, err error) {
