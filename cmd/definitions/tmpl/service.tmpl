@@ -4,7 +4,6 @@ package {{ .Name }}
 import (
     "context"
     "io"
-    "reflect"
 
     "github.com/beyondstorage/go-storage/v4/pkg/endpoint"
     "github.com/beyondstorage/go-storage/v4/pkg/credential"
@@ -86,7 +85,7 @@ func servicePairs() pairs.PairMap {
 		{{- range $_, $v := .Pairs }}
         {{- if not $v.Global }}
         {{- $pname := $v.Name | toPascal }}
-		"{{ $v.Name }}": reflect.TypeOf((*{{ $v.Type }})(nil)).Elem(),
+		"{{ $v.Name }}": pairs.PairInfo{New: func()interface{} {return &struct{Value {{ $v.Type }}}{}}},
 		{{- end }}
 		{{- end }}
 	}

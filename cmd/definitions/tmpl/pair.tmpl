@@ -3,7 +3,6 @@ package pairs
 
 import (
     "context"
-    "reflect"
 
     "github.com/beyondstorage/go-storage/v4/pkg/httpclient"
     . "github.com/beyondstorage/go-storage/v4/types"
@@ -27,7 +26,7 @@ func globalPairs() PairMap {
 	return PairMap{
 		{{- range $_, $v := .Pairs }}
 		{{- $pname := $v.Name | toPascal }}
-		"{{ $v.Name }}": reflect.TypeOf((*{{ $v.Type }})(nil)).Elem(),
+		"{{ $v.Name }}": PairInfo{New: func()interface{} {return &struct{Value {{ $v.Type }}}{}}},
 		{{- end }}
 	}
 }

@@ -3,7 +3,6 @@ package pairs
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
 	. "github.com/beyondstorage/go-storage/v4/types"
@@ -184,22 +183,22 @@ func WithWorkDir(v string) Pair {
 
 func globalPairs() PairMap {
 	return PairMap{
-		"content_md5":         reflect.TypeOf((*string)(nil)).Elem(),
-		"content_type":        reflect.TypeOf((*string)(nil)).Elem(),
-		"context":             reflect.TypeOf((*context.Context)(nil)).Elem(),
-		"continuation_token":  reflect.TypeOf((*string)(nil)).Elem(),
-		"credential":          reflect.TypeOf((*string)(nil)).Elem(),
-		"endpoint":            reflect.TypeOf((*string)(nil)).Elem(),
-		"expire":              reflect.TypeOf((*int)(nil)).Elem(),
-		"http_client_options": reflect.TypeOf((**httpclient.Options)(nil)).Elem(),
-		"interceptor":         reflect.TypeOf((*Interceptor)(nil)).Elem(),
-		"io_callback":         reflect.TypeOf((*func([]byte))(nil)).Elem(),
-		"list_mode":           reflect.TypeOf((*ListMode)(nil)).Elem(),
-		"location":            reflect.TypeOf((*string)(nil)).Elem(),
-		"multipart_id":        reflect.TypeOf((*string)(nil)).Elem(),
-		"name":                reflect.TypeOf((*string)(nil)).Elem(),
-		"offset":              reflect.TypeOf((*int64)(nil)).Elem(),
-		"size":                reflect.TypeOf((*int64)(nil)).Elem(),
-		"work_dir":            reflect.TypeOf((*string)(nil)).Elem(),
+		"content_md5":         PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
+		"content_type":        PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
+		"context":             PairInfo{New: func() interface{} { return &struct{ Value context.Context }{} }},
+		"continuation_token":  PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
+		"credential":          PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
+		"endpoint":            PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
+		"expire":              PairInfo{New: func() interface{} { return &struct{ Value int }{} }},
+		"http_client_options": PairInfo{New: func() interface{} { return &struct{ Value *httpclient.Options }{} }},
+		"interceptor":         PairInfo{New: func() interface{} { return &struct{ Value Interceptor }{} }},
+		"io_callback":         PairInfo{New: func() interface{} { return &struct{ Value func([]byte) }{} }},
+		"list_mode":           PairInfo{New: func() interface{} { return &struct{ Value ListMode }{} }},
+		"location":            PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
+		"multipart_id":        PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
+		"name":                PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
+		"offset":              PairInfo{New: func() interface{} { return &struct{ Value int64 }{} }},
+		"size":                PairInfo{New: func() interface{} { return &struct{ Value int64 }{} }},
+		"work_dir":            PairInfo{New: func() interface{} { return &struct{ Value string }{} }},
 	}
 }

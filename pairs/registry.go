@@ -1,9 +1,13 @@
 package pairs
 
-import "reflect"
-
 // PairMap is a map of the types of pairs.
-type PairMap map[string]reflect.Type
+type PairMap map[string]PairInfo
+
+type PairInfo struct {
+	// New returns an interface{} representing a pointer to a struct.
+	// The struct has one field Value representing new zero value for the pair's value type.
+	New func() interface{}
+}
 
 var (
 	globalPairMap   PairMap

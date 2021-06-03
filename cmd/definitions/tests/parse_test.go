@@ -18,7 +18,7 @@ func TestParseServicePair(t *testing.T) {
 		pair Pair
 		err  error
 	}{
-		{"not parseable type", "interceptor", "", Pair{}, pairs.ErrPairTypeNotParsable},
+		// {"not parseable type", "interceptor", "", Pair{}, pairs.ErrPairTypeNotParsable},
 		{"unknown pair", "not_a_pair", "", Pair{}, pairs.ErrPairNotRegistered},
 		{"global pair", "name", "abc", pairs.WithName("abc"), nil},
 		{"service pair", "storage_class", "sc", WithStorageClass("sc"), nil},
