@@ -535,7 +535,7 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 // ValidateNamespace will inject a namespace to insert generated pairs.
 func (d *Data) ValidateNamespace(srv *Service, n *Namespace) {
 	for _, v := range n.Funcs {
-		// For now, we only disallow required pairs for Storage.
+		// For now, we disallow required pairs for Storage.
 		if n.Name == "Storage" && len(v.Required) > 0 {
 			log.Fatalf("Operation [%s] cannot specify required pairs.", v.Name)
 		}

@@ -469,11 +469,36 @@ type Storager interface {
 	String() string
 
 	// Create will create a new object without any api call.
+	//
+	// ## Behavior
+	//
+	// - Create SHOULD NOT send any API call.
+	// - Create SHOULD accept ObjectMode pair as object mode.
 	Create(path string, pairs ...Pair) (o *Object)
 
-	// Delete will delete an Object from service.
+	// Delete will delete an object from service.
+	//
+	// ## Behavior
+	//
+	// - Delete only delete one and only one object.
+	//   - Service DON'T NEED to support remove all.
+	//   - User NEED to implement remove_all by themself.
+	// - Delete is idempotent.
+	//   - Successful delete always return nil error.
+	//   - Delete SHOULD never return `ObjectNotExist`
+	//   - Delete DON'T NEED to check the object exist or not.
 	Delete(path string, pairs ...Pair) (err error)
-	// DeleteWithContext will delete an Object from service.
+	// DeleteWithContext will delete an object from service.
+	//
+	// ## Behavior
+	//
+	// - Delete only delete one and only one object.
+	//   - Service DON'T NEED to support remove all.
+	//   - User NEED to implement remove_all by themself.
+	// - Delete is idempotent.
+	//   - Successful delete always return nil error.
+	//   - Delete SHOULD never return `ObjectNotExist`
+	//   - Delete DON'T NEED to check the object exist or not.
 	DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
 
 	// List will return list a specific path.
@@ -490,8 +515,20 @@ type Storager interface {
 	ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...Pair) (n int64, err error)
 
 	// Stat will stat a path to get info of an object.
+	//
+	// ## Behavior
+	//
+	// - Stat SHOULD accept ObjectMode pair as hints.
+	//   - Service COULD have different implementations for different object mode.
+	//   - Service SHOULD check if returning ObjectMode is match
 	Stat(path string, pairs ...Pair) (o *Object, err error)
 	// StatWithContext will stat a path to get info of an object.
+	//
+	// ## Behavior
+	//
+	// - Stat SHOULD accept ObjectMode pair as hints.
+	//   - Service COULD have different implementations for different object mode.
+	//   - Service SHOULD check if returning ObjectMode is match
 	StatWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// Write will write data into a file.
