@@ -24,7 +24,7 @@ required = ["name"]
 optional = ["storage_features", "default_storage_pairs", "disable_uri_cleaning", "http_client_options", "location", "work_dir"]
 
 [namespace.storage.op.delete]
-optional = ["multipart_id"]
+optional = ["multipart_id", "object_mode"]
 
 [namespace.storage.op.list]
 optional = ["list_mode"]
@@ -35,6 +35,12 @@ required = ["expire"]
 [namespace.storage.op.read]
 optional = ["io_callback", "size"]
 virtual = ["offset"]
+
+[namespace.storage.op.create]
+optional = ["object_mode"]
+
+[namespace.storage.op.stat]
+optional = ["object_mode"]
 
 [namespace.storage.op.write]
 simulated = true
