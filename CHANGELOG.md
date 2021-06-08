@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.1.0] - 2021-06-08
+
+### Added
+
+- cmd/definitions: Implement GSP-87 Feature Gates (#586)
+- cmd/definitions: Implement GSP-93 Add ObjectMode Pair (#592)
+
+### Fixed
+
+- cmd/definitions: Fix storage features not generated (#588)
+
 ## [v4.0.0] - 2021-05-24
 
 ### Added
@@ -516,7 +527,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.1.0...HEAD
+[v4.1.0]: https://github.com/beyondstorage/go-storage/compare/v4.0.0...v4.1.0
 [v4.0.0]: https://github.com/beyondstorage/go-storage/compare/v3.6.0...v4.0.0
 [v3.6.0]: https://github.com/beyondstorage/go-storage/compare/v3.5.0...v3.6.0
 [v3.5.0]: https://github.com/beyondstorage/go-storage/compare/v3.4.2...v3.5.0
