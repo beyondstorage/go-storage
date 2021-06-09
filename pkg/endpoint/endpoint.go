@@ -8,12 +8,18 @@ import (
 
 const (
 	// ProtocolHTTPS is the https credential protocol.
+	//
+	// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 	ProtocolHTTPS = "https"
 	// ProtocolHTTP is the http credential protocol.
+	//
+	// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 	ProtocolHTTP = "http"
 )
 
 // Value is the required info to connect a service.
+//
+// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 type Value struct {
 	Protocol string
 	Host     string
@@ -29,6 +35,8 @@ func (v Value) String() string {
 }
 
 // Parse will parse config string to create a endpoint Provider.
+//
+// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 func Parse(cfg string) (p Value, err error) {
 	s := strings.Split(cfg, ":")
 	if len(s) < 2 {
@@ -67,6 +75,8 @@ func Parse(cfg string) (p Value, err error) {
 }
 
 // NewHTTPS will create a static endpoint from parsed URL.
+//
+// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 func NewHTTPS(host string, port int) Value {
 	return Value{
 		Protocol: ProtocolHTTPS,
@@ -76,6 +86,8 @@ func NewHTTPS(host string, port int) Value {
 }
 
 // NewHTTP will create a static endpoint from parsed URL.
+//
+// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 func NewHTTP(host string, port int) Value {
 	return Value{
 		Protocol: ProtocolHTTP,
