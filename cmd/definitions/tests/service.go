@@ -10,6 +10,8 @@ type Service struct {
 	defaultPairs DefaultServicePairs
 	features     ServiceFeatures
 
+	Pairs []Pair
+
 	UnimplementedServicer
 }
 

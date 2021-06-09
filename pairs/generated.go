@@ -3,9 +3,9 @@ package pairs
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
+	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
@@ -182,24 +182,28 @@ func WithWorkDir(v string) Pair {
 	}
 }
 
-func globalPairs() PairMap {
-	return PairMap{
-		"content_md5":         reflect.TypeOf((*string)(nil)).Elem(),
-		"content_type":        reflect.TypeOf((*string)(nil)).Elem(),
-		"context":             reflect.TypeOf((*context.Context)(nil)).Elem(),
-		"continuation_token":  reflect.TypeOf((*string)(nil)).Elem(),
-		"credential":          reflect.TypeOf((*string)(nil)).Elem(),
-		"endpoint":            reflect.TypeOf((*string)(nil)).Elem(),
-		"expire":              reflect.TypeOf((*int)(nil)).Elem(),
-		"http_client_options": reflect.TypeOf((**httpclient.Options)(nil)).Elem(),
-		"interceptor":         reflect.TypeOf((*Interceptor)(nil)).Elem(),
-		"io_callback":         reflect.TypeOf((*func([]byte))(nil)).Elem(),
-		"list_mode":           reflect.TypeOf((*ListMode)(nil)).Elem(),
-		"location":            reflect.TypeOf((*string)(nil)).Elem(),
-		"multipart_id":        reflect.TypeOf((*string)(nil)).Elem(),
-		"name":                reflect.TypeOf((*string)(nil)).Elem(),
-		"offset":              reflect.TypeOf((*int64)(nil)).Elem(),
-		"size":                reflect.TypeOf((*int64)(nil)).Elem(),
-		"work_dir":            reflect.TypeOf((*string)(nil)).Elem(),
+func globalPairs() services.PairMap {
+	return services.PairMap{
+		"content_md5":         "string",
+		"content_type":        "string",
+		"context":             "context.Context",
+		"continuation_token":  "string",
+		"credential":          "string",
+		"endpoint":            "string",
+		"expire":              "int",
+		"http_client_options": "*httpclient.Options",
+		"interceptor":         "Interceptor",
+		"io_callback":         "func([]byte)",
+		"list_mode":           "ListMode",
+		"location":            "string",
+		"multipart_id":        "string",
+		"name":                "string",
+		"offset":              "int64",
+		"size":                "int64",
+		"work_dir":            "string",
 	}
+}
+
+func init() {
+	services.RegisterGlobalPairMap(globalPairs())
 }

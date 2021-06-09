@@ -67,3 +67,45 @@ func init() {
 	serviceFnMap = make(map[string]NewServicerFunc)
 	storagerFnMap = make(map[string]NewStoragerFunc)
 }
+
+// PairMap is a map of the types of pairs.
+type PairMap map[string]string
+
+var (
+	globalPairMap   PairMap
+	servicePairMaps map[string]PairMap
+)
+
+func RegisterGlobalPairMap(m PairMap) {
+	globalPairMap = m
+}
+
+// RegisterServicePairMap will register a service's pair map.
+func RegisterServicePairMap(ty string, m PairMap) {
+	for pair := range m {
+		if _, ok := globalPairMap[pair]; ok {
+			panic("service pair name is duplicate with global pair: " + pair)
+		}
+	}
+	servicePairMaps[ty] = m
+}
+
+func NewServicerFromMap(ty string, m map[string]string) (types.Servicer, error) {
+	ps, err := parseMap(ty, m)
+	if err != nil {
+		return nil, InitError{Op: "new_servicer", Type: ty, Err: err, Pairs: ps}
+	}
+	return NewServicer(ty, ps...)
+}
+
+func NewStoragerFromMap(ty string, m map[string]string) (types.Storager, error) {
+	ps, err := parseMap(ty, m)
+	if err != nil {
+		return nil, InitError{Op: "new_storager", Type: ty, Err: err, Pairs: ps}
+	}
+	return NewStorager(ty, ps...)
+}
+
+func init() {
+	servicePairMaps = make(map[string]PairMap)
+}
