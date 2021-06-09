@@ -7,12 +7,18 @@ import (
 
 var (
 	// ErrUnsupportedProtocol will return if protocol is unsupported.
+	//
+	// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 	ErrUnsupportedProtocol = errors.New("unsupported protocol")
 	// ErrInvalidValue means value is invalid.
+	//
+	// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 	ErrInvalidValue = errors.New("invalid value")
 )
 
 // Error represents error related to endpoint.
+//
+// Deprecated: Moved to github.com/beyondstorage/go-endpoint
 type Error struct {
 	Op  string
 	Err error
