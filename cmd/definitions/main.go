@@ -3,10 +3,10 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	specs "github.com/beyondstorage/specs/go"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {

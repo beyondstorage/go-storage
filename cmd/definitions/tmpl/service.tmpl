@@ -21,16 +21,6 @@ var _ httpclient.Options
 // Type is the type for {{ .Name }}
 const Type = "{{ .Name }}"
 
-// Service available pairs.
-const (
-{{- range $_, $v := .Pairs }}
-    {{- if not $v.Global }}
-    {{ $v.Description }}
-    {{ $v.FullName }} = "{{ $.Name }}_{{ $v.Name }}"
-    {{- end }}
-{{- end }}
-)
-
 // ObjectMetadata stores service metadata for object.
 type ObjectMetadata struct {
 {{- range $_, $v := .Infos }}
@@ -67,12 +57,16 @@ func setObjectMetadata(o *Object, om ObjectMetadata) {
 {{- range $_, $v := .Pairs }}
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
+{{- if $v.Conflict }}
+// Deprecated: Use pairs.With{{ $pname }} instead.
+//
+{{- end }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options.
 //
 {{ $v.Description }}
 func With{{ $pname }}(v {{ $v.Type }}) Pair {
         return Pair{
-        Key: {{ $v.FullName }},
+        Key: "{{ $v.Name }}",
         Value: v,
     }
 }
@@ -158,7 +152,7 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         switch v.Key {
         // Required pairs
         {{- range $_, $pair := $fn.Required }}
-        case {{ $pair.FullName }}:
+        case "{{ $pair.Name }}":
             if result.Has{{ $pair.Name | toPascal }} {
                 continue
             }
@@ -167,7 +161,7 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         {{- end }}
         // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
-        case {{ $pair.FullName }}:
+        case "{{ $pair.Name }}":
             if result.Has{{ $pair.Name | toPascal }} {
                 continue
             }
@@ -179,7 +173,7 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
 
     {{- range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
-        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ {{- $pair.FullName -}} } }
+        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ "{{ $pair.Name }}" } }
     }
     {{- end }}
 
@@ -239,7 +233,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
 
         switch v.Key {
         {{- range $_, $pair := $fn.Required }}
-        case {{ $pair.FullName }}:
+        case "{{ $pair.Name }}":
             if result.Has{{ $pair.Name | toPascal }} {
                 continue
             }
@@ -248,7 +242,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             continue
         {{- end }}
         {{- range $_, $pair := $fn.Optional }}
-        case {{ $pair.FullName }}:
+        case "{{ $pair.Name }}":
             if result.Has{{ $pair.Name | toPascal }} {
                 continue
             }
@@ -257,7 +251,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             continue
         {{- end }}
         {{- range $_, $pair := $fn.Virtual }}
-        case {{ $pair.FullName }}:
+        case "{{ $pair.Name }}":
             if result.Has{{ $pair.Name | toPascal }} {
                 continue
             }
@@ -287,7 +281,7 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
     // Check required pairs.
     {{- range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
-        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ {{- $pair.FullName -}} } }
+        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ "{{ $pair.Name }}" } }
     }
     {{- end }}
 
