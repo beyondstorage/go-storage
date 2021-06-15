@@ -21,16 +21,6 @@ var _ httpclient.Options
 // Type is the type for {{ .Name }}
 const Type = "{{ .Name }}"
 
-// Service available pairs.
-const (
-{{- range $_, $v := .Pairs }}
-    {{- if not $v.Global }}
-    {{ $v.Description }}
-    {{ $v.FullName }} = "{{ $.Name }}_{{ $v.Name }}"
-    {{- end }}
-{{- end }}
-)
-
 // ObjectMetadata stores service metadata for object.
 type ObjectMetadata struct {
 {{- range $_, $v := .Infos }}
@@ -67,6 +57,10 @@ func setObjectMetadata(o *Object, om ObjectMetadata) {
 {{- range $_, $v := .Pairs }}
 {{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
+{{- if $v.Conflict }}
+// Deprecated: Use pairs.With{{ $pname }} instead.
+//
+{{- end }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options.
 //
 {{ $v.Description }}

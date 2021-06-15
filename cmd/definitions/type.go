@@ -4,12 +4,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
 	"github.com/Xuanwo/templateutils"
 	specs "github.com/beyondstorage/specs/go"
+	log "github.com/sirupsen/logrus"
 )
 
 // Data is the biggest container for all definitions.
@@ -98,6 +98,9 @@ type Pair struct {
 	// Runtime generated
 	Global      bool
 	Description string
+
+	// This is a service pair having the same name and type as a global pair
+	Conflict bool
 }
 
 func (p *Pair) Type() string {
@@ -115,10 +118,7 @@ func (p *Pair) Format(s specs.Pair, global bool) {
 
 // FullName will print full name for current pair
 func (p *Pair) FullName() string {
-	if p.Global {
-		return fmt.Sprintf("\"%s\"", p.Name)
-	}
-	return "pair" + templateutils.ToPascal(p.Name)
+	return fmt.Sprintf("\"%s\"", p.Name)
 }
 
 // Info is the metadata definition.
@@ -604,16 +604,23 @@ func FormatData(p specs.Pairs, m specs.Infos, o specs.Operations) *Data {
 	return data
 }
 
-func mergePairs(ms ...map[string]*Pair) map[string]*Pair {
+func mergePairs(global, service map[string]*Pair) map[string]*Pair {
 	ans := make(map[string]*Pair)
-	for _, m := range ms {
-		for k, v := range m {
-			if _, ok := ans[k]; ok {
-				log.Fatalf("pair conflict: %s", k)
+	for k, v := range global {
+		v := v
+		ans[k] = v
+	}
+	for k, v := range service {
+		if p, ok := ans[k]; ok {
+			v.Conflict = true
+			if v.ptype == p.ptype {
+				log.Warnf("pair conflict: %s", k)
+			} else {
+				log.Fatalf("pair (%s, %s) conflicts with global pair (%s, %s)", k, v.ptype, k, p.ptype)
 			}
-			v := v
-			ans[k] = v
 		}
+		v := v
+		ans[k] = v
 	}
 	return ans
 }

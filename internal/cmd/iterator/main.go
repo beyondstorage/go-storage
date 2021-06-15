@@ -4,9 +4,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"text/template"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
