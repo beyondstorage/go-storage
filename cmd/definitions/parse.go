@@ -5,11 +5,11 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/Xuanwo/templateutils"
 	specs "github.com/beyondstorage/specs/go"
+	log "github.com/sirupsen/logrus"
 )
 
 func parse() (data *Data) {

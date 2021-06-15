@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go/parser"
 	"go/token"
-	"log"
 	"os"
 	"sort"
 	"text/template"
@@ -14,6 +13,7 @@ import (
 	"github.com/Xuanwo/templateutils"
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

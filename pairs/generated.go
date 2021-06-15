@@ -149,6 +149,16 @@ func WithName(v string) Pair {
 	}
 }
 
+// WithObjectMode will apply object_mode value to Options.
+//
+// ObjectMode ObjectMode hint
+func WithObjectMode(v ObjectMode) Pair {
+	return Pair{
+		Key:   "object_mode",
+		Value: v,
+	}
+}
+
 // WithOffset will apply offset value to Options.
 //
 // Offset specify offset for this request, storage will seek to this offset before read
@@ -198,6 +208,7 @@ func globalPairs() services.PairMap {
 		"location":            "string",
 		"multipart_id":        "string",
 		"name":                "string",
+		"object_mode":         "ObjectMode",
 		"offset":              "int64",
 		"size":                "int64",
 		"work_dir":            "string",
