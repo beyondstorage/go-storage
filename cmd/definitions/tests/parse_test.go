@@ -70,7 +70,7 @@ func TestFromMap(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			servicer, err := services.NewServicerFromMap(Type, tt.m)
+			servicer, err := services.NewServicerFromString("")
 			service, ok := servicer.(*Service)
 
 			if tt.err == nil {

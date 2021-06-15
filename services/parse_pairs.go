@@ -18,31 +18,11 @@ var (
 	ErrPairValueInvalid = NewErrorCode("pair value invalid")
 )
 
-// Parse a slice of Pairs from a map.
-func parseMap(ty string, m map[string]string) (ps []Pair, err error) {
-	servicePairMap, ok := servicePairMaps[ty]
-	if !ok {
-		err = fmt.Errorf("%w: %v", ErrServiceNotRegistered, ty)
-		return
-	}
-
-	for k, v := range m {
-		var pair Pair
-		if _, ok := globalPairMap[k]; ok {
-			pair, err = globalPairMap.parse(k, v)
-		} else {
-			pair, err = servicePairMap.parse(k, v)
-			pair.Key = ty + "_" + pair.Key
-		}
-		if err != nil {
-			return nil, err
-		}
-		ps = append(ps, pair)
-	}
-	return
+func parseString(config string) (ty string, ps []Pair, err error) {
+	return "", nil, nil
 }
 
-func (m PairMap) parse(k string, v string) (pair Pair, err error) {
+func parse(m map[string]string, k string, v string) (pair Pair, err error) {
 	vType, ok := m[k]
 	if !ok {
 		err = fmt.Errorf("%w: %v", ErrPairNotRegistered, k)

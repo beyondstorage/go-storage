@@ -5,7 +5,6 @@ import (
 	"context"
 
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
-	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
@@ -190,31 +189,4 @@ func WithWorkDir(v string) Pair {
 		Key:   "work_dir",
 		Value: v,
 	}
-}
-
-func globalPairs() services.PairMap {
-	return services.PairMap{
-		"content_md5":         "string",
-		"content_type":        "string",
-		"context":             "context.Context",
-		"continuation_token":  "string",
-		"credential":          "string",
-		"endpoint":            "string",
-		"expire":              "int",
-		"http_client_options": "*httpclient.Options",
-		"interceptor":         "Interceptor",
-		"io_callback":         "func([]byte)",
-		"list_mode":           "ListMode",
-		"location":            "string",
-		"multipart_id":        "string",
-		"name":                "string",
-		"object_mode":         "ObjectMode",
-		"offset":              "int64",
-		"size":                "int64",
-		"work_dir":            "string",
-	}
-}
-
-func init() {
-	services.RegisterGlobalPairMap(globalPairs())
 }

@@ -68,38 +68,25 @@ func init() {
 	storagerFnMap = make(map[string]NewStoragerFunc)
 }
 
-// PairMap is a map of the types of pairs.
-type PairMap map[string]string
-
 var (
-	globalPairMap   PairMap
-	servicePairMaps map[string]PairMap
+	servicePairMaps map[string]map[string]string
 )
 
-func RegisterGlobalPairMap(m PairMap) {
-	globalPairMap = m
-}
-
 // RegisterServicePairMap will register a service's pair map.
-func RegisterServicePairMap(ty string, m PairMap) {
-	for pair := range m {
-		if _, ok := globalPairMap[pair]; ok {
-			panic("service pair name is duplicate with global pair: " + pair)
-		}
-	}
+func RegisterServicePairMap(ty string, m map[string]string) {
 	servicePairMaps[ty] = m
 }
 
-func NewServicerFromMap(ty string, m map[string]string) (types.Servicer, error) {
-	ps, err := parseMap(ty, m)
+func NewServicerFromString(config string) (types.Servicer, error) {
+	ty, ps, err := parseString(config)
 	if err != nil {
 		return nil, InitError{Op: "new_servicer", Type: ty, Err: err, Pairs: ps}
 	}
 	return NewServicer(ty, ps...)
 }
 
-func NewStoragerFromMap(ty string, m map[string]string) (types.Storager, error) {
-	ps, err := parseMap(ty, m)
+func NewStoragerFromString(config string) (types.Storager, error) {
+	ty, ps, err := parseString(config)
 	if err != nil {
 		return nil, InitError{Op: "new_storager", Type: ty, Err: err, Pairs: ps}
 	}
@@ -107,5 +94,5 @@ func NewStoragerFromMap(ty string, m map[string]string) (types.Storager, error) 
 }
 
 func init() {
-	servicePairMaps = make(map[string]PairMap)
+	servicePairMaps = make(map[string]map[string]string)
 }

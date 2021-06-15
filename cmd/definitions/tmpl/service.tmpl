@@ -73,15 +73,11 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 {{- end }}
 {{- end }}
 
-func servicePairs() services.PairMap {
-	return services.PairMap{
-		{{- range $_, $v := .Pairs }}
-        {{- if not $v.Global }}
-        {{- $pname := $v.Name | toPascal }}
-		"{{ $v.Name }}": "{{ $v.Type }}",
-		{{- end }}
-		{{- end }}
-	}
+var pairMap = map[string]string {
+    {{- range $_, $v := .Pairs }}
+    {{- $pname := $v.Name | toPascal }}
+    "{{ $v.Name }}": "{{ $v.Type }}",
+    {{- end }}
 }
 
 {{- range $_, $v := .Namespaces }}
@@ -389,5 +385,5 @@ func init() {
     {{- range $_, $v := .Namespaces }}
         services.Register{{ $v.Name | toPascal }}r(Type, New{{ $v.Name | toPascal }}r)
     {{- end }}
-    services.RegisterServicePairMap(Type, servicePairs())
+    services.RegisterServicePairMap(Type, pairMap)
 }
