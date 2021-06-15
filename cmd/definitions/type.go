@@ -116,11 +116,6 @@ func (p *Pair) Format(s specs.Pair, global bool) {
 	p.Description = formatDescription(templateutils.ToPascal(p.Name), s.Description)
 }
 
-// FullName will print full name for current pair
-func (p *Pair) FullName() string {
-	return fmt.Sprintf("\"%s\"", p.Name)
-}
-
 // Info is the metadata definition.
 type Info struct {
 	Scope       string
