@@ -75,3 +75,7 @@ description = "is the storage class for this object"
 [pairs.size]
 type = "int64"
 description = "tests pair conflict"
+
+[pairs.string_pair]
+type = "string"
+description = "tests connection string"

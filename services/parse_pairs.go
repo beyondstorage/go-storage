@@ -11,12 +11,6 @@ import (
 )
 
 var (
-	// ErrPairTypeNotParsable means the pair's type is not parseable.
-	ErrPairTypeNotParsable = NewErrorCode("type not parseable")
-	// ErrPairNotRegistered means the pair is not registered.
-	ErrPairNotRegistered = NewErrorCode("pair not registered")
-	// ErrPairValueInvalid means the pair's value is invalid.
-	ErrPairValueInvalid = NewErrorCode("pair value invalid")
 	// ErrConnectionStringInvalid means the connection string is invalid.
 	ErrConnectionStringInvalid = NewErrorCode("connection string is invalid")
 )
@@ -76,10 +70,16 @@ func parseString(ConnStr string) (ty string, ps []Pair, err error) {
 	for _, v := range strings.Split(rest, "&") {
 		opt := strings.SplitN(v, "=", 2)
 		if len(opt) != 2 {
-			// && or &key& or &key=&, ignore
+			// && or &key&, ignore
 			continue
 		}
-		parse(m, opt[0], opt[1])
+		pair, err1 := parse(m, opt[0], opt[1])
+		if err1 != nil {
+			ps = nil
+			err = fmt.Errorf("%w: %v", ErrConnectionStringInvalid, err1)
+			return
+		}
+		ps = append(ps, pair)
 	}
 	return
 }
@@ -87,7 +87,7 @@ func parseString(ConnStr string) (ty string, ps []Pair, err error) {
 func parse(m map[string]string, k string, v string) (pair Pair, err error) {
 	vType, ok := m[k]
 	if !ok {
-		err = fmt.Errorf("%w: %v", ErrPairNotRegistered, k)
+		err = fmt.Errorf("pair not registered: %v", k)
 		return Pair{}, err
 	}
 
@@ -107,12 +107,12 @@ func parse(m map[string]string, k string, v string) (pair Pair, err error) {
 	case "[]byte":
 		pair.Value, err = base64.RawStdEncoding.DecodeString(v)
 	default:
-		return Pair{}, fmt.Errorf("%w: %v, %v", ErrPairTypeNotParsable, k, vType)
+		return Pair{}, fmt.Errorf("type not parseable: %v, %v", k, vType)
 	}
 
 	if err != nil {
 		pair = Pair{}
-		err = fmt.Errorf("%w: %v, %v, %v: %v", ErrPairValueInvalid, k, vType, v, err)
+		err = fmt.Errorf("pair value invalid: %v, %v, %v: %v", k, vType, v, err)
 	}
 	return
 }
