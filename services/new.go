@@ -73,6 +73,8 @@ var (
 )
 
 // RegisterServiceSchema will register a service's pair map.
+//
+// Users SHOULD NOT call this function.
 func RegisterServiceSchema(ty string, m map[string]string) {
 	servicePairMaps[ty] = m
 }

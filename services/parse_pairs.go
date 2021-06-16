@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -18,19 +17,19 @@ var (
 	ErrPairNotRegistered = NewErrorCode("pair not registered")
 	// ErrPairValueInvalid means the pair's value is invalid.
 	ErrPairValueInvalid = NewErrorCode("pair value invalid")
-	// ErrConfigStringInvalid means the config string is invalid
-	ErrConfigStringInvalid = NewErrorCode("config string is invalid")
+	// ErrConnectionStringInvalid means the connection string is invalid.
+	ErrConnectionStringInvalid = NewErrorCode("connection string is invalid")
 )
 
 // <type>://[<name>][<work_dir>][?key1=value1&...&keyN=valueN]
-func parseString(config string) (ty string, ps []Pair, err error) {
-	colon := strings.Index(config, ":")
+func parseString(ConnStr string) (ty string, ps []Pair, err error) {
+	colon := strings.Index(ConnStr, ":")
 	if colon == -1 {
-		err = fmt.Errorf("%w: %s, %s", ErrConfigStringInvalid, "service type missing", config)
+		err = fmt.Errorf("%w: %s, %s", ErrConnectionStringInvalid, "service type missing", ConnStr)
 		return
 	}
-	ty = config[:colon]
-	rest := config[colon+1:]
+	ty = ConnStr[:colon]
+	rest := ConnStr[colon+1:]
 	m, ok := servicePairMaps[ty]
 	if !ok {
 		err = ErrServiceNotRegistered
@@ -38,7 +37,7 @@ func parseString(config string) (ty string, ps []Pair, err error) {
 	}
 
 	if !strings.HasPrefix(rest, "//") {
-		err = fmt.Errorf("%w: %s", ErrConfigStringInvalid, config)
+		err = fmt.Errorf("%w: %s", ErrConnectionStringInvalid, ConnStr)
 		return
 	}
 	rest = rest[2:]
@@ -57,7 +56,7 @@ func parseString(config string) (ty string, ps []Pair, err error) {
 	}
 
 	if len(path) == 0 {
-		err = fmt.Errorf("%w: %s, %s", ErrConfigStringInvalid, "both <name> and <work_dir> missing", config)
+		err = fmt.Errorf("%w: %s, %s", ErrConnectionStringInvalid, "both <name> and <work_dir> missing", ConnStr)
 		return
 	} else {
 		slash := strings.Index(path, "/")
@@ -107,8 +106,6 @@ func parse(m map[string]string, k string, v string) (pair Pair, err error) {
 		pair.Value, err = strconv.ParseInt(v, 0, 64)
 	case "[]byte":
 		pair.Value, err = base64.RawStdEncoding.DecodeString(v)
-	case "ListMode":
-		pair.Value, err = parseListMode(v)
 	default:
 		return Pair{}, fmt.Errorf("%w: %v, %v", ErrPairTypeNotParsable, k, vType)
 	}
@@ -118,28 +115,4 @@ func parse(m map[string]string, k string, v string) (pair Pair, err error) {
 		err = fmt.Errorf("%w: %v, %v, %v: %v", ErrPairValueInvalid, k, vType, v, err)
 	}
 	return
-}
-
-func parseListMode(s string) (ListMode, error) {
-	if strings.TrimSpace(s) == "" {
-		return ListMode(0), nil
-	}
-	modes := strings.Split(s, "|")
-	var l ListMode
-	for _, mode := range modes {
-		mode = strings.TrimSpace(mode)
-		switch mode {
-		case ListModeBlock.String():
-			l |= ListModeBlock
-		case ListModeDir.String():
-			l |= ListModeDir
-		case ListModePart.String():
-			l |= ListModePart
-		case ListModePrefix.String():
-			l |= ListModePrefix
-		default:
-			return ListMode(0), errors.New("invalid mode " + mode)
-		}
-	}
-	return l, nil
 }
