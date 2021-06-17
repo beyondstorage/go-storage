@@ -385,5 +385,5 @@ func init() {
     {{- range $_, $v := .Namespaces }}
         services.Register{{ $v.Name | toPascal }}r(Type, New{{ $v.Name | toPascal }}r)
     {{- end }}
-    services.RegisterServiceSchema(Type, pairMap)
+    services.RegisterSchema(Type, pairMap)
 }

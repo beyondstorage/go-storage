@@ -72,10 +72,10 @@ var (
 	servicePairMaps map[string]map[string]string
 )
 
-// RegisterServiceSchema will register a service's pair map.
+// RegisterSchema will register a service's pair map.
 //
 // Users SHOULD NOT call this function.
-func RegisterServiceSchema(ty string, m map[string]string) {
+func RegisterSchema(ty string, m map[string]string) {
 	servicePairMaps[ty] = m
 }
 
