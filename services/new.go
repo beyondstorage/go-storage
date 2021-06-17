@@ -79,16 +79,16 @@ func RegisterServiceSchema(ty string, m map[string]string) {
 	servicePairMaps[ty] = m
 }
 
-func NewServicerFromString(config string) (types.Servicer, error) {
-	ty, ps, err := parseString(config)
+func NewServicerFromString(connStr string) (types.Servicer, error) {
+	ty, ps, err := parseString(connStr)
 	if err != nil {
 		return nil, InitError{Op: "new_servicer", Type: ty, Err: err, Pairs: ps}
 	}
 	return NewServicer(ty, ps...)
 }
 
-func NewStoragerFromString(config string) (types.Storager, error) {
-	ty, ps, err := parseString(config)
+func NewStoragerFromString(connStr string) (types.Storager, error) {
+	ty, ps, err := parseString(connStr)
 	if err != nil {
 		return nil, InitError{Op: "new_storager", Type: ty, Err: err, Pairs: ps}
 	}
