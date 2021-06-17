@@ -19,8 +19,8 @@ type (
 )
 
 var (
-	serviceFnMap map[string]NewServicerFunc
-	serviceLock  sync.Mutex
+	servicerFnMap map[string]NewServicerFunc
+	servicerLock  sync.Mutex
 
 	storagerFnMap map[string]NewStoragerFunc
 	storagerLock  sync.Mutex
@@ -28,18 +28,18 @@ var (
 
 // RegisterServicer will register a servicer.
 func RegisterServicer(ty string, fn NewServicerFunc) {
-	serviceLock.Lock()
-	defer serviceLock.Unlock()
+	servicerLock.Lock()
+	defer servicerLock.Unlock()
 
-	serviceFnMap[ty] = fn
+	servicerFnMap[ty] = fn
 }
 
 // NewServicer will initiate a new servicer.
 func NewServicer(ty string, ps ...types.Pair) (types.Servicer, error) {
-	serviceLock.Lock()
-	defer serviceLock.Unlock()
+	servicerLock.Lock()
+	defer servicerLock.Unlock()
 
-	fn, ok := serviceFnMap[ty]
+	fn, ok := servicerFnMap[ty]
 	if !ok {
 		return nil, InitError{Op: "new_servicer", Type: ty, Err: ErrServiceNotRegistered, Pairs: ps}
 	}
@@ -69,18 +69,22 @@ func NewStorager(ty string, ps ...types.Pair) (types.Storager, error) {
 }
 
 func init() {
-	serviceFnMap = make(map[string]NewServicerFunc)
+	servicerFnMap = make(map[string]NewServicerFunc)
 	storagerFnMap = make(map[string]NewStoragerFunc)
 }
 
 var (
 	servicePairMaps map[string]map[string]string
+	schemaLock      sync.Mutex
 )
 
 // RegisterSchema will register a service's pair map.
 //
 // Users SHOULD NOT call this function.
 func RegisterSchema(ty string, m map[string]string) {
+	schemaLock.Lock()
+	defer schemaLock.Unlock()
+
 	servicePairMaps[ty] = m
 }
 
@@ -114,7 +118,10 @@ func parseConnectionString(ConnStr string) (ty string, ps []types.Pair, err erro
 	}
 	ty = ConnStr[:colon]
 	rest := ConnStr[colon+1:]
+
+	schemaLock.Lock()
 	m, ok := servicePairMaps[ty]
+	schemaLock.Unlock()
 	if !ok {
 		err = ErrServiceNotRegistered
 		return
