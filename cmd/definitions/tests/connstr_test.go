@@ -24,10 +24,18 @@ func TestFromString(t *testing.T) {
 			services.ErrConnectionStringInvalid,
 		},
 		{
-			"both <name> and <work_dir> missing",
+			"simplest",
 			"tests://",
 			nil,
-			services.ErrConnectionStringInvalid,
+			nil,
+		},
+		{
+			"only options",
+			"tests://?size=200",
+			[]Pair{
+				pairs.WithSize(200),
+			},
+			nil,
 		},
 		{
 			"only root dir",
@@ -58,20 +66,32 @@ func TestFromString(t *testing.T) {
 			"tests:///?string_pair=a=b:/c?d&size=200",
 			[]Pair{
 				pairs.WithWorkDir("/"),
-				pairs.WithSize(200),
 				WithStringPair("a=b:/c?d"),
+				pairs.WithSize(200),
 			},
 			nil,
 		},
 		{
 			"full format",
-			"tests://abc/tmp?size=200&expire=100&storage_class=sc",
+			"tests://abc/tmp/tmp1?size=200&expire=100&storage_class=sc",
 			[]Pair{
 				pairs.WithName("abc"),
-				pairs.WithWorkDir("/tmp"),
-				pairs.WithExpire(100),
+				pairs.WithWorkDir("/tmp/tmp1"),
 				pairs.WithSize(200),
+				pairs.WithExpire(100),
 				WithStorageClass("sc"),
+			},
+			nil,
+		},
+		{
+			"duplicate key, appear in order (finally, first will be picked)",
+			"tests://abc/tmp/tmp1?size=200&name=def&size=300",
+			[]Pair{
+				pairs.WithName("abc"),
+				pairs.WithWorkDir("/tmp/tmp1"),
+				pairs.WithSize(200),
+				pairs.WithName("def"),
+				pairs.WithSize(300),
 			},
 			nil,
 		},
@@ -111,7 +131,7 @@ func TestFromString(t *testing.T) {
 				return
 			}
 
-			assert.ElementsMatch(t, service.Pairs, tt.pairs)
+			assert.Equal(t, service.Pairs, tt.pairs)
 		})
 	}
 }

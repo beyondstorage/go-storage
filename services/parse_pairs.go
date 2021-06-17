@@ -50,8 +50,7 @@ func parseString(ConnStr string) (ty string, ps []Pair, err error) {
 	}
 
 	if len(path) == 0 {
-		err = fmt.Errorf("%w: %s, %s", ErrConnectionStringInvalid, "both <name> and <work_dir> missing", ConnStr)
-		return
+		// both <name> and <work_dir> missing
 	} else {
 		slash := strings.Index(path, "/")
 		if slash == -1 {
