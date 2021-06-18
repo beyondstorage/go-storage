@@ -19,7 +19,7 @@ func (s *Storage) String() string {
 }
 
 func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
-	return nil, nil
+	return &Service{Pairs: pairs}, nil
 }
 
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {

@@ -73,6 +73,13 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
 {{- end }}
 {{- end }}
 
+var pairMap = map[string]string {
+    {{- range $_, $v := .Pairs }}
+    {{- $pname := $v.Name | toPascal }}
+    "{{ $v.Name }}": "{{ $v.Type }}",
+    {{- end }}
+}
+
 {{- range $_, $v := .Namespaces }}
     {{- template "interfaces" makeSlice $v.Name $v.Interfaces }}
     {{- template "features" makeSlice $v.Name $v.Funcs }}
@@ -378,4 +385,5 @@ func init() {
     {{- range $_, $v := .Namespaces }}
         services.Register{{ $v.Name | toPascal }}r(Type, New{{ $v.Name | toPascal }}r)
     {{- end }}
+    services.RegisterSchema(Type, pairMap)
 }
