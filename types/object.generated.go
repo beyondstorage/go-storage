@@ -37,13 +37,19 @@ const (
 //   - Object CANNOT be copied
 //   - Object is concurrent safe.
 type Object struct {
-	// AppendNumberMaximum Max append numbers in append operation
+	// AppendNumberMaximum Max append numbers in append operation.
+	//
+	// Deprecated: Moved to storage meta.
 	appendNumberMaximum int
 	// AppendOffset AppendOffset is the offset of the append object
 	appendOffset int64
-	// AppendSizeMaximum Max append size in per append operation
+	// AppendSizeMaximum Max append size in per append operation.
+	//
+	// Deprecated: Moved to storage meta.
 	appendSizeMaximum int64
-	// AppendTotalSizeMaximum Max append total size in append operation
+	// AppendTotalSizeMaximum Max append total size in append operation.
+	//
+	// Deprecated: Moved to storage meta.
 	appendTotalSizeMaximum int64
 	// ContentLength
 	contentLength int64
@@ -63,11 +69,17 @@ type Object struct {
 	Mode ObjectMode
 	// MultipartID MultipartID is the part id of part object.
 	multipartID string
-	// MultipartNumberMaximum Maximum part number in multipart operation
+	// MultipartNumberMaximum Maximum part number in multipart operation.
+	//
+	// Deprecated: Moved to storage meta.
 	multipartNumberMaximum int
-	// MultipartSizeMaximum Maximum part size defined by storager
+	// MultipartSizeMaximum Maximum part size defined by storager.
+	//
+	// Deprecated: Moved to storage meta.
 	multipartSizeMaximum int64
-	// MultipartSizeMinimum Minimum part size defined by storager
+	// MultipartSizeMinimum Minimum part size defined by storager.
+	//
+	// Deprecated: Moved to storage meta.
 	multipartSizeMinimum int64
 	// Path Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Path string
@@ -85,6 +97,7 @@ type Object struct {
 	m    sync.Mutex
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) GetAppendNumberMaximum() (int, bool) {
 	o.stat()
 
@@ -95,6 +108,7 @@ func (o *Object) GetAppendNumberMaximum() (int, bool) {
 	return 0, false
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) MustGetAppendNumberMaximum() int {
 	o.stat()
 
@@ -104,6 +118,7 @@ func (o *Object) MustGetAppendNumberMaximum() int {
 	return o.appendNumberMaximum
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) SetAppendNumberMaximum(v int) *Object {
 	o.appendNumberMaximum = v
 	o.bit |= objectIndexAppendNumberMaximum
@@ -135,6 +150,7 @@ func (o *Object) SetAppendOffset(v int64) *Object {
 	return o
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) GetAppendSizeMaximum() (int64, bool) {
 	o.stat()
 
@@ -145,6 +161,7 @@ func (o *Object) GetAppendSizeMaximum() (int64, bool) {
 	return 0, false
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) MustGetAppendSizeMaximum() int64 {
 	o.stat()
 
@@ -154,12 +171,14 @@ func (o *Object) MustGetAppendSizeMaximum() int64 {
 	return o.appendSizeMaximum
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) SetAppendSizeMaximum(v int64) *Object {
 	o.appendSizeMaximum = v
 	o.bit |= objectIndexAppendSizeMaximum
 	return o
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) GetAppendTotalSizeMaximum() (int64, bool) {
 	o.stat()
 
@@ -170,6 +189,7 @@ func (o *Object) GetAppendTotalSizeMaximum() (int64, bool) {
 	return 0, false
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) MustGetAppendTotalSizeMaximum() int64 {
 	o.stat()
 
@@ -179,6 +199,7 @@ func (o *Object) MustGetAppendTotalSizeMaximum() int64 {
 	return o.appendTotalSizeMaximum
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) SetAppendTotalSizeMaximum(v int64) *Object {
 	o.appendTotalSizeMaximum = v
 	o.bit |= objectIndexAppendTotalSizeMaximum
@@ -284,6 +305,7 @@ func (o *Object) SetEtag(v string) *Object {
 	o.bit |= objectIndexEtag
 	return o
 }
+
 func (o *Object) GetID() string {
 	return o.ID
 }
@@ -342,6 +364,7 @@ func (o *Object) SetLinkTarget(v string) *Object {
 	o.bit |= objectIndexLinkTarget
 	return o
 }
+
 func (o *Object) GetMode() ObjectMode {
 	return o.Mode
 }
@@ -376,6 +399,7 @@ func (o *Object) SetMultipartID(v string) *Object {
 	return o
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) GetMultipartNumberMaximum() (int, bool) {
 	o.stat()
 
@@ -386,6 +410,7 @@ func (o *Object) GetMultipartNumberMaximum() (int, bool) {
 	return 0, false
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) MustGetMultipartNumberMaximum() int {
 	o.stat()
 
@@ -395,12 +420,14 @@ func (o *Object) MustGetMultipartNumberMaximum() int {
 	return o.multipartNumberMaximum
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) SetMultipartNumberMaximum(v int) *Object {
 	o.multipartNumberMaximum = v
 	o.bit |= objectIndexMultipartNumberMaximum
 	return o
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) GetMultipartSizeMaximum() (int64, bool) {
 	o.stat()
 
@@ -411,6 +438,7 @@ func (o *Object) GetMultipartSizeMaximum() (int64, bool) {
 	return 0, false
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) MustGetMultipartSizeMaximum() int64 {
 	o.stat()
 
@@ -420,12 +448,14 @@ func (o *Object) MustGetMultipartSizeMaximum() int64 {
 	return o.multipartSizeMaximum
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) SetMultipartSizeMaximum(v int64) *Object {
 	o.multipartSizeMaximum = v
 	o.bit |= objectIndexMultipartSizeMaximum
 	return o
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) GetMultipartSizeMinimum() (int64, bool) {
 	o.stat()
 
@@ -436,6 +466,7 @@ func (o *Object) GetMultipartSizeMinimum() (int64, bool) {
 	return 0, false
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) MustGetMultipartSizeMinimum() int64 {
 	o.stat()
 
@@ -445,11 +476,13 @@ func (o *Object) MustGetMultipartSizeMinimum() int64 {
 	return o.multipartSizeMinimum
 }
 
+// Deprecated: Moved to storage meta.
 func (o *Object) SetMultipartSizeMinimum(v int64) *Object {
 	o.multipartSizeMinimum = v
 	o.bit |= objectIndexMultipartSizeMinimum
 	return o
 }
+
 func (o *Object) GetPath() string {
 	return o.Path
 }
