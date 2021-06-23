@@ -14,16 +14,19 @@ import (
 
 // Data is the biggest container for all definitions.
 type Data struct {
-	Pairs      map[string]*Pair
-	Infos      []*Info
-	InfosMap   map[string][]*Info
-	ObjectMeta []*Info
-	Service    *Service
+	Pairs       map[string]*Pair
+	Infos       []*Info
+	InfosMap    map[string][]*Info
+	ObjectMeta  []*Info
+	FeaturesMap map[string]*Feature
+
+	Service *Service
 
 	Interfaces    []*Interface
 	interfacesMap map[string]*Interface
 
 	// Store all specs for encoding
+	featuresSpec   specs.Features
 	pairSpec       specs.Pairs
 	infoSpec       specs.Infos
 	operationsSpec specs.Operations
@@ -71,9 +74,12 @@ func (s *Service) Pairs() []*Pair {
 // Namespace contains all info about a namespace
 type Namespace struct {
 	Name       string
+	Features   []*Feature
 	New        *Function
 	Funcs      []*Function
 	Interfaces []*Interface
+
+	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
 }
 
 // Sort will sort the namespace
@@ -87,6 +93,16 @@ func (n *Namespace) Sort() {
 	for _, v := range n.Funcs {
 		v.Sort()
 	}
+}
+
+type Feature struct {
+	Name        string
+	Description string
+}
+
+func (f *Feature) Format(s specs.Feature) {
+	f.Name = s.Name
+	f.Description = formatDescription(templateutils.ToPascal(f.Name), s.Description)
 }
 
 // Pair is the pair definition.
@@ -417,6 +433,17 @@ func (f *Field) Format(s specs.Field) {
 	f.Name = s.Name
 }
 
+func (d *Data) FormatFeatures(p specs.Features) map[string]*Feature {
+	m := make(map[string]*Feature)
+	for _, v := range p {
+		f := &Feature{}
+		f.Format(v)
+
+		m[f.Name] = f
+	}
+	return m
+}
+
 // FormatPairs will formatGlobal pairs for pair spec
 func (d *Data) FormatPairs(p specs.Pairs, global bool) map[string]*Pair {
 	m := make(map[string]*Pair)
@@ -482,6 +509,20 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 	ns := &Namespace{Name: n.Name}
 
 	nsInterface := n.Name + "r"
+
+	// Handle features
+	for _, featureName := range n.Features {
+		f, ok := d.FeaturesMap[featureName]
+		if !ok {
+			log.Fatalf("feature not registered: %s", featureName)
+		}
+
+		if f.Name == "loose_pair" {
+			ns.HasFeatureLoosePair = true
+		}
+
+		ns.Features = append(ns.Features, f)
+	}
 
 	// Handle New function
 	ns.New = NewFunction(&Operation{Name: "new"})
@@ -585,13 +626,20 @@ func (d *Data) Sort() {
 	}
 }
 
-// FormatData will formatGlobal the whole data.
-func FormatData(p specs.Pairs, m specs.Infos, o specs.Operations) *Data {
+// NewData will formatGlobal the whole data.
+func NewData() *Data {
+	f := specs.ParsedFeatures
+	p := specs.ParsedPairs
+	m := specs.ParsedInfos
+	o := specs.ParsedOperations
+
 	data := &Data{
 		pairSpec:       p,
 		infoSpec:       m,
 		operationsSpec: o,
+		featuresSpec:   f,
 	}
+	data.FeaturesMap = data.FormatFeatures(f)
 	data.Pairs = data.FormatPairs(p, true)
 	data.Infos = data.FormatInfos(m, true)
 	data.Interfaces, data.interfacesMap = data.FormatOperations(o)
