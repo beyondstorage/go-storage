@@ -159,9 +159,9 @@ var pairMap = map[string]string {
 
 {{- range $_, $v := .Namespaces }}
     {{- template "interfaces" makeSlice $v.Name $v.Interfaces }}
-    {{- template "features" makeSlice $v.Name $v.Funcs }}
+    {{- template "features" makeSlice $v.Name $v.Funcs $v.Features }}
     {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New }}
-    {{- template "pairs" makeSlice $v.Name $v.Funcs }}
+    {{- template "pairs" makeSlice $v $v.Funcs }}
     {{- template "functions" makeSlice $v.Name $v.Funcs }}
 {{- end }}
 
@@ -178,28 +178,41 @@ var (
 {{- define "features" }}
 {{- $pn := index . 0 | toPascal }}
 {{- $fns := index . 1 }}
+{{- $fs := index . 2 }}
 
 type {{ $pn }}Features struct {
+    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
     LooseOperationAll bool
     {{- range $_, $v := $fns }}
+    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
     LooseOperation{{ $v.Name | toPascal }} bool
     {{- end }}
 
+    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
     VirtualOperationAll bool
     {{- range $_, $fn := $fns }}
     {{- if $fn.Simulated }}
+    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
     VirtualOperation{{ $fn.Name | toPascal }} bool
     {{- end }}
     {{- end }}
 
+    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
     VirtualPairAll bool
     {{- range $_, $fn := $fns }}
     {{- if len $fn.Virtual}}
+    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
     VirtualPair{{ $fn.Name | toPascal }}All bool
     {{- end }}
     {{- range $_, $v := $fn.Virtual }}
+    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
     VirtualPair{{ $fn.Name | toPascal }}{{ $v.Name | toPascal }} bool
     {{- end }}
+    {{- end }}
+
+    {{- range $_, $v := $fs }}
+    {{ $v.Description }}
+    {{ $v.Name | toPascal }} bool
     {{- end }}
 }
 {{- end }}
@@ -266,15 +279,17 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
 {{- end }}
 
 {{- define "pairs" }}
-    {{- $pn := index . 0 | toPascal }}
-    {{- $data := index . 1 }}
+{{- $pn := index . 0 }}
+{{- $data := index . 1 }}
 
-    // Default{{ $pn }}Pairs is default pairs for specific action
-    type Default{{ $pn }}Pairs struct {
-    {{- range $_, $v := $data }}
-        {{ $v.Name | toPascal }} []Pair
-    {{- end }}
-    }
+{{- $pnk := $pn.Name | toPascal }}
+
+// Default{{ $pnk }}Pairs is default pairs for specific action
+type Default{{ $pnk }}Pairs struct {
+{{- range $_, $v := $data }}
+    {{ $v.Name | toPascal }} []Pair
+{{- end }}
+}
 
     {{- range $_, $v := $data }}
         {{- template "pair" makeSlice $pn $v}}
@@ -285,10 +300,11 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
 {{- $pn := index . 0 }}
 {{- $fn := index . 1 }}
 
+{{- $pnk := $pn.Name | toPascal }}
 {{- $fnk := $fn.Name | toPascal }}
 
-// pair{{ $pn }}{{ $fnk }} is the parsed struct
-type pair{{ $pn }}{{ $fnk }} struct {
+// pair{{ $pnk }}{{ $fnk }} is the parsed struct
+type pair{{ $pnk }}{{ $fnk }} struct {
     pairs []Pair
 
     {{- range $_, $pair := $fn.Required }}
@@ -299,22 +315,15 @@ type pair{{ $pn }}{{ $fnk }} struct {
     Has{{ $pair.Name | toPascal }}   bool
     {{ $pair.Name | toPascal }}      {{ $pair.Type }}
     {{- end }}
-    {{- range $_, $pair := $fn.Virtual }}
-    Has{{ $pair.Name | toPascal }}   bool
-    {{ $pair.Name | toPascal }}      {{ $pair.Type }}
-    {{- end }}
 }
 
-// parsePair{{ $pn }}{{ $fnk }} will parse Pair slice into *pair{{ $pn }}{{ $fnk }}
-func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) {
-    result := pair{{ $pn }}{{ $fnk }}{
+// parsePair{{ $pnk }}{{ $fnk }} will parse Pair slice into *pair{{ $pnk }}{{ $fnk }}
+func (s *{{ $pnk }})parsePair{{ $pnk }}{{ $fnk }}(opts []Pair) (pair{{ $pnk }}{{ $fnk }}, error) {
+    result := pair{{ $pnk }}{{ $fnk }}{
         pairs: opts,
     }
 
     for _, v := range opts {
-        // isUnsupportedPair records whether current pair is unsupported.
-        isUnsupportedPair := false
-
         switch v.Key {
         {{- range $_, $pair := $fn.Required }}
         case "{{ $pair.Name }}":
@@ -334,38 +343,22 @@ func (s *{{ $pn }})parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $f
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
             continue
         {{- end }}
-        {{- range $_, $pair := $fn.Virtual }}
-        case "{{ $pair.Name }}":
-            if result.Has{{ $pair.Name | toPascal }} {
-                continue
-            }
-            // If user enables the virtual pair feature, we can pass the virtual pair into it.
-            if s.features.VirtualPairAll || s.features.VirtualPair{{ $fnk }}All || s.features.VirtualPair{{ $fnk }}{{ $pair.Name | toPascal }} {
-                result.Has{{ $pair.Name | toPascal }} = true
-                result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
-                continue
-            }
-            isUnsupportedPair = true
-        {{- end }}
         default:
-            isUnsupportedPair = true
+            {{- if $pn.HasFeatureLoosePair }}
+            // loose_pair feature introduced in GSP-109.
+            // If user enable this feature, service should ignore not support pair error.
+            if s.features.LoosePair {
+                continue
+            }
+            {{- end }}
+            return pair{{ $pnk }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
         }
-
-        if !isUnsupportedPair {
-            continue
-        }
-
-        // If user enables the loose operation feature, we will ignore PairUnsupportedError.
-        if s.features.LooseOperationAll || s.features.LooseOperation{{ $fnk }} {
-            continue
-        }
-        return pair{{ $pn }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
     }
 
     // Check required pairs.
     {{- range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
-        return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ "{{ $pair.Name }}" } }
+        return pair{{ $pnk }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ "{{ $pair.Name }}" } }
     }
     {{- end }}
 
@@ -409,14 +402,6 @@ func (s *{{$pn}}) {{ $fnk }}WithContext(ctx context.Context, {{$fn.Params.String
         {{- end }}
         err = s.formatError("{{$fn.Name}}", err {{ $path }} )
     }()
-
-    {{- if $fn.Simulated }}
-    // If virtual operation feature is not enabled, we will act like this operation is not implemented.
-    if !s.features.VirtualOperationAll && !s.features.VirtualOperation{{ $fnk }} {
-        err = NewOperationNotImplementedError("{{ $fn.Name }}")
-        return
-    }
-    {{- end }}
 
     {{- if ne $fn.ObjectMode "" }}
     {{- $mode := $fn.ObjectMode | toPascal }}
