@@ -15,7 +15,7 @@ import (
 func parse() (data *Data) {
 	injectPairs()
 
-	data = FormatData(specs.ParsedPairs, specs.ParsedInfos, specs.ParsedOperations)
+	data = NewData()
 	return data
 }
 
