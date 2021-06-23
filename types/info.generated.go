@@ -18,8 +18,9 @@ const (
 	storageMetaIndexMultipartSizeMaximum   = 1 << 8
 	storageMetaIndexMultipartSizeMinimum   = 1 << 9
 	storageMetaIndexName                   = 1 << 10
-	storageMetaIndexWorkDir                = 1 << 11
-	storageMetaIndexWriteSizeMaximum       = 1 << 12
+	storageMetaIndexSystemMetadata         = 1 << 11
+	storageMetaIndexWorkDir                = 1 << 12
+	storageMetaIndexWriteSizeMaximum       = 1 << 13
 )
 
 type StorageMeta struct {
@@ -34,6 +35,7 @@ type StorageMeta struct {
 	multipartSizeMaximum   int64
 	multipartSizeMinimum   int64
 	Name                   string
+	systemMetadata         interface{}
 	WorkDir                string
 	writeSizeMaximum       int64
 
@@ -247,6 +249,26 @@ func (m *StorageMeta) GetName() string {
 
 func (m *StorageMeta) SetName(v string) *StorageMeta {
 	m.Name = v
+	return m
+}
+
+func (m *StorageMeta) GetSystemMetadata() (interface{}, bool) {
+	if m.bit&storageMetaIndexSystemMetadata != 0 {
+		return m.systemMetadata, true
+	}
+	return nil, false
+}
+
+func (m *StorageMeta) MustGetSystemMetadata() interface{} {
+	if m.bit&storageMetaIndexSystemMetadata == 0 {
+		panic(fmt.Sprintf("storage-meta system-metadata is not set"))
+	}
+	return m.systemMetadata
+}
+
+func (m *StorageMeta) SetSystemMetadata(v interface{}) *StorageMeta {
+	m.systemMetadata = v
+	m.bit |= storageMetaIndexSystemMetadata
 	return m
 }
 func (m *StorageMeta) GetWorkDir() string {

@@ -24,6 +24,7 @@ const Type = "{{ .Name }}"
 // ObjectMetadata stores service metadata for object.
 type ObjectMetadata struct {
 {{- range $_, $v := .Infos }}
+    {{- if eq $v.Scope "object" }}
     {{- if not $v.Global }}
     {{- $pname := $v.Name | toPascal }}
     {{- if $v.DisplayName }}
@@ -31,6 +32,7 @@ type ObjectMetadata struct {
     {{- end }}
     {{ $v.Description }}
     {{ $pname }} {{ $v.Type }}
+    {{- end }}
     {{- end }}
 {{- end }}
 }
@@ -52,6 +54,40 @@ func GetObjectMetadata(o *Object) ObjectMetadata {
 // - This function should only be called once, please make sure all data has been written before set.
 func setObjectMetadata(o *Object, om ObjectMetadata) {
     o.SetServiceMetadata(om)
+}
+
+// StorageSystemMetadata stores system metadata for storage meta.
+type StorageSystemMetadata struct {
+{{- range $_, $v := .Infos }}
+    {{- if eq $v.Scope "storage" }}
+        {{- if not $v.Global }}
+            {{- $pname := $v.Name | toPascal }}
+            {{- if $v.DisplayName }}
+                {{- $pname = $v.DisplayName }}
+            {{- end }}
+            {{ $v.Description }}
+            {{ $pname }} {{ $v.Type }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+}
+
+// GetStorageSystemMetadata will get SystemMetadata from StorageMeta.
+//
+// - The returning StorageSystemMetadata is read only and should not be modified.
+func GetStorageSystemMetadata(s *StorageMeta) StorageSystemMetadata {
+    sm, ok := s.GetSystemMetadata()
+    if ok {
+        return sm.(StorageSystemMetadata)
+    }
+    return StorageSystemMetadata{}
+}
+
+// setStorageSystemMetadata will set SystemMetadata into StorageMeta.
+//
+// - This function should only be called once, please make sure all data has been written before set.
+func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
+    s.SetSystemMetadata(sm)
 }
 
 {{- range $_, $v := .Pairs }}
