@@ -22,6 +22,8 @@ var _ httpclient.Options
 const Type = "{{ .Name }}"
 
 // ObjectMetadata stores service metadata for object.
+//
+// Deprecated: Use ObjectSystemMetadata instead.
 type ObjectMetadata struct {
 {{- range $_, $v := .Infos }}
     {{- if eq $v.Scope "object" }}
@@ -41,6 +43,8 @@ type ObjectMetadata struct {
 //
 // - This function should not be called by service implementer.
 // - The returning ObjectMetadata is read only and should not be modified.
+//
+// Deprecated: Use GetObjectSystemMetadata instead.
 func GetObjectMetadata(o *Object) ObjectMetadata {
     om, ok := o.GetServiceMetadata()
     if ok {
@@ -52,8 +56,45 @@ func GetObjectMetadata(o *Object) ObjectMetadata {
 // setObjectMetadata will set ObjectMetadata into Object.
 //
 // - This function should only be called once, please make sure all data has been written before set.
+//
+// Deprecated: Use setObjectSystemMetadata instead.
 func setObjectMetadata(o *Object, om ObjectMetadata) {
     o.SetServiceMetadata(om)
+}
+
+// ObjectSystemMetadata stores system metadata for object.
+type ObjectSystemMetadata struct {
+{{- range $_, $v := .Infos }}
+    {{- if eq $v.Scope "object" }}
+    {{- if not $v.Global }}
+    {{- $pname := $v.Name | toPascal }}
+    {{- if $v.DisplayName }}
+        {{- $pname = $v.DisplayName }}
+    {{- end }}
+    {{ $v.Description }}
+    {{ $pname }} {{ $v.Type }}
+    {{- end }}
+    {{- end }}
+{{- end }}
+}
+
+// GetObjectSystemMetadata will get ObjectSystemMetadata from Object.
+//
+// - This function should not be called by service implementer.
+// - The returning ObjectServiceMetadata is read only and should not be modified.
+func GetObjectSystemMetadata(o *Object) ObjectSystemMetadata {
+    sm, ok := o.GetSystemMetadata()
+    if ok {
+        return sm.(ObjectSystemMetadata)
+    }
+    return ObjectSystemMetadata{}
+}
+
+// setObjectSystemMetadata will set ObjectSystemMetadata into Object.
+//
+// - This function should only be called once, please make sure all data has been written before set.
+func setObjectSystemMetadata(o *Object, sm ObjectSystemMetadata) {
+    o.SetSystemMetadata(sm)
 }
 
 // StorageSystemMetadata stores system metadata for storage meta.

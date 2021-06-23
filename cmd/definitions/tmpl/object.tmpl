@@ -52,7 +52,9 @@ func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
 {{- else }}
 
 {{ if $isDeprecate }}
-// Deprecated: Moved to storage meta.
+// Get{{ $v.DisplayName }} will get {{ $v.DisplayName }} from Object.
+//
+{{ $v.Description }}
 {{- end }}
 func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
     o.stat()
@@ -65,7 +67,9 @@ func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
 }
 
 {{ if $isDeprecate }}
-// Deprecated: Moved to storage meta.
+// MustGet{{ $v.DisplayName }} will get {{ $v.DisplayName }} from Object.
+//
+{{ $v.Description }}
 {{- end }}
 func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
     o.stat()
@@ -77,7 +81,9 @@ func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
 }
 
 {{ if $isDeprecate }}
-// Deprecated: Moved to storage meta.
+// Set{{ $v.DisplayName }} will set {{ $v.DisplayName }} into Object.
+//
+{{ $v.Description }}
 {{- end }}
 func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
     o.{{ $v.TypeName }} = v

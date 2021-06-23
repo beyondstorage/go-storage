@@ -27,7 +27,8 @@ const (
 	objectIndexMultipartSizeMinimum   uint64 = 1 << 15
 	objectIndexPath                   uint64 = 1 << 16
 	objectIndexServiceMetadata        uint64 = 1 << 17
-	objectIndexUserMetadata           uint64 = 1 << 18
+	objectIndexSystemMetadata         uint64 = 1 << 18
+	objectIndexUserMetadata           uint64 = 1 << 19
 )
 
 // Object is the smallest unit in go-storage.
@@ -41,7 +42,7 @@ type Object struct {
 	//
 	// Deprecated: Moved to storage meta.
 	appendNumberMaximum int
-	// AppendOffset AppendOffset is the offset of the append object
+	// AppendOffset AppendOffset is the offset of the append object.
 	appendOffset int64
 	// AppendSizeMaximum Max append size in per append operation.
 	//
@@ -83,9 +84,13 @@ type Object struct {
 	multipartSizeMinimum int64
 	// Path Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Path string
-	// ServiceMetadata ServiceMetadata stores service defined metadata
+	// ServiceMetadata ServiceMetadata stores service defined metadata.
+	//
+	// Deprecated: Use SystemMetadata instead.
 	serviceMetadata interface{}
-	// UserMetadata UserMetadata stores user defined metadata
+	// SystemMetadata SystemMetadata stores system defined metadata.
+	systemMetadata interface{}
+	// UserMetadata UserMetadata stores user defined metadata.
 	userMetadata map[string]string
 
 	// client is the client in which Object is alive.
@@ -97,6 +102,10 @@ type Object struct {
 	m    sync.Mutex
 }
 
+// GetAppendNumberMaximum will get AppendNumberMaximum from Object.
+//
+// AppendNumberMaximum Max append numbers in append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) GetAppendNumberMaximum() (int, bool) {
 	o.stat()
@@ -108,6 +117,10 @@ func (o *Object) GetAppendNumberMaximum() (int, bool) {
 	return 0, false
 }
 
+// MustGetAppendNumberMaximum will get AppendNumberMaximum from Object.
+//
+// AppendNumberMaximum Max append numbers in append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) MustGetAppendNumberMaximum() int {
 	o.stat()
@@ -118,6 +131,10 @@ func (o *Object) MustGetAppendNumberMaximum() int {
 	return o.appendNumberMaximum
 }
 
+// SetAppendNumberMaximum will set AppendNumberMaximum into Object.
+//
+// AppendNumberMaximum Max append numbers in append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) SetAppendNumberMaximum(v int) *Object {
 	o.appendNumberMaximum = v
@@ -150,6 +167,10 @@ func (o *Object) SetAppendOffset(v int64) *Object {
 	return o
 }
 
+// GetAppendSizeMaximum will get AppendSizeMaximum from Object.
+//
+// AppendSizeMaximum Max append size in per append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) GetAppendSizeMaximum() (int64, bool) {
 	o.stat()
@@ -161,6 +182,10 @@ func (o *Object) GetAppendSizeMaximum() (int64, bool) {
 	return 0, false
 }
 
+// MustGetAppendSizeMaximum will get AppendSizeMaximum from Object.
+//
+// AppendSizeMaximum Max append size in per append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) MustGetAppendSizeMaximum() int64 {
 	o.stat()
@@ -171,6 +196,10 @@ func (o *Object) MustGetAppendSizeMaximum() int64 {
 	return o.appendSizeMaximum
 }
 
+// SetAppendSizeMaximum will set AppendSizeMaximum into Object.
+//
+// AppendSizeMaximum Max append size in per append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) SetAppendSizeMaximum(v int64) *Object {
 	o.appendSizeMaximum = v
@@ -178,6 +207,10 @@ func (o *Object) SetAppendSizeMaximum(v int64) *Object {
 	return o
 }
 
+// GetAppendTotalSizeMaximum will get AppendTotalSizeMaximum from Object.
+//
+// AppendTotalSizeMaximum Max append total size in append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) GetAppendTotalSizeMaximum() (int64, bool) {
 	o.stat()
@@ -189,6 +222,10 @@ func (o *Object) GetAppendTotalSizeMaximum() (int64, bool) {
 	return 0, false
 }
 
+// MustGetAppendTotalSizeMaximum will get AppendTotalSizeMaximum from Object.
+//
+// AppendTotalSizeMaximum Max append total size in append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) MustGetAppendTotalSizeMaximum() int64 {
 	o.stat()
@@ -199,6 +236,10 @@ func (o *Object) MustGetAppendTotalSizeMaximum() int64 {
 	return o.appendTotalSizeMaximum
 }
 
+// SetAppendTotalSizeMaximum will set AppendTotalSizeMaximum into Object.
+//
+// AppendTotalSizeMaximum Max append total size in append operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) SetAppendTotalSizeMaximum(v int64) *Object {
 	o.appendTotalSizeMaximum = v
@@ -399,6 +440,10 @@ func (o *Object) SetMultipartID(v string) *Object {
 	return o
 }
 
+// GetMultipartNumberMaximum will get MultipartNumberMaximum from Object.
+//
+// MultipartNumberMaximum Maximum part number in multipart operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) GetMultipartNumberMaximum() (int, bool) {
 	o.stat()
@@ -410,6 +455,10 @@ func (o *Object) GetMultipartNumberMaximum() (int, bool) {
 	return 0, false
 }
 
+// MustGetMultipartNumberMaximum will get MultipartNumberMaximum from Object.
+//
+// MultipartNumberMaximum Maximum part number in multipart operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) MustGetMultipartNumberMaximum() int {
 	o.stat()
@@ -420,6 +469,10 @@ func (o *Object) MustGetMultipartNumberMaximum() int {
 	return o.multipartNumberMaximum
 }
 
+// SetMultipartNumberMaximum will set MultipartNumberMaximum into Object.
+//
+// MultipartNumberMaximum Maximum part number in multipart operation.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) SetMultipartNumberMaximum(v int) *Object {
 	o.multipartNumberMaximum = v
@@ -427,6 +480,10 @@ func (o *Object) SetMultipartNumberMaximum(v int) *Object {
 	return o
 }
 
+// GetMultipartSizeMaximum will get MultipartSizeMaximum from Object.
+//
+// MultipartSizeMaximum Maximum part size defined by storager.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) GetMultipartSizeMaximum() (int64, bool) {
 	o.stat()
@@ -438,6 +495,10 @@ func (o *Object) GetMultipartSizeMaximum() (int64, bool) {
 	return 0, false
 }
 
+// MustGetMultipartSizeMaximum will get MultipartSizeMaximum from Object.
+//
+// MultipartSizeMaximum Maximum part size defined by storager.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) MustGetMultipartSizeMaximum() int64 {
 	o.stat()
@@ -448,6 +509,10 @@ func (o *Object) MustGetMultipartSizeMaximum() int64 {
 	return o.multipartSizeMaximum
 }
 
+// SetMultipartSizeMaximum will set MultipartSizeMaximum into Object.
+//
+// MultipartSizeMaximum Maximum part size defined by storager.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) SetMultipartSizeMaximum(v int64) *Object {
 	o.multipartSizeMaximum = v
@@ -455,6 +520,10 @@ func (o *Object) SetMultipartSizeMaximum(v int64) *Object {
 	return o
 }
 
+// GetMultipartSizeMinimum will get MultipartSizeMinimum from Object.
+//
+// MultipartSizeMinimum Minimum part size defined by storager.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) GetMultipartSizeMinimum() (int64, bool) {
 	o.stat()
@@ -466,6 +535,10 @@ func (o *Object) GetMultipartSizeMinimum() (int64, bool) {
 	return 0, false
 }
 
+// MustGetMultipartSizeMinimum will get MultipartSizeMinimum from Object.
+//
+// MultipartSizeMinimum Minimum part size defined by storager.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) MustGetMultipartSizeMinimum() int64 {
 	o.stat()
@@ -476,6 +549,10 @@ func (o *Object) MustGetMultipartSizeMinimum() int64 {
 	return o.multipartSizeMinimum
 }
 
+// SetMultipartSizeMinimum will set MultipartSizeMinimum into Object.
+//
+// MultipartSizeMinimum Minimum part size defined by storager.
+//
 // Deprecated: Moved to storage meta.
 func (o *Object) SetMultipartSizeMinimum(v int64) *Object {
 	o.multipartSizeMinimum = v
@@ -492,6 +569,11 @@ func (o *Object) SetPath(v string) *Object {
 	return o
 }
 
+// GetServiceMetadata will get ServiceMetadata from Object.
+//
+// ServiceMetadata ServiceMetadata stores service defined metadata.
+//
+// Deprecated: Use SystemMetadata instead.
 func (o *Object) GetServiceMetadata() (interface{}, bool) {
 	o.stat()
 
@@ -502,6 +584,11 @@ func (o *Object) GetServiceMetadata() (interface{}, bool) {
 	return nil, false
 }
 
+// MustGetServiceMetadata will get ServiceMetadata from Object.
+//
+// ServiceMetadata ServiceMetadata stores service defined metadata.
+//
+// Deprecated: Use SystemMetadata instead.
 func (o *Object) MustGetServiceMetadata() interface{} {
 	o.stat()
 
@@ -511,9 +598,39 @@ func (o *Object) MustGetServiceMetadata() interface{} {
 	return o.serviceMetadata
 }
 
+// SetServiceMetadata will set ServiceMetadata into Object.
+//
+// ServiceMetadata ServiceMetadata stores service defined metadata.
+//
+// Deprecated: Use SystemMetadata instead.
 func (o *Object) SetServiceMetadata(v interface{}) *Object {
 	o.serviceMetadata = v
 	o.bit |= objectIndexServiceMetadata
+	return o
+}
+
+func (o *Object) GetSystemMetadata() (interface{}, bool) {
+	o.stat()
+
+	if o.bit&objectIndexSystemMetadata != 0 {
+		return o.systemMetadata, true
+	}
+
+	return nil, false
+}
+
+func (o *Object) MustGetSystemMetadata() interface{} {
+	o.stat()
+
+	if o.bit&objectIndexSystemMetadata == 0 {
+		panic(fmt.Sprintf("object system-metadata is not set"))
+	}
+	return o.systemMetadata
+}
+
+func (o *Object) SetSystemMetadata(v interface{}) *Object {
+	o.systemMetadata = v
+	o.bit |= objectIndexSystemMetadata
 	return o
 }
 
@@ -561,6 +678,7 @@ func (o *Object) clone(xo *Object) {
 	o.multipartSizeMinimum = xo.multipartSizeMinimum
 	o.Path = xo.Path
 	o.serviceMetadata = xo.serviceMetadata
+	o.systemMetadata = xo.systemMetadata
 	o.userMetadata = xo.userMetadata
 
 	o.bit = xo.bit
