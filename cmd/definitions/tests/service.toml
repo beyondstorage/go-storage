@@ -34,8 +34,8 @@ optional = ["list_mode"]
 required = ["expire"]
 
 [namespace.storage.op.read]
-optional = ["io_callback", "size"]
-virtual = ["offset"]
+optional = ["io_callback", "size", "offset"]
+virtual = ["content_md5"]
 
 [namespace.storage.op.create]
 optional = ["object_mode"]
