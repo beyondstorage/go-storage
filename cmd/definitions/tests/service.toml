@@ -72,6 +72,10 @@ description = "set storage features"
 type = "string"
 description = "is the storage class for this object"
 
+[infos.storage.meta.queries-per-second]
+type = "int64"
+description = "tests storage system metadata"
+
 [pairs.size]
 type = "int64"
 description = "tests pair conflict"
