@@ -115,7 +115,7 @@ type Pair struct {
 	Global      bool
 	Description string
 
-	// This is a service pair having the same name and type as a global pair
+	// This is a system pair having the same name and type as a global pair
 	Conflict bool
 }
 

@@ -39,8 +39,7 @@ type Object struct {
 
 
 {{- range $k, $v := .ObjectMeta }}
-{{ $isDeprecate := in $v.Description "// Deprecated:" }}
-{{- if $v.Export }}
+{{ if $v.Export }}
 func (o *Object) Get{{ $v.DisplayName }}() {{ $v.Type }} {
     return o.{{ $v.TypeName }}
 }
@@ -51,9 +50,9 @@ func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
 }
 {{- else }}
 
-{{ if $isDeprecate }}
-// Deprecated: Moved to storage meta.
-{{- end }}
+// Get{{ $v.DisplayName }} will get {{ $v.DisplayName }} from Object.
+//
+{{ $v.Description }}
 func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
     o.stat()
 
@@ -64,9 +63,9 @@ func (o *Object) Get{{ $v.DisplayName }}() ({{ $v.Type }}, bool) {
     return {{ $v.Type | zeroValue }}, false
 }
 
-{{ if $isDeprecate }}
-// Deprecated: Moved to storage meta.
-{{- end }}
+// MustGet{{ $v.DisplayName }} will get {{ $v.DisplayName }} from Object.
+//
+{{ $v.Description }}
 func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
     o.stat()
 
@@ -76,9 +75,9 @@ func (o *Object) MustGet{{ $v.DisplayName }}() {{ $v.Type }} {
     return o.{{ $v.TypeName }}
 }
 
-{{ if $isDeprecate }}
-// Deprecated: Moved to storage meta.
-{{- end }}
+// Set{{ $v.DisplayName }} will set {{ $v.DisplayName }} into Object.
+//
+{{ $v.Description }}
 func (o *Object) Set{{ $v.DisplayName }}(v {{ $v.Type }}) *Object {
     o.{{ $v.TypeName }} = v
     o.bit |= objectIndex{{ $v.Name | toPascal }}
