@@ -16,11 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- pkg/endpoint: Deprecated by github.com/beyondstorage/go-endpoint (#595)
 - cmd/definitions: Trim Service Pair Prefix (#598)
 - services: Implement GSP-90 Re-support Initialization Via Connection String (#589)
 - cmd/definitions: Implement GSP-109 Redesign Features (#606)
 - cmd/definitions: Implement GSP-117 Rename Service to System as the Opposite to Global (#608)
+
+### Deprecated
+
+- pkg/endpoint: Deprecated by github.com/beyondstorage/go-endpoint (#595)
+- services: Related fields `ServiceFeatures` and `StorageFeatures` have been deprecated (#606)
+- services: `GetObjectMetadata` has been deprecated by `GetObjectSystemMetadata` (#608)
 
 ## [v4.1.0] - 2021-06-08
 
