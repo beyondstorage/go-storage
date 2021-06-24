@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.2.0] - 2021-06-24
+
+### Added
+
+- cmd/definitions: Implement GSP-97 Add Restrictions In Storage Metadata (#601)
+- cmd/definitions: Implement GSP-111 Add System Metadata in Storage Metadata (#605)
+
+### Changed
+
+- pkg/endpoint: Deprecated by github.com/beyondstorage/go-endpoint (#595)
+- cmd/definitions: Trim Service Pair Prefix (#598)
+- services: Implement GSP-90 Re-support Initialization Via Connection String (#589)
+- cmd/definitions: Implement GSP-109 Redesign Features (#606)
+- cmd/definitions: Implement GSP-117 Rename Service to System as the Opposite to Global (#608)
+
 ## [v4.1.0] - 2021-06-08
 
 ### Added
@@ -31,9 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - cmd/definitions: Add functions Add and Del for ObjectMode (#574)
 - cmd/definitions: Declare supports interfaces in generator (#584)
 
-### Changed:
+### Changed
 
-- cmd/definitions: Remove redundent // in object.tmpl (#565)
+- cmd/definitions: Remove redundant // in object.tmpl (#565)
 - docs: Move spec to specs (#568)
 - docs: Add comment to illustrate ignoring generated.go in tests package (#567)
 - cmd/definitions: Update obsolete file paths in comments (#570)
@@ -65,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - cmd/definitions: Add tests service (#518)
-- cmd/definitions: Increase stablility of generated code (#526)
+- cmd/definitions: Increase stability of generated code (#526)
 - types: Add UnimplementedStub to have forward compatible implementations (#524)
 - pkg/iowrap: Add cancelable io wrappers (#528)
 
@@ -527,7 +542,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.2.0...HEAD
+[v4.2.0]: https://github.com/beyondstorage/go-storage/compare/v4.1.0...v4.2.0
 [v4.1.0]: https://github.com/beyondstorage/go-storage/compare/v4.0.0...v4.1.0
 [v4.0.0]: https://github.com/beyondstorage/go-storage/compare/v3.6.0...v4.0.0
 [v3.6.0]: https://github.com/beyondstorage/go-storage/compare/v3.5.0...v3.6.0
