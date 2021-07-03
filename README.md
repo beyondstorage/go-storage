@@ -232,6 +232,15 @@ System object metadata
 
 Service system object metadata like `storage-class` and so on.
 
+```go
+o, err := store.Stat("path")
+
+// Get service system metadata via API provides by go-service-s3.
+om := s3.GetObjectSystemMetadata(o)
+_ = om.StorageClass // this object's storage class
+_ = om.ServerSideEncryptionCustomerAlgorithm // this object's sse algorithm
+```
+
 ### Strong Type Everywhere
 
 Self maintained codegen [definitions](https://github.com/beyondstorage/go-storage/tree/master/cmd/definitions) helps to generate all our APIs, pairs and metadata.
