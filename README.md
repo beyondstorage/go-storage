@@ -1,11 +1,23 @@
 # go-storage
 
+## [Website](https://beyondstorage.io) | [Documentation](https://beyondstorage.io/docs) | [Community](https://beyondstorage.io/community)
+
 [![Build Status](https://github.com/beyondstorage/go-storage/workflows/Unit%20Test/badge.svg?branch=master)](https://github.com/beyondstorage/go-storage/actions?query=workflow%3A%22Unit+Test%22)
 [![Go dev](https://pkg.go.dev/badge/github.com/beyondstorage/go-storage/v4)](https://pkg.go.dev/github.com/beyondstorage/go-storage/v4)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/beyondstorage/go-storage/blob/master/LICENSE)
 [![go storage dev](https://img.shields.io/matrix/go-storage:aos.dev.svg?server_fqdn=chat.aos.dev&label=%23go-storage%3Aaos.dev&logo=matrix)](https://matrix.to/#/#go-storage:aos.dev) <!-- Need update after matrix updated -->
 
 Storage abstraction that focus on neutral cross-cloud data operation.
+
+## Goal
+
+**Write once, run on every storage service.**
+
+- Production ready
+- High performance
+- Vendor agnostic
+
+## Examples
 
 ```go
 package main
@@ -65,12 +77,6 @@ func main() {
 
 More examples could be found at [go-storage-example](https://github.com/beyondstorage/go-storage-example).
 
-## Goal
-
-- Production ready
-- High performance
-- Vendor agnostic
-
 ## Features
 
 ### Widely native services support
@@ -107,7 +113,7 @@ More examples could be found at [go-storage-example](https://github.com/beyondst
 
 More service ideas could be found at [Service Integration Tracking](https://github.com/beyondstorage/go-storage/issues/536).
 
-### Complete and easily expandable interface
+### Complete and easily extensible interface
 
 Basic operations
 
@@ -241,7 +247,7 @@ _ = om.StorageClass // this object's storage class
 _ = om.ServerSideEncryptionCustomerAlgorithm // this object's sse algorithm
 ```
 
-### Strong Type Everywhere
+### Strong Typing Everywhere
 
 Self maintained codegen [definitions](https://github.com/beyondstorage/go-storage/tree/master/cmd/definitions) helps to generate all our APIs, pairs and metadata.
 
