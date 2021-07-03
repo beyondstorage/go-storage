@@ -73,7 +73,9 @@ More examples could be found at [go-storage-example](https://github.com/beyondst
 
 ## Features
 
-### Widely services support
+### Widely native services support
+
+**9** stable services that have passed all [integration tests](https://github.com/beyondstorage/go-integration-test).
 
 - [azblob](https://github.com/beyondstorage/go-service-azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
 - [cos](https://github.com/beyondstorage/go-service-cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
@@ -84,56 +86,124 @@ More examples could be found at [go-storage-example](https://github.com/beyondst
 - [oss](https://github.com/beyondstorage/go-service-oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
 - [qingstor](https://github.com/beyondstorage/go-service-qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
 - [s3](https://github.com/beyondstorage/go-service-s3/): [Amazon S3](https://aws.amazon.com/s3/)
+
+**1** beta services that implemented required functions, but not passed [integration tests](https://github.com/beyondstorage/go-integration-test).
+
 - [uss](https://github.com/beyondstorage/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 
-### Servicer operation support
+**11** alpha services that still under development.
 
-- List: list all Storager in service
-- Get: get a Storager via name
-- Create: create a Storager
-- Delete: delete a Storager
+- [ftp](https://github.com/beyondstorage/go-service-ftp/): FTP
+- [gdrive](https://github.com/beyondstorage/go-service-gdrive): [Google Drive](https://www.google.com/drive/)
+- [hdfs](https://github.com/beyondstorage/go-service-hdfs): [Hadoop Distributed File System](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html#Introduction)
+- [ipfs](https://github.com/beyondstorage/go-service-ipfs): [InterPlanetary File System](https://ipfs.io)
+- [memory](https://github.com/beyondstorage/go-service-memory): data that only in memory
+- [minio](https://github.com/beyondstorage/go-service-minio): [MinIO](https://min.io)
+- [onedrive](https://github.com/beyondstorage/go-service-onedrive): [Microsoft OneDrive](https://www.microsoft.com/en-ww/microsoft-365/onedrive/online-cloud-storage)
+- [storj](https://github.com/beyondstorage/go-service-storj): [StorJ](https://www.storj.io/)
+- [tar](https://github.com/beyondstorage/go-service-tar): tar files
+- [webdav](https://github.com/beyondstorage/go-service-webdav): [WebDAV](http://www.webdav.org/)
+- [zip](https://github.com/beyondstorage/go-service-zip): zip files
 
-### Storager operation support
+More service ideas could be found at [Service Integration Tracking](https://github.com/beyondstorage/go-storage/issues/536).
+
+### Complete and easily expandable interface
 
 Basic operations
 
-- Metadata: get storager metadata
-- Read: read file content
-- Write: write content into file
-- Stat: get file's metadata
-- Delete: delete a file or directory
-- List: list file in prefix or dir styles
+- Metadata: get `Storager` metadata
+- Read: read `Object` content
+- Write: write content into `Object`
+- Stat: get `Object` metadata or check existences
+- Delete: delete an `Object`
+- List: list `Object` in given prefix or dir
 
 Extended operations
 
-- Copy: copy a file inside storager
-- Move: move a file inside storager
-- Reach: generate a public accessible url
+- Copy: copy a `Object` inside storager
+- Move: move a `Object` inside storager
+- Reach: generate a public accessible url to an `Object`
+- Link: Symlink `Object` support
+- Dir: Dir `Object` support
 
-Multi object modes support
+Large file manipulation
 
 - Multipart: allow doing multipart uploads
 - Append: allow appending to an object
-- Block: allow combining an object with block ids.
+- Block: allow combining an object with block ids
 - Page: allow doing random writes
 
-### Object metadata support
+### Comprehensive metadata
 
-Common metadata
+Global object metadata
 
 - `id`: unique key in service
 - `name`: relative path towards service's work dir
-- `type`: object type cloud be `file`, `dir`, `link` or `unknown`
-
-Optional metadata
-
-- `size`: object's content size.
-- `updated-at`: object's last updated time.
+- `mode`: object mode can be a combination of `read`, `dir`, `part` and [more](https://github.com/beyondstorage/go-storage/blob/master/types/object.go#L11) 
+- `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
+- `content-length`: object's content size.
 - `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
 - `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
-- `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
-- `storage-class`: object's storage class as defined
-  in [storage proposal](https://github.com/beyondstorage/specs/tree/master/rfcs/8-normalize-metadata-storage-class.md)
+- `last-modified`: object's last updated time.
+
+System object metadata
+
+Service system object metadata like `storage-class` and so on.
+
+### Strong Type Everywhere
+
+Self maintained codegen [definitions](https://github.com/beyondstorage/go-storage/tree/master/cmd/definitions) helps to generate all our APIs, pairs and metadata.
+
+Generated pairs which can be used as API optional arguments.
+
+```go
+func WithContentMd5(v string) Pair {
+    return Pair{
+        Key:   "content_md5",
+        Value: v,
+    }
+}
+```
+
+Generated object metadata which can be used to get content md5 from object.
+
+```go
+func (o *Object) GetContentMd5() (string, bool) {
+    o.stat()
+    
+    if o.bit&objectIndexContentMd5 != 0 {
+        return o.contentMd5, true
+    }
+    
+    return "", false
+}
+```
+
+### Server-Side Encrypt
+
+Server-Side Encrypt supports via system pair and system metadata, and we can use [Default Pairs](https://beyondstorage.io/docs/go-storage/pairs/index#default-pairs) to simplify the job.
+
+```go
+
+func NewS3SseC(key []byte) (types.Storager, error) {
+    defaultPairs := s3.DefaultStoragePairs{
+        Write: []types.Pair{
+            // Required, must be AES256
+            s3.WithServerSideEncryptionCustomerAlgorithm(s3.ServerSideEncryptionAes256),
+            // Required, your AES-256 key, a 32-byte binary value
+            s3.WithServerSideEncryptionCustomerKey(key),
+        },
+        // Now you have to provide customer key to read encrypted data
+        Read: []types.Pair{
+            // Required, must be AES256
+            s3.WithServerSideEncryptionCustomerAlgorithm(s3.ServerSideEncryptionAes256),
+            // Required, your AES-256 key, a 32-byte binary value
+            s3.WithServerSideEncryptionCustomerKey(key),
+        }}
+    
+    return s3.NewStorager(..., s3.WithDefaultStoragePairs(defaultPairs))
+}
+```
 
 ## Sponsor
 
