@@ -1,11 +1,69 @@
-# storage
+# go-storage
 
 [![Build Status](https://github.com/beyondstorage/go-storage/workflows/Unit%20Test/badge.svg?branch=master)](https://github.com/beyondstorage/go-storage/actions?query=workflow%3A%22Unit+Test%22)
 [![Go dev](https://pkg.go.dev/badge/github.com/beyondstorage/go-storage/v4)](https://pkg.go.dev/github.com/beyondstorage/go-storage/v4)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/beyondstorage/go-storage/blob/master/LICENSE)
 [![go storage dev](https://img.shields.io/matrix/go-storage:aos.dev.svg?server_fqdn=chat.aos.dev&label=%23go-storage%3Aaos.dev&logo=matrix)](https://matrix.to/#/#go-storage:aos.dev) <!-- Need update after matrix updated -->
 
-A storage abstraction beyond the existing storage services.
+Storage abstraction that focus on neutral cross-cloud data operation.
+
+```go
+package main
+
+import (
+    "log"
+
+    "github.com/beyondstorage/go-storage/v4/services"
+    "github.com/beyondstorage/go-storage/v4/types"
+
+    // Add fs support
+    _ "github.com/beyondstorage/go-service-fs/v3"
+    // Add s3 support
+    _ "github.com/beyondstorage/go-service-s3/v2"
+    // Add gcs support
+    _ "github.com/beyondstorage/go-service-gcs/v2"
+    // Add azblob support
+    _ "github.com/beyondstorage/go-service-azblob/v2"
+    // More support could be found under BeyondStorage.
+    _ "github.com/beyondstorage/go-service-xxx" 
+)
+
+func main() {
+    // Init a Storager from connection string. 
+    store, err := services.NewStoragerFromString("s3://bucket_name/path/to/workdir")
+    if err != nil {
+        log.Fatalf("service init failed: %v", err)
+    }
+
+    // Write data from io.Reader into hello.txt
+    n, err := store.Write("hello.txt", r, length)
+
+    // Read data from hello.txt to io.Writer
+    n, err := store.Read("hello.txt", w)
+
+    // Stat hello.txt to check existence or get its metadata
+    o, err := store.Stat("hello.txt")
+
+    // Use object's functions to get metadata
+    length, ok := o.GetContentLength()
+    
+    // List will create an iterator of object under path.
+    it, err := store.List("path")
+    
+    for {
+    	// Use iterator.Next to retrieve next object until we meet IteratorDone.
+    	o, err := it.Next()
+    	if errors.Is(err, types.IteraoorDone) {
+    		break
+        }
+    }
+
+    // Delete hello.txt
+    err = store.Delete("hello.txt")
+}
+```
+
+More examples could be found at [go-storage-example](https://github.com/beyondstorage/go-storage-example).
 
 ## Goal
 
@@ -76,50 +134,6 @@ Optional metadata
 - `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
 - `storage-class`: object's storage class as defined
   in [storage proposal](https://github.com/beyondstorage/specs/tree/master/rfcs/8-normalize-metadata-storage-class.md)
-
-## Quick Start
-
-```go
-package main
-
-import (
-	"bytes"
-	"log"
-	
-	_ "github.com/beyondstorage/go-service-fs/v3"
-	"github.com/beyondstorage/go-storage/v4/services"
-)
-
-func main() {
-	// Init a service. 
-	store, err := services.NewStoragerFromString("fs:///tmp")
-	if err != nil {
-		log.Fatalf("service init failed: %v", err)
-	}
-
-	content := []byte("Hello, world!")
-	length := int64(len(content))
-	r := bytes.NewReader(content)
-
-	_, err = store.Write("hello", r, length)
-	if err != nil {
-		log.Fatalf("write failed: %v", err)
-	}
-
-	var buf bytes.Buffer
-
-	_, err = store.Read("hello", &buf)
-	if err != nil {
-		log.Fatalf("storager read: %v", err)
-	}
-
-	log.Printf("%s", buf.String())
-}
-```
-
-## Examples
-
-All examples are maintained in <https://github.com/beyondstorage/go-storage-example>.
 
 ## Sponsor
 
