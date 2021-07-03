@@ -112,26 +112,108 @@ More service ideas could be found at [Service Integration Tracking](https://gith
 Basic operations
 
 - Metadata: get `Storager` metadata
+```go
+meta := store.Metadata()
+_ := meta.GetWorkDir() // Get object WorkDir
+_, ok := meta.GetWriteSizeMaximum() // Get the maximum size for write operation
+```
 - Read: read `Object` content
+```go
+// Read 2048 byte at the offset 1024 into the io.Writer.
+n, err := store.Read("path", w, pairs.WithOffset(1024), pairs.WithSize(2048))
+```
 - Write: write content into `Object`
+```go
+// Write 2048 byte from io.Reader
+n, err := store.Write("path", r, 2048)
+```
 - Stat: get `Object` metadata or check existences
+```go
+o, err := store.Stat("path")
+if errors.Is(err, services.ErrObjectNotExist) {
+	// object is not exist
+}
+length, ok := o.GetContentLength() // get the object content length.
+```
 - Delete: delete an `Object`
+```go
+err := store.Delete("path") // Delete the object "path"
+```
 - List: list `Object` in given prefix or dir
+```go
+it, err := store.List("path")
+for {
+	o, err := it.Next()
+	if err != nil && errors.Is(err, types.IteratorDone) {
+        // the list is over 
+    }
+    length, ok := o.GetContentLength() // get the object content length.
+}
+```
 
 Extended operations
 
 - Copy: copy a `Object` inside storager
+```go
+err := store.(Copier).Copy(src, dst) // Copy an object from src to dst.
+```
 - Move: move a `Object` inside storager
+```go
+err := store.(Mover).Move(src, dst) // Move an object from src to dst.
+```
 - Reach: generate a public accessible url to an `Object`
-- Link: Symlink `Object` support
+```go
+url, err := store.(Reacher).Reach("path") // Generate an url to the object.
+```
 - Dir: Dir `Object` support
+```go
+o, err := store.(Direr).CreateDir("path") // Create a dir object.
+```
 
 Large file manipulation
 
 - Multipart: allow doing multipart uploads
+```go
+ms := store.(Multiparter)
+
+// Create a multipart object.
+o, err := ms.CreateMultipart("path")
+// Write 1024 bytes from io.Reader into a multipart at index 1
+n, part, err := ms.WriteMultipart(o, r, 1024, 1)
+// Complete a multipart object.
+err := ms.CompleteMultipart(o, []*Part{part})
+```
 - Append: allow appending to an object
+```go
+as := store.(Appender)
+
+// Create an appendable object.
+o, err := as.CreateAppend("path")
+// Write 1024 bytes from io.Reader.
+n, err := as.WriteAppend(o, r, 1024)
+// Commit an append object.
+err = as.CommitAppend(o)
+```
 - Block: allow combining an object with block ids
+```go
+bs := store.(Blocker)
+
+// Create a block object.
+o, err := bs.CreateBlock("path")
+// Write 1024 bytes from io.Reader with block id "id-abc"
+n, err := bs.WriteBlock(o, r, 1024, "id-abc")
+// Combine block via block ids.
+err := bs.CombineBlock(o, []string{"id-abc"})
+```
 - Page: allow doing random writes
+```go
+ps := store.(Pager)
+
+// Create a page object.
+o, err := ps.CreatePage("path")
+// Write 1024 bytes from io.Reader at offset 2048
+n, err := ps.WritePage(o, r, 1024, 2048)
+```
 
 ### Comprehensive metadata
 
