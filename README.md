@@ -7,15 +7,17 @@
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/beyondstorage/go-storage/blob/master/LICENSE)
 [![go storage dev](https://img.shields.io/matrix/go-storage:aos.dev.svg?server_fqdn=chat.aos.dev&label=%23go-storage%3Aaos.dev&logo=matrix)](https://matrix.to/#/#go-storage:aos.dev) <!-- Need update after matrix updated -->
 
-Storage abstraction that focus on neutral cross-cloud data operation.
+A **vendor neutral** storage library for Golang.
 
-## Goal
+## Vision
 
 **Write once, run on every storage service.**
 
+## Goal
+
+- Vendor agnostic
 - Production ready
 - High performance
-- Vendor agnostic
 
 ## Examples
 
