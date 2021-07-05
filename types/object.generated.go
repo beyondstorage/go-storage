@@ -38,7 +38,7 @@ const (
 //   - Object CANNOT be copied
 //   - Object is concurrent safe.
 //   - Only `ID`, `Path`, `Mode` are required during list operations, other fields
-//     could be fetched via lazy stat logic.
+//     could be fetched via lazy stat logic: https://beyondstorage.io/docs/go-storage/internal/object-lazy-stat
 type Object struct {
 	// AppendNumberMaximum Max append numbers in append operation.
 	//

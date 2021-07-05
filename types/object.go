@@ -7,8 +7,8 @@ import (
 
 // ObjectMode describes what users can operate on this object.
 //
-// Different object mode is orthogonal, an object could have different object mode
-// at the same time.
+// Different object modes are orthogonal, and an object could have different
+// object modes at the same time.
 //
 // For example:
 //
@@ -18,13 +18,14 @@ import (
 //
 // And we can compose them together:
 //
-// - ModeRead & ModeLink: Think about a symlink, we can still read it.
-// - ModeDir & ModeLink: Think about a symlink to dir.
-// - ModeAppend & ModeRead: file in fs could be both read and append.
+// - ModeRead | ModeLink: Think about a symlink, we can still read it.
+// - ModeDir | ModeLink: Think about a symlink to dir.
+// - ModeAppend | ModeRead: file in fs could be both read and append.
 //
 // Reference
 //
 // - [GSP-25](https://github.com/beyondstorage/specs/blob/master/rfcs/25-object-mode.md)
+// - [Core Concept: Object](https://beyondstorage.io/docs/go-storage/internal/core-concept#object)
 type ObjectMode uint32
 
 // All available object mode
