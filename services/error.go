@@ -52,6 +52,10 @@ var (
 	ErrListModeInvalid = NewErrorCode("list mode invalid")
 	// ErrServiceNotRegistered means this service is not registered.
 	ErrServiceNotRegistered = NewErrorCode("service not registered")
+	// ErrServiceInternal means this service has an internal error.
+	ErrServiceInternal = NewErrorCode("service internal")
+	// ErrRequestThrottled means there are too many requests.
+	ErrRequestThrottled = NewErrorCode("request throttled")
 )
 
 // InitError means this service init failed.
