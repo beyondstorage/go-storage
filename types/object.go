@@ -5,6 +5,26 @@ import (
 	"sync/atomic"
 )
 
+// ObjectMode describes what users can on on this object.
+//
+// Different object mode is orthogonal, an object could have different object mode
+// at the same time.
+//
+// For example:
+//
+// - ModeDir means we can do list on this object('s path)
+// - ModeRead means we can read it as a normal file
+// - ModeLink means we can use we can read this object's target
+//
+// And we can compose them together:
+//
+// - ModeRead & ModeLink: Think about a symlink, we can still read it.
+// - ModeDir & ModeLink: Think about a symlink to dir.
+// - ModeAppend & ModeRead: file in fs could be both read and append.
+//
+// Reference
+//
+// - [GSP-25](https://github.com/beyondstorage/specs/blob/master/rfcs/25-object-mode.md)
 type ObjectMode uint32
 
 // All available object mode
