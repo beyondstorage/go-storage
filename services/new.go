@@ -200,6 +200,8 @@ func parse(m map[string]string, k string, v string) (pair types.Pair, err error)
 		pair.Value = int(i)
 	case "int64":
 		pair.Value, err = strconv.ParseInt(v, 0, 64)
+	case "uint64":
+		pair.Value, err = strconv.ParseUint(v, 0, 64)
 	case "[]byte":
 		pair.Value, err = base64.RawStdEncoding.DecodeString(v)
 	default:
