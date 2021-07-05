@@ -66,6 +66,7 @@ var typeMap = map[string]string{
 	"string": "string",
 	"int":    "int",
 	"int64":  "int64",
+	"uint64":  "uint64",
 	"bool":   "bool",
 
 	// Golang self-defined types.
