@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 )
 
-// ObjectMode describes what users can on on this object.
+// ObjectMode describes what users can operate on this object.
 //
 // Different object mode is orthogonal, an object could have different object mode
 // at the same time.
