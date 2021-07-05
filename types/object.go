@@ -14,7 +14,7 @@ import (
 //
 // - ModeDir means we can do list on this object('s path)
 // - ModeRead means we can read it as a normal file
-// - ModeLink means we can use we can read this object's target
+// - ModeLink means we can read this object's link target
 //
 // And we can compose them together:
 //
