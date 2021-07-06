@@ -1,6 +1,10 @@
 coverage:
   range: "0...100" # For now, we will allow any coverage
   status:
+    project:
+      default:
+        target: auto
+        threshold: 0%
     patch:
       default:
         target: auto
