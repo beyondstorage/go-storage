@@ -29,6 +29,6 @@ jobs:
 
       - uses: codecov/codecov-action@v1
         with:
-          flags: unittests,${{ matrix.go }},${{ matrix.os }}
-          name: unittests-${{ matrix.go }}-${{ matrix.os }}
+          flags: unittests
+          name: ${{ matrix.go }}-${{ matrix.os }}
           files: ./coverage.txt
