@@ -1,6 +1,6 @@
 name: "Unit Test"
 
-on: [push,pull_request]
+on: [ push,pull_request ]
 
 jobs:
   unit_test:
@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         go: [ "1.15", "1.16" ]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       - name: Set up Go 1.x
@@ -21,13 +21,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - uses: codecov/codecov-action@v1
-        with:
-          flags: unittests
-          name: codecov
-
       - name: Build
         run: make build
 
       - name: Test
         run: make test
+
+      - uses: codecov/codecov-action@v1
+        with:
+          flags: unittests,${{ matrix.go }},${{ matrix.os }}
+          name: unittests-${{ matrix.go }}-${{ matrix.os }}
+          files: ./coverage.txt
