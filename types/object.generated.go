@@ -9,26 +9,19 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexAppendNumberMaximum    uint64 = 1 << 0
-	objectIndexAppendOffset           uint64 = 1 << 1
-	objectIndexAppendSizeMaximum      uint64 = 1 << 2
-	objectIndexAppendTotalSizeMaximum uint64 = 1 << 3
-	objectIndexContentLength          uint64 = 1 << 4
-	objectIndexContentMd5             uint64 = 1 << 5
-	objectIndexContentType            uint64 = 1 << 6
-	objectIndexEtag                   uint64 = 1 << 7
-	objectIndexID                     uint64 = 1 << 8
-	objectIndexLastModified           uint64 = 1 << 9
-	objectIndexLinkTarget             uint64 = 1 << 10
-	objectIndexMode                   uint64 = 1 << 11
-	objectIndexMultipartID            uint64 = 1 << 12
-	objectIndexMultipartNumberMaximum uint64 = 1 << 13
-	objectIndexMultipartSizeMaximum   uint64 = 1 << 14
-	objectIndexMultipartSizeMinimum   uint64 = 1 << 15
-	objectIndexPath                   uint64 = 1 << 16
-	objectIndexServiceMetadata        uint64 = 1 << 17
-	objectIndexSystemMetadata         uint64 = 1 << 18
-	objectIndexUserMetadata           uint64 = 1 << 19
+	objectIndexAppendOffset   uint64 = 1 << 0
+	objectIndexContentLength  uint64 = 1 << 1
+	objectIndexContentMd5     uint64 = 1 << 2
+	objectIndexContentType    uint64 = 1 << 3
+	objectIndexEtag           uint64 = 1 << 4
+	objectIndexID             uint64 = 1 << 5
+	objectIndexLastModified   uint64 = 1 << 6
+	objectIndexLinkTarget     uint64 = 1 << 7
+	objectIndexMode           uint64 = 1 << 8
+	objectIndexMultipartID    uint64 = 1 << 9
+	objectIndexPath           uint64 = 1 << 10
+	objectIndexSystemMetadata uint64 = 1 << 11
+	objectIndexUserMetadata   uint64 = 1 << 12
 )
 
 // Object is the smallest unit in go-storage.
@@ -40,20 +33,8 @@ const (
 //   - Only `ID`, `Path`, `Mode` are required during list operations, other fields
 //     could be fetched via lazy stat logic: https://beyondstorage.io/docs/go-storage/internal/object-lazy-stat
 type Object struct {
-	// AppendNumberMaximum Max append numbers in append operation.
-	//
-	// Deprecated: Moved to storage meta.
-	appendNumberMaximum int
 	// AppendOffset AppendOffset is the offset of the append object.
 	appendOffset int64
-	// AppendSizeMaximum Max append size in per append operation.
-	//
-	// Deprecated: Moved to storage meta.
-	appendSizeMaximum int64
-	// AppendTotalSizeMaximum Max append total size in append operation.
-	//
-	// Deprecated: Moved to storage meta.
-	appendTotalSizeMaximum int64
 	// ContentLength
 	contentLength int64
 	// ContentMd5
@@ -72,24 +53,8 @@ type Object struct {
 	Mode ObjectMode
 	// MultipartID MultipartID is the part id of part object.
 	multipartID string
-	// MultipartNumberMaximum Maximum part number in multipart operation.
-	//
-	// Deprecated: Moved to storage meta.
-	multipartNumberMaximum int
-	// MultipartSizeMaximum Maximum part size defined by storager.
-	//
-	// Deprecated: Moved to storage meta.
-	multipartSizeMaximum int64
-	// MultipartSizeMinimum Minimum part size defined by storager.
-	//
-	// Deprecated: Moved to storage meta.
-	multipartSizeMinimum int64
 	// Path Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 	Path string
-	// ServiceMetadata ServiceMetadata stores service defined metadata.
-	//
-	// Deprecated: Use SystemMetadata instead.
-	serviceMetadata interface{}
 	// SystemMetadata SystemMetadata stores system defined metadata.
 	systemMetadata interface{}
 	// UserMetadata UserMetadata stores user defined metadata.
@@ -102,46 +67,6 @@ type Object struct {
 	bit  uint64
 	done uint32
 	m    sync.Mutex
-}
-
-// GetAppendNumberMaximum will get AppendNumberMaximum from Object.
-//
-// AppendNumberMaximum Max append numbers in append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) GetAppendNumberMaximum() (int, bool) {
-	o.stat()
-
-	if o.bit&objectIndexAppendNumberMaximum != 0 {
-		return o.appendNumberMaximum, true
-	}
-
-	return 0, false
-}
-
-// MustGetAppendNumberMaximum will get AppendNumberMaximum from Object.
-//
-// AppendNumberMaximum Max append numbers in append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) MustGetAppendNumberMaximum() int {
-	o.stat()
-
-	if o.bit&objectIndexAppendNumberMaximum == 0 {
-		panic(fmt.Sprintf("object append-number-maximum is not set"))
-	}
-	return o.appendNumberMaximum
-}
-
-// SetAppendNumberMaximum will set AppendNumberMaximum into Object.
-//
-// AppendNumberMaximum Max append numbers in append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) SetAppendNumberMaximum(v int) *Object {
-	o.appendNumberMaximum = v
-	o.bit |= objectIndexAppendNumberMaximum
-	return o
 }
 
 // GetAppendOffset will get AppendOffset from Object.
@@ -175,86 +100,6 @@ func (o *Object) MustGetAppendOffset() int64 {
 func (o *Object) SetAppendOffset(v int64) *Object {
 	o.appendOffset = v
 	o.bit |= objectIndexAppendOffset
-	return o
-}
-
-// GetAppendSizeMaximum will get AppendSizeMaximum from Object.
-//
-// AppendSizeMaximum Max append size in per append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) GetAppendSizeMaximum() (int64, bool) {
-	o.stat()
-
-	if o.bit&objectIndexAppendSizeMaximum != 0 {
-		return o.appendSizeMaximum, true
-	}
-
-	return 0, false
-}
-
-// MustGetAppendSizeMaximum will get AppendSizeMaximum from Object.
-//
-// AppendSizeMaximum Max append size in per append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) MustGetAppendSizeMaximum() int64 {
-	o.stat()
-
-	if o.bit&objectIndexAppendSizeMaximum == 0 {
-		panic(fmt.Sprintf("object append-size-maximum is not set"))
-	}
-	return o.appendSizeMaximum
-}
-
-// SetAppendSizeMaximum will set AppendSizeMaximum into Object.
-//
-// AppendSizeMaximum Max append size in per append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) SetAppendSizeMaximum(v int64) *Object {
-	o.appendSizeMaximum = v
-	o.bit |= objectIndexAppendSizeMaximum
-	return o
-}
-
-// GetAppendTotalSizeMaximum will get AppendTotalSizeMaximum from Object.
-//
-// AppendTotalSizeMaximum Max append total size in append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) GetAppendTotalSizeMaximum() (int64, bool) {
-	o.stat()
-
-	if o.bit&objectIndexAppendTotalSizeMaximum != 0 {
-		return o.appendTotalSizeMaximum, true
-	}
-
-	return 0, false
-}
-
-// MustGetAppendTotalSizeMaximum will get AppendTotalSizeMaximum from Object.
-//
-// AppendTotalSizeMaximum Max append total size in append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) MustGetAppendTotalSizeMaximum() int64 {
-	o.stat()
-
-	if o.bit&objectIndexAppendTotalSizeMaximum == 0 {
-		panic(fmt.Sprintf("object append-total-size-maximum is not set"))
-	}
-	return o.appendTotalSizeMaximum
-}
-
-// SetAppendTotalSizeMaximum will set AppendTotalSizeMaximum into Object.
-//
-// AppendTotalSizeMaximum Max append total size in append operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) SetAppendTotalSizeMaximum(v int64) *Object {
-	o.appendTotalSizeMaximum = v
-	o.bit |= objectIndexAppendTotalSizeMaximum
 	return o
 }
 
@@ -514,172 +359,12 @@ func (o *Object) SetMultipartID(v string) *Object {
 	return o
 }
 
-// GetMultipartNumberMaximum will get MultipartNumberMaximum from Object.
-//
-// MultipartNumberMaximum Maximum part number in multipart operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) GetMultipartNumberMaximum() (int, bool) {
-	o.stat()
-
-	if o.bit&objectIndexMultipartNumberMaximum != 0 {
-		return o.multipartNumberMaximum, true
-	}
-
-	return 0, false
-}
-
-// MustGetMultipartNumberMaximum will get MultipartNumberMaximum from Object.
-//
-// MultipartNumberMaximum Maximum part number in multipart operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) MustGetMultipartNumberMaximum() int {
-	o.stat()
-
-	if o.bit&objectIndexMultipartNumberMaximum == 0 {
-		panic(fmt.Sprintf("object multipart-number-maximum is not set"))
-	}
-	return o.multipartNumberMaximum
-}
-
-// SetMultipartNumberMaximum will set MultipartNumberMaximum into Object.
-//
-// MultipartNumberMaximum Maximum part number in multipart operation.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) SetMultipartNumberMaximum(v int) *Object {
-	o.multipartNumberMaximum = v
-	o.bit |= objectIndexMultipartNumberMaximum
-	return o
-}
-
-// GetMultipartSizeMaximum will get MultipartSizeMaximum from Object.
-//
-// MultipartSizeMaximum Maximum part size defined by storager.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) GetMultipartSizeMaximum() (int64, bool) {
-	o.stat()
-
-	if o.bit&objectIndexMultipartSizeMaximum != 0 {
-		return o.multipartSizeMaximum, true
-	}
-
-	return 0, false
-}
-
-// MustGetMultipartSizeMaximum will get MultipartSizeMaximum from Object.
-//
-// MultipartSizeMaximum Maximum part size defined by storager.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) MustGetMultipartSizeMaximum() int64 {
-	o.stat()
-
-	if o.bit&objectIndexMultipartSizeMaximum == 0 {
-		panic(fmt.Sprintf("object multipart-size-maximum is not set"))
-	}
-	return o.multipartSizeMaximum
-}
-
-// SetMultipartSizeMaximum will set MultipartSizeMaximum into Object.
-//
-// MultipartSizeMaximum Maximum part size defined by storager.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) SetMultipartSizeMaximum(v int64) *Object {
-	o.multipartSizeMaximum = v
-	o.bit |= objectIndexMultipartSizeMaximum
-	return o
-}
-
-// GetMultipartSizeMinimum will get MultipartSizeMinimum from Object.
-//
-// MultipartSizeMinimum Minimum part size defined by storager.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) GetMultipartSizeMinimum() (int64, bool) {
-	o.stat()
-
-	if o.bit&objectIndexMultipartSizeMinimum != 0 {
-		return o.multipartSizeMinimum, true
-	}
-
-	return 0, false
-}
-
-// MustGetMultipartSizeMinimum will get MultipartSizeMinimum from Object.
-//
-// MultipartSizeMinimum Minimum part size defined by storager.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) MustGetMultipartSizeMinimum() int64 {
-	o.stat()
-
-	if o.bit&objectIndexMultipartSizeMinimum == 0 {
-		panic(fmt.Sprintf("object multipart-size-minimum is not set"))
-	}
-	return o.multipartSizeMinimum
-}
-
-// SetMultipartSizeMinimum will set MultipartSizeMinimum into Object.
-//
-// MultipartSizeMinimum Minimum part size defined by storager.
-//
-// Deprecated: Moved to storage meta.
-func (o *Object) SetMultipartSizeMinimum(v int64) *Object {
-	o.multipartSizeMinimum = v
-	o.bit |= objectIndexMultipartSizeMinimum
-	return o
-}
-
 func (o *Object) GetPath() string {
 	return o.Path
 }
 
 func (o *Object) SetPath(v string) *Object {
 	o.Path = v
-	return o
-}
-
-// GetServiceMetadata will get ServiceMetadata from Object.
-//
-// ServiceMetadata ServiceMetadata stores service defined metadata.
-//
-// Deprecated: Use SystemMetadata instead.
-func (o *Object) GetServiceMetadata() (interface{}, bool) {
-	o.stat()
-
-	if o.bit&objectIndexServiceMetadata != 0 {
-		return o.serviceMetadata, true
-	}
-
-	return nil, false
-}
-
-// MustGetServiceMetadata will get ServiceMetadata from Object.
-//
-// ServiceMetadata ServiceMetadata stores service defined metadata.
-//
-// Deprecated: Use SystemMetadata instead.
-func (o *Object) MustGetServiceMetadata() interface{} {
-	o.stat()
-
-	if o.bit&objectIndexServiceMetadata == 0 {
-		panic(fmt.Sprintf("object service-metadata is not set"))
-	}
-	return o.serviceMetadata
-}
-
-// SetServiceMetadata will set ServiceMetadata into Object.
-//
-// ServiceMetadata ServiceMetadata stores service defined metadata.
-//
-// Deprecated: Use SystemMetadata instead.
-func (o *Object) SetServiceMetadata(v interface{}) *Object {
-	o.serviceMetadata = v
-	o.bit |= objectIndexServiceMetadata
 	return o
 }
 
@@ -752,10 +437,7 @@ func (o *Object) SetUserMetadata(v map[string]string) *Object {
 }
 
 func (o *Object) clone(xo *Object) {
-	o.appendNumberMaximum = xo.appendNumberMaximum
 	o.appendOffset = xo.appendOffset
-	o.appendSizeMaximum = xo.appendSizeMaximum
-	o.appendTotalSizeMaximum = xo.appendTotalSizeMaximum
 	o.contentLength = xo.contentLength
 	o.contentMd5 = xo.contentMd5
 	o.contentType = xo.contentType
@@ -765,11 +447,7 @@ func (o *Object) clone(xo *Object) {
 	o.linkTarget = xo.linkTarget
 	o.Mode = xo.Mode
 	o.multipartID = xo.multipartID
-	o.multipartNumberMaximum = xo.multipartNumberMaximum
-	o.multipartSizeMaximum = xo.multipartSizeMaximum
-	o.multipartSizeMinimum = xo.multipartSizeMinimum
 	o.Path = xo.Path
-	o.serviceMetadata = xo.serviceMetadata
 	o.systemMetadata = xo.systemMetadata
 	o.userMetadata = xo.userMetadata
 

@@ -21,47 +21,6 @@ var _ httpclient.Options
 // Type is the type for {{ .Name }}
 const Type = "{{ .Name }}"
 
-// ObjectMetadata stores service metadata for object.
-//
-// Deprecated: Use ObjectSystemMetadata instead.
-type ObjectMetadata struct {
-{{- range $_, $v := .Infos }}
-    {{- if eq $v.Scope "object" }}
-    {{- if not $v.Global }}
-    {{- $pname := $v.Name | toPascal }}
-    {{- if $v.DisplayName }}
-        {{- $pname = $v.DisplayName }}
-    {{- end }}
-    {{ $v.Description }}
-    {{ $pname }} {{ $v.Type }}
-    {{- end }}
-    {{- end }}
-{{- end }}
-}
-
-// GetObjectMetadata will get ObjectMetadata from Object.
-//
-// - This function should not be called by service implementer.
-// - The returning ObjectMetadata is read only and should not be modified.
-//
-// Deprecated: Use GetObjectSystemMetadata instead.
-func GetObjectMetadata(o *Object) ObjectMetadata {
-    om, ok := o.GetServiceMetadata()
-    if ok {
-        return om.(ObjectMetadata)
-    }
-    return ObjectMetadata{}
-}
-
-// setObjectMetadata will set ObjectMetadata into Object.
-//
-// - This function should only be called once, please make sure all data has been written before set.
-//
-// Deprecated: Use setObjectSystemMetadata instead.
-func setObjectMetadata(o *Object, om ObjectMetadata) {
-    o.SetServiceMetadata(om)
-}
-
 // ObjectSystemMetadata stores system metadata for object.
 type ObjectSystemMetadata struct {
 {{- range $_, $v := .Infos }}
@@ -181,35 +140,6 @@ var (
 {{- $fs := index . 2 }}
 
 type {{ $pn }}Features struct {
-    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
-    LooseOperationAll bool
-    {{- range $_, $v := $fns }}
-    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
-    LooseOperation{{ $v.Name | toPascal }} bool
-    {{- end }}
-
-    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
-    VirtualOperationAll bool
-    {{- range $_, $fn := $fns }}
-    {{- if $fn.Simulated }}
-    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
-    VirtualOperation{{ $fn.Name | toPascal }} bool
-    {{- end }}
-    {{- end }}
-
-    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
-    VirtualPairAll bool
-    {{- range $_, $fn := $fns }}
-    {{- if len $fn.Virtual}}
-    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
-    VirtualPair{{ $fn.Name | toPascal }}All bool
-    {{- end }}
-    {{- range $_, $v := $fn.Virtual }}
-    // Deprecated: This field has been deprecated by GSP-109, planned be removed in v4.3.0.
-    VirtualPair{{ $fn.Name | toPascal }}{{ $v.Name | toPascal }} bool
-    {{- end }}
-    {{- end }}
-
     {{- range $_, $v := $fs }}
     {{ $v.Description }}
     {{ $v.Name | toPascal }} bool

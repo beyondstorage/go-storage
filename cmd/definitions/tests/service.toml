@@ -35,7 +35,6 @@ required = ["expire"]
 
 [namespace.storage.op.read]
 optional = ["io_callback", "size", "offset"]
-virtual = ["content_md5"]
 
 [namespace.storage.op.create]
 optional = ["object_mode"]
@@ -44,7 +43,6 @@ optional = ["object_mode"]
 optional = ["object_mode"]
 
 [namespace.storage.op.write]
-simulated = true
 optional = ["content_md5", "content_type", "io_callback", "storage_class"]
 
 [pairs.disable_uri_cleaning]

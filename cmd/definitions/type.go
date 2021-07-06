@@ -292,14 +292,6 @@ func NewFunction(o *Operation) *Function {
 
 // Format will formatGlobal a function with Op.
 func (f *Function) Format(s specs.Op, p map[string]*Pair) {
-	// Check deprecated fields.
-	if s.Simulated {
-		log.Warnf("opration %s: simulated field has been deprecated in GSP-109, please migrate as soon as possible.", s.Name)
-	}
-	if len(s.Virtual) > 0 {
-		log.Warnf("operation %s: virtual field has been deprecated in GSP-109, please migrate as soon as possible.", s.Name)
-	}
-
 	for _, v := range s.Required {
 		pair, ok := p[v]
 		if !ok {
