@@ -24,8 +24,8 @@ import (
 //
 // Reference
 //
-// - [GSP-25](https://github.com/beyondstorage/specs/blob/master/rfcs/25-object-mode.md)
-// - [Core Concept: Object](https://beyondstorage.io/docs/go-storage/internal/core-concept#object)
+// - GSP-25: https://github.com/beyondstorage/specs/blob/master/rfcs/25-object-mode.md
+// - Core Concept Object: https://beyondstorage.io/docs/go-storage/internal/core-concept#object
 type ObjectMode uint32
 
 // All available object mode
