@@ -5,7 +5,6 @@ import (
     "context"
     "io"
 
-    "github.com/beyondstorage/go-storage/v4/pkg/endpoint"
     "github.com/beyondstorage/go-storage/v4/pkg/credential"
     "github.com/beyondstorage/go-storage/v4/pkg/httpclient"
     "github.com/beyondstorage/go-storage/v4/services"
@@ -13,7 +12,6 @@ import (
 )
 
 var _ credential.Provider
-var _ endpoint.Value
 var _ Storager
 var _ services.ServiceError
 var _ httpclient.Options
