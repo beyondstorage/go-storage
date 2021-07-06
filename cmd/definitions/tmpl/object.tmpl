@@ -20,6 +20,8 @@ const (
 //   - Object's fields SHOULD not be changed outside services.
 //   - Object CANNOT be copied
 //   - Object is concurrent safe.
+//   - Only `ID`, `Path`, `Mode` are required during list operations, other fields
+//     could be fetched via lazy stat logic: https://beyondstorage.io/docs/go-storage/internal/object-lazy-stat
 type Object struct {
 {{- range $k, $v := .ObjectMeta }}
     {{- if $v.Description }}
