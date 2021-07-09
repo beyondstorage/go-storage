@@ -32,6 +32,6 @@ The most common case to use a Storager service could be following:
 */
 package storage
 
-//go:generate go run github.com/kevinburke/go-bindata/go-bindata -nometadata -o ./cmd/definitions/bindata.go -tags tools  ./cmd/definitions/tmpl
+//go:generate go run github.com/kevinburke/go-bindata/go-bindata -nometadata -o ./cmd/definitions/bindata/bindata.go -pkg bindata -tags tools ./definitions ./cmd/definitions/tmpl
 //go:generate go run -tags tools ./cmd/definitions
 //go:generate go run -tags tools ./internal/cmd/iterator

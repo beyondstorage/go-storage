@@ -5,8 +5,9 @@ package main
 import (
 	"os"
 
-	specs "github.com/beyondstorage/specs/go"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/beyondstorage/go-storage/v4/cmd/definitions/specs"
 )
 
 func main() {
