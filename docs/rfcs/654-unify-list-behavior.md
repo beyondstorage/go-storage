@@ -1,9 +1,9 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-07-07
-- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/pull/0)
+- RFC PR: [beyondstorage/go-storage#654](https://github.com/beyondstorage/go-storage/pull/654)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# GSP: Unify List Behavior
+# GSP-654: Unify List Behavior
 
 Previous Discussion:
 
