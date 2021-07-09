@@ -12,7 +12,13 @@ We use `RFC` or `Porposal` to represent any non-trivial changes to our codebase,
 
 We use `GSP`(a.k.a `go-storage proposal`) to represent proposals that apply to `go-storage`.
 
-We use Github pull request number as the GSP number.
+To get a GSP approved, we need at least two reviewers' approval, and one of them should be committer or maintainer.
+
+- [All Reviewers](https://github.com/orgs/beyondstorage/teams/go-storage-reviewer)
+- [All Committers](https://github.com/orgs/beyondstorage/teams/go-storage-committer)
+- [All Maintainers](https://github.com/orgs/beyondstorage/teams/go-storage-maintainer)
+
+We use GitHub pull request number as the GSP number.
 
 For historic reasons:
 
