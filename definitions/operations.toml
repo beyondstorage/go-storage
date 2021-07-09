@@ -1,0 +1,211 @@
+[appender]
+description = "is the interface for Append related operations."
+
+[appender.op.create_append]
+description = "will create an append object."
+params = ["path"]
+results = ["o"]
+
+[appender.op.write_append]
+description = "will append content to an append object."
+params = ["o", "r", "size"]
+results = ["n"]
+object_mode = "append"
+
+[appender.op.commit_append]
+description = "will commit and finish an append process."
+params = ["o"]
+object_mode = "append"
+
+[blocker]
+description = "is the interface for Block related operations."
+
+[blocker.op.create_block]
+description = "will create a new block object."
+params = ["path"]
+results = ["o"]
+
+[blocker.op.write_block]
+description = "will write content to a block."
+params = ["o", "r", "size", "bid"]
+results = ["n"]
+object_mode = "block"
+
+[blocker.op.combine_block]
+description = "will combine blocks into an object."
+params = ["o", "bids"]
+object_mode = "block"
+
+[blocker.op.list_block]
+description = "will list blocks belong to this object."
+params = ["o"]
+results = ["bi"]
+object_mode = "block"
+
+[copier]
+description = "is the interface for Copy."
+
+[copier.op.copy]
+description = "will copy an Object or multiple object in the service."
+params = ["src", "dst"]
+
+[direr]
+description = "is the interface for Directory."
+
+[direr.op.create_dir]
+description = "will create a new dir object."
+params = ["path"]
+results = ["o"]
+
+[fetcher]
+description = "is the interface for Fetch."
+
+[fetcher.op.fetch]
+description = "will fetch from a given url to path."
+params = ["path", "url"]
+
+[mover]
+description = "is the interface for Move."
+
+[mover.op.move]
+description = "will move an object in the service."
+params = ["src", "dst"]
+
+[multiparter]
+description = "is the interface for Multipart related operations."
+
+[multiparter.op.create_multipart]
+description = "will create a new multipart."
+params = ["path"]
+results = ["o"]
+
+[multiparter.op.write_multipart]
+description = "will write content to a multipart."
+params = ["o", "r", "size", "index"]
+results = ["n", "part"]
+object_mode = "part"
+
+[multiparter.op.complete_multipart]
+description = "will complete a multipart upload and construct an Object."
+params = ["o", "parts"]
+object_mode = "part"
+
+[multiparter.op.list_multipart]
+description = "will list parts belong to this multipart."
+params = ["o"]
+results = ["pi"]
+object_mode = "part"
+
+[pager]
+description = "is the interface for Page related operations which support random write."
+
+[pager.op.create_page]
+description = "will create a new page object."
+params = ["path"]
+results = ["o"]
+
+[pager.op.write_page]
+description = "will write content to specific offset."
+params = ["o", "r", "size", "offset"]
+results = ["n"]
+object_mode = "page"
+
+[reacher]
+description = "is the interface for Reach."
+
+[reacher.op.reach]
+description = "will provide a way, which can reach the object."
+params = ["path"]
+results = ["url"]
+
+[servicer]
+description = "can maintain multipart storage services."
+
+[servicer.op.create]
+description = "will create a new storager instance."
+params = ["name"]
+results = ["store"]
+
+[servicer.op.delete]
+description = "will delete a storager instance."
+params = ["name"]
+
+[servicer.op.get]
+description = "will get a valid storager instance for service."
+params = ["name"]
+results = ["store"]
+
+[servicer.op.list]
+description = "will list all storager instances under this service."
+results = ["sti"]
+
+[storager]
+description = "is the interface for storage service."
+
+[storager.op.delete]
+params = ["path"]
+pairs = ["object_mode"]
+description = """
+will delete an object from service.
+
+## Behavior
+
+- Delete only delete one and only one object.
+  - Service DON'T NEED to support remove all.
+  - User NEED to implement remove_all by themself.
+- Delete is idempotent.
+  - Successful delete always return nil error.
+  - Delete SHOULD never return `ObjectNotExist`
+  - Delete DON'T NEED to check the object exist or not.
+"""
+
+[storager.op.metadata]
+description = "will return current storager metadata."
+results = ["meta"]
+local = true
+
+[storager.op.list]
+description = "will return list a specific path."
+params = ["path"]
+pairs = ["list_mode"]
+results = ["oi"]
+
+[storager.op.read]
+description = "will read the file's data."
+params = ["path", "w"]
+pairs = ["size", "offset", "io_callback"]
+results = ["n"]
+
+[storager.op.create]
+params = ["path"]
+results = ["o"]
+pairs = ["object_mode"]
+local = true
+description = """
+will create a new object without any api call.
+
+## Behavior
+
+- Create SHOULD NOT send any API call.
+- Create SHOULD accept ObjectMode pair as object mode.
+"""
+
+[storager.op.stat]
+params = ["path"]
+pairs = ["object_mode"]
+results = ["o"]
+description = """
+will stat a path to get info of an object.
+
+## Behavior
+
+- Stat SHOULD accept ObjectMode pair as hints.
+  - Service COULD have different implementations for different object mode.
+  - Service SHOULD check if returning ObjectMode is match
+"""
+
+[storager.op.write]
+description = "will write data into a file."
+params = ["path", "r", "size"]
+pairs = ["io_callback"]
+results = ["n"]

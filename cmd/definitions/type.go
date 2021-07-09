@@ -8,8 +8,9 @@ import (
 	"strings"
 
 	"github.com/Xuanwo/templateutils"
-	specs "github.com/beyondstorage/specs/go"
 	log "github.com/sirupsen/logrus"
+
+	 "github.com/beyondstorage/go-storage/v4/cmd/definitions/specs"
 )
 
 // Data is the biggest container for all definitions.
@@ -120,7 +121,7 @@ type Pair struct {
 }
 
 func (p *Pair) Type() string {
-	return parseType(p.ptype)
+	return p.ptype
 }
 
 // Format will formatGlobal current pair
@@ -158,7 +159,7 @@ func (i *Info) Format(s specs.Info, global bool) {
 }
 
 func (i *Info) Type() string {
-	return parseType(i.itype)
+	return i.itype
 }
 
 func (i *Info) TypeName() string {
@@ -407,7 +408,7 @@ func (f *Field) String() string {
 }
 
 func (f *Field) Type() string {
-	return parseType(f.ftype)
+	return f.ftype
 }
 
 // Caller will print the caller formatGlobal of field.

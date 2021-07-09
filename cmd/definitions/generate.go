@@ -14,6 +14,8 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/beyondstorage/go-storage/v4/cmd/definitions/bindata"
 )
 
 var (
@@ -77,7 +79,7 @@ func newTmpl(name string) *template.Template {
 	return template.Must(
 		template.New(name).
 			Funcs(templateutils.FuncMap()).
-			Parse(string(MustAsset(name + ".tmpl"))))
+			Parse(string(bindata.MustAsset(name + ".tmpl"))))
 }
 
 func formatService(filename string) {

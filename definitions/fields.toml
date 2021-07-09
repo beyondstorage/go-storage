@@ -1,0 +1,71 @@
+[bi]
+type = "*BlockIterator"
+
+[bid]
+type = "string"
+
+[bids]
+type = "[]string"
+
+[dst]
+type = "string"
+
+[err]
+type = "error"
+
+[index]
+type = "int"
+
+[meta]
+type = "*StorageMeta"
+
+[n]
+type = "int64"
+
+[name]
+type = "string"
+
+[o]
+type = "*Object"
+
+[offset]
+type = "int64"
+
+[oi]
+type = "*ObjectIterator"
+
+[pairs]
+type = "...Pair"
+
+[part]
+type = "*Part"
+
+[parts]
+type = "[]*Part"
+
+[path]
+type = "string"
+
+[pi]
+type = "*PartIterator"
+
+[r]
+type = "io.Reader"
+
+[size]
+type = "int64"
+
+[src]
+type = "string"
+
+[sti]
+type = "*StoragerIterator"
+
+[store]
+type = "Storager"
+
+[url]
+type = "string"
+
+[w]
+type = "io.Writer"

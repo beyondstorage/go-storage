@@ -1,0 +1,63 @@
+[content_md5]
+type = "string"
+
+[content_type]
+type = "string"
+
+[continuation_token]
+type = "string"
+description = "specify the continuation token for list"
+
+[credential]
+type = "string"
+description = "specify how to provide credential for service or storage"
+
+[endpoint]
+type = "string"
+description = "specify how to provide endpoint for service or storage"
+
+[expire]
+type = "int"
+description = "specify when the url returned by reach will expire"
+
+[interceptor]
+type = "Interceptor"
+
+[list_mode]
+type = "ListMode"
+
+[location]
+type = "string"
+description = "specify the location for service or storage"
+
+[name]
+type = "string"
+description = "specify the storage name"
+
+[object_mode]
+type = "ObjectMode"
+description = "ObjectMode hint"
+
+[offset]
+type = "int64"
+description = "specify offset for this request, storage will seek to this offset before read"
+
+[multipart_id]
+type = "string"
+
+[io_callback]
+type = "func([]byte)"
+description = "specify what todo every time we read data from source"
+
+[size]
+type = "int64"
+description = "specify size for this request, storage will only read limited content data"
+
+[work_dir]
+type = "string"
+description = """
+specify the work dir for service or storage, every operation will be relative to this dir.
+work_dir MUST start with / for every storage services.
+work_dir will be default to / if not set.
+For fs storage service on windows platform, the behavior is undefined.
+"""
