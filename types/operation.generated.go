@@ -14,8 +14,20 @@ type Appender interface {
 	CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error)
 
 	// CreateAppend will create an append object.
+	//
+	// ## Behavior
+	//
+	// - CreateAppend SHOULD create an appendable object with position 0 and size 0.
+	// - CreateAppend SHOULD NOT return an error as the object exist.
+	//   - Service SHOULD check and delete the object if exists.
 	CreateAppend(path string, pairs ...Pair) (o *Object, err error)
 	// CreateAppendWithContext will create an append object.
+	//
+	// ## Behavior
+	//
+	// - CreateAppend SHOULD create an appendable object with position 0 and size 0.
+	// - CreateAppend SHOULD NOT return an error as the object exist.
+	//   - Service SHOULD check and delete the object if exists.
 	CreateAppendWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// WriteAppend will append content to an append object.
@@ -71,8 +83,18 @@ type Blocker interface {
 	CombineBlockWithContext(ctx context.Context, o *Object, bids []string, pairs ...Pair) (err error)
 
 	// CreateBlock will create a new block object.
+	//
+	// ## Behavior
+	// - CreateBlock SHOULD NOT return an error as the object exist.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if exists.
 	CreateBlock(path string, pairs ...Pair) (o *Object, err error)
 	// CreateBlockWithContext will create a new block object.
+	//
+	// ## Behavior
+	// - CreateBlock SHOULD NOT return an error as the object exist.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if exists.
 	CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// ListBlock will list blocks belong to this object.
@@ -137,8 +159,30 @@ func (s UnimplementedBlocker) WriteBlockWithContext(ctx context.Context, o *Obje
 type Copier interface {
 
 	// Copy will copy an Object or multiple object in the service.
+	//
+	// ## Behavior
+	//
+	// - Copy only copy one and only one object.
+	//   - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
+	//   - User NEED to implement copy a non-empty directory and copy recursively by themself.
+	//   - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	// - Copy SHOULD NOT return an error as dst object exists.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object if exists.
+	// - A successful copy opration should be complete, which means the dst object's content and metadata should be the same as src object.
 	Copy(src string, dst string, pairs ...Pair) (err error)
 	// CopyWithContext will copy an Object or multiple object in the service.
+	//
+	// ## Behavior
+	//
+	// - Copy only copy one and only one object.
+	//   - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
+	//   - User NEED to implement copy a non-empty directory and copy recursively by themself.
+	//   - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	// - Copy SHOULD NOT return an error as dst object exists.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object if exists.
+	// - A successful copy opration should be complete, which means the dst object's content and metadata should be the same as src object.
 	CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
 
 	mustEmbedUnimplementedCopier()
@@ -195,8 +239,18 @@ func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path strin
 type Fetcher interface {
 
 	// Fetch will fetch from a given url to path.
+	//
+	// ## Behavior
+	//
+	// - Fetch SHOULD NOT return an error as the object exists.
+	// - A successful fetch operation should be complete, which means the object's content and metadata should be the same as requiring from the url.
 	Fetch(path string, url string, pairs ...Pair) (err error)
 	// FetchWithContext will fetch from a given url to path.
+	//
+	// ## Behavior
+	//
+	// - Fetch SHOULD NOT return an error as the object exists.
+	// - A successful fetch operation should be complete, which means the object's content and metadata should be the same as requiring from the url.
 	FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error)
 
 	mustEmbedUnimplementedFetcher()
@@ -224,8 +278,30 @@ func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string,
 type Mover interface {
 
 	// Move will move an object in the service.
+	//
+	// ## Behavior
+	//
+	// - Move only move one and only one object.
+	//   - Service DON'T NEED to support move a non-empty directory.
+	//   - User NEED to implement move a non-empty directory by themself.
+	//   - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	// - Move SHOULD NOT return an error as dst object exists.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object if exists.
+	// - A successful move operation SHOULD be complete, which means the dst object's content and metadata should be the same as src object.
 	Move(src string, dst string, pairs ...Pair) (err error)
 	// MoveWithContext will move an object in the service.
+	//
+	// ## Behavior
+	//
+	// - Move only move one and only one object.
+	//   - Service DON'T NEED to support move a non-empty directory.
+	//   - User NEED to implement move a non-empty directory by themself.
+	//   - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	// - Move SHOULD NOT return an error as dst object exists.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object if exists.
+	// - A successful move operation SHOULD be complete, which means the dst object's content and metadata should be the same as src object.
 	MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
 
 	mustEmbedUnimplementedMover()
@@ -258,8 +334,16 @@ type Multiparter interface {
 	CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error)
 
 	// CreateMultipart will create a new multipart.
+	//
+	// ## Behavior
+	//
+	// - CreateMultipart SHOULD NOT return an error as the object exists.
 	CreateMultipart(path string, pairs ...Pair) (o *Object, err error)
 	// CreateMultipartWithContext will create a new multipart.
+	//
+	// ## Behavior
+	//
+	// - CreateMultipart SHOULD NOT return an error as the object exists.
 	CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// ListMultipart will list parts belong to this multipart.
@@ -324,8 +408,16 @@ func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context,
 type Pager interface {
 
 	// CreatePage will create a new page object.
+	//
+	// ## Behavior
+	//
+	// - CreatePage SHOULD NOT return an error as the object exists.
 	CreatePage(path string, pairs ...Pair) (o *Object, err error)
 	// CreatePageWithContext will create a new page object.
+	//
+	// ## Behavior
+	//
+	// - CreatePage SHOULD NOT return an error as the object exists.
 	CreatePageWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// WritePage will write content to specific offset.
@@ -532,8 +624,22 @@ type Storager interface {
 	StatWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// Write will write data into a file.
+	//
+	// ## Behavior
+	//
+	// - Write SHOULD NOT return an error as the object exist.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if exists.
+	// - A successful write operation SHOULD be complete, which means the object's content and metadata should be the same as specified in write request.
 	Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 	// WriteWithContext will write data into a file.
+	//
+	// ## Behavior
+	//
+	// - Write SHOULD NOT return an error as the object exist.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if exists.
+	// - A successful write operation SHOULD be complete, which means the object's content and metadata should be the same as specified in write request.
 	WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 
 	mustEmbedUnimplementedStorager()
