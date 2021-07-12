@@ -1,6 +1,6 @@
 - Author: (fill me in with `name <mail>`, e.g., Xuanwo <github@xuanwo.io>)
 - Start Date: (fill me in with today's date, YYYY-MM-DD)
-- RFC PR: [beyondstorage/specs#0](https://github.com/beyondstorage/specs/issues/0)
+- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
 # GSP-0: <proposal name>
