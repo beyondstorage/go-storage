@@ -594,8 +594,20 @@ type Storager interface {
 	DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
 
 	// List will return list a specific path.
+	//
+	// ## Behavior
+	//
+	// - Service SHOULD support default `ListMode`.
+	// - Service SHOULD implement `ListModeDir` without the check for `VirtualDir`.
+	// - Service DON'T NEED to `Stat` while in `List`.
 	List(path string, pairs ...Pair) (oi *ObjectIterator, err error)
 	// ListWithContext will return list a specific path.
+	//
+	// ## Behavior
+	//
+	// - Service SHOULD support default `ListMode`.
+	// - Service SHOULD implement `ListModeDir` without the check for `VirtualDir`.
+	// - Service DON'T NEED to `Stat` while in `List`.
 	ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error)
 
 	// Metadata will return current storager metadata.
