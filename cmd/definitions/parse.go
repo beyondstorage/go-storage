@@ -12,7 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/beyondstorage/go-storage/v4/cmd/definitions/specs"
-
 )
 
 func parse() (data *Data) {
