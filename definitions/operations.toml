@@ -225,10 +225,18 @@ results = ["meta"]
 local = true
 
 [storager.op.list]
-description = "will return list a specific path."
 params = ["path"]
 pairs = ["list_mode"]
 results = ["oi"]
+description = """
+will return list a specific path.
+
+## Behavior
+
+- Service SHOULD support default `ListMode`.
+- Service SHOULD implement `ListModeDir` without the check for `VirtualDir`.
+- Service DON'T NEED to `Stat` while in `List`.
+"""
 
 [storager.op.read]
 description = "will read the file's data."
