@@ -13,8 +13,8 @@ help:
 check: vet
 
 format:
-	@echo "go fmt"
-	@go fmt ./...
+	@echo "gofmt"
+	@gofmt -w -l .
 	@echo "ok"
 
 vet:
@@ -25,10 +25,10 @@ vet:
 generate:
 	@echo "generate code"
 	@go generate -tags tools ./...
-	@go fmt ./...
+	@gofmt -w -l .
 	@echo "ok"
 
-build: tidy generate check
+build: tidy generate format check
 	@echo "build storage"
 	@go build -tags tools ./...
 	@echo "ok"

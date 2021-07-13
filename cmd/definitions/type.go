@@ -10,7 +10,7 @@ import (
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
 
-	 "github.com/beyondstorage/go-storage/v4/cmd/definitions/specs"
+	"github.com/beyondstorage/go-storage/v4/cmd/definitions/specs"
 )
 
 // Data is the biggest container for all definitions.

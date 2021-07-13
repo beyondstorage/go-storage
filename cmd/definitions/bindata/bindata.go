@@ -474,22 +474,22 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"cmd": {nil, map[string]*bintree{
 		"definitions": {nil, map[string]*bintree{
 			"tmpl": {nil, map[string]*bintree{
-				"function.tmpl": {cmdDefinitionsTmplFunctionTmpl, map[string]*bintree{}},
-				"info.tmpl": {cmdDefinitionsTmplInfoTmpl, map[string]*bintree{}},
-				"object.tmpl": {cmdDefinitionsTmplObjectTmpl, map[string]*bintree{}},
+				"function.tmpl":  {cmdDefinitionsTmplFunctionTmpl, map[string]*bintree{}},
+				"info.tmpl":      {cmdDefinitionsTmplInfoTmpl, map[string]*bintree{}},
+				"object.tmpl":    {cmdDefinitionsTmplObjectTmpl, map[string]*bintree{}},
 				"operation.tmpl": {cmdDefinitionsTmplOperationTmpl, map[string]*bintree{}},
-				"pair.tmpl": {cmdDefinitionsTmplPairTmpl, map[string]*bintree{}},
-				"service.tmpl": {cmdDefinitionsTmplServiceTmpl, map[string]*bintree{}},
+				"pair.tmpl":      {cmdDefinitionsTmplPairTmpl, map[string]*bintree{}},
+				"service.tmpl":   {cmdDefinitionsTmplServiceTmpl, map[string]*bintree{}},
 			}},
 		}},
 	}},
 	"definitions": {nil, map[string]*bintree{
-		"features.toml": {definitionsFeaturesToml, map[string]*bintree{}},
-		"fields.toml": {definitionsFieldsToml, map[string]*bintree{}},
-		"info_object_meta.toml": {definitionsInfo_object_metaToml, map[string]*bintree{}},
+		"features.toml":          {definitionsFeaturesToml, map[string]*bintree{}},
+		"fields.toml":            {definitionsFieldsToml, map[string]*bintree{}},
+		"info_object_meta.toml":  {definitionsInfo_object_metaToml, map[string]*bintree{}},
 		"info_storage_meta.toml": {definitionsInfo_storage_metaToml, map[string]*bintree{}},
-		"operations.toml": {definitionsOperationsToml, map[string]*bintree{}},
-		"pairs.toml": {definitionsPairsToml, map[string]*bintree{}},
+		"operations.toml":        {definitionsOperationsToml, map[string]*bintree{}},
+		"pairs.toml":             {definitionsPairsToml, map[string]*bintree{}},
 	}},
 }}
 
