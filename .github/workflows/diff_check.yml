@@ -1,0 +1,246 @@
+name: "diff_check"
+on: [ push, pull_request ]
+
+jobs:
+  go-service-azblob:
+    name: go-service-azblob
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-azblob repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-azblob
+          path: go-service-azblob
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-cos:
+    name: go-service-cos
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-cos repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-cos
+          path: go-service-cos
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-dropbox:
+    name: go-service-dropbox
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-dropbox repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-dropbox
+          path: go-service-dropbox
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-fs:
+    name: go-service-fs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-fs repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-fs
+          path: go-service-fs
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-gcs:
+    name: go-service-gcs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-gcs repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-gcs
+          path: go-service-gcs
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-ipfs:
+    name: go-service-ipfs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-ipfs repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-ipfs
+          path: go-service-ipfs
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-kodo:
+    name: go-service-kodo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-kodo repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-kodo
+          path: go-service-kodo
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-oss:
+    name: go-service-oss
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-oss repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-oss
+          path: go-service-oss
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-qingstor:
+    name: go-service-qingstor
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-qingstor repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-qingstor
+          path: go-service-qingstor
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+  go-service-s3:
+    name: go-service-s3
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-s3 repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-s3
+          path: go-service-s3
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
+
+
+  go-service-uss:
+    name: go-service-uss
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Checkout go-service-uss repo
+        uses: actions/checkout@v2
+        with:
+          repository: beyondstorage/go-service-uss
+          path: go-service-uss
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
