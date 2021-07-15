@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.3.1] - 2021-07-15
+
+### Fixed
+
+- fix: Add pkg/endpoint back to avoid breaking other projects (#667)
+
+### Upgraded
+
+- build(deps): bump github.com/golang/mock from 1.5.0 to 1.6.0 (#597)
+
 ## [v4.3.0] - 2021-07-14
 
 ### Added
@@ -572,7 +582,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.3.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.3.1...HEAD
+[v4.3.1]: https://github.com/beyondstorage/go-storage/compare/v4.3.0...v4.3.1
 [v4.3.0]: https://github.com/beyondstorage/go-storage/compare/v4.2.0...v4.3.0
 [v4.2.0]: https://github.com/beyondstorage/go-storage/compare/v4.1.0...v4.2.0
 [v4.1.0]: https://github.com/beyondstorage/go-storage/compare/v4.0.0...v4.1.0
