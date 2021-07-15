@@ -121,7 +121,7 @@ type Pair struct {
 }
 
 func (p *Pair) Type() string {
-	return p.ptype
+	return parseType(p.ptype)
 }
 
 // Format will formatGlobal current pair
@@ -159,7 +159,7 @@ func (i *Info) Format(s specs.Info, global bool) {
 }
 
 func (i *Info) Type() string {
-	return i.itype
+	return parseType(i.itype)
 }
 
 func (i *Info) TypeName() string {
