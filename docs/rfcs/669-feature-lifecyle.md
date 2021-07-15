@@ -1,7 +1,7 @@
 - Author: xxchan <xxchan22f@gmail.com>
 - Start Date: 2021-07-15
 - RFC PR: [beyondstorage/go-storage#669](https://github.com/beyondstorage/go-storage/issues/669)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#672](https://github.com/beyondstorage/go-storage/issues/672)
 
 # GSP-669: Feature Lifecycle
 
