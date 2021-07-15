@@ -35,3 +35,15 @@ For historic reasons:
 - Discuss the RFC pull request with reviewers and make edits. If the proposal is huge or complex, the reviewer could require the author to implement a demo.
 - If at least 2 reviewers approve the RFC, it is accepted.
 - Before an accepted RFC gets merged, a tracking issue should be opened in the corresponding repo, and the RFC metadata should be updated. If the author doesn't do so in time, a maintainer can help complete it and then merge the PR.
+
+### After an RFC is approved
+
+Once the feature is implemented in `go-storage`, the tracking issue can be closed. At the same time, tracking issues for all the services should be created (can be automated using `go-community`). 
+
+Now the feature is viewed as implemented, and `go-storage` CAN release a new version.
+
+Regarding as the service tracking issues:
+- If it is only required to update `go-storage`, the task CAN be delayed when `go-storage` releases a new version and automatically done by dependabot.
+- If manual work is required, implement it correspondingly. This CAN be done immediately or when `go-storage` releases a new version.
+  
+  It is possible that some other tasks (only need to update `go-storage`) are done by the way, and their tracking issues can be closed.
