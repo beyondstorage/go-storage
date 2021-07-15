@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.3.2] - 2021-07-15
+
+### Fixed
+
+- cmd: Add warning for type convert instead (#670)
+
 ## [v4.3.1] - 2021-07-15
 
 ### Fixed
@@ -582,7 +588,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.3.1...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.3.2...HEAD
+[v4.3.2]: https://github.com/beyondstorage/go-storage/compare/v4.3.1...v4.3.2
 [v4.3.1]: https://github.com/beyondstorage/go-storage/compare/v4.3.0...v4.3.1
 [v4.3.0]: https://github.com/beyondstorage/go-storage/compare/v4.2.0...v4.3.0
 [v4.2.0]: https://github.com/beyondstorage/go-storage/compare/v4.1.0...v4.2.0
