@@ -61,3 +61,35 @@ func parseFunc(name string) map[string]*templateutils.Method {
 	}
 	return data
 }
+
+var typeMap = map[string]string{
+	"context":             "context.Context",
+	"http_client_options": "*httpclient.Options",
+
+	"any":               "interface{}",
+	"byte_array":        "[]byte",
+	"string_array":      "[]string",
+	"string_string_map": "map[string]string",
+	"time":              "time.Time",
+	"BlockIterator":     "*BlockIterator",
+	"IoCallback":        "func([]byte)",
+	"Object":            "*Object",
+	"ObjectIterator":    "*ObjectIterator",
+	"Pairs":             "...Pair",
+	"Part":              "*Part",
+	"Parts":             "[]*Part",
+	"PartIterator":      "*PartIterator",
+	"Reader":            "io.Reader",
+	"StoragerIterator":  "*StoragerIterator",
+	"StorageMeta":       "*StorageMeta",
+	"Writer":            "io.Writer",
+}
+
+func parseType(v string) string {
+	s, ok := typeMap[v]
+	if !ok {
+		return v
+	}
+	log.Warnf("type %s is not supported anymore, please updated to %s.", v, s)
+	return s
+}
