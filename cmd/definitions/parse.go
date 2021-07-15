@@ -85,6 +85,7 @@ var typeMap = map[string]string{
 	"Writer":            "io.Writer",
 }
 
+// TODO: We can remove this convert after all service migrated.
 func parseType(v string) string {
 	s, ok := typeMap[v]
 	if !ok {
