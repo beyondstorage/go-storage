@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.3.1] - 2021-07-15
+
+### Fixed
+
+- fix: Add pkg/endpoint back to avoid breaking other projects (#667)
+
+### Upgraded
+
+- build(deps): bump github.com/golang/mock from 1.5.0 to 1.6.0 (#597)
+
+## [v4.3.0] - 2021-07-14
+
+### Added
+
+- cmd/definitions: Add support for type uint64 (#615)
+- services: Implement GSP-127 Add ServiceInternal and RequestThrottled Errors (#616)
+- ci: Add codecov in unittests (#622)
+- docs: GSP-654 Unify List Behavior (#654)
+- ci: Add gofmt to action (#660)
+
+### Changed
+
+- docs: Reorganize README for better understanding (#613)
+- types: Add comments for Object and ObjectMode (#614)
+- cmd/definitions: Remove deprecated fields introduced in v4.2.0 (#619)
+- pkg/endpoint: Remove deprecated package pkg/endpoint (#621)
+- docs: Move rfcs and spec here as required in GSP-139 (#628)
+- cmd: Move definitions here as described in GSP-139 (#652)
+- docs: Update RFC template (#655)
+- cmd/definitions: Implement GSP-134 Write Behavior Consistency (#656)
+
+### Fixed
+
+- makefile: Fix code not formatted correctly (#661)
+
 ## [v4.2.0] - 2021-06-24
 
 ### Added
@@ -547,7 +582,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.2.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.3.1...HEAD
+[v4.3.1]: https://github.com/beyondstorage/go-storage/compare/v4.3.0...v4.3.1
+[v4.3.0]: https://github.com/beyondstorage/go-storage/compare/v4.2.0...v4.3.0
 [v4.2.0]: https://github.com/beyondstorage/go-storage/compare/v4.1.0...v4.2.0
 [v4.1.0]: https://github.com/beyondstorage/go-storage/compare/v4.0.0...v4.1.0
 [v4.0.0]: https://github.com/beyondstorage/go-storage/compare/v3.6.0...v4.0.0
