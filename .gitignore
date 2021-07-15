@@ -20,3 +20,7 @@ release/
 coverage/
 coverage.*
 tests/*.yaml
+
+# Jetbrain IDE
+.idea
+*.iml

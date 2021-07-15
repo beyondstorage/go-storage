@@ -274,6 +274,45 @@ func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string,
 	return
 }
 
+// Linker is the interface for link
+type Linker interface {
+
+	// CreateLink Will create a link object.
+	//
+	// # Behavior
+	//
+	// - CreateLink COULD implement virtual_link feature when service without native support.
+	//   - Users SHOULD enable this feature by themselves
+	CreateLink(path string, target string, pairs ...Pair) (o *Object, err error)
+	// CreateLinkWithContext Will create a link object.
+	//
+	// # Behavior
+	//
+	// - CreateLink COULD implement virtual_link feature when service without native support.
+	//   - Users SHOULD enable this feature by themselves
+	CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error)
+
+	mustEmbedUnimplementedLinker()
+}
+
+// UnimplementedLinker must be embedded to have forward compatible implementations.
+type UnimplementedLinker struct{}
+
+func (s UnimplementedLinker) mustEmbedUnimplementedLinker() {}
+
+func (s UnimplementedLinker) String() string {
+	return "UnimplementedLinker"
+}
+
+func (s UnimplementedLinker) CreateLink(path string, target string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_link")
+	return
+}
+func (s UnimplementedLinker) CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_link")
+	return
+}
+
 // Mover is the interface for Move.
 type Mover interface {
 
