@@ -69,3 +69,6 @@ type = "string"
 
 [w]
 type = "io.Writer"
+
+[target]
+type = "string"

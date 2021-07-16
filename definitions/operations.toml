@@ -286,3 +286,22 @@ will write data into a file.
   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if exists.
 - A successful write operation SHOULD be complete, which means the object's content and metadata should be the same as specified in write request.
 """
+
+[linker]
+description = "is the interface for link"
+
+[linker.op.create_link]
+params = ["path", "target"]
+results = ["o"]
+description = """
+Will create a link object.
+
+# Behavior
+
+- `path` and `target` COULD be relative or absolute path.
+- If `target` exists, CreateLink will create a link object on the target.
+- If `path` does not exist, the CreateLink will fail, and no link object will be created anywhere.
+- A link object COULD be returned in `Stat` or `List`.
+- CreateLink COULD implement virtual_link feature when service without native support.
+  - Users SHOULD enable this feature by themselves.
+"""
