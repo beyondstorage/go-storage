@@ -281,15 +281,23 @@ type Linker interface {
 	//
 	// # Behavior
 	//
+	// - `path` and `target` COULD be relative or absolute path.
+	// - If `target` exists, CreateLink will create a link object on the target.
+	// - If `path` does not exist, the CreateLink will fail, and no link object will be created anywhere.
+	// - A link object COULD be returned in `Stat` or `List`.
 	// - CreateLink COULD implement virtual_link feature when service without native support.
-	//   - Users SHOULD enable this feature by themselves
+	//   - Users SHOULD enable this feature by themselves.
 	CreateLink(path string, target string, pairs ...Pair) (o *Object, err error)
 	// CreateLinkWithContext Will create a link object.
 	//
 	// # Behavior
 	//
+	// - `path` and `target` COULD be relative or absolute path.
+	// - If `target` exists, CreateLink will create a link object on the target.
+	// - If `path` does not exist, the CreateLink will fail, and no link object will be created anywhere.
+	// - A link object COULD be returned in `Stat` or `List`.
 	// - CreateLink COULD implement virtual_link feature when service without native support.
-	//   - Users SHOULD enable this feature by themselves
+	//   - Users SHOULD enable this feature by themselves.
 	CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error)
 
 	mustEmbedUnimplementedLinker()
