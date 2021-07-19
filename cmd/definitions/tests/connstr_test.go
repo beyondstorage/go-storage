@@ -3,6 +3,7 @@ package tests
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/services"
@@ -78,7 +79,7 @@ func TestFromString(t *testing.T) {
 				pairs.WithName("abc"),
 				pairs.WithWorkDir("/tmp/tmp1"),
 				pairs.WithSize(200),
-				pairs.WithExpire(100),
+				pairs.WithExpire(time.Duration(100)),
 				WithStorageClass("sc"),
 			},
 			nil,
