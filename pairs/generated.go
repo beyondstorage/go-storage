@@ -3,6 +3,7 @@ package pairs
 
 import (
 	"context"
+	"time"
 
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
 	. "github.com/beyondstorage/go-storage/v4/types"
@@ -71,7 +72,7 @@ func WithEndpoint(v string) Pair {
 // WithExpire will apply expire value to Options.
 //
 // Expire specify when the url returned by reach will expire
-func WithExpire(v int) Pair {
+func WithExpire(v time.Duration) Pair {
 	return Pair{
 		Key:   "expire",
 		Value: v,

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/types"
@@ -204,6 +205,10 @@ func parse(m map[string]string, k string, v string) (pair types.Pair, err error)
 		pair.Value, err = strconv.ParseUint(v, 0, 64)
 	case "[]byte":
 		pair.Value, err = base64.RawStdEncoding.DecodeString(v)
+	case "time.Duration":
+		var i int64
+		i, err = strconv.ParseInt(v, 0, 64)
+		pair.Value = time.Duration(i)
 	default:
 		return types.Pair{}, fmt.Errorf("type not parseable: %v, %v", k, vType)
 	}
