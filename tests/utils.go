@@ -11,7 +11,7 @@ func (s *Service) String() string {
 }
 
 func (s *Storage) formatError(op string, err error, args ...string) error {
-	panic("not implemented")
+	return nil
 }
 
 func (s *Storage) String() string {
@@ -23,5 +23,5 @@ func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
 }
 
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	return nil, nil
+	return &Storage{}, nil
 }

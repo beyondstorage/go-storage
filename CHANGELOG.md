@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.4.0] - 2021-07-22
+
+### Added
+
+- docs: GSP-669 Feature Lifecycle (#669)
+- definitions: Implement GSP-86 Add CreateLink (#674)
+
+### Changed
+
+- docs: Update rfc README, fix GSP-669 typo (#673)
+- cmd: Remove not used package in service.tmpl (#679)
+- definitions: Implement GSP-41 Turn Pair Expire into Duration (#681)
+- tests: Split from cmd definitions (#685)
+
+### Upgraded
+
+- build(deps): Bump github.com/google/uuid from 1.2.0 to 1.3.0 (675)
+
 ## [v4.3.2] - 2021-07-15
 
 ### Fixed
@@ -17,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- fix: Add pkg/endpoint back to avoid breaking other projects (#667)
+- pkg: Add pkg/endpoint back to avoid breaking other projects (#667)
 
 ### Upgraded
 
@@ -588,7 +606,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.3.2...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.4.0...HEAD
+[v4.4.0]: https://github.com/beyondstorage/go-storage/compare/v4.3.2...v4.4.0
 [v4.3.2]: https://github.com/beyondstorage/go-storage/compare/v4.3.1...v4.3.2
 [v4.3.1]: https://github.com/beyondstorage/go-storage/compare/v4.3.0...v4.3.1
 [v4.3.0]: https://github.com/beyondstorage/go-storage/compare/v4.2.0...v4.3.0
