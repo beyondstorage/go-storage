@@ -43,9 +43,6 @@ type httpFileWrapper struct {
 }
 
 func (h httpFileWrapper) Close() error {
-	h.store = nil
-	h.object = nil
-	h.offset = 0
 	return nil
 }
 
