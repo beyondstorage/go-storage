@@ -37,8 +37,8 @@ type bufpipe struct {
 	wwait sync.Cond
 	rwait sync.Cond
 
-	werr error
-	rerr error
+	werr error //nolint:structcheck
+	rerr error //nolint:structcheck
 }
 
 // Available space to write data.

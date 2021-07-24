@@ -8,7 +8,7 @@ import (
 
 type Service struct {
 	defaultPairs DefaultServicePairs
-	features     ServiceFeatures
+	features     ServiceFeatures //nolint:structcheck,unused
 
 	Pairs []Pair
 
