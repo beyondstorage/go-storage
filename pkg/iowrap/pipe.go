@@ -37,8 +37,8 @@ type bufpipe struct {
 	wwait sync.Cond
 	rwait sync.Cond
 
-	werr error
-	rerr error
+	werr error //nolint:structcheck
+	rerr error //nolint:structcheck
 }
 
 // Available space to write data.
@@ -109,7 +109,6 @@ func (r *PipeReader) CloseWithError(err error) {
 		r.rwait.Signal()
 		r.wwait.Signal()
 	}
-	return
 }
 
 type PipeWriter struct {
@@ -169,5 +168,4 @@ func (w *PipeWriter) CloseWithError(err error) {
 		w.rwait.Signal()
 		w.wwait.Signal()
 	}
-	return
 }
