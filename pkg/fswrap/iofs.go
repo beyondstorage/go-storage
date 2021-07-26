@@ -142,9 +142,6 @@ func (o fileWrapper) Read(bs []byte) (int, error) {
 }
 
 func (o fileWrapper) Close() error {
-	o.store = nil
-	o.object = nil
-	o.offset = 0
 	return nil
 }
 
