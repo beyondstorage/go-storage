@@ -11,6 +11,8 @@ type Storage struct {
 	defaultPairs DefaultStoragePairs
 	features     StorageFeatures
 
+	objects []*Object
+
 	UnimplementedCopier
 	UnimplementedFetcher
 	UnimplementedMover
@@ -53,7 +55,11 @@ func (s *Storage) fetch(ctx context.Context, path string, url string, opt pairSt
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
-	panic("not implemented")
+	fn := NextObjectFunc(func(ctx context.Context, page *ObjectPage) error {
+		page.Data = s.objects
+		return nil
+	})
+	return NewObjectIterator(ctx, fn, nil), nil
 }
 
 func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageListMultipart) (pi *PartIterator, err error) {
