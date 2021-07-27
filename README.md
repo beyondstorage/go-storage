@@ -1,6 +1,6 @@
 # go-storage
 
-## [Website](https://beyondstorage.io) | [Documentation](https://beyondstorage.io/docs) | [Community](https://beyondstorage.io/community)
+## [Website](https://beyondstorage.io) | [Documentation](https://beyondstorage.io/docs/go-storage/index) | [Community](https://beyondstorage.io/community)
 
 [![Build Status](https://github.com/beyondstorage/go-storage/workflows/Unit%20Test/badge.svg?branch=master)](https://github.com/beyondstorage/go-storage/actions?query=workflow%3A%22Unit+Test%22)
 [![Go dev](https://pkg.go.dev/badge/github.com/beyondstorage/go-storage/v4)](https://pkg.go.dev/github.com/beyondstorage/go-storage/v4)
