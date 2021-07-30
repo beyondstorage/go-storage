@@ -118,6 +118,9 @@ type Pair struct {
 
 	// This is a system pair having the same name and type as a global pair
 	Conflict bool
+
+	// This is a defaultable pair can be set while initiate
+	Defaultable bool
 }
 
 func (p *Pair) Type() string {
@@ -279,9 +282,10 @@ type Function struct {
 
 	Simulated bool // This op is simulated, user can decide whether use the virtual function or not.
 
-	Required []*Pair // TODO: other functions could not have required pairs.
-	Optional []*Pair
-	Virtual  []*Pair // This op's virtual pairs, user can decide whether use the virtual pairs.
+	Required    []*Pair // TODO: other functions could not have required pairs.
+	Optional    []*Pair
+	Defaultable []*Pair
+	Virtual     []*Pair // This op's virtual pairs, user can decide whether use the virtual pairs.
 
 	Implemented bool // flag for whether this function has been implemented or not.
 }
@@ -306,6 +310,32 @@ func (f *Function) Format(s specs.Op, p map[string]*Pair) {
 			log.Fatalf("pair %s is not exist", v)
 		}
 		f.Optional = append(f.Optional, pair)
+	}
+	for _, v := range s.Defaultable {
+		isExist := false
+		for _, rv := range s.Required {
+			if v == rv {
+				pair, _ := p[v]
+				pair.Defaultable = true
+				f.Defaultable = append(f.Defaultable, pair)
+				isExist = true
+				break
+			}
+		}
+		if !isExist {
+			for _, ov := range s.Optional {
+				if v == ov {
+					pair, _ := p[v]
+					pair.Defaultable = true
+					f.Defaultable = append(f.Defaultable, pair)
+					isExist = true
+					break
+				}
+			}
+		}
+		if !isExist {
+			log.Fatalf("pair %s is not exist", v)
+		}
 	}
 }
 

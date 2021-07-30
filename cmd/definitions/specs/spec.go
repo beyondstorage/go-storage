@@ -166,14 +166,16 @@ func (n *Namespace) Sort() {
 type Op struct {
 	Name string
 
-	Required []string
-	Optional []string
+	Required    []string
+	Optional    []string
+	Defaultable []string
 }
 
 // Sort will sort the Op
 func (o *Op) Sort() {
 	sort.Strings(o.Required)
 	sort.Strings(o.Optional)
+	sort.Strings(o.Defaultable)
 }
 
 // New is the spec for new function.

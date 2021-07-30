@@ -10,6 +10,8 @@ type Service struct {
 	defaultPairs DefaultServicePairs
 	features     ServiceFeatures //nolint:structcheck,unused
 
+	defaultConfigs DefaultConfigs
+
 	Pairs []Pair
 
 	UnimplementedServicer

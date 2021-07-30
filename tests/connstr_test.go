@@ -85,6 +85,30 @@ func TestFromString(t *testing.T) {
 			nil,
 		},
 		{
+			"with default pair",
+			"tests://abc/tmp/tmp1?default_content_type=application/text&storage_class=sc",
+			[]Pair{
+				pairs.WithName("abc"),
+				pairs.WithWorkDir("/tmp/tmp1"),
+				WithDefaultContentType("application/text"),
+				WithStorageClass("sc"),
+			},
+			nil,
+		},
+		//{
+		//	"with feature",
+		//	"tests://abc/tmp/tmp1?enable_loose_pair=true&storage_class=sc",
+		//	[]Pair{
+		//		pairs.WithName("abc"),
+		//		pairs.WithWorkDir("/tmp/tmp1"),
+		//		WithServiceFeatures(ServiceFeatures{
+		//			LoosePair: true,
+		//		}),
+		//		WithStorageClass("sc"),
+		//	},
+		//	nil,
+		//},
+		{
 			"duplicate key, appear in order (finally, first will be picked)",
 			"tests://abc/tmp/tmp1?size=200&name=def&size=300",
 			[]Pair{
@@ -112,7 +136,7 @@ func TestFromString(t *testing.T) {
 			nil,
 		},
 		{
-			"not parseable pair",
+			"not parsable pair",
 			"tests://abc/tmp?io_call_back=a",
 			nil,
 			services.ErrConnectionStringInvalid,

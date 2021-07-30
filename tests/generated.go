@@ -68,6 +68,14 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 	s.SetSystemMetadata(sm)
 }
 
+// WithDefaultContentType will apply content_type value to Options by default.
+func WithDefaultContentType(v string) Pair {
+	return Pair{
+		Key:   "default_content_type",
+		Value: v,
+	}
+}
+
 // WithDefaultServicePairs will apply default_service_pairs value to Options.
 //
 // DefaultServicePairs set default pairs for service actions
@@ -130,6 +138,14 @@ func WithStorageClass(v string) Pair {
 	}
 }
 
+// WithDefaultStorageClass will apply storage_class value to Options by default.
+func WithDefaultStorageClass(v string) Pair {
+	return Pair{
+		Key:   "default_storage_class",
+		Value: v,
+	}
+}
+
 // WithStorageFeatures will apply storage_features value to Options.
 //
 // StorageFeatures set storage features
@@ -153,6 +169,7 @@ func WithStringPair(v string) Pair {
 var pairMap = map[string]string{
 	"content_md5":           "string",
 	"content_type":          "string",
+	"default_content_type":  "string",
 	"context":               "context.Context",
 	"continuation_token":    "string",
 	"credential":            "string",
@@ -173,15 +190,38 @@ var pairMap = map[string]string{
 	"service_features":      "ServiceFeatures",
 	"size":                  "int64",
 	"storage_class":         "string",
+	"default_storage_class": "string",
 	"storage_features":      "StorageFeatures",
 	"string_pair":           "string",
 	"work_dir":              "string",
 }
+var serviceFeaturesPairMap = map[string]string{
+	"enable_loose_pair": "bool",
+}
+
+var storageFeaturesPairMap = map[string]string{
+	"enable_loose_pair":  "bool",
+	"enable_virtual_dir": "bool",
+}
+
+type DefaultConfigs struct {
+	HasDefaultContentType  bool
+	DefaultContentType     string
+	HasDefaultStorageClass bool
+	DefaultStorageClass    string
+}
+
 var (
 	_ Servicer = &Service{}
 )
 
 type ServiceFeatures struct {
+	// LoosePair loose_pair feature is designed for users who don't want strict pair checks.
+	//
+	// If this feature is enabled, the service will not return an error for not support pairs.
+	//
+	// This feature was introduced in GSP-109.
+	LoosePair bool
 }
 
 // pairServiceNew is the parsed struct
@@ -200,6 +240,8 @@ type pairServiceNew struct {
 	HTTPClientOptions      *httpclient.Options
 	HasServiceFeatures     bool
 	ServiceFeatures        ServiceFeatures
+	// Default configs
+	DefaultConfigs DefaultConfigs
 }
 
 // parsePairServiceNew will parse Pair slice into *pairServiceNew
@@ -208,6 +250,7 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 		pairs: opts,
 	}
 
+	hasFeatures := false
 	for _, v := range opts {
 		switch v.Key {
 		// Required pairs
@@ -242,8 +285,27 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasServiceFeatures = true
 			result.ServiceFeatures = v.Value.(ServiceFeatures)
+		// Default pairs
+		case "default_content_type":
+			result.DefaultConfigs.HasDefaultContentType = true
+			result.DefaultConfigs.DefaultContentType = v.Value.(string)
+		case "default_storage_class":
+			result.DefaultConfigs.HasDefaultStorageClass = true
+			result.DefaultConfigs.DefaultStorageClass = v.Value.(string)
+		// Default features
+		case "enable_loose_pair":
+			if result.HasServiceFeatures {
+				continue
+			}
+			hasFeatures = true
+			result.ServiceFeatures.LoosePair = v.Value.(bool)
 		}
 	}
+
+	if hasFeatures {
+		result.HasServiceFeatures = true
+	}
+
 	if !result.HasCredential {
 		return pairServiceNew{}, services.PairRequiredError{Keys: []string{"credential"}}
 	}
@@ -282,6 +344,11 @@ func (s *Service) parsePairServiceCreate(opts []Pair) (pairServiceCreate, error)
 			result.Location = v.Value.(string)
 			continue
 		default:
+			// loose_pair feature introduced in GSP-109.
+			// If user enable this feature, service should ignore not support pair error.
+			if s.features.LoosePair {
+				continue
+			}
 			return pairServiceCreate{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
@@ -317,6 +384,11 @@ func (s *Service) parsePairServiceDelete(opts []Pair) (pairServiceDelete, error)
 			result.Location = v.Value.(string)
 			continue
 		default:
+			// loose_pair feature introduced in GSP-109.
+			// If user enable this feature, service should ignore not support pair error.
+			if s.features.LoosePair {
+				continue
+			}
 			return pairServiceDelete{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
@@ -349,6 +421,11 @@ func (s *Service) parsePairServiceGet(opts []Pair) (pairServiceGet, error) {
 			result.Location = v.Value.(string)
 			continue
 		default:
+			// loose_pair feature introduced in GSP-109.
+			// If user enable this feature, service should ignore not support pair error.
+			if s.features.LoosePair {
+				continue
+			}
 			return pairServiceGet{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
@@ -381,6 +458,11 @@ func (s *Service) parsePairServiceList(opts []Pair) (pairServiceList, error) {
 			result.Location = v.Value.(string)
 			continue
 		default:
+			// loose_pair feature introduced in GSP-109.
+			// If user enable this feature, service should ignore not support pair error.
+			if s.features.LoosePair {
+				continue
+			}
 			return pairServiceList{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
@@ -537,6 +619,8 @@ type pairStorageNew struct {
 	StorageFeatures        StorageFeatures
 	HasWorkDir             bool
 	WorkDir                string
+	// Default configs
+	DefaultConfigs DefaultConfigs
 }
 
 // parsePairStorageNew will parse Pair slice into *pairStorageNew
@@ -545,6 +629,7 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 		pairs: opts,
 	}
 
+	hasFeatures := false
 	for _, v := range opts {
 		switch v.Key {
 		// Required pairs
@@ -591,8 +676,33 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.HasWorkDir = true
 			result.WorkDir = v.Value.(string)
+		// Default pairs
+		case "default_content_type":
+			result.DefaultConfigs.HasDefaultContentType = true
+			result.DefaultConfigs.DefaultContentType = v.Value.(string)
+		case "default_storage_class":
+			result.DefaultConfigs.HasDefaultStorageClass = true
+			result.DefaultConfigs.DefaultStorageClass = v.Value.(string)
+		// Default features
+		case "enable_loose_pair":
+			if result.HasStorageFeatures {
+				continue
+			}
+			hasFeatures = true
+			result.StorageFeatures.LoosePair = v.Value.(bool)
+		case "enable_virtual_dir":
+			if result.HasStorageFeatures {
+				continue
+			}
+			hasFeatures = true
+			result.StorageFeatures.VirtualDir = v.Value.(bool)
 		}
 	}
+
+	if hasFeatures {
+		result.HasStorageFeatures = true
+	}
+
 	if !result.HasName {
 		return pairStorageNew{}, services.PairRequiredError{Keys: []string{"name"}}
 	}
@@ -708,9 +818,11 @@ func (s *Storage) parsePairStorageCopy(opts []Pair) (pairStorageCopy, error) {
 
 // pairStorageCreate is the parsed struct
 type pairStorageCreate struct {
-	pairs         []Pair
-	HasObjectMode bool
-	ObjectMode    ObjectMode
+	pairs          []Pair
+	HasContentType bool
+	ContentType    string
+	HasObjectMode  bool
+	ObjectMode     ObjectMode
 }
 
 // parsePairStorageCreate will parse Pair slice into *pairStorageCreate
@@ -721,6 +833,13 @@ func (s *Storage) parsePairStorageCreate(opts []Pair) (pairStorageCreate, error)
 
 	for _, v := range opts {
 		switch v.Key {
+		case "content_type":
+			if result.HasContentType {
+				continue
+			}
+			result.HasContentType = true
+			result.ContentType = v.Value.(string)
+			continue
 		case "object_mode":
 			if result.HasObjectMode {
 				continue
@@ -735,6 +854,12 @@ func (s *Storage) parsePairStorageCreate(opts []Pair) (pairStorageCreate, error)
 				continue
 			}
 			return pairStorageCreate{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	if !result.HasContentType {
+		if s.defaultConfigs.HasDefaultContentType {
+			result.HasContentType = true
+			result.ContentType = s.defaultConfigs.DefaultContentType
 		}
 	}
 
@@ -1182,6 +1307,18 @@ func (s *Storage) parsePairStorageWrite(opts []Pair) (pairStorageWrite, error) {
 				continue
 			}
 			return pairStorageWrite{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	if !result.HasContentType {
+		if s.defaultConfigs.HasDefaultContentType {
+			result.HasContentType = true
+			result.ContentType = s.defaultConfigs.DefaultContentType
+		}
+	}
+	if !result.HasStorageClass {
+		if s.defaultConfigs.HasDefaultStorageClass {
+			result.HasStorageClass = true
+			result.StorageClass = s.defaultConfigs.DefaultStorageClass
 		}
 	}
 
@@ -1832,5 +1969,11 @@ func (s *Storage) WriteMultipartWithContext(ctx context.Context, o *Object, r io
 func init() {
 	services.RegisterServicer(Type, NewServicer)
 	services.RegisterStorager(Type, NewStorager)
+	for k, v := range serviceFeaturesPairMap {
+		pairMap[k] = v
+	}
+	for k, v := range storageFeaturesPairMap {
+		pairMap[k] = v
+	}
 	services.RegisterSchema(Type, pairMap)
 }

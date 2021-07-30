@@ -11,6 +11,8 @@ type Storage struct {
 	defaultPairs DefaultStoragePairs
 	features     StorageFeatures
 
+	defaultConfigs DefaultConfigs
+
 	objects []*Object
 
 	UnimplementedCopier
