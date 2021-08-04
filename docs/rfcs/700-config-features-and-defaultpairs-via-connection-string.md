@@ -1,9 +1,9 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-08-03
-- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- RFC PR: [beyondstorage/go-storage#700](https://github.com/beyondstorage/go-storage/issues/700)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# GSP: Config Features and DefaultPairs via Connection String
+# GSP-700: Config Features and DefaultPairs via Connection String
 
 Previous discussion:
 
