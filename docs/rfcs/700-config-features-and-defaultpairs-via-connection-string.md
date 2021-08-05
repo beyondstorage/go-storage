@@ -31,7 +31,7 @@ type DefaultStoragePairs struct {
 
 A possible format that follows the struct in connection string for default storage paris may be:
 
- `default_storage_pairs={write:[storage_class=STANDARD_IA,key2=value],read:[]}`
+`default_storage_pairs={write:[storage_class=STANDARD_IA,key2=value],read:[]}`
 
 Obviously, It's complex for users and hard to pass in a valid string. In addition, it either exposes the internal details to end user directly (additional burden for end users) or it has to manipulate its config into our format (additional burden for application developers).
 
@@ -69,30 +69,16 @@ store, err := s3.NewStorage(
 
 ### DefaultPairs
 
-The format of default pair in connection string is:
+The format of default pair in connection string is the `key=value` pairs:
 
-`default_key=value`
-
-- The whole key of the pair SHOULD have the prefix `default_`.
-- `key` is the pair name defined in `toml` and the format SHOULD be exactly the same.
+- `key` is the global or service pair name defined in `toml` and the format SHOULD be exactly the same.
 - Operation has a different set of default pairs. Pairs in operation pair list will share the same default value if have the same name .
 
-So a valid connection string containing default pairs could be:
+A valid connection string containing default pairs could be:
 
-- `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&default_server_side_encryption=xxxx&default_strorage_class=xxxx`
+- `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&server_side_encryption=xxxx&strorage_class=xxxx`
 
-Also, we generate the following function for default pairs to support configure the default pair during initialization in the way of `WithXxx()`:
-
-Take `default_storage_class` for example:
-
-```go
-func WithDefaultStorageClass(v string) Pair {
-	reutrn Pair{
-		Key:   "default_storage_class",
-		Value: v,
-	}
-}
-```
+Also, users can configure the default pair during initialization in the way of `WithXxx()`.
 
 The connection string above is equivalent to:
 
@@ -102,11 +88,12 @@ store, err := s3.NewStorage(
 	ps.WithName("bucket_name"),
 	ps.WithWorkDir("/prefix"),
     }), 
-    s3.WithDefaultServiceSideEncryption("xxxx"),
-    s3.WithDefaultStorageClass("xxxx"),
+    s3.WithServiceSideEncryption("xxxx"),
+    s3.WithStorageClass("xxxx"),
 )
-
 ```
+
+That means operations with the same defaultable pairs `server_side_encryption` and `storage_class` will share the default value.
 
 ### Implementation
 
@@ -123,13 +110,13 @@ We generate pairs like `enable_virtual_dir` according to `features` in `service.
 ```go
 var serviceFeaturesPairMap = map[string]string{
     // ...
-    "default_loose_pair": "bool",
+    "enable_loose_pair": "bool",
 }
 
 var storageFeaturesPairMap = map[string]string{
     // ...
-    "default_loose_pair":  "bool",
-    "default_virtual_dir": "bool",
+    "enable_loose_pair":  "bool",
+    "enable_virtual_dir": "bool",
 }
 
 func init() {
@@ -142,8 +129,9 @@ func init() {
     }
     services.RegisterSchema("<type>", pairMap)
 }
-
 ```
+
+**Parse features in New**
 
 According to the current logic, `New*FromString` will first split connection string parse it into `ps []Pairs`, and finally call `New*(ty, ps)`. Then we can handle the default feature pairs to convert to `*Features` in `ParsePair*New()`.
 
@@ -175,34 +163,33 @@ defaultable = ["storage_class"]
 
 **Default pairs registry**
 
-We generate pairs like `default_storage_class` according to the defaultable pairs in the service. Then insert the pairs into `pairMap` like what we did in [GSP-90: Re-support Initialization Via Connection String]:
-
-```go
-var pairMap[string]string {
-	// ...
-	"default_storage_class" "string",
-}
-```
-
-The defaultable pairs will be registered based on the existing logic.
+The defaultable pairs also belong to global or system pairs and will be registered based on the existing logic.
 
 **Parse pairs in `parsePair*New`**
 
-We can generate the following struct to carry the shared default pairs:
+We can add fields correspond to default pairs into the generated `Default*Pairs` to carry the shared default pairs, like:
 
 ```go
-type DefaultConfigs struct {
-	HasDefaultStorageClass  bool
+type DefaultStoragePairs struct {
+	// ...
 	DefaultStorageClass     string
-	...
 }
 ```
 
-Then we can handle the default pairs to assign `DefaultConfigs` in `ParsePair*New()`.
+Then we can handle the default pairs to assign the added fields of `Default*Pairs` in `ParsePair*New()`.
 
 **Parse pairs in specific operation**
 
-Default pairs values come from `DefaultConfigs` stored in `Storage` and `Service`. When parsing pairs in specific operation, we should combine default pairs and `pairs from args`, and make sure that `pairs form args` can overwrite default pairs, and this should be generated.
+Default pairs values can be obtained from `defaultPairs` with type `Default*Pairs` stored in `Storage` and `Service`.
+We can assign default value to the pair which are not passed in by args.
+
+**Handle conflict**
+
+When parsing pairs in specific operation：
+
+- We should combine default pairs and `pairs from args`, and make sure that `pairs form args` can overwrite default pairs.
+- When `WithDefautl*Pairs()` and `WithXxx()` are used simultaneously for initialization, the value passed in by `WithDefault*Pairs()` should be picked.
+- The above conflict handling should be generated.
 
 ## Rationale
 
@@ -210,15 +197,11 @@ This design is based on [GSP-90: Re-support Initialization Via Connection String
 
 ## Compatibility
 
-Default pairs value need to be saved during initialization. New added field in `Storage` and `Service` will break the build.
-We could migrate as follows:
-
-- Release a new version for [go-storage] and all services bump to this version.
-- Add a new field with type `DefaultConfig` in `Service` and `Storage` and assign it in `New*r()` for services.
+No break changes.
 
 ## Implementation
 
-- Add defaultable fields and implement feature pairs registry and parsing in [go-storage].
+- Add defaultable fields and implement feature pairs registry in [go-storage].
 - Implement service code generate in [go-storage] definitions.
 
 [GSP-90: Re-support Initialization Via Connection String]: ./90-re-support-initialization-via-connection-string.md
