@@ -12,7 +12,7 @@ Previous discussion:
 ## Background
 
 In [GSP-90: Re-support Initialization Via Connection String](./90-re-support-initialization-via-connection-string.md), we introduced connection string to support service init and defined the format of connection string. 
-The connection string exposes basic types and not support complex types like `struct` at present. So we can't set `ServiceFeature`/`StorageFeatures` and `DefaultServicePairs`/`DefaultStoragePairs` by connection string during initialization.
+The connection string exposes basic types and not support complex types like `struct` at present. So we can't set `*Feature` and `Default*Pairs` by connection string during initialization.
 
 `Default*Pairs` is a slightly complex struct:
 
@@ -33,7 +33,7 @@ A possible format that follows the struct in connection string for default stora
 
 `default_storage_pairs={write:[storage_class=STANDARD_IA,key2=value],read:[]}`
 
-Obviously, It's complex for users and hard to pass in a valid string. In addition, it either exposes the internal details to end user directly (additional burden for end users) or it has to manipulate its config into our format (additional burden for application developers).
+Obviously, it's complex for users and hard to pass in a valid string. In addition, it either exposes the internal details to end user directly (additional burden for end users) or it has to manipulate its config into our format (additional burden for application developers).
 
 ## Proposal
 
@@ -72,13 +72,13 @@ store, err := s3.NewStorage(
 The format of default pair in connection string is the `key=value` pairs:
 
 - `key` is the global or service pair name defined in `toml` and the format SHOULD be exactly the same.
-- Operation has a different set of default pairs. Pairs in operation pair list will share the same default value if have the same name .
+- Operation has a different set of defaultable pairs. Defaultable pairs with the same name will share the default value.
 
 A valid connection string containing default pairs could be:
 
 - `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&server_side_encryption=xxxx&strorage_class=xxxx`
 
-Also, users can configure the default pair during initialization in the way of `WithXxx()`.
+Also, users can configure the defaultable pair during initialization in the way of `WithXxx()`.
 
 The connection string above is equivalent to:
 
@@ -120,6 +120,7 @@ var storageFeaturesPairMap = map[string]string{
 }
 
 func init() {
+	// ...
     // insert service and storage feature maps into `pairMap` for registry
 	for k, v := range serviceFeaturesPairMap {
         pairMap[k] = v
@@ -145,11 +146,11 @@ From [go-storage] side:
 - Defaultable string array can be added to `Op` in `specs` to store the list of defaultable pair's name.
 - Defaultable pair array can be added to `Functions` in `definitions` to store the list of defaultable pairs.
 
-Based on the above, we can record all the default pairs and the default pairs for a specific operation while parsing service toml.
+Based on the above, we can mark all the defaultable pairs for service and the defaultable pairs for a specific operation while parsing service toml.
 
 From services side:
 
-We can add new field `defaultable` for operations, in which service can specify pairs that can be set as default, like:
+We can add a new field `defaultable` for operations, in which service can specify pairs that can be set as default, like:
 
 ```toml
 [namespace.storage.op.write]
@@ -167,21 +168,22 @@ The defaultable pairs also belong to global or system pairs and will be register
 
 **Parse pairs in `parsePair*New`**
 
-We can add fields correspond to default pairs into the generated `Default*Pairs` to carry the shared default pairs, like:
+We can add private fields correspond to defaultable pairs into the generated `Default*Pairs` to carry the shared pairs, like:
 
 ```go
 type DefaultStoragePairs struct {
 	// ...
-	DefaultStorageClass     string
+	hasDefaultStorageClass  string
+	defaultStorageClass     string
 }
 ```
 
-Then we can handle the default pairs to assign the added fields of `Default*Pairs` in `ParsePair*New()`.
+Then we can handle the defaultable pairs to assign the added fields of `Default*Pairs` in `ParsePair*New()`.
 
 **Parse pairs in specific operation**
 
 Default pairs values can be obtained from `defaultPairs` with type `Default*Pairs` stored in `Storage` and `Service`.
-We can assign default value to the pair which are not passed in by args.
+We can assign default value to the pair which are not passed in by args while parsing pairs for specific operation.
 
 **Handle conflict**
 
