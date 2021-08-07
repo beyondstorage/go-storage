@@ -60,10 +60,11 @@ store, err := s3.NewStorage(
 	ps.WithCredential("hmac:xxxx:xxxx"),
 	ps.WithName("bucket_name"),
 	ps.WithWorkDir("/prefix"),
-	s3.WithStorageFeatures(s3.StorageFeaturs{LoosePair:  true,
-		LoosePair:  true,
+	s3.WithStorageFeatures(s3.StorageFeaturs{
+		LoosePair:  false,
 		VirtualDir: true,
     })
+
 )
 ```
 
