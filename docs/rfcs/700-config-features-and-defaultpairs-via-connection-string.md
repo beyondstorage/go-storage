@@ -67,18 +67,33 @@ store, err := s3.NewStorage(
 )
 ```
 
-### DefaultPairs
+### Default Pairs
 
-The format of default pair in connection string is the `key=value` pairs:
+The format of default pair in connection string is:
 
-- `key` is the global or service pair name defined in `toml` and the format SHOULD be exactly the same.
-- Operation has a different set of defaultable pairs. Defaultable pairs with the same name will share the default value.
+`default_key=value`
+
+- The whole key of the pair SHOULD have the prefix `default_`.
+- `key` is the global or service pair name defined in `toml`, and the format SHOULD be exactly the same.
+- For `value`, parsable value types are `string`, `bool`, `int`, `int64`, `uint64`, `[]byte` and `time.Duration` at present.
+- Pairs of operation with the same name will share the default value.
 
 A valid connection string containing default pairs could be:
 
-- `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&server_side_encryption=xxxx&strorage_class=xxxx`
+- `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&default_server_side_encryption=xxxx&default_strorage_class=xxxx`
 
-Also, users can configure the defaultable pair during initialization in the way of `WithXxx()`.
+Also, we generate the following function to support configure the default pair during initialization in the way of `WithXxx()`:
+
+Take `default_storage_class` for example:
+
+```go
+func WithDefaultStorageClass(v string) Pair {
+	reutrn Pair{
+		Key:   "default_storage_class",
+		Value: v,
+	}
+}
+```
 
 The connection string above is equivalent to:
 
@@ -88,87 +103,40 @@ store, err := s3.NewStorage(
 	ps.WithName("bucket_name"),
 	ps.WithWorkDir("/prefix"),
     }), 
-    s3.WithServiceSideEncryption("xxxx"),
-    s3.WithStorageClass("xxxx"),
+    s3.WithDefaultServiceSideEncryption("xxxx"),
+    s3.WithDefaultStorageClass("xxxx"),
 )
 ```
 
-That means operations with the same defaultable pairs `server_side_encryption` and `storage_class` will share the default value.
+That means pair of operations with the same name `server_side_encryption` or `storage_class` will share the default value.
 
 ### Implementation
 
-#### Features
+ Default pairs and features are defined in service.
 
-`*Features` are types defined in service.
+**Add pairs for features and default paris**
 
-**Feature Pairs Registry**
-
-From services side:
-
-We generate pairs like `enable_virtual_dir` according to `features` in `service.toml`. And register the feature pairs referring to [GSP-90: Re-support Initialization Via Connection String].
-
-```go
-var serviceFeaturesPairMap = map[string]string{
-    // ...
-    "enable_loose_pair": "bool",
-}
-
-var storageFeaturesPairMap = map[string]string{
-    // ...
-    "enable_loose_pair":  "bool",
-    "enable_virtual_dir": "bool",
-}
-
-func init() {
-	// ...
-    // insert service and storage feature maps into `pairMap` for registry
-	for k, v := range serviceFeaturesPairMap {
-        pairMap[k] = v
-    }
-    for k, v := range storageFeaturesPairMap {
-        pairMap[k] = v
-    }
-    services.RegisterSchema("<type>", pairMap)
-}
-```
-
-**Parse features in New**
-
-According to the current logic, `New*FromString` will first split connection string parse it into `ps []Pairs`, and finally call `New*(ty, ps)`. Then we can handle the default feature pairs to convert to `*Features` in `ParsePair*New()`.
-
-#### Default Pairs
-
-Default pairs are defined in services.
-
-From [go-storage] side:
-
-- Defaultable field can be added to `Pair` in `specs` to mark whether the pair could be set as default while initiate.
-- Defaultable string array can be added to `Op` in `specs` to store the list of defaultable pair's name.
-- Defaultable pair array can be added to `Functions` in `definitions` to store the list of defaultable pairs.
-
-Based on the above, we can mark all the defaultable pairs for service and the defaultable pairs for a specific operation while parsing service toml.
-
-From services side:
-
-We can add a new field `defaultable` for operations, in which service can specify pairs that can be set as default, like:
+Default pairs and features can be added into `Optioanl` pairs of `New` for service, like:
 
 ```toml
-[namespace.storage.op.write]
-optional = ["content_md5", "content_type", "io_callback", "storage_class"]
-defaultable = ["storage_class"]
-
-[namespace.storage.op.create_append]
-optional = ["content_type", "storage_class"]
-defaultable = ["storage_class"]
+[namespace.storage.new]
+required = ["name"]
+optional = ["storage_features", "default_storage_pairs", "default_storage_class", "enable_virtual_dir"]
 ```
 
-**Default pairs registry**
+When parsing pairs from toml, we should:
 
-The defaultable pairs also belong to global or system pairs and will be registered based on the existing logic.
+- Check whether the default pair belongs to global or system pair and feature belongs to the supported ones.
+- Add pairs for the optional pairs of `New` with `default_` and `enable_` prefix.
+- Mark them as defaultable, the same with global and system paris corresponding to the default ones. 
 
-**Parse pairs in `parsePair*New`**
+**Parse features in `parsePair*New`**
 
-We can add private fields correspond to defaultable pairs into the generated `Default*Pairs` to carry the shared pairs, like:
+We can handle the optional defaultable pairs with prefix `enable_`, assign value to the corresponding field of `*Features` in `ParsePair*New()`.
+
+**Parse default pairs in `parsePair*New`**
+
+We can add private fields correspond to default pairs into the generated `Default*Pairs` to carry the shared values, like:
 
 ```go
 type DefaultStoragePairs struct {
@@ -178,19 +146,18 @@ type DefaultStoragePairs struct {
 }
 ```
 
-Then we can handle the defaultable pairs to assign the added fields of `Default*Pairs` in `ParsePair*New()`.
+Then we can handle the optional defaultable pairs with prefix `default_` to assign the added fields of `Default*Pairs` in `ParsePair*New()`.
 
 **Parse pairs in specific operation**
 
-Default pairs values can be obtained from `defaultPairs` with type `Default*Pairs` stored in `Storage` and `Service`.
-We can assign default value to the pair which are not passed in by args while parsing pairs for specific operation.
+Based on the updated `Default*Pairs`, when parsing pairs in specific operation, we can assign default value to defaultable pair if the value not passed in from args.
 
 **Handle conflict**
 
 When parsing pairs in specific operation：
 
 - We should combine default pairs and `pairs from args`, and make sure that `pairs form args` can overwrite default pairs.
-- When `WithDefautl*Pairs()` and `WithXxx()` are used simultaneously for initialization, the value passed in by `WithDefault*Pairs()` should be picked.
+- When using `WithDefautl*Pairs()` and `WithDefaultXxx()` at the same time for initialization, we will pick `Default*Pairs` first, and append pairs that parsed from `WithDefaultXxx()`.
 - The above conflict handling should be generated.
 
 ## Rationale
@@ -203,7 +170,7 @@ No break changes.
 
 ## Implementation
 
-- Add defaultable fields and implement feature pairs registry in [go-storage].
+- Add pairs for default pairs and features in [go-storage].
 - Implement service code generate in [go-storage] definitions.
 
 [GSP-90: Re-support Initialization Via Connection String]: ./90-re-support-initialization-via-connection-string.md
