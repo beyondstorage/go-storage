@@ -138,11 +138,12 @@ type Pair struct {
 
 // Namespace is the data parsed from TOML.
 type Namespace struct {
-	Name      string
-	Features  []string // The feature names that provided by current namespace.
-	Implement []string
-	New       New
-	Op        []Op
+	Name        string
+	Features    []string // The feature names that provided by current namespace.
+	Implement   []string
+	Defaultable []string // The defaultable pairs for the current namespace.
+	New         New
+	Op          []Op
 }
 
 // Sort will sort the Namespace
@@ -166,16 +167,14 @@ func (n *Namespace) Sort() {
 type Op struct {
 	Name string
 
-	Required    []string
-	Optional    []string
-	Defaultable []string
+	Required []string
+	Optional []string
 }
 
 // Sort will sort the Op
 func (o *Op) Sort() {
 	sort.Strings(o.Required)
 	sort.Strings(o.Optional)
-	sort.Strings(o.Defaultable)
 }
 
 // New is the spec for new function.

@@ -6,6 +6,20 @@ import (
     "io"
     "time"
 
+    {{ $needPair := false }}
+    {{- $pairs := .Pairs }}
+    {{- range $_, $v := .Namespaces }}
+    {{- range $_, $dp := $v.Defaultable }}
+    {{- range $_, $sp := $pairs }}
+    {{- if and (eq $dp.Name $sp.Name) $sp.Global }}
+        {{- $needPair = true }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if $needPair }}
+    "github.com/beyondstorage/go-storage/v4/pairs"
+    {{- end }}
     "github.com/beyondstorage/go-storage/v4/pkg/httpclient"
     "github.com/beyondstorage/go-storage/v4/services"
     . "github.com/beyondstorage/go-storage/v4/types"
@@ -89,8 +103,8 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 }
 
 {{- range $_, $v := .Pairs }}
-{{- $pname := $v.Name | toPascal }}
 {{- if not $v.Global }}
+{{- $pname := $v.Name | toPascal }}
 {{- if $v.Conflict }}
 // Deprecated: Use pairs.With{{ $pname }} instead.
 //
@@ -105,50 +119,19 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
     }
 }
 {{- end }}
-
-{{- if $v.Defaultable }}
-// WithDefault{{ $pname }} will apply {{ $v.Name }} value to Options by default.
-func WithDefault{{ $pname }}(v {{ $v.Type }}) Pair {
-        return Pair{
-        Key: "default_{{ $v.Name }}",
-        Value: v,
-    }
-}
-{{- end }}
 {{- end }}
 
 var pairMap = map[string]string {
     {{- range $_, $v := .Pairs }}
     {{- $pname := $v.Name | toPascal }}
     "{{ $v.Name }}": "{{ $v.Type }}",
-    {{- if $v.Defaultable }}
-    "default_{{ $v.Name }}": "{{ $v.Type }}",
-    {{- end}}
     {{- end }}
 }
 
-{{- range $_, $v := .Namespaces }}
-var {{ $v.Name }}FeaturesPairMap = map[string]string {
-{{- range $_, $fv := $v.Features }}
-    "enable_{{ $fv.Name }}": "bool",
-{{- end }}
-}
-{{ end }}
-
-type DefaultConfigs struct {
-    {{- range $_, $v := .Pairs }}
-    {{- if $v.Defaultable }}
-    HasDefault{{ $v.Name | toPascal }} bool
-    Default{{ $v.Name | toPascal }} {{ $v.Type }}
-    {{- end }}
-    {{- end }}
-}
-
-{{ $pairs := .Pairs }}
 {{- range $_, $v := .Namespaces }}
     {{- template "interfaces" makeSlice $v.Name $v.Interfaces }}
     {{- template "features" makeSlice $v.Name $v.Funcs $v.Features }}
-    {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New $pairs $v.Features }}
+    {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New $v.Features $v.Defaultable $v.Funcs }}
     {{- template "pairs" makeSlice $v $v.Funcs }}
     {{- template "functions" makeSlice $v.Name $v.Funcs }}
 {{- end }}
@@ -179,8 +162,9 @@ type {{ $pn }}Features struct {
 {{- define "pair_new" }}
 {{- $pn := index . 0 }}
 {{- $fn := index . 1 }}
-{{- $pairs := index . 2 }}
-{{- $features := index . 3 }}
+{{- $ff := index . 2 }}
+{{- $dp := index . 3 }}
+{{- $ops := index . 4 }}
 
 {{- $fnk := $fn.Name | toPascal }}
 
@@ -198,8 +182,6 @@ type pair{{ $pn }}{{$fnk}} struct {
     Has{{ $pair.Name | toPascal }}   bool
     {{ $pair.Name | toPascal }}      {{ $pair.Type }}
     {{- end }}
-    // Default configs
-    DefaultConfigs          DefaultConfigs
 }
 
 // parsePair{{ $pn }}{{ $fnk }} will parse Pair slice into *pair{{ $pn }}{{ $fnk }}
@@ -208,7 +190,8 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         pairs: opts,
     }
 
-    hasFeatures := false
+    enableFeatures := false
+    defaultPairs := false
     for _, v := range opts {
         switch v.Key {
         // Required pairs
@@ -230,30 +213,50 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
         // Default pairs
-        {{- range $_, $pair := $pairs }}
-        {{- if $pair.Defaultable }}
+        {{- range $_, $pair := $dp }}
         case "default_{{ $pair.Name }}":
-            result.DefaultConfigs.HasDefault{{ $pair.Name | toPascal }} = true
-            result.DefaultConfigs.Default{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+            defaultPairs = true
+            {{- range $_, $op := $ops }}
+            {{- range $_, $opPair := $op.Required }}
+            {{- if eq $pair.Name $opPair.Name }}
+            {{- if $opPair.Global }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, pairs.With{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }})))
+            {{- else }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, With{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }})))
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- range $_, $opPair := $op.Optional }}
+            {{- if eq $pair.Name $opPair.Name }}
+            {{- if $opPair.Global }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, pairs.With{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }})))
+            {{- else }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, With{{ $pair.Name | toPascal }}(v.Value.({{ $pair.Type }})))
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
         {{- end }}
-        {{- end }}
-        // Default features
-        {{- range $_, $pair := $features }}
+        // Enable features
+        {{- range $_, $pair := $ff }}
         case "enable_{{ $pair.Name }}":
             if result.Has{{ $pn }}Features {
                 continue
             }
-            hasFeatures = true
+            enableFeatures = true
             result.{{ $pn }}Features.{{ $pair.Name | toPascal }} = v.Value.(bool)
         {{- end }}
         }
     }
 
-    if hasFeatures {
+    if enableFeatures {
         result.Has{{ $pn }}Features = true
     }
+    if defaultPairs {
+        result.HasDefault{{ $pn }}Pairs = true
+    }
 
-    {{ range $_, $pair := $fn.Required }}
+    {{- range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
         return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ "{{ $pair.Name }}" } }
     }
@@ -339,15 +342,6 @@ func (s *{{ $pnk }})parsePair{{ $pnk }}{{ $fnk }}(opts []Pair) (pair{{ $pnk }}{{
             return pair{{ $pnk }}{{ $fnk }}{}, services.PairUnsupportedError{Pair:v}
         }
     }
-
-    {{- range $_, $pair := $fn.Defaultable }}
-    if !result.Has{{ $pair.Name | toPascal }} {
-        if s.defaultConfigs.HasDefault{{ $pair.Name | toPascal }} {
-            result.Has{{ $pair.Name | toPascal }} = true
-            result.{{ $pair.Name | toPascal }} = s.defaultConfigs.Default{{ $pair.Name | toPascal }}
-        }
-    }
-    {{- end }}
 
     // Check required pairs.
     {{- range $_, $pair := $fn.Required }}
@@ -439,12 +433,7 @@ func (s *{{$pn}}) {{ $fnk }}WithContext(ctx context.Context, {{$fn.Params.String
 
 func init() {
     {{- range $_, $v := .Namespaces }}
-    services.Register{{ $v.Name | toPascal }}r(Type, New{{ $v.Name | toPascal }}r)
-    {{- end }}
-    {{- range $_, $v := .Namespaces }}
-    for k, v := range {{ $v.Name }}FeaturesPairMap {
-        pairMap[k] = v
-    }
+        services.Register{{ $v.Name | toPascal }}r(Type, New{{ $v.Name | toPascal }}r)
     {{- end }}
     services.RegisterSchema(Type, pairMap)
 }

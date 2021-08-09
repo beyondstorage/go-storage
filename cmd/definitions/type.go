@@ -74,11 +74,12 @@ func (s *Service) Pairs() []*Pair {
 
 // Namespace contains all info about a namespace
 type Namespace struct {
-	Name       string
-	Features   []*Feature
-	New        *Function
-	Funcs      []*Function
-	Interfaces []*Interface
+	Name        string
+	Features    []*Feature
+	New         *Function
+	Funcs       []*Function
+	Interfaces  []*Interface
+	Defaultable []*Pair
 
 	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
 }
@@ -118,9 +119,6 @@ type Pair struct {
 
 	// This is a system pair having the same name and type as a global pair
 	Conflict bool
-
-	// This is a defaultable pair can be set while initiate
-	Defaultable bool
 }
 
 func (p *Pair) Type() string {
@@ -282,10 +280,9 @@ type Function struct {
 
 	Simulated bool // This op is simulated, user can decide whether use the virtual function or not.
 
-	Required    []*Pair // TODO: other functions could not have required pairs.
-	Optional    []*Pair
-	Defaultable []*Pair
-	Virtual     []*Pair // This op's virtual pairs, user can decide whether use the virtual pairs.
+	Required []*Pair // TODO: other functions could not have required pairs.
+	Optional []*Pair
+	Virtual  []*Pair // This op's virtual pairs, user can decide whether use the virtual pairs.
 
 	Implemented bool // flag for whether this function has been implemented or not.
 }
@@ -310,32 +307,6 @@ func (f *Function) Format(s specs.Op, p map[string]*Pair) {
 			log.Fatalf("pair %s is not exist", v)
 		}
 		f.Optional = append(f.Optional, pair)
-	}
-	for _, v := range s.Defaultable {
-		isExist := false
-		for _, rv := range s.Required {
-			if v == rv {
-				pair, _ := p[v]
-				pair.Defaultable = true
-				f.Defaultable = append(f.Defaultable, pair)
-				isExist = true
-				break
-			}
-		}
-		if !isExist {
-			for _, ov := range s.Optional {
-				if v == ov {
-					pair, _ := p[v]
-					pair.Defaultable = true
-					f.Defaultable = append(f.Defaultable, pair)
-					isExist = true
-					break
-				}
-			}
-		}
-		if !isExist {
-			log.Fatalf("pair %s is not exist", v)
-		}
 	}
 }
 
@@ -586,6 +557,15 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 		}
 	}
 
+	// Handle defaultable pairs
+	for _, defaultablePairName := range n.Defaultable {
+		pair, ok := srv.pairs[defaultablePairName]
+		if !ok {
+			log.Fatalf("invalid defaultable pair: %s", defaultablePairName)
+		}
+		ns.Defaultable = append(ns.Defaultable, pair)
+	}
+
 	d.ValidateNamespace(srv, ns)
 	return ns
 }
@@ -626,6 +606,7 @@ func (d *Data) FormatService(s specs.Service) *Service {
 	}
 
 	for _, v := range s.Namespaces {
+		addDefaultPairs(srv.pairs, v)
 		ns := d.FormatNamespace(srv, v)
 
 		srv.Namespaces = append(srv.Namespaces, ns)
@@ -688,6 +669,54 @@ func mergePairs(global, service map[string]*Pair) map[string]*Pair {
 		ans[k] = v
 	}
 	return ans
+}
+
+func addDefaultPairs(pairs map[string]*Pair, ns specs.Namespace) {
+	for _, defaultablePair := range ns.Defaultable {
+		isValid := false
+		for _, op := range ns.Op {
+			for _, opPair := range op.Required {
+				if opPair == defaultablePair {
+					isValid = true
+					break
+				}
+			}
+			if !isValid {
+				for _, opPair := range op.Optional {
+					if opPair == defaultablePair {
+						isValid = true
+						break
+					}
+				}
+			}
+		}
+
+		if isValid {
+			pair, ok := pairs[defaultablePair]
+			if !ok {
+				log.Fatalf("invalid defaultable pair: %s", defaultablePair)
+			}
+			defaultPair := &Pair{
+				Name:   "default_" + defaultablePair,
+				ptype:  pair.ptype,
+				Global: false,
+			}
+			pairs[defaultPair.Name] = defaultPair
+			break
+		} else {
+			log.Fatalf("invalid defaultable pair: %s", defaultablePair)
+		}
+	}
+
+	for _, feature := range ns.Features {
+		ns.Defaultable = append(ns.Defaultable, feature)
+		featurePair := &Pair{
+			Name:   "enable_" + feature,
+			ptype:  "bool",
+			Global: false,
+		}
+		pairs[featurePair.Name] = featurePair
+	}
 }
 
 func mergeInfos(a, b []*Info) []*Info {
