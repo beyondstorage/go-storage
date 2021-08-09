@@ -113,45 +113,31 @@ That means pair of operations with the same name `server_side_encryption` or `st
 
 ### Implementation
 
- Default pairs and features are defined in service.
+Default pairs and features are defined in service.
 
-**Add pairs for features and default paris**
+**Add `defaultable` in namespace**
 
-Default pairs and features can be added into `Optioanl` pairs of `New` for service, like:
+Add a new field `defaultable` in namespace to specify the defaultable pair key list, like:
 
 ```toml
-[namespace.storage.new]
-required = ["name"]
-optional = ["storage_features", "default_storage_pairs", "default_storage_class", "enable_virtual_dir"]
+[namespace.storage]
+features = ["virtual_dir"]
+implement = ["direr", "multiparter"]
+defaultable = ["excepted_bucket_owner"]
 ```
 
-When parsing pairs from toml, we should:
+Pair keys listed in `defaultable` will be treated as allowing users to set default values. When parsing toml files, we should:
 
-- Check whether the default pair belongs to global or system pair and feature belongs to the supported ones.
-- Add pairs for the optional pairs of `New` with `default_` and `enable_` prefix.
-- Mark them as defaultable, the same with global and system paris corresponding to the default ones. 
+- Check whether the key in `defaultable` belongs to the pair list of operations in the namespace.
+- Generate default pairs according to `defaultable` and `features` fields.
 
 **Parse features in `parsePair*New`**
 
-We can handle the optional defaultable pairs with prefix `enable_`, assign value to the corresponding field of `*Features` in `ParsePair*New()`.
+We can handle the defaultable pairs for features with prefix `enable_`, assign value to the corresponding field of `*Features` in `ParsePair*New()`.
 
 **Parse default pairs in `parsePair*New`**
 
-We can add private fields correspond to default pairs into the generated `Default*Pairs` to carry the shared values, like:
-
-```go
-type DefaultStoragePairs struct {
-	// ...
-	hasDefaultStorageClass  string
-	defaultStorageClass     string
-}
-```
-
-Then we can handle the optional defaultable pairs with prefix `default_` to assign the added fields of `Default*Pairs` in `ParsePair*New()`.
-
-**Parse pairs in specific operation**
-
-Based on the updated `Default*Pairs`, when parsing pairs in specific operation, we can assign default value to defaultable pair if the value not passed in from args.
+We can convert the defaultable pairs with prefix `default_` passed in by connection string or `WithDefaultXxx()` to pairs and append it to the pair array of supported operations in `Default*Pairs` in `ParsePair*New()`.
 
 **Handle conflict**
 
@@ -165,12 +151,27 @@ When parsing pairs in specific operation：
 
 This design is based on [GSP-90: Re-support Initialization Via Connection String]. Basic connection string and parsable value types, pair registry, escaping limitation can be referred to it.
 
+### Alternative Implementation
+
+We can add a new field `defaultable` in operations, like:
+
+```toml
+[namespace.storage.op.read]
+optional = ["offset", "io_callback", "size", "excepted_bucket_owner"]
+defaultable = ["excepted_bucket_owner"]
+```
+
+On this basis, we can parse the toml files and get a full list of defaultable pairs, and then, generate related pairs.
+
+Compared with `add defaultable in namespace`, we have to list the same defaultable pair for different operations and traverse the pair lists of operations to get full defaultable pairs.
+
 ## Compatibility
 
 No break changes.
 
 ## Implementation
 
+- Add the new field into `service.toml`.
 - Add pairs for default pairs and features in [go-storage].
 - Implement service code generate in [go-storage] definitions.
 
