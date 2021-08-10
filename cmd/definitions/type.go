@@ -697,12 +697,12 @@ func addDefaultPairs(pairs map[string]*Pair, ns specs.Namespace) {
 				log.Fatalf("invalid defaultable pair: %s", defaultablePair)
 			}
 			defaultPair := &Pair{
-				Name:   "default_" + defaultablePair,
-				ptype:  pair.ptype,
-				Global: false,
+				Name:        "default_" + defaultablePair,
+				ptype:       pair.ptype,
+				Global:      false,
+				Description: pair.Description,
 			}
 			pairs[defaultPair.Name] = defaultPair
-			break
 		} else {
 			log.Fatalf("invalid defaultable pair: %s", defaultablePair)
 		}
@@ -711,9 +711,10 @@ func addDefaultPairs(pairs map[string]*Pair, ns specs.Namespace) {
 	for _, feature := range ns.Features {
 		ns.Defaultable = append(ns.Defaultable, feature)
 		featurePair := &Pair{
-			Name:   "enable_" + feature,
-			ptype:  "bool",
-			Global: false,
+			Name:        "enable_" + feature,
+			ptype:       "bool",
+			Global:      false,
+			Description: formatDescription(templateutils.ToPascal("enable_"+feature), "enable "+feature+" features."),
 		}
 		pairs[featurePair.Name] = featurePair
 	}

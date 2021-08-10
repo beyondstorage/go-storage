@@ -71,7 +71,7 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 
 // WithDefaultContentType will apply default_content_type value to Options.
 //
-
+// ContentType
 func WithDefaultContentType(v string) Pair {
 	return Pair{
 		Key:   "default_content_type",
@@ -85,6 +85,16 @@ func WithDefaultContentType(v string) Pair {
 func WithDefaultServicePairs(v DefaultServicePairs) Pair {
 	return Pair{
 		Key:   "default_service_pairs",
+		Value: v,
+	}
+}
+
+// WithDefaultStorageClass will apply default_storage_class value to Options.
+//
+// StorageClass
+func WithDefaultStorageClass(v string) Pair {
+	return Pair{
+		Key:   "default_storage_class",
 		Value: v,
 	}
 }
@@ -111,7 +121,7 @@ func WithDisableURICleaning(v bool) Pair {
 
 // WithEnableLoosePair will apply enable_loose_pair value to Options.
 //
-
+// EnableLoosePair enable loose_pair features.
 func WithEnableLoosePair(v bool) Pair {
 	return Pair{
 		Key:   "enable_loose_pair",
@@ -121,7 +131,7 @@ func WithEnableLoosePair(v bool) Pair {
 
 // WithEnableVirtualDir will apply enable_virtual_dir value to Options.
 //
-
+// EnableVirtualDir enable virtual_dir features.
 func WithEnableVirtualDir(v bool) Pair {
 	return Pair{
 		Key:   "enable_virtual_dir",
@@ -189,6 +199,7 @@ var pairMap = map[string]string{
 	"credential":            "string",
 	"default_content_type":  "string",
 	"default_service_pairs": "DefaultServicePairs",
+	"default_storage_class": "string",
 	"default_storage_pairs": "DefaultStoragePairs",
 	"disable_uri_cleaning":  "bool",
 	"enable_loose_pair":     "bool",
