@@ -83,7 +83,7 @@ A valid connection string containing default pairs could be:
 
 - `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&default_server_side_encryption=xxxx&default_strorage_class=xxxx`
 
-Also, we generate the following function to support configure the default pair during initialization in the way of `WithXxx()`:
+To ensure the consistency of the semantics and behavior of the current two initialization methods for users, we generate the following function to support configure the default pair during initialization in the way of `WithXxx()` to achieve the same result as the way of connection string:
 
 Take `default_storage_class` for example:
 
@@ -129,7 +129,7 @@ defaultable = ["excepted_bucket_owner"]
 Pair keys listed in `defaultable` will be treated as allowing users to set default values. When parsing toml files, we should:
 
 - Check whether the key in `defaultable` belongs to the pair list of operations in the namespace.
-- Generate default pairs according to `defaultable` and `features` fields.
+- Generate default pairs according to `defaultable` and `features` fields for pair registry and parsing.
 
 **Parse features in `parsePair*New`**
 
