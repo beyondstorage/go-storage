@@ -103,7 +103,7 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 }
 
 {{- range $_, $v := .Pairs }}
-{{- if not $v.Global }}
+{{- if and (not $v.Global) (not (hasPrefix $v.Name "enable_")) }}
 {{- $pname := $v.Name | toPascal }}
 {{- if $v.Conflict }}
 // Deprecated: Use pairs.With{{ $pname }} instead.
@@ -190,8 +190,6 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         pairs: opts,
     }
 
-    enableFeatures := false
-    defaultPairs := false
     for _, v := range opts {
         switch v.Key {
         // Required pairs
@@ -206,16 +204,23 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         // Optional pairs
         {{- range $_, $pair := $fn.Optional }}
         case "{{ $pair.Name }}":
+            {{- if eq $pair.Name (print "default_" ($pn | toLower) "_pairs") }}
+            result.Has{{ $pair.Name | toPascal }} = true
+            {{- range $_, $op := $ops }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, v.Value.({{ $pair.Type }}).{{ $op.Name | toPascal }}...)
+            {{- end }}
+            {{- else }}
             if result.Has{{ $pair.Name | toPascal }} {
                 continue
             }
             result.Has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+            {{- end }}
         {{- end }}
         // Default pairs
         {{- range $_, $pair := $dp }}
         case "default_{{ $pair.Name }}":
-            defaultPairs = true
+            result.HasDefault{{ $pn }}Pairs = true
             {{- range $_, $op := $ops }}
             {{- range $_, $opPair := $op.Required }}
             {{- if eq $pair.Name $opPair.Name }}
@@ -240,20 +245,10 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         // Enable features
         {{- range $_, $pair := $ff }}
         case "enable_{{ $pair.Name }}":
-            if result.Has{{ $pn }}Features {
-                continue
-            }
-            enableFeatures = true
+            result.Has{{ $pn }}Features = true
             result.{{ $pn }}Features.{{ $pair.Name | toPascal }} = v.Value.(bool)
         {{- end }}
         }
-    }
-
-    if enableFeatures {
-        result.Has{{ $pn }}Features = true
-    }
-    if defaultPairs {
-        result.HasDefault{{ $pn }}Pairs = true
     }
 
     {{- range $_, $pair := $fn.Required }}

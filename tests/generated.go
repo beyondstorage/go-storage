@@ -119,26 +119,6 @@ func WithDisableURICleaning(v bool) Pair {
 	}
 }
 
-// WithEnableLoosePair will apply enable_loose_pair value to Options.
-//
-// EnableLoosePair enable loose_pair features.
-func WithEnableLoosePair(v bool) Pair {
-	return Pair{
-		Key:   "enable_loose_pair",
-		Value: v,
-	}
-}
-
-// WithEnableVirtualDir will apply enable_virtual_dir value to Options.
-//
-// EnableVirtualDir enable virtual_dir features.
-func WithEnableVirtualDir(v bool) Pair {
-	return Pair{
-		Key:   "enable_virtual_dir",
-		Value: v,
-	}
-}
-
 // WithServiceFeatures will apply service_features value to Options.
 //
 // ServiceFeatures set service features
@@ -259,8 +239,6 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 		pairs: opts,
 	}
 
-	enableFeatures := false
-	defaultPairs := false
 	for _, v := range opts {
 		switch v.Key {
 		// Required pairs
@@ -272,11 +250,11 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			result.Credential = v.Value.(string)
 		// Optional pairs
 		case "default_service_pairs":
-			if result.HasDefaultServicePairs {
-				continue
-			}
 			result.HasDefaultServicePairs = true
-			result.DefaultServicePairs = v.Value.(DefaultServicePairs)
+			result.DefaultServicePairs.Create = append(result.DefaultServicePairs.Create, v.Value.(DefaultServicePairs).Create...)
+			result.DefaultServicePairs.Delete = append(result.DefaultServicePairs.Delete, v.Value.(DefaultServicePairs).Delete...)
+			result.DefaultServicePairs.Get = append(result.DefaultServicePairs.Get, v.Value.(DefaultServicePairs).Get...)
+			result.DefaultServicePairs.List = append(result.DefaultServicePairs.List, v.Value.(DefaultServicePairs).List...)
 		case "endpoint":
 			if result.HasEndpoint {
 				continue
@@ -298,19 +276,9 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 		// Default pairs
 		// Enable features
 		case "enable_loose_pair":
-			if result.HasServiceFeatures {
-				continue
-			}
-			enableFeatures = true
+			result.HasServiceFeatures = true
 			result.ServiceFeatures.LoosePair = v.Value.(bool)
 		}
-	}
-
-	if enableFeatures {
-		result.HasServiceFeatures = true
-	}
-	if defaultPairs {
-		result.HasDefaultServicePairs = true
 	}
 	if !result.HasCredential {
 		return pairServiceNew{}, services.PairRequiredError{Keys: []string{"credential"}}
@@ -633,8 +601,6 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 		pairs: opts,
 	}
 
-	enableFeatures := false
-	defaultPairs := false
 	for _, v := range opts {
 		switch v.Key {
 		// Required pairs
@@ -646,11 +612,25 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			result.Name = v.Value.(string)
 		// Optional pairs
 		case "default_storage_pairs":
-			if result.HasDefaultStoragePairs {
-				continue
-			}
 			result.HasDefaultStoragePairs = true
-			result.DefaultStoragePairs = v.Value.(DefaultStoragePairs)
+			result.DefaultStoragePairs.CommitAppend = append(result.DefaultStoragePairs.CommitAppend, v.Value.(DefaultStoragePairs).CommitAppend...)
+			result.DefaultStoragePairs.CompleteMultipart = append(result.DefaultStoragePairs.CompleteMultipart, v.Value.(DefaultStoragePairs).CompleteMultipart...)
+			result.DefaultStoragePairs.Copy = append(result.DefaultStoragePairs.Copy, v.Value.(DefaultStoragePairs).Copy...)
+			result.DefaultStoragePairs.Create = append(result.DefaultStoragePairs.Create, v.Value.(DefaultStoragePairs).Create...)
+			result.DefaultStoragePairs.CreateAppend = append(result.DefaultStoragePairs.CreateAppend, v.Value.(DefaultStoragePairs).CreateAppend...)
+			result.DefaultStoragePairs.CreateMultipart = append(result.DefaultStoragePairs.CreateMultipart, v.Value.(DefaultStoragePairs).CreateMultipart...)
+			result.DefaultStoragePairs.Delete = append(result.DefaultStoragePairs.Delete, v.Value.(DefaultStoragePairs).Delete...)
+			result.DefaultStoragePairs.Fetch = append(result.DefaultStoragePairs.Fetch, v.Value.(DefaultStoragePairs).Fetch...)
+			result.DefaultStoragePairs.List = append(result.DefaultStoragePairs.List, v.Value.(DefaultStoragePairs).List...)
+			result.DefaultStoragePairs.ListMultipart = append(result.DefaultStoragePairs.ListMultipart, v.Value.(DefaultStoragePairs).ListMultipart...)
+			result.DefaultStoragePairs.Metadata = append(result.DefaultStoragePairs.Metadata, v.Value.(DefaultStoragePairs).Metadata...)
+			result.DefaultStoragePairs.Move = append(result.DefaultStoragePairs.Move, v.Value.(DefaultStoragePairs).Move...)
+			result.DefaultStoragePairs.Reach = append(result.DefaultStoragePairs.Reach, v.Value.(DefaultStoragePairs).Reach...)
+			result.DefaultStoragePairs.Read = append(result.DefaultStoragePairs.Read, v.Value.(DefaultStoragePairs).Read...)
+			result.DefaultStoragePairs.Stat = append(result.DefaultStoragePairs.Stat, v.Value.(DefaultStoragePairs).Stat...)
+			result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, v.Value.(DefaultStoragePairs).Write...)
+			result.DefaultStoragePairs.WriteAppend = append(result.DefaultStoragePairs.WriteAppend, v.Value.(DefaultStoragePairs).WriteAppend...)
+			result.DefaultStoragePairs.WriteMultipart = append(result.DefaultStoragePairs.WriteMultipart, v.Value.(DefaultStoragePairs).WriteMultipart...)
 		case "disable_uri_cleaning":
 			if result.HasDisableURICleaning {
 				continue
@@ -683,33 +663,20 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			result.WorkDir = v.Value.(string)
 		// Default pairs
 		case "default_content_type":
-			defaultPairs = true
+			result.HasDefaultStoragePairs = true
 			result.DefaultStoragePairs.Create = append(result.DefaultStoragePairs.Create, pairs.WithContentType(v.Value.(string)))
 			result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, pairs.WithContentType(v.Value.(string)))
 		case "default_storage_class":
-			defaultPairs = true
+			result.HasDefaultStoragePairs = true
 			result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithStorageClass(v.Value.(string)))
 		// Enable features
 		case "enable_loose_pair":
-			if result.HasStorageFeatures {
-				continue
-			}
-			enableFeatures = true
+			result.HasStorageFeatures = true
 			result.StorageFeatures.LoosePair = v.Value.(bool)
 		case "enable_virtual_dir":
-			if result.HasStorageFeatures {
-				continue
-			}
-			enableFeatures = true
+			result.HasStorageFeatures = true
 			result.StorageFeatures.VirtualDir = v.Value.(bool)
 		}
-	}
-
-	if enableFeatures {
-		result.HasStorageFeatures = true
-	}
-	if defaultPairs {
-		result.HasDefaultStoragePairs = true
 	}
 	if !result.HasName {
 		return pairStorageNew{}, services.PairRequiredError{Keys: []string{"name"}}

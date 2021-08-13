@@ -95,19 +95,6 @@ func TestFromString(t *testing.T) {
 			},
 			nil,
 		},
-		//{
-		//	"with feature",
-		//	"tests://abc/tmp/tmp1?enable_loose_pair=true&storage_class=sc",
-		//	[]Pair{
-		//		pairs.WithName("abc"),
-		//		pairs.WithWorkDir("/tmp/tmp1"),
-		//		WithServiceFeatures(ServiceFeatures{
-		//			LoosePair: true,
-		//		}),
-		//		WithStorageClass("sc"),
-		//	},
-		//	nil,
-		//},
 		{
 			"duplicate key, appear in order (finally, first will be picked)",
 			"tests://abc/tmp/tmp1?size=200&name=def&size=300",

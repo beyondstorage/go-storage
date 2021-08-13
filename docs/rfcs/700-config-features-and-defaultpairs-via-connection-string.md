@@ -141,10 +141,10 @@ We can convert the defaultable pairs with prefix `default_` passed in by connect
 
 **Handle conflict**
 
-When parsing pairs in specific operation：
+When parsing pairs in `parsePair*New` or specific operation：
 
 - We should combine default pairs and `pairs from args`, and make sure that `pairs form args` can overwrite default pairs.
-- When using `WithDefautl*Pairs()` and `WithDefaultXxx()` at the same time for initialization, we will pick `Default*Pairs` first, and append pairs that parsed from `WithDefaultXxx()`.
+- When using `WithDefautl*Pairs()` and `WithDefaultXxx()` at the same time for initialization, we will follow the order in which they were passed in to append pairs parsed from `WithDefault*Pairs()` or `WithDefaultXxx()`.
 - The above conflict handling should be generated.
 
 ## Rationale
