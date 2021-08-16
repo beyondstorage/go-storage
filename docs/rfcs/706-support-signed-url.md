@@ -3,7 +3,7 @@
 - RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# GSP: Support Signed URL
+# GSP-706: Support Signed URL
 
 Previous discussion:
 
