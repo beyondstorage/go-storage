@@ -1,9 +1,9 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-08-16
-- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- RFC PR: [beyondstorage/go-storage#706](https://github.com/beyondstorage/go-storage/issues/706)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# GSP-706: Support Signed URL
+# GSP-706: Support HTTP Signer
 
 Previous discussion:
 
@@ -36,7 +36,8 @@ type HttpSigner interface {
 - path: is the path of object.
   - `path` COULD be relative or absolute path.
 - ps: is the arguments for this operation.
-  - `expire` is required. It provides the time period, with type `time.Duration`, for which the generated `signedReq.URL` is valid.
+  - `expire` provides the time period, with type `time.Duration`, for which the generated `signedReq.URL` is valid.
+  - `expire` COULD be set by `types.WithExpire(xxx)`, is 3,600 seconds by default.
 
 **Returns**
 
@@ -64,5 +65,6 @@ This proposal will deprecate `Reacher` interface.
 ## Implementation
 
 - Add new interface and operations in definitions.
+- Update docs in site.
 - Implement integration test.
 - Implement `HttpSigner` for services.
