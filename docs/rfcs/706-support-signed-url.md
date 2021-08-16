@@ -19,7 +19,7 @@ A signed URL is a URL that provides limited permission and time to make a reques
 
 I propose to add the following interface containing operations that support the generation of signed URL for RESTful services:
 
-```toml
+```go
 type HttpSigner interface {
     QuerySignHttp(op, path string, ps ...types.Pair) (signedReq *http.Request, err error)
 }
