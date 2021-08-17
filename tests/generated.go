@@ -98,6 +98,26 @@ func WithDisableURICleaning(v bool) Pair {
 	}
 }
 
+// WithEnableLoosePair will apply enable_loose_pair value to Options.
+//
+// EnableLoosePair enable loose_pair features.
+func WithEnableLoosePair() Pair {
+	return Pair{
+		Key:   "enable_loose_pair",
+		Value: true,
+	}
+}
+
+// WithEnableVirtualDir will apply enable_virtual_dir value to Options.
+//
+// EnableVirtualDir enable virtual_dir features.
+func WithEnableVirtualDir() Pair {
+	return Pair{
+		Key:   "enable_virtual_dir",
+		Value: true,
+	}
+}
+
 // WithServiceFeatures will apply service_features value to Options.
 //
 // ServiceFeatures set service features
@@ -159,6 +179,8 @@ var pairMap = map[string]string{
 	"default_service_pairs": "DefaultServicePairs",
 	"default_storage_pairs": "DefaultStoragePairs",
 	"disable_uri_cleaning":  "bool",
+	"enable_loose_pair":     "bool",
+	"enable_virtual_dir":    "bool",
 	"endpoint":              "string",
 	"expire":                "time.Duration",
 	"http_client_options":   "*httpclient.Options",

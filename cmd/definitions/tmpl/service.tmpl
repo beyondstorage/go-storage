@@ -98,12 +98,21 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 // With{{ $pname }} will apply {{ $v.Name }} value to Options.
 //
 {{ $v.Description }}
+{{- if hasPrefix $v.Name "enable_" }}
+func With{{ $pname }}() Pair {
+        return Pair{
+        Key: "{{ $v.Name }}",
+        Value: true,
+    }
+}
+{{- else }}
 func With{{ $pname }}(v {{ $v.Type }}) Pair {
         return Pair{
         Key: "{{ $v.Name }}",
         Value: v,
     }
 }
+{{- end }}
 {{- end }}
 {{- end }}
 
