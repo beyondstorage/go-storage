@@ -57,10 +57,8 @@ func TestFromString(t *testing.T) {
 		{
 			"stupid, but valid (ignored)",
 			"tests:///?&??&&&",
-			[]Pair{
-				pairs.WithWorkDir("/"),
-			},
 			nil,
+			services.ErrConnectionStringInvalid,
 		},
 		{
 			"value can contain all characters except &",
@@ -116,11 +114,8 @@ func TestFromString(t *testing.T) {
 		{
 			"key without value is ignored (even not registered pair)",
 			"tests://abc/tmp?not_a_pair&&",
-			[]Pair{
-				pairs.WithName("abc"),
-				pairs.WithWorkDir("/tmp"),
-			},
 			nil,
+			services.ErrConnectionStringInvalid,
 		},
 		{
 			"not parsable pair",

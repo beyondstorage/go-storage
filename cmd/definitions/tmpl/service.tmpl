@@ -209,6 +209,11 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
             {{- range $_, $op := $ops }}
             result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, v.Value.({{ $pair.Type }}).{{ $op.Name | toPascal }}...)
             {{- end }}
+            {{- else if eq $pair.Name (print ($pn | toLower) "_features") }}
+            result.Has{{ $pair.Name | toPascal }} = true
+            {{- range $_, $f := $ff }}
+            result.{{ $pn }}Features.{{ $f.Name | toPascal }} = result.{{ $pn }}Features.{{ $f.Name | toPascal }} || v.Value.({{ $pair.Type }}).{{ $f.Name | toPascal }}
+            {{- end }}
             {{- else }}
             if result.Has{{ $pair.Name | toPascal }} {
                 continue
@@ -246,7 +251,7 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         {{- range $_, $pair := $ff }}
         case "enable_{{ $pair.Name }}":
             result.Has{{ $pn }}Features = true
-            result.{{ $pn }}Features.{{ $pair.Name | toPascal }} = v.Value.(bool)
+            result.{{ $pn }}Features.{{ $pair.Name | toPascal }} = result.{{ $pn }}Features.{{ $pair.Name | toPascal }} || v.Value.(bool)
         {{- end }}
         }
     }

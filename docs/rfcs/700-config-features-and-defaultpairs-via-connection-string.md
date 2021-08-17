@@ -41,17 +41,17 @@ I propose to support config features and default pairs in plain string format in
 
 ### Features
 
-The format of features pairs in connection string is:
+The format for setting features in connection string is:
 
-`enable_key=value`
+`enable_key`
 
-- The whole key of the pair SHOULD have the prefix `enable_`.
-- `key` is the pair name defined in `features.toml` and supported in service, and the format SHOULD be exactly the same.
-- `value` SHOULD be `true` or `false`.
+- The whole key SHOULD have the prefix `enable_`.
+- `key` is the feature name defined in `features.toml` and supported in service, and the format SHOULD be exactly the same.
+- No value for the features setting string, or we can assume that the value is always true.
 
 So a valid connection string containing features could be:
 
-- `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&enable_loose_pair=false&enable_virtual_dir=true`
+- `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&enable_loose_pair&enable_virtual_dir`
 
 The connection string above is equivalent to:
 
@@ -61,7 +61,7 @@ store, err := s3.NewStorage(
 	ps.WithName("bucket_name"),
 	ps.WithWorkDir("/prefix"),
 	s3.WithStorageFeatures(s3.StorageFeaturs{
-		LoosePair:  false,
+		LoosePair:  true,
 		VirtualDir: true,
     })
 
@@ -145,6 +145,7 @@ When parsing pairs in `parsePair*New` or specific operation：
 
 - We should combine default pairs and `pairs from args`, and make sure that `pairs form args` can overwrite default pairs.
 - When using `WithDefautl*Pairs()` and `WithDefaultXxx()` at the same time for initialization, we will follow the order in which they were passed in to append pairs parsed from `WithDefault*Pairs()` or `WithDefaultXxx()`.
+- When using `With*Features()` and `WithEnableXxx()` at the same time for initialization, once `true` is set for a feature value, the value will eventually be `true`.
 - The above conflict handling should be generated.
 
 ## Rationale

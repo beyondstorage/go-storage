@@ -268,16 +268,13 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			result.HasHTTPClientOptions = true
 			result.HTTPClientOptions = v.Value.(*httpclient.Options)
 		case "service_features":
-			if result.HasServiceFeatures {
-				continue
-			}
 			result.HasServiceFeatures = true
-			result.ServiceFeatures = v.Value.(ServiceFeatures)
+			result.ServiceFeatures.LoosePair = result.ServiceFeatures.LoosePair || v.Value.(ServiceFeatures).LoosePair
 		// Default pairs
 		// Enable features
 		case "enable_loose_pair":
 			result.HasServiceFeatures = true
-			result.ServiceFeatures.LoosePair = v.Value.(bool)
+			result.ServiceFeatures.LoosePair = result.ServiceFeatures.LoosePair || v.Value.(bool)
 		}
 	}
 	if !result.HasCredential {
@@ -650,11 +647,9 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			result.HasLocation = true
 			result.Location = v.Value.(string)
 		case "storage_features":
-			if result.HasStorageFeatures {
-				continue
-			}
 			result.HasStorageFeatures = true
-			result.StorageFeatures = v.Value.(StorageFeatures)
+			result.StorageFeatures.LoosePair = result.StorageFeatures.LoosePair || v.Value.(StorageFeatures).LoosePair
+			result.StorageFeatures.VirtualDir = result.StorageFeatures.VirtualDir || v.Value.(StorageFeatures).VirtualDir
 		case "work_dir":
 			if result.HasWorkDir {
 				continue
@@ -672,10 +667,10 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 		// Enable features
 		case "enable_loose_pair":
 			result.HasStorageFeatures = true
-			result.StorageFeatures.LoosePair = v.Value.(bool)
+			result.StorageFeatures.LoosePair = result.StorageFeatures.LoosePair || v.Value.(bool)
 		case "enable_virtual_dir":
 			result.HasStorageFeatures = true
-			result.StorageFeatures.VirtualDir = v.Value.(bool)
+			result.StorageFeatures.VirtualDir = result.StorageFeatures.VirtualDir || v.Value.(bool)
 		}
 	}
 	if !result.HasName {

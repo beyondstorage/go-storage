@@ -167,8 +167,12 @@ func parseConnectionString(ConnStr string) (ty string, ps []types.Pair, err erro
 	for _, v := range strings.Split(rest, "&") {
 		opt := strings.SplitN(v, "=", 2)
 		if len(opt) != 2 {
-			// && or &key&, ignore
-			continue
+			if v != "" {
+				opt = append(opt, v, "true")
+			} else {
+				// && , ignore
+				continue
+			}
 		}
 		pair, parseErr := parse(m, opt[0], opt[1])
 		if parseErr != nil {
