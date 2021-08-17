@@ -1,7 +1,7 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-08-16
 - RFC PR: [beyondstorage/go-storage#706](https://github.com/beyondstorage/go-storage/issues/706)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#707](https://github.com/beyondstorage/go-storage/issues/707)
 
 # GSP-706: Support HTTP Signer
 
@@ -11,7 +11,7 @@ Previous discussion:
 
 ## Background
 
-Authentication is the process of proving user's identity to the system. In addition to adding signatures to the `Authorization` header of requests, users can also add signatures to the URL of the resource.
+Authentication is the process of proving user's identity to the system. In addition to add signatures to the `Authorization` header of requests, users can also add signatures to the URL of the resource.
 
 A signed URL is a URL that provides limited permission and time to make a request. Signed URLs contain authentication information in their query string. Using query parameters to authenticate requests is useful when users want to express a request entirely in a URL. A use case scenario for signed URL is that users can grant access to the resource.
 
@@ -21,11 +21,11 @@ I propose to add the following interface containing operations that support the 
 
 ```go
 type HttpSigner interface {
-    QuerySignHttp(op, path string, ps ...types.Pair) (signedReq *http.Request, err error)
+    QuerySignHttp(op, path string, expire time.Duration, ps ...types.Pair) (signedReq *http.Request, err error)
 }
 ```
 
-`HttpSigner` is the interface for `Signer` related operations which support calculate request signature.
+`HttpSigner` is the interface for `Signer` related operations which support calculating request signature.
 
 `QuerySignHttp` returns a "http.Request" with query string parameters containing signature in `URL` to represent the client's request for the specified operation.
 
@@ -35,9 +35,9 @@ type HttpSigner interface {
   - `op` SHOULD be the supported operation by service.
 - path: is the path of object.
   - `path` COULD be relative or absolute path.
+- expire: provides the time period, with type `time.Duration`, for which the generated `signedReq.URL` is valid.
+  - Different services have different valid value ranges for `expire`.
 - ps: is the arguments for this operation.
-  - `expire` provides the time period, with type `time.Duration`, for which the generated `signedReq.URL` is valid.
-  - `expire` COULD be set by `types.WithExpire(xxx)`, is 3,600 seconds by default.
 
 **Returns**
 
@@ -48,7 +48,7 @@ type HttpSigner interface {
 From service side:
 
 - Services SHOULD maintain the supported authorized access operation list and check the validity of `op`.
-- Services SHOULD generate the request's singed URL in `signedReq.URL` with the `expire` duration.
+- Services SHOULD return `http.Request` pointer with signature in the query string of `URL`, which is constructed by specific storage service.
 
 From user side:
 
