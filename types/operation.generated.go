@@ -9,9 +9,12 @@ import (
 
 // Operation names in Appender.
 const (
+	// opAppenderCommitAppend is the operation name for CommitAppend in Appender.
 	opAppenderCommitAppend = "CommitAppend"
+	// opAppenderCreateAppend is the operation name for CreateAppend in Appender.
 	opAppenderCreateAppend = "CreateAppend"
-	opAppenderWriteAppend  = "WriteAppend"
+	// opAppenderWriteAppend is the operation name for WriteAppend in Appender.
+	opAppenderWriteAppend = "WriteAppend"
 )
 
 // Appender is the interface for Append related operations.
@@ -85,10 +88,14 @@ func (s UnimplementedAppender) WriteAppendWithContext(ctx context.Context, o *Ob
 
 // Operation names in Blocker.
 const (
+	// opBlockerCombineBlock is the operation name for CombineBlock in Blocker.
 	opBlockerCombineBlock = "CombineBlock"
-	opBlockerCreateBlock  = "CreateBlock"
-	opBlockerListBlock    = "ListBlock"
-	opBlockerWriteBlock   = "WriteBlock"
+	// opBlockerCreateBlock is the operation name for CreateBlock in Blocker.
+	opBlockerCreateBlock = "CreateBlock"
+	// opBlockerListBlock is the operation name for ListBlock in Blocker.
+	opBlockerListBlock = "ListBlock"
+	// opBlockerWriteBlock is the operation name for WriteBlock in Blocker.
+	opBlockerWriteBlock = "WriteBlock"
 )
 
 // Blocker is the interface for Block related operations.
@@ -174,6 +181,7 @@ func (s UnimplementedBlocker) WriteBlockWithContext(ctx context.Context, o *Obje
 
 // Operation names in Copier.
 const (
+	// opCopierCopy is the operation name for Copy in Copier.
 	opCopierCopy = "Copy"
 )
 
@@ -230,6 +238,7 @@ func (s UnimplementedCopier) CopyWithContext(ctx context.Context, src string, ds
 
 // Operation names in Direr.
 const (
+	// opDirerCreateDir is the operation name for CreateDir in Direr.
 	opDirerCreateDir = "CreateDir"
 )
 
@@ -264,6 +273,7 @@ func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path strin
 
 // Operation names in Fetcher.
 const (
+	// opFetcherFetch is the operation name for Fetch in Fetcher.
 	opFetcherFetch = "Fetch"
 )
 
@@ -308,6 +318,7 @@ func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string,
 
 // Operation names in HTTPSigner.
 const (
+	// opHTTPSignerQuerySignHTTP is the operation name for QuerySignHTTP in HTTPSigner.
 	opHTTPSignerQuerySignHTTP = "QuerySignHTTP"
 )
 
@@ -342,6 +353,7 @@ func (s UnimplementedHTTPSigner) QuerySignHTTPWithContext(ctx context.Context, o
 
 // Operation names in Linker.
 const (
+	// opLinkerCreateLink is the operation name for CreateLink in Linker.
 	opLinkerCreateLink = "CreateLink"
 )
 
@@ -398,6 +410,7 @@ func (s UnimplementedLinker) CreateLinkWithContext(ctx context.Context, path str
 
 // Operation names in Mover.
 const (
+	// opMoverMove is the operation name for Move in Mover.
 	opMoverMove = "Move"
 )
 
@@ -454,10 +467,14 @@ func (s UnimplementedMover) MoveWithContext(ctx context.Context, src string, dst
 
 // Operation names in Multiparter.
 const (
+	// opMultiparterCompleteMultipart is the operation name for CompleteMultipart in Multiparter.
 	opMultiparterCompleteMultipart = "CompleteMultipart"
-	opMultiparterCreateMultipart   = "CreateMultipart"
-	opMultiparterListMultipart     = "ListMultipart"
-	opMultiparterWriteMultipart    = "WriteMultipart"
+	// opMultiparterCreateMultipart is the operation name for CreateMultipart in Multiparter.
+	opMultiparterCreateMultipart = "CreateMultipart"
+	// opMultiparterListMultipart is the operation name for ListMultipart in Multiparter.
+	opMultiparterListMultipart = "ListMultipart"
+	// opMultiparterWriteMultipart is the operation name for WriteMultipart in Multiparter.
+	opMultiparterWriteMultipart = "WriteMultipart"
 )
 
 // Multiparter is the interface for Multipart related operations.
@@ -541,8 +558,10 @@ func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context,
 
 // Operation names in Pager.
 const (
+	// opPagerCreatePage is the operation name for CreatePage in Pager.
 	opPagerCreatePage = "CreatePage"
-	opPagerWritePage  = "WritePage"
+	// opPagerWritePage is the operation name for WritePage in Pager.
+	opPagerWritePage = "WritePage"
 )
 
 // Pager is the interface for Page related operations which support random write.
@@ -598,6 +617,7 @@ func (s UnimplementedPager) WritePageWithContext(ctx context.Context, o *Object,
 
 // Operation names in Reacher.
 const (
+	// opReacherReach is the operation name for Reach in Reacher.
 	opReacherReach = "Reach"
 )
 
@@ -632,10 +652,14 @@ func (s UnimplementedReacher) ReachWithContext(ctx context.Context, path string,
 
 // Operation names in Servicer.
 const (
+	// opServicerCreate is the operation name for Create in Servicer.
 	opServicerCreate = "Create"
+	// opServicerDelete is the operation name for Delete in Servicer.
 	opServicerDelete = "Delete"
-	opServicerGet    = "Get"
-	opServicerList   = "List"
+	// opServicerGet is the operation name for Get in Servicer.
+	opServicerGet = "Get"
+	// opServicerList is the operation name for List in Servicer.
+	opServicerList = "List"
 )
 
 // Servicer can maintain multipart storage services.
@@ -712,13 +736,20 @@ func (s UnimplementedServicer) ListWithContext(ctx context.Context, pairs ...Pai
 
 // Operation names in Storager.
 const (
-	opStoragerCreate   = "Create"
-	opStoragerDelete   = "Delete"
-	opStoragerList     = "List"
+	// opStoragerCreate is the operation name for Create in Storager.
+	opStoragerCreate = "Create"
+	// opStoragerDelete is the operation name for Delete in Storager.
+	opStoragerDelete = "Delete"
+	// opStoragerList is the operation name for List in Storager.
+	opStoragerList = "List"
+	// opStoragerMetadata is the operation name for Metadata in Storager.
 	opStoragerMetadata = "Metadata"
-	opStoragerRead     = "Read"
-	opStoragerStat     = "Stat"
-	opStoragerWrite    = "Write"
+	// opStoragerRead is the operation name for Read in Storager.
+	opStoragerRead = "Read"
+	// opStoragerStat is the operation name for Stat in Storager.
+	opStoragerStat = "Stat"
+	// opStoragerWrite is the operation name for Write in Storager.
+	opStoragerWrite = "Write"
 )
 
 // Storager is the interface for storage service.
