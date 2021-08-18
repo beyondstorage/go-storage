@@ -9,10 +9,10 @@ import (
 
 {{- range $_, $i := .Interfaces }}
 // Operation names in {{ $i.DisplayName }}.
-const (
+var (
 {{- range $_, $op := $i.Ops }}
-    // op{{ $i.DisplayName }}{{ $op.Name | toPascal }} is the operation name for {{ $op.Name | toPascal }} in {{ $i.DisplayName }}.
-    op{{ $i.DisplayName }}{{ $op.Name | toPascal }} = "{{ $op.Name | toPascal }}"
+    // Op{{ $i.DisplayName }}{{ $op.Name | toPascal }} is the operation name for {{ $op.Name | toPascal }} in {{ $i.DisplayName }}.
+    Op{{ $i.DisplayName }}{{ $op.Name | toPascal }} = "{{ $op.Name | toPascal }}"
 {{- end }}
 )
 {{ $i.Description }}
