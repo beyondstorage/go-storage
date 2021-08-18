@@ -3,6 +3,15 @@ package types
 import (
 	"context"
 	"io"
+	"net/http"
+	"time"
+)
+
+// Operation names in Appender.
+const (
+	opAppenderCommitAppend = "CommitAppend"
+	opAppenderCreateAppend = "CreateAppend"
+	opAppenderWriteAppend  = "WriteAppend"
 )
 
 // Appender is the interface for Append related operations.
@@ -73,6 +82,14 @@ func (s UnimplementedAppender) WriteAppendWithContext(ctx context.Context, o *Ob
 	err = NewOperationNotImplementedError("write_append")
 	return
 }
+
+// Operation names in Blocker.
+const (
+	opBlockerCombineBlock = "CombineBlock"
+	opBlockerCreateBlock  = "CreateBlock"
+	opBlockerListBlock    = "ListBlock"
+	opBlockerWriteBlock   = "WriteBlock"
+)
 
 // Blocker is the interface for Block related operations.
 type Blocker interface {
@@ -155,6 +172,11 @@ func (s UnimplementedBlocker) WriteBlockWithContext(ctx context.Context, o *Obje
 	return
 }
 
+// Operation names in Copier.
+const (
+	opCopierCopy = "Copy"
+)
+
 // Copier is the interface for Copy.
 type Copier interface {
 
@@ -206,6 +228,11 @@ func (s UnimplementedCopier) CopyWithContext(ctx context.Context, src string, ds
 	return
 }
 
+// Operation names in Direr.
+const (
+	opDirerCreateDir = "CreateDir"
+)
+
 // Direr is the interface for Directory.
 type Direr interface {
 
@@ -234,6 +261,11 @@ func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path strin
 	err = NewOperationNotImplementedError("create_dir")
 	return
 }
+
+// Operation names in Fetcher.
+const (
+	opFetcherFetch = "Fetch"
+)
 
 // Fetcher is the interface for Fetch.
 type Fetcher interface {
@@ -273,6 +305,45 @@ func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string,
 	err = NewOperationNotImplementedError("fetch")
 	return
 }
+
+// Operation names in HTTPSigner.
+const (
+	opHTTPSignerQuerySignHTTP = "QuerySignHTTP"
+)
+
+// HTTPSigner is the interface for Signer.
+type HTTPSigner interface {
+
+	// QuerySignHTTP will return `*http.Request` with query string parameters containing signature in `URL` to represent the client's request.
+	QuerySignHTTP(op string, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPWithContext will return `*http.Request` with query string parameters containing signature in `URL` to represent the client's request.
+	QuerySignHTTPWithContext(ctx context.Context, op string, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	mustEmbedUnimplementedHTTPSigner()
+}
+
+// UnimplementedHTTPSigner must be embedded to have forward compatible implementations.
+type UnimplementedHTTPSigner struct{}
+
+func (s UnimplementedHTTPSigner) mustEmbedUnimplementedHTTPSigner() {}
+
+func (s UnimplementedHTTPSigner) String() string {
+	return "UnimplementedHTTPSigner"
+}
+
+func (s UnimplementedHTTPSigner) QuerySignHTTP(op string, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http")
+	return
+}
+func (s UnimplementedHTTPSigner) QuerySignHTTPWithContext(ctx context.Context, op string, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http")
+	return
+}
+
+// Operation names in Linker.
+const (
+	opLinkerCreateLink = "CreateLink"
+)
 
 // Linker is the interface for link
 type Linker interface {
@@ -325,6 +396,11 @@ func (s UnimplementedLinker) CreateLinkWithContext(ctx context.Context, path str
 	return
 }
 
+// Operation names in Mover.
+const (
+	opMoverMove = "Move"
+)
+
 // Mover is the interface for Move.
 type Mover interface {
 
@@ -375,6 +451,14 @@ func (s UnimplementedMover) MoveWithContext(ctx context.Context, src string, dst
 	err = NewOperationNotImplementedError("move")
 	return
 }
+
+// Operation names in Multiparter.
+const (
+	opMultiparterCompleteMultipart = "CompleteMultipart"
+	opMultiparterCreateMultipart   = "CreateMultipart"
+	opMultiparterListMultipart     = "ListMultipart"
+	opMultiparterWriteMultipart    = "WriteMultipart"
+)
 
 // Multiparter is the interface for Multipart related operations.
 type Multiparter interface {
@@ -455,6 +539,12 @@ func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context,
 	return
 }
 
+// Operation names in Pager.
+const (
+	opPagerCreatePage = "CreatePage"
+	opPagerWritePage  = "WritePage"
+)
+
 // Pager is the interface for Page related operations which support random write.
 type Pager interface {
 
@@ -506,6 +596,11 @@ func (s UnimplementedPager) WritePageWithContext(ctx context.Context, o *Object,
 	return
 }
 
+// Operation names in Reacher.
+const (
+	opReacherReach = "Reach"
+)
+
 // Reacher is the interface for Reach.
 type Reacher interface {
 
@@ -534,6 +629,14 @@ func (s UnimplementedReacher) ReachWithContext(ctx context.Context, path string,
 	err = NewOperationNotImplementedError("reach")
 	return
 }
+
+// Operation names in Servicer.
+const (
+	opServicerCreate = "Create"
+	opServicerDelete = "Delete"
+	opServicerGet    = "Get"
+	opServicerList   = "List"
+)
 
 // Servicer can maintain multipart storage services.
 type Servicer interface {
@@ -606,6 +709,17 @@ func (s UnimplementedServicer) ListWithContext(ctx context.Context, pairs ...Pai
 	err = NewOperationNotImplementedError("list")
 	return
 }
+
+// Operation names in Storager.
+const (
+	opStoragerCreate   = "Create"
+	opStoragerDelete   = "Delete"
+	opStoragerList     = "List"
+	opStoragerMetadata = "Metadata"
+	opStoragerRead     = "Read"
+	opStoragerStat     = "Stat"
+	opStoragerWrite    = "Write"
+)
 
 // Storager is the interface for storage service.
 type Storager interface {

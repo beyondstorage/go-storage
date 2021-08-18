@@ -3,9 +3,17 @@ package types
 import (
     "context"
     "io"
+    "net/http"
+    "time"
 )
 
 {{- range $_, $i := .Interfaces }}
+// Operation names in {{ $i.DisplayName }}.
+const (
+{{ range $_, $op := $i.Ops }}
+    op{{ $i.DisplayName }}{{ $op.Name | toPascal }} = "{{ $op.Name | toPascal }}"
+{{- end }}
+)
 {{ $i.Description }}
 type {{ $i.DisplayName }} interface {
     {{- if or (eq $i.Name "servicer") (eq $i.Name "storager")}}
