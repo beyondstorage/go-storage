@@ -514,6 +514,16 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 		}
 
 		ns.Features = append(ns.Features, f)
+
+		// Generate feature pairs.
+		name := fmt.Sprintf("enable_%s", featureName)
+		featurePair := &Pair{
+			Name:        name,
+			ptype:       "bool",
+			Global:      false,
+			Description: f.Description,
+		}
+		srv.pairs[featurePair.Name] = featurePair
 	}
 
 	// Handle New function
