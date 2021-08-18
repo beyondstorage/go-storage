@@ -9,12 +9,17 @@ import (
 
 {{- range $_, $i := .Interfaces }}
 // Operation names in {{ $i.DisplayName }}.
-var (
+const (
 {{- range $_, $op := $i.Ops }}
-    // Op{{ $i.DisplayName }}{{ $op.Name | toPascal }} is the operation name for {{ $op.Name | toPascal }} in {{ $i.DisplayName }}.
-    Op{{ $i.DisplayName }}{{ $op.Name | toPascal }} = "{{ $op.Name | toPascal }}"
+    // Op{{ $i.DisplayName }}{{ $op.Name | toPascal }} is the operation name for {{ $op.Name }} in {{ $i.Name }}.
+    Op{{ $i.DisplayName }}{{ $op.Name | toPascal }} = "{{ $op.Name }}"
 {{- end }}
 )
+
+{{- range $_, $op := $i.Ops }}
+var _ = Op{{ $i.DisplayName }}{{ $op.Name | toPascal }}
+{{- end }}
+
 {{ $i.Description }}
 type {{ $i.DisplayName }} interface {
     {{- if or (eq $i.Name "servicer") (eq $i.Name "storager")}}

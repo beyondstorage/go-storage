@@ -8,14 +8,18 @@ import (
 )
 
 // Operation names in Appender.
-var (
-	// OpAppenderCommitAppend is the operation name for CommitAppend in Appender.
-	OpAppenderCommitAppend = "CommitAppend"
-	// OpAppenderCreateAppend is the operation name for CreateAppend in Appender.
-	OpAppenderCreateAppend = "CreateAppend"
-	// OpAppenderWriteAppend is the operation name for WriteAppend in Appender.
-	OpAppenderWriteAppend = "WriteAppend"
+const (
+	// OpAppenderCommitAppend is the operation name for commit_append in appender.
+	OpAppenderCommitAppend = "commit_append"
+	// OpAppenderCreateAppend is the operation name for create_append in appender.
+	OpAppenderCreateAppend = "create_append"
+	// OpAppenderWriteAppend is the operation name for write_append in appender.
+	OpAppenderWriteAppend = "write_append"
 )
+
+var _ = OpAppenderCommitAppend
+var _ = OpAppenderCreateAppend
+var _ = OpAppenderWriteAppend
 
 // Appender is the interface for Append related operations.
 type Appender interface {
@@ -87,16 +91,21 @@ func (s UnimplementedAppender) WriteAppendWithContext(ctx context.Context, o *Ob
 }
 
 // Operation names in Blocker.
-var (
-	// OpBlockerCombineBlock is the operation name for CombineBlock in Blocker.
-	OpBlockerCombineBlock = "CombineBlock"
-	// OpBlockerCreateBlock is the operation name for CreateBlock in Blocker.
-	OpBlockerCreateBlock = "CreateBlock"
-	// OpBlockerListBlock is the operation name for ListBlock in Blocker.
-	OpBlockerListBlock = "ListBlock"
-	// OpBlockerWriteBlock is the operation name for WriteBlock in Blocker.
-	OpBlockerWriteBlock = "WriteBlock"
+const (
+	// OpBlockerCombineBlock is the operation name for combine_block in blocker.
+	OpBlockerCombineBlock = "combine_block"
+	// OpBlockerCreateBlock is the operation name for create_block in blocker.
+	OpBlockerCreateBlock = "create_block"
+	// OpBlockerListBlock is the operation name for list_block in blocker.
+	OpBlockerListBlock = "list_block"
+	// OpBlockerWriteBlock is the operation name for write_block in blocker.
+	OpBlockerWriteBlock = "write_block"
 )
+
+var _ = OpBlockerCombineBlock
+var _ = OpBlockerCreateBlock
+var _ = OpBlockerListBlock
+var _ = OpBlockerWriteBlock
 
 // Blocker is the interface for Block related operations.
 type Blocker interface {
@@ -180,10 +189,12 @@ func (s UnimplementedBlocker) WriteBlockWithContext(ctx context.Context, o *Obje
 }
 
 // Operation names in Copier.
-var (
-	// OpCopierCopy is the operation name for Copy in Copier.
-	OpCopierCopy = "Copy"
+const (
+	// OpCopierCopy is the operation name for copy in copier.
+	OpCopierCopy = "copy"
 )
+
+var _ = OpCopierCopy
 
 // Copier is the interface for Copy.
 type Copier interface {
@@ -237,10 +248,12 @@ func (s UnimplementedCopier) CopyWithContext(ctx context.Context, src string, ds
 }
 
 // Operation names in Direr.
-var (
-	// OpDirerCreateDir is the operation name for CreateDir in Direr.
-	OpDirerCreateDir = "CreateDir"
+const (
+	// OpDirerCreateDir is the operation name for create_dir in direr.
+	OpDirerCreateDir = "create_dir"
 )
+
+var _ = OpDirerCreateDir
 
 // Direr is the interface for Directory.
 type Direr interface {
@@ -272,10 +285,12 @@ func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path strin
 }
 
 // Operation names in Fetcher.
-var (
-	// OpFetcherFetch is the operation name for Fetch in Fetcher.
-	OpFetcherFetch = "Fetch"
+const (
+	// OpFetcherFetch is the operation name for fetch in fetcher.
+	OpFetcherFetch = "fetch"
 )
+
+var _ = OpFetcherFetch
 
 // Fetcher is the interface for Fetch.
 type Fetcher interface {
@@ -317,10 +332,12 @@ func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string,
 }
 
 // Operation names in HTTPSigner.
-var (
-	// OpHTTPSignerQuerySignHTTP is the operation name for QuerySignHTTP in HTTPSigner.
-	OpHTTPSignerQuerySignHTTP = "QuerySignHTTP"
+const (
+	// OpHTTPSignerQuerySignHTTP is the operation name for query_sign_http in httpSigner.
+	OpHTTPSignerQuerySignHTTP = "query_sign_http"
 )
+
+var _ = OpHTTPSignerQuerySignHTTP
 
 // HTTPSigner is the interface for Signer.
 type HTTPSigner interface {
@@ -352,10 +369,12 @@ func (s UnimplementedHTTPSigner) QuerySignHTTPWithContext(ctx context.Context, o
 }
 
 // Operation names in Linker.
-var (
-	// OpLinkerCreateLink is the operation name for CreateLink in Linker.
-	OpLinkerCreateLink = "CreateLink"
+const (
+	// OpLinkerCreateLink is the operation name for create_link in linker.
+	OpLinkerCreateLink = "create_link"
 )
+
+var _ = OpLinkerCreateLink
 
 // Linker is the interface for link
 type Linker interface {
@@ -409,10 +428,12 @@ func (s UnimplementedLinker) CreateLinkWithContext(ctx context.Context, path str
 }
 
 // Operation names in Mover.
-var (
-	// OpMoverMove is the operation name for Move in Mover.
-	OpMoverMove = "Move"
+const (
+	// OpMoverMove is the operation name for move in mover.
+	OpMoverMove = "move"
 )
+
+var _ = OpMoverMove
 
 // Mover is the interface for Move.
 type Mover interface {
@@ -466,16 +487,21 @@ func (s UnimplementedMover) MoveWithContext(ctx context.Context, src string, dst
 }
 
 // Operation names in Multiparter.
-var (
-	// OpMultiparterCompleteMultipart is the operation name for CompleteMultipart in Multiparter.
-	OpMultiparterCompleteMultipart = "CompleteMultipart"
-	// OpMultiparterCreateMultipart is the operation name for CreateMultipart in Multiparter.
-	OpMultiparterCreateMultipart = "CreateMultipart"
-	// OpMultiparterListMultipart is the operation name for ListMultipart in Multiparter.
-	OpMultiparterListMultipart = "ListMultipart"
-	// OpMultiparterWriteMultipart is the operation name for WriteMultipart in Multiparter.
-	OpMultiparterWriteMultipart = "WriteMultipart"
+const (
+	// OpMultiparterCompleteMultipart is the operation name for complete_multipart in multiparter.
+	OpMultiparterCompleteMultipart = "complete_multipart"
+	// OpMultiparterCreateMultipart is the operation name for create_multipart in multiparter.
+	OpMultiparterCreateMultipart = "create_multipart"
+	// OpMultiparterListMultipart is the operation name for list_multipart in multiparter.
+	OpMultiparterListMultipart = "list_multipart"
+	// OpMultiparterWriteMultipart is the operation name for write_multipart in multiparter.
+	OpMultiparterWriteMultipart = "write_multipart"
 )
+
+var _ = OpMultiparterCompleteMultipart
+var _ = OpMultiparterCreateMultipart
+var _ = OpMultiparterListMultipart
+var _ = OpMultiparterWriteMultipart
 
 // Multiparter is the interface for Multipart related operations.
 type Multiparter interface {
@@ -557,12 +583,15 @@ func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context,
 }
 
 // Operation names in Pager.
-var (
-	// OpPagerCreatePage is the operation name for CreatePage in Pager.
-	OpPagerCreatePage = "CreatePage"
-	// OpPagerWritePage is the operation name for WritePage in Pager.
-	OpPagerWritePage = "WritePage"
+const (
+	// OpPagerCreatePage is the operation name for create_page in pager.
+	OpPagerCreatePage = "create_page"
+	// OpPagerWritePage is the operation name for write_page in pager.
+	OpPagerWritePage = "write_page"
 )
+
+var _ = OpPagerCreatePage
+var _ = OpPagerWritePage
 
 // Pager is the interface for Page related operations which support random write.
 type Pager interface {
@@ -616,10 +645,12 @@ func (s UnimplementedPager) WritePageWithContext(ctx context.Context, o *Object,
 }
 
 // Operation names in Reacher.
-var (
-	// OpReacherReach is the operation name for Reach in Reacher.
-	OpReacherReach = "Reach"
+const (
+	// OpReacherReach is the operation name for reach in reacher.
+	OpReacherReach = "reach"
 )
+
+var _ = OpReacherReach
 
 // Reacher is the interface for Reach.
 type Reacher interface {
@@ -651,16 +682,21 @@ func (s UnimplementedReacher) ReachWithContext(ctx context.Context, path string,
 }
 
 // Operation names in Servicer.
-var (
-	// OpServicerCreate is the operation name for Create in Servicer.
-	OpServicerCreate = "Create"
-	// OpServicerDelete is the operation name for Delete in Servicer.
-	OpServicerDelete = "Delete"
-	// OpServicerGet is the operation name for Get in Servicer.
-	OpServicerGet = "Get"
-	// OpServicerList is the operation name for List in Servicer.
-	OpServicerList = "List"
+const (
+	// OpServicerCreate is the operation name for create in servicer.
+	OpServicerCreate = "create"
+	// OpServicerDelete is the operation name for delete in servicer.
+	OpServicerDelete = "delete"
+	// OpServicerGet is the operation name for get in servicer.
+	OpServicerGet = "get"
+	// OpServicerList is the operation name for list in servicer.
+	OpServicerList = "list"
 )
+
+var _ = OpServicerCreate
+var _ = OpServicerDelete
+var _ = OpServicerGet
+var _ = OpServicerList
 
 // Servicer can maintain multipart storage services.
 type Servicer interface {
@@ -735,22 +771,30 @@ func (s UnimplementedServicer) ListWithContext(ctx context.Context, pairs ...Pai
 }
 
 // Operation names in Storager.
-var (
-	// OpStoragerCreate is the operation name for Create in Storager.
-	OpStoragerCreate = "Create"
-	// OpStoragerDelete is the operation name for Delete in Storager.
-	OpStoragerDelete = "Delete"
-	// OpStoragerList is the operation name for List in Storager.
-	OpStoragerList = "List"
-	// OpStoragerMetadata is the operation name for Metadata in Storager.
-	OpStoragerMetadata = "Metadata"
-	// OpStoragerRead is the operation name for Read in Storager.
-	OpStoragerRead = "Read"
-	// OpStoragerStat is the operation name for Stat in Storager.
-	OpStoragerStat = "Stat"
-	// OpStoragerWrite is the operation name for Write in Storager.
-	OpStoragerWrite = "Write"
+const (
+	// OpStoragerCreate is the operation name for create in storager.
+	OpStoragerCreate = "create"
+	// OpStoragerDelete is the operation name for delete in storager.
+	OpStoragerDelete = "delete"
+	// OpStoragerList is the operation name for list in storager.
+	OpStoragerList = "list"
+	// OpStoragerMetadata is the operation name for metadata in storager.
+	OpStoragerMetadata = "metadata"
+	// OpStoragerRead is the operation name for read in storager.
+	OpStoragerRead = "read"
+	// OpStoragerStat is the operation name for stat in storager.
+	OpStoragerStat = "stat"
+	// OpStoragerWrite is the operation name for write in storager.
+	OpStoragerWrite = "write"
 )
+
+var _ = OpStoragerCreate
+var _ = OpStoragerDelete
+var _ = OpStoragerList
+var _ = OpStoragerMetadata
+var _ = OpStoragerRead
+var _ = OpStoragerStat
+var _ = OpStoragerWrite
 
 // Storager is the interface for storage service.
 type Storager interface {
