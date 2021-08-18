@@ -514,6 +514,16 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 		}
 
 		ns.Features = append(ns.Features, f)
+
+		// Generate feature pairs.
+		name := fmt.Sprintf("enable_%s", featureName)
+		featurePair := &Pair{
+			Name:        name,
+			ptype:       "bool",
+			Global:      false,
+			Description: f.Description,
+		}
+		srv.pairs[featurePair.Name] = featurePair
 	}
 
 	// Handle New function
@@ -596,7 +606,6 @@ func (d *Data) FormatService(s specs.Service) *Service {
 	}
 
 	for _, v := range s.Namespaces {
-		addFeaturePairs(srv.pairs, v)
 		ns := d.FormatNamespace(srv, v)
 
 		srv.Namespaces = append(srv.Namespaces, ns)
@@ -659,18 +668,6 @@ func mergePairs(global, service map[string]*Pair) map[string]*Pair {
 		ans[k] = v
 	}
 	return ans
-}
-
-func addFeaturePairs(pairs map[string]*Pair, ns specs.Namespace) {
-	for _, feature := range ns.Features {
-		featurePair := &Pair{
-			Name:        "enable_" + feature,
-			ptype:       "bool",
-			Global:      false,
-			Description: formatDescription(templateutils.ToPascal("enable_"+feature), "enable "+feature+" features."),
-		}
-		pairs[featurePair.Name] = featurePair
-	}
 }
 
 func mergeInfos(a, b []*Info) []*Info {
