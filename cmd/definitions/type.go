@@ -74,13 +74,30 @@ func (s *Service) Pairs() []*Pair {
 
 // Namespace contains all info about a namespace
 type Namespace struct {
-	Name       string
-	Features   []*Feature
-	New        *Function
-	Funcs      []*Function
-	Interfaces []*Interface
+	Name        string
+	Features    []*Feature
+	New         *Function
+	Funcs       []*Function
+	Interfaces  []*Interface
+	defaultable map[string]*Pair
 
 	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
+}
+
+// Defaultable returns sorted defaultable pairs.
+func (n *Namespace) Defaultable() []*Pair {
+	keys := make([]string, 0, len(n.defaultable))
+
+	for k := range n.defaultable {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	ps := make([]*Pair, 0, len(n.defaultable))
+	for _, v := range keys {
+		ps = append(ps, n.defaultable[v])
+	}
+	return ps
 }
 
 // Sort will sort the namespace
@@ -566,6 +583,24 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 		}
 	}
 
+	// Handle defaultable pairs.
+	ns.defaultable = make(map[string]*Pair)
+	for _, defaultablePairName := range n.Defaultable {
+		pair, ok := srv.pairs[defaultablePairName]
+		if !ok {
+			log.Fatalf("invalid defaultable pair: %s", defaultablePairName)
+		}
+		name := fmt.Sprintf("default_%s", defaultablePairName)
+		defaultPair := &Pair{
+			Name:        name,
+			ptype:       pair.ptype,
+			Global:      false,
+			Description: pair.Description,
+		}
+		srv.pairs[name] = defaultPair
+		ns.defaultable[name] = defaultPair
+	}
+
 	d.ValidateNamespace(srv, ns)
 	return ns
 }
@@ -591,6 +626,35 @@ func (d *Data) ValidateNamespace(srv *Service, n *Namespace) {
 				continue
 			}
 			log.Fatalf("Operation [%s] requires Pair [%s] support, please add virtual implementation for this pair.", v.Name, ps)
+		}
+	}
+
+	// Check if defaultable pairs are included in functions pairs.
+	for defaultablePairName := range n.defaultable {
+		isValidPair := false
+		for _, op := range n.Funcs {
+			if !isValidPair {
+				for _, opPair := range op.Required {
+					tmpPairName := fmt.Sprintf("default_%s", opPair.Name)
+					if tmpPairName == defaultablePairName {
+						isValidPair = true
+						break
+					}
+				}
+			}
+			if !isValidPair {
+				for _, opPair := range op.Optional {
+					tmpPairName := fmt.Sprintf("default_%s", opPair.Name)
+					if tmpPairName == defaultablePairName {
+						isValidPair = true
+						break
+					}
+				}
+			}
+		}
+
+		if !isValidPair {
+			log.Fatalf("invalid defaultable pair %s in %s", defaultablePairName, n.Name)
 		}
 	}
 }

@@ -60,10 +60,11 @@ type tomlOp struct {
 }
 
 type tomlNamespace struct {
-	Features  []string          `toml:"features"`
-	Implement []string          `toml:"implement"`
-	New       tomlOp            `toml:"new"`
-	Op        map[string]tomlOp `toml:"op"`
+	Features    []string          `toml:"features"`
+	Implement   []string          `toml:"implement"`
+	Defaultable []string          `toml:"defaultable"`
+	New         tomlOp            `toml:"new"`
+	Op          map[string]tomlOp `toml:"op"`
 }
 
 type tomlService struct {
@@ -263,9 +264,10 @@ func parseService(filePath string) Service {
 	// Parse namespace.
 	for name, v := range ts.Namespace {
 		n := Namespace{
-			Name:      name,
-			Implement: v.Implement,
-			Features:  v.Features,
+			Name:        name,
+			Implement:   v.Implement,
+			Features:    v.Features,
+			Defaultable: v.Defaultable,
 			New: New{
 				Required: v.New.Required,
 				Optional: v.New.Optional,
