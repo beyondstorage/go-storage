@@ -74,13 +74,29 @@ func (s *Service) Pairs() []*Pair {
 
 // Namespace contains all info about a namespace
 type Namespace struct {
-	Name       string
-	Features   []*Feature
-	New        *Function
-	Funcs      []*Function
-	Interfaces []*Interface
+	Name        string
+	Features    []*Feature
+	New         *Function
+	Funcs       []*Function
+	Interfaces  []*Interface
+	defaultable map[string]*Pair
 
 	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
+}
+
+// Defaultable returns sorted defaultable pairs.
+func (n *Namespace) Defaultable() []*Pair {
+	ps := make([]*Pair, 0, len(n.defaultable))
+	for _, v := range n.defaultable {
+		ps = append(ps, v)
+	}
+
+	sort.Slice(ps, func(i, j int) bool {
+		x := ps
+		return x[i].Name < x[j].Name
+	})
+
+	return ps
 }
 
 // Sort will sort the namespace
@@ -564,6 +580,24 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 		if _, ok := implemented[x]; ok {
 			fn.Implemented = true
 		}
+	}
+
+	// Handle defaultable pairs.
+	ns.defaultable = make(map[string]*Pair)
+	for _, defaultablePairName := range n.Defaultable {
+		pair, ok := srv.pairs[defaultablePairName]
+		if !ok {
+			log.Fatalf("invalid defaultable pair: %s", defaultablePairName)
+		}
+		name := fmt.Sprintf("default_%s", defaultablePairName)
+		defaultPair := &Pair{
+			Name:        name,
+			ptype:       pair.ptype,
+			Global:      false,
+			Description: pair.Description,
+		}
+		srv.pairs[name] = defaultPair
+		ns.defaultable[name] = defaultPair
 	}
 
 	d.ValidateNamespace(srv, ns)

@@ -70,12 +70,32 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 	s.SetSystemMetadata(sm)
 }
 
+// WithDefaultContentType will apply default_content_type value to Options.
+//
+// ContentType
+func WithDefaultContentType(v string) Pair {
+	return Pair{
+		Key:   "default_content_type",
+		Value: v,
+	}
+}
+
 // WithDefaultServicePairs will apply default_service_pairs value to Options.
 //
 // DefaultServicePairs set default pairs for service actions
 func WithDefaultServicePairs(v DefaultServicePairs) Pair {
 	return Pair{
 		Key:   "default_service_pairs",
+		Value: v,
+	}
+}
+
+// WithDefaultStorageClass will apply default_storage_class value to Options.
+//
+// StorageClass
+func WithDefaultStorageClass(v string) Pair {
+	return Pair{
+		Key:   "default_storage_class",
 		Value: v,
 	}
 }
@@ -187,7 +207,9 @@ var pairMap = map[string]string{
 	"context":               "context.Context",
 	"continuation_token":    "string",
 	"credential":            "string",
+	"default_content_type":  "string",
 	"default_service_pairs": "DefaultServicePairs",
+	"default_storage_class": "string",
 	"default_storage_pairs": "DefaultStoragePairs",
 	"disable_uri_cleaning":  "bool",
 	"enable_loose_pair":     "bool",
