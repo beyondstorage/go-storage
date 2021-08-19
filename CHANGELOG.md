@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.5.0] - 2021-08-19
+
+### Added
+
+- tests: Implement bench for List (#687)
+- ci: Add golangci-lint (#690)
+- docs/rfcs: GSP-700 Config Features and DefaultPairs via Connetion String (#700)
+- docs/rfcs: GSP-706 Support HTTP Signer (#706)
+- feat: Generate feature pairs (#708)
+- definitions: Implement GSP-706 Support HTTP Signer (#709)
+- feat: Generate default pairs (#710)
+
+### Changed
+
+- docs: Update go-storage docs link (#696)
+- docs: Update links to matrix (#701)
+- docs: Update readme about services support (#705)
+
+### Fixed
+
+- *: Fix ineffectual assignments (#691)
+- definitions: Fixed a description error in CreateLink (#698)
+
 ## [v4.4.0] - 2021-07-22
 
 ### Added
@@ -606,7 +629,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.4.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.5.0...HEAD
+[v4.5.0]: https://github.com/beyondstorage/go-storage/compare/v4.4.0...v4.5.0
 [v4.4.0]: https://github.com/beyondstorage/go-storage/compare/v4.3.2...v4.4.0
 [v4.3.2]: https://github.com/beyondstorage/go-storage/compare/v4.3.1...v4.3.2
 [v4.3.1]: https://github.com/beyondstorage/go-storage/compare/v4.3.0...v4.3.1
