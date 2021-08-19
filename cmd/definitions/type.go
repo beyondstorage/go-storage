@@ -86,17 +86,16 @@ type Namespace struct {
 
 // Defaultable returns sorted defaultable pairs.
 func (n *Namespace) Defaultable() []*Pair {
-	keys := make([]string, 0, len(n.defaultable))
-
-	for k := range n.defaultable {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
 	ps := make([]*Pair, 0, len(n.defaultable))
-	for _, v := range keys {
-		ps = append(ps, n.defaultable[v])
+	for _, v := range n.defaultable {
+		ps = append(ps, v)
 	}
+
+	sort.Slice(ps, func(i, j int) bool {
+		x := ps
+		return x[i].Name < x[j].Name
+	})
+
 	return ps
 }
 
@@ -626,35 +625,6 @@ func (d *Data) ValidateNamespace(srv *Service, n *Namespace) {
 				continue
 			}
 			log.Fatalf("Operation [%s] requires Pair [%s] support, please add virtual implementation for this pair.", v.Name, ps)
-		}
-	}
-
-	// Check if defaultable pairs are included in functions pairs.
-	for defaultablePairName := range n.defaultable {
-		isValidPair := false
-		for _, op := range n.Funcs {
-			if !isValidPair {
-				for _, opPair := range op.Required {
-					tmpPairName := fmt.Sprintf("default_%s", opPair.Name)
-					if tmpPairName == defaultablePairName {
-						isValidPair = true
-						break
-					}
-				}
-			}
-			if !isValidPair {
-				for _, opPair := range op.Optional {
-					tmpPairName := fmt.Sprintf("default_%s", opPair.Name)
-					if tmpPairName == defaultablePairName {
-						isValidPair = true
-						break
-					}
-				}
-			}
-		}
-
-		if !isValidPair {
-			log.Fatalf("invalid defaultable pair %s in %s", defaultablePairName, n.Name)
 		}
 	}
 }
