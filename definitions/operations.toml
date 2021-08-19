@@ -99,6 +99,14 @@ will fetch from a given url to path.
 - A successful fetch operation should be complete, which means the object's content and metadata should be the same as requiring from the url.
 """
 
+[httpSigner]
+description = "is the interface for Signer."
+
+[httpSigner.op.query_sign_http]
+description = "will return `*http.Request` with query string parameters containing signature in `URL` to represent the client's request."
+params = ["op", "path", "expire"]
+results = ["req"]
+
 [mover]
 description = "is the interface for Move."
 

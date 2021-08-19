@@ -13,6 +13,9 @@ type = "string"
 [err]
 type = "error"
 
+[expire]
+type = "time.Duration"
+
 [index]
 type = "int"
 
@@ -34,6 +37,9 @@ type = "int64"
 [oi]
 type = "*ObjectIterator"
 
+[op]
+type = "string"
+
 [pairs]
 type = "...Pair"
 
@@ -51,6 +57,9 @@ type = "*PartIterator"
 
 [r]
 type = "io.Reader"
+
+[req]
+type = "*http.Request"
 
 [size]
 type = "int64"

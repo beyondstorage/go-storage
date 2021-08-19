@@ -20,14 +20,14 @@ A signed URL is a URL that provides limited permission and time to make a reques
 I propose to add the following interface containing operations that support the generation of signed URL for RESTful services:
 
 ```go
-type HttpSigner interface {
-    QuerySignHttp(op, path string, expire time.Duration, ps ...types.Pair) (signedReq *http.Request, err error)
+type HTTPSigner interface {
+    QuerySignHTTP(op, path string, expire time.Duration, ps ...types.Pair) (signedReq *http.Request, err error)
 }
 ```
 
-`HttpSigner` is the interface for `Signer` related operations which support calculating request signature.
+`HTTPSigner` is the interface for `Signer` related operations which support calculating request signature.
 
-`QuerySignHttp` returns a "http.Request" with query string parameters containing signature in `URL` to represent the client's request for the specified operation.
+`QuerySignHTTP` returns `*http.Request` with query string parameters containing signature in `URL` to represent the client's request for the specified operation.
 
 **Parameters**
 
@@ -67,4 +67,4 @@ This proposal will deprecate `Reacher` interface.
 - Add new interface and operations in definitions.
 - Update docs in site.
 - Implement integration test.
-- Implement `HttpSigner` for services.
+- Implement `HTTPSigner` for services.
