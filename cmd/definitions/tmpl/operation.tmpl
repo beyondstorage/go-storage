@@ -16,9 +16,11 @@ const (
 {{- end }}
 )
 
+var (
 {{- range $_, $op := $i.Ops }}
-var _ = Op{{ $i.DisplayName }}{{ $op.Name | toPascal }}
+    _ = Op{{ $i.DisplayName }}{{ $op.Name | toPascal }}
 {{- end }}
+)
 
 {{ $i.Description }}
 type {{ $i.DisplayName }} interface {

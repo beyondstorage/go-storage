@@ -17,9 +17,11 @@ const (
 	OpAppenderWriteAppend = "write_append"
 )
 
-var _ = OpAppenderCommitAppend
-var _ = OpAppenderCreateAppend
-var _ = OpAppenderWriteAppend
+var (
+	_ = OpAppenderCommitAppend
+	_ = OpAppenderCreateAppend
+	_ = OpAppenderWriteAppend
+)
 
 // Appender is the interface for Append related operations.
 type Appender interface {
@@ -102,10 +104,12 @@ const (
 	OpBlockerWriteBlock = "write_block"
 )
 
-var _ = OpBlockerCombineBlock
-var _ = OpBlockerCreateBlock
-var _ = OpBlockerListBlock
-var _ = OpBlockerWriteBlock
+var (
+	_ = OpBlockerCombineBlock
+	_ = OpBlockerCreateBlock
+	_ = OpBlockerListBlock
+	_ = OpBlockerWriteBlock
+)
 
 // Blocker is the interface for Block related operations.
 type Blocker interface {
@@ -194,7 +198,9 @@ const (
 	OpCopierCopy = "copy"
 )
 
-var _ = OpCopierCopy
+var (
+	_ = OpCopierCopy
+)
 
 // Copier is the interface for Copy.
 type Copier interface {
@@ -253,7 +259,9 @@ const (
 	OpDirerCreateDir = "create_dir"
 )
 
-var _ = OpDirerCreateDir
+var (
+	_ = OpDirerCreateDir
+)
 
 // Direr is the interface for Directory.
 type Direr interface {
@@ -290,7 +298,9 @@ const (
 	OpFetcherFetch = "fetch"
 )
 
-var _ = OpFetcherFetch
+var (
+	_ = OpFetcherFetch
+)
 
 // Fetcher is the interface for Fetch.
 type Fetcher interface {
@@ -337,7 +347,9 @@ const (
 	OpHTTPSignerQuerySignHTTP = "query_sign_http"
 )
 
-var _ = OpHTTPSignerQuerySignHTTP
+var (
+	_ = OpHTTPSignerQuerySignHTTP
+)
 
 // HTTPSigner is the interface for Signer.
 type HTTPSigner interface {
@@ -374,7 +386,9 @@ const (
 	OpLinkerCreateLink = "create_link"
 )
 
-var _ = OpLinkerCreateLink
+var (
+	_ = OpLinkerCreateLink
+)
 
 // Linker is the interface for link
 type Linker interface {
@@ -433,7 +447,9 @@ const (
 	OpMoverMove = "move"
 )
 
-var _ = OpMoverMove
+var (
+	_ = OpMoverMove
+)
 
 // Mover is the interface for Move.
 type Mover interface {
@@ -498,10 +514,12 @@ const (
 	OpMultiparterWriteMultipart = "write_multipart"
 )
 
-var _ = OpMultiparterCompleteMultipart
-var _ = OpMultiparterCreateMultipart
-var _ = OpMultiparterListMultipart
-var _ = OpMultiparterWriteMultipart
+var (
+	_ = OpMultiparterCompleteMultipart
+	_ = OpMultiparterCreateMultipart
+	_ = OpMultiparterListMultipart
+	_ = OpMultiparterWriteMultipart
+)
 
 // Multiparter is the interface for Multipart related operations.
 type Multiparter interface {
@@ -590,8 +608,10 @@ const (
 	OpPagerWritePage = "write_page"
 )
 
-var _ = OpPagerCreatePage
-var _ = OpPagerWritePage
+var (
+	_ = OpPagerCreatePage
+	_ = OpPagerWritePage
+)
 
 // Pager is the interface for Page related operations which support random write.
 type Pager interface {
@@ -650,7 +670,9 @@ const (
 	OpReacherReach = "reach"
 )
 
-var _ = OpReacherReach
+var (
+	_ = OpReacherReach
+)
 
 // Reacher is the interface for Reach.
 type Reacher interface {
@@ -693,10 +715,12 @@ const (
 	OpServicerList = "list"
 )
 
-var _ = OpServicerCreate
-var _ = OpServicerDelete
-var _ = OpServicerGet
-var _ = OpServicerList
+var (
+	_ = OpServicerCreate
+	_ = OpServicerDelete
+	_ = OpServicerGet
+	_ = OpServicerList
+)
 
 // Servicer can maintain multipart storage services.
 type Servicer interface {
@@ -788,13 +812,15 @@ const (
 	OpStoragerWrite = "write"
 )
 
-var _ = OpStoragerCreate
-var _ = OpStoragerDelete
-var _ = OpStoragerList
-var _ = OpStoragerMetadata
-var _ = OpStoragerRead
-var _ = OpStoragerStat
-var _ = OpStoragerWrite
+var (
+	_ = OpStoragerCreate
+	_ = OpStoragerDelete
+	_ = OpStoragerList
+	_ = OpStoragerMetadata
+	_ = OpStoragerRead
+	_ = OpStoragerStat
+	_ = OpStoragerWrite
+)
 
 // Storager is the interface for storage service.
 type Storager interface {
