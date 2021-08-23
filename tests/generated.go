@@ -255,6 +255,8 @@ type pairServiceNew struct {
 	HTTPClientOptions      *httpclient.Options
 	HasServiceFeatures     bool
 	ServiceFeatures        ServiceFeatures
+	// Enable features
+	// Default pairs
 }
 
 // parsePairServiceNew will parse Pair slice into *pairServiceNew
@@ -297,6 +299,8 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasServiceFeatures = true
 			result.ServiceFeatures = v.Value.(ServiceFeatures)
+			// Enable features
+			// Default pairs
 		}
 	}
 	if !result.HasCredential {
@@ -592,6 +596,16 @@ type pairStorageNew struct {
 	StorageFeatures        StorageFeatures
 	HasWorkDir             bool
 	WorkDir                string
+	// Enable features
+	hasEnableLoosePair  bool
+	EnableLoosePair     bool
+	hasEnableVirtualDir bool
+	EnableVirtualDir    bool
+	// Default pairs
+	hasDefaultContentType  bool
+	DefaultContentType     string
+	hasDefaultStorageClass bool
+	DefaultStorageClass    string
 }
 
 // parsePairStorageNew will parse Pair slice into *pairStorageNew
@@ -646,6 +660,32 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.HasWorkDir = true
 			result.WorkDir = v.Value.(string)
+		// Enable features
+		case "enable_loose_pair":
+			if result.hasEnableLoosePair {
+				continue
+			}
+			result.hasEnableLoosePair = true
+			result.EnableLoosePair = true
+		case "enable_virtual_dir":
+			if result.hasEnableVirtualDir {
+				continue
+			}
+			result.hasEnableVirtualDir = true
+			result.EnableVirtualDir = true
+		// Default pairs
+		case "default_content_type":
+			if result.hasDefaultContentType {
+				continue
+			}
+			result.hasDefaultContentType = true
+			result.DefaultContentType = v.Value.(string)
+		case "default_storage_class":
+			if result.hasDefaultStorageClass {
+				continue
+			}
+			result.hasDefaultStorageClass = true
+			result.DefaultStorageClass = v.Value.(string)
 		}
 	}
 	if !result.HasName {
