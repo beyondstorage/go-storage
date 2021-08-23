@@ -343,7 +343,7 @@ func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string,
 
 // Operation names in HTTPSigner.
 const (
-	// OpHTTPSignerQuerySignHTTP is the operation name for query_sign_http in httpSigner.
+	// OpHTTPSignerQuerySignHTTP is the operation name for query_sign_http in http_signer.
 	OpHTTPSignerQuerySignHTTP = "query_sign_http"
 )
 
