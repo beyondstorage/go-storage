@@ -303,6 +303,9 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			// Default pairs
 		}
 	}
+
+	// Enable features
+
 	if !result.HasCredential {
 		return pairServiceNew{}, services.PairRequiredError{Keys: []string{"credential"}}
 	}
@@ -688,6 +691,17 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			result.DefaultStorageClass = v.Value.(string)
 		}
 	}
+
+	// Enable features
+	if result.hasEnableLoosePair {
+		result.HasStorageFeatures = true
+		result.StorageFeatures.LoosePair = true
+	}
+	if result.hasEnableVirtualDir {
+		result.HasStorageFeatures = true
+		result.StorageFeatures.VirtualDir = true
+	}
+
 	if !result.HasName {
 		return pairStorageNew{}, services.PairRequiredError{Keys: []string{"name"}}
 	}

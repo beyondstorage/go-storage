@@ -237,7 +237,15 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
         }
     }
 
-    {{- range $_, $pair := $fn.Required }}
+    // Enable features
+    {{- range $_, $pair := $ff }}
+    if result.hasEnable{{ $pair.Name | toPascal }} {
+        result.Has{{ $pn }}Features = true
+        result.{{ $pn }}Features.{{ $pair.Name | toPascal }} = true
+    }
+    {{- end }}
+
+    {{ range $_, $pair := $fn.Required }}
     if !result.Has{{ $pair.Name | toPascal }} {
         return pair{{ $pn }}{{ $fnk }}{}, services.PairRequiredError{ Keys:[]string{ "{{ $pair.Name }}" } }
     }
