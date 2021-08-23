@@ -128,7 +128,7 @@ var pairMap = map[string]string {
 {{- range $_, $v := .Namespaces }}
     {{- template "interfaces" makeSlice $v.Name $v.Interfaces }}
     {{- template "features" makeSlice $v.Name $v.Funcs $v.Features }}
-    {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New }}
+    {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New $v.Features $v.Defaultable }}
     {{- template "pairs" makeSlice $v $v.Funcs }}
     {{- template "functions" makeSlice $v.Name $v.Funcs }}
 {{- end }}
@@ -159,6 +159,8 @@ type {{ $pn }}Features struct {
 {{- define "pair_new" }}
 {{- $pn := index . 0 }}
 {{- $fn := index . 1 }}
+{{- $ff := index . 2 }}
+{{- $dp := index . 3 }}
 
 {{- $fnk := $fn.Name | toPascal }}
 
@@ -175,6 +177,16 @@ type pair{{ $pn }}{{$fnk}} struct {
     {{- range $_, $pair := $fn.Optional }}
     Has{{ $pair.Name | toPascal }}   bool
     {{ $pair.Name | toPascal }}      {{ $pair.Type }}
+    {{- end }}
+    // Enable features
+    {{- range $_, $pair := $ff }}
+    hasEnable{{ $pair.Name | toPascal }} bool
+    Enable{{ $pair.Name | toPascal }}    bool
+    {{- end }}
+    // Default pairs
+    {{- range $_, $pair := $dp }}
+    has{{ $pair.Name | toPascal }} bool
+    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
     {{- end }}
 }
 
@@ -202,6 +214,24 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
                 continue
             }
             result.Has{{ $pair.Name | toPascal }} = true
+            result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+        {{- end }}
+        // Enable features
+        {{- range $_, $pair := $ff }}
+        case "enable_{{ $pair.Name }}":
+            if result.hasEnable{{ $pair.Name | toPascal }} {
+                continue
+            }
+            result.hasEnable{{ $pair.Name | toPascal }} = true
+            result.Enable{{ $pair.Name | toPascal }} = true
+        {{- end }}
+        // Default pairs
+        {{- range $_, $pair := $dp }}
+        case "{{ $pair.Name }}":
+            if result.has{{ $pair.Name | toPascal }} {
+                continue
+            }
+            result.has{{ $pair.Name | toPascal }} = true
             result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
         {{- end }}
         }
