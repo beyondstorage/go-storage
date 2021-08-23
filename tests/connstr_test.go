@@ -56,7 +56,7 @@ func TestFromString(t *testing.T) {
 		},
 		{
 			"stupid, but valid (ignored)",
-			"tests:///?&??&&&",
+			"tests:///?&&&",
 			[]Pair{
 				pairs.WithWorkDir("/"),
 			},
@@ -103,19 +103,36 @@ func TestFromString(t *testing.T) {
 			services.ErrConnectionStringInvalid,
 		},
 		{
-			"key without value is ignored (even not registered pair)",
+			"key without value (not registered pair)",
 			"tests://abc/tmp?not_a_pair&&",
+			nil,
+			services.ErrConnectionStringInvalid,
+		},
+		{
+			"not parsable pair",
+			"tests://abc/tmp?io_call_back=a",
+			nil,
+			services.ErrConnectionStringInvalid,
+		},
+		{
+			"key with features",
+			"tests://abc/tmp?enable_loose_pair",
 			[]Pair{
 				pairs.WithName("abc"),
 				pairs.WithWorkDir("/tmp"),
+				WithEnableLoosePair(),
 			},
 			nil,
 		},
 		{
-			"not parseable pair",
-			"tests://abc/tmp?io_call_back=a",
+			"key with default paris",
+			"tests://abc/tmp?default_storage_class=STANDARD",
+			[]Pair{
+				pairs.WithName("abc"),
+				pairs.WithWorkDir("/tmp"),
+				WithDefaultStorageClass("STANDARD"),
+			},
 			nil,
-			services.ErrConnectionStringInvalid,
 		},
 	}
 
