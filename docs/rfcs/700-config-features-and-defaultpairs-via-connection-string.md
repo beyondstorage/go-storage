@@ -41,17 +41,17 @@ I propose to support config features and default pairs in plain string format in
 
 ### Features
 
-The format of features pairs in connection string is:
+The format for features setting in connection string is:
 
-`enable_key=value`
+`enable_key`
 
-- The whole key of the pair SHOULD have the prefix `enable_`.
-- `key` is the pair name defined in `features.toml` and supported in service, and the format SHOULD be exactly the same.
-- `value` SHOULD be `true` or `false`.
+- The whole key SHOULD have the prefix `enable_`.
+- `key` is the feature name defined in `features.toml` and supported in service, and the format SHOULD be exactly the same.
+- No value for the features setting string, or we can assume that the value is always true.
 
 So a valid connection string containing features could be:
 
-- `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&enable_loose_pair=false&enable_virtual_dir=true`
+- `s3://bucket_name/prefix?credential=hmac:xxxx:xxxx&enable_loose_pair&enable_virtual_dir`
 
 The connection string above is equivalent to:
 
@@ -61,7 +61,7 @@ store, err := s3.NewStorage(
 	ps.WithName("bucket_name"),
 	ps.WithWorkDir("/prefix"),
 	s3.WithStorageFeatures(s3.StorageFeaturs{
-		LoosePair:  false,
+		LoosePair:  true,
 		VirtualDir: true,
     })
 
@@ -133,7 +133,7 @@ Pair keys listed in `defaultable` will be treated as allowing users to set defau
 
 **Parse features in `parsePair*New`**
 
-We can handle the defaultable pairs for features with prefix `enable_`, assign value to the corresponding field of `*Features` in `ParsePair*New()`.
+We can get the feature pairs with prefix `enable_` from connection string or `WithEnableXxx()`, then update the corresponding field of `*Features` in `ParsePair*New()`.
 
 **Parse default pairs in `parsePair*New`**
 
