@@ -92,20 +92,14 @@ func (n *Namespace) Defaultable() map[*Pair][]string {
 	for _, v := range n.defaultable {
 		var ops []string
 		for _, op := range n.Funcs {
-			isAdded := false
-			for _, pair := range op.Required {
+			ps := make([]*Pair, 0)
+			ps = append(ps, op.Required...)
+			ps = append(ps, op.Optional...)
+
+			for _, pair := range ps {
 				if pair.Name == v.Name {
 					ops = append(ops, op.Name)
-					isAdded = true
 					break
-				}
-			}
-			if !isAdded {
-				for _, pair := range op.Optional {
-					if pair.Name == v.Name {
-						ops = append(ops, op.Name)
-						break
-					}
 				}
 			}
 		}
