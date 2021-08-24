@@ -84,19 +84,34 @@ type Namespace struct {
 	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
 }
 
-// Defaultable returns sorted defaultable pairs.
-func (n *Namespace) Defaultable() []*Pair {
-	ps := make([]*Pair, 0, len(n.defaultable))
+// Defaultable returns defaultable pair and operations map.
+func (n *Namespace) Defaultable() map[*Pair][]string {
+	pf := make(map[*Pair][]string)
+
 	for _, v := range n.defaultable {
-		ps = append(ps, v)
+		var ops []string
+		for _, op := range n.Funcs {
+			isAdded := false
+			for _, pair := range op.Required {
+				if pair.Name == v.Name {
+					ops = append(ops, op.Name)
+					isAdded = true
+					break
+				}
+			}
+			if !isAdded {
+				for _, pair := range op.Optional {
+					if pair.Name == v.Name {
+						ops = append(ops, op.Name)
+						break
+					}
+				}
+			}
+		}
+		pf[v] = ops
 	}
 
-	sort.Slice(ps, func(i, j int) bool {
-		x := ps
-		return x[i].Name < x[j].Name
-	})
-
-	return ps
+	return pf
 }
 
 // Sort will sort the namespace
@@ -597,7 +612,7 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 			Description: pair.Description,
 		}
 		srv.pairs[name] = defaultPair
-		ns.defaultable[name] = defaultPair
+		ns.defaultable[defaultablePairName] = pair
 	}
 
 	d.ValidateNamespace(srv, ns)
