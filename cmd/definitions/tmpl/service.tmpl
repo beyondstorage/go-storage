@@ -7,6 +7,7 @@ import (
     "net/http"
     "time"
 
+    "github.com/beyondstorage/go-storage/v4/pairs"
     "github.com/beyondstorage/go-storage/v4/pkg/httpclient"
     "github.com/beyondstorage/go-storage/v4/services"
     . "github.com/beyondstorage/go-storage/v4/types"
@@ -17,6 +18,7 @@ var _ services.ServiceError
 var _ httpclient.Options
 var _ time.Duration
 var _ http.Request
+var _ pairs.Error
 
 // Type is the type for {{ .Name }}
 const Type = "{{ .Name }}"
@@ -128,7 +130,7 @@ var pairMap = map[string]string {
 {{- range $_, $v := .Namespaces }}
     {{- template "interfaces" makeSlice $v.Name $v.Interfaces }}
     {{- template "features" makeSlice $v.Name $v.Funcs $v.Features }}
-    {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New $v.Features $v.Defaultable }}
+    {{- template "pair_new" makeSlice ( $v.Name | toPascal ) $v.New $v.Features $v.Defaultable $v.Funcs }}
     {{- template "pairs" makeSlice $v $v.Funcs }}
     {{- template "functions" makeSlice $v.Name $v.Funcs }}
 {{- end }}
@@ -161,6 +163,7 @@ type {{ $pn }}Features struct {
 {{- $fn := index . 1 }}
 {{- $ff := index . 2 }}
 {{- $dp := index . 3 }}
+{{- $fu := index . 4 }}
 
 {{- $fnk := $fn.Name | toPascal }}
 
@@ -242,6 +245,33 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
     if result.hasEnable{{ $pair.Name | toPascal }} {
         result.Has{{ $pn }}Features = true
         result.{{ $pn }}Features.{{ $pair.Name | toPascal }} = true
+    }
+    {{- end }}
+
+    // Default pairs
+    {{- range $_, $pair := $dp }}
+    if result.has{{ $pair.Name | toPascal }} {
+        result.HasDefault{{ $pn }}Pairs = true
+        {{- range $_, $op := $fu }}
+            {{- range $_, $opPair := $op.Required }}
+                {{- if eq $pair.Name (print "default_" $opPair.Name) }}
+                    {{- if $opPair.Global }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, pairs.With{{ $opPair.Name | toPascal }}(result.{{ $pair.Name | toPascal }}))
+                    {{- else }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, With{{ $opPair.Name | toPascal }}(result.{{ $pair.Name | toPascal }}))
+                    {{- end }}
+                {{- end }}
+            {{- end }}
+            {{- range $_, $opPair := $op.Optional }}
+                {{- if eq $pair.Name (print "default_" $opPair.Name) }}
+                    {{- if $opPair.Global }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, pairs.With{{ $opPair.Name | toPascal }}(result.{{ $pair.Name | toPascal }}))
+                    {{- else }}
+            result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op.Name | toPascal }}, With{{ $opPair.Name | toPascal }}(result.{{ $pair.Name | toPascal }}))
+                    {{- end }}
+                {{- end }}
+            {{- end }}
+        {{- end }}
     }
     {{- end }}
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
 	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
@@ -17,6 +18,7 @@ var _ services.ServiceError
 var _ httpclient.Options
 var _ time.Duration
 var _ http.Request
+var _ pairs.Error
 
 // Type is the type for tests
 const Type = "tests"
@@ -305,6 +307,8 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 	}
 
 	// Enable features
+
+	// Default pairs
 
 	if !result.HasCredential {
 		return pairServiceNew{}, services.PairRequiredError{Keys: []string{"credential"}}
@@ -700,6 +704,16 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 	if result.hasEnableVirtualDir {
 		result.HasStorageFeatures = true
 		result.StorageFeatures.VirtualDir = true
+	}
+
+	// Default pairs
+	if result.hasDefaultContentType {
+		result.HasDefaultStoragePairs = true
+		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, pairs.WithContentType(result.DefaultContentType))
+	}
+	if result.hasDefaultStorageClass {
+		result.HasDefaultStoragePairs = true
+		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithStorageClass(result.DefaultStorageClass))
 	}
 
 	if !result.HasName {
