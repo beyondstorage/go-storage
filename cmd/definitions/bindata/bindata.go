@@ -13,6 +13,7 @@
 // cmd/definitions/tmpl/pair.tmpl (513B)
 // cmd/definitions/tmpl/service.tmpl (12.553kB)
 
+//go:build tools
 // +build tools
 
 package bindata
