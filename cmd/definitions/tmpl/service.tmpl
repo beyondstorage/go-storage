@@ -186,9 +186,9 @@ type pair{{ $pn }}{{$fnk}} struct {
     Enable{{ $pair.Name | toPascal }}    bool
     {{- end }}
     // Default pairs
-    {{- range $pair, $_ := $dp }}
-    hasDefault{{ $pair.Name | toPascal }} bool
-    Default{{ $pair.Name | toPascal }}    {{ $pair.Type }}
+    {{- range $_, $pair := $dp }}
+    hasDefault{{ $pair.Pair.Name | toPascal }} bool
+    Default{{ $pair.Pair.Name | toPascal }}    {{ $pair.Pair.Type }}
     {{- end }}
 }
 
@@ -228,13 +228,13 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
             result.Enable{{ $pair.Name | toPascal }} = true
         {{- end }}
         // Default pairs
-        {{- range $pair, $_ := $dp }}
-        case "default_{{ $pair.Name }}":
-            if result.hasDefault{{ $pair.Name | toPascal }} {
+        {{- range $_, $pair := $dp }}
+        case "default_{{ $pair.Pair.Name }}":
+            if result.hasDefault{{ $pair.Pair.Name | toPascal }} {
                 continue
             }
-            result.hasDefault{{ $pair.Name | toPascal }} = true
-            result.Default{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+            result.hasDefault{{ $pair.Pair.Name | toPascal }} = true
+            result.Default{{ $pair.Pair.Name | toPascal }} = v.Value.({{ $pair.Pair.Type }})
         {{- end }}
         }
     }
@@ -248,14 +248,14 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
     {{- end }}
 
     // Default pairs
-    {{- range $pair, $ops := $dp }}
-    if result.hasDefault{{ $pair.Name | toPascal }} {
+    {{- range $_, $pair := $dp }}
+    if result.hasDefault{{ $pair.Pair.Name | toPascal }} {
         result.HasDefault{{ $pn }}Pairs = true
-        {{- range $_, $op := $ops }}
-        {{- if $pair.Global }}
-        result.Default{{ $pn }}Pairs.{{ $op | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op | toPascal }}, pairs.With{{ $pair.Name | toPascal }}(result.Default{{ $pair.Name | toPascal }}))
+        {{- range $_, $op := $pair.Funcs }}
+        {{- if $pair.Pair.Global }}
+        result.Default{{ $pn }}Pairs.{{ $op | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op | toPascal }}, pairs.With{{ $pair.Pair.Name | toPascal }}(result.Default{{ $pair.Pair.Name | toPascal }}))
         {{- else }}
-        result.Default{{ $pn }}Pairs.{{ $op | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op | toPascal }}, With{{ $pair.Name | toPascal }}(result.Default{{ $pair.Name | toPascal }}))
+        result.Default{{ $pn }}Pairs.{{ $op | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op | toPascal }}, With{{ $pair.Pair.Name | toPascal }}(result.Default{{ $pair.Pair.Name | toPascal }}))
         {{- end }}
         {{- end }}
     }

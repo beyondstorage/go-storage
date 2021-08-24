@@ -85,9 +85,15 @@ type Namespace struct {
 	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
 }
 
-// Defaultable returns defaultable pair and operations map.
-func (n *Namespace) Defaultable() map[*Pair][]string {
-	pf := make(map[*Pair][]string)
+// PairFuncs contains pair and the func names that contain it.
+type PairFuncs struct {
+	Pair  *Pair
+	Funcs []string
+}
+
+// Defaultable returns sorted PairFuncs slice for defaultable pairs.
+func (n *Namespace) Defaultable() []*PairFuncs {
+	pfs := make([]*PairFuncs, 0, len(n.defaultable))
 
 	for _, v := range n.defaultable {
 		var ops []string
@@ -103,10 +109,15 @@ func (n *Namespace) Defaultable() map[*Pair][]string {
 				}
 			}
 		}
-		pf[v] = ops
+		pf := &PairFuncs{Pair: v, Funcs: ops}
+		pfs = append(pfs, pf)
 	}
 
-	return pf
+	sort.Slice(pfs, func(i, j int) bool {
+		return pfs[i].Pair.Name < pfs[j].Pair.Name
+	})
+
+	return pfs
 }
 
 // Sort will sort the namespace
