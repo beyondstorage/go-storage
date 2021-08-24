@@ -89,20 +89,24 @@ func RegisterSchema(ty string, m map[string]string) {
 	servicePairMaps[ty] = m
 }
 
+// NewServicerFromString will create a new service via connection string.
 func NewServicerFromString(connStr string, ps ...types.Pair) (types.Servicer, error) {
 	ty, psc, err := parseConnectionString(connStr)
 	if err != nil {
 		return nil, InitError{Op: "new_servicer", Type: ty, Err: err, Pairs: ps}
 	}
+	// Append ps after connection string to keep pairs order.
 	psc = append(psc, ps...)
 	return NewServicer(ty, psc...)
 }
 
+// NewStoragerFromString will create a new storager via connection string.
 func NewStoragerFromString(connStr string, ps ...types.Pair) (types.Storager, error) {
 	ty, psc, err := parseConnectionString(connStr)
 	if err != nil {
 		return nil, InitError{Op: "new_storager", Type: ty, Err: err, Pairs: ps}
 	}
+	// Append ps after connection string to keep pairs order.
 	psc = append(psc, ps...)
 	return NewStorager(ty, psc...)
 }
