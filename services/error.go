@@ -13,7 +13,7 @@ type InternalError interface {
 	IsInternalError()
 }
 
-// Create a new error code.
+// NewErrorCode creates a new error code.
 //
 // Developers SHOULD use this function to define error codes (sentinel errors), instead of `NewErrorCode`
 //
@@ -30,7 +30,7 @@ func (e errorCode) Error() string {
 	return e.s
 }
 
-// implements InternalError
+// IsInternalError implements InternalError
 func (e errorCode) IsInternalError() {}
 
 var (
@@ -139,7 +139,7 @@ func (e MetadataUnrecognizedError) Unwrap() error {
 	return ErrCapabilityInsufficient
 }
 
-// implements InternalError
+// IsInternalError implements InternalError
 func (e MetadataUnrecognizedError) IsInternalError() {}
 
 // PairUnsupportedError means this operation has unsupported pair.
@@ -156,7 +156,7 @@ func (e PairUnsupportedError) Unwrap() error {
 	return ErrCapabilityInsufficient
 }
 
-// implements InternalError
+// IsInternalError implements InternalError
 func (e PairUnsupportedError) IsInternalError() {}
 
 // PairRequiredError means this operation has required pair but missing.
@@ -173,7 +173,7 @@ func (e PairRequiredError) Unwrap() error {
 	return ErrRestrictionDissatisfied
 }
 
-// implements InternalError
+// IsInternalError implements InternalError
 func (e PairRequiredError) IsInternalError() {}
 
 // ObjectModeInvalidError means the provided object mode is invalid.
@@ -190,7 +190,7 @@ func (e ObjectModeInvalidError) Unwrap() error {
 	return ErrObjectModeInvalid
 }
 
-// implements InternalError
+// IsInternalError implements InternalError
 func (e ObjectModeInvalidError) IsInternalError() {}
 
 // ListModeInvalidError means the provided list mode is invalid.
@@ -206,5 +206,5 @@ func (e ListModeInvalidError) Unwrap() error {
 	return ErrListModeInvalid
 }
 
-// implements InternalError
+// IsInternalError implements InternalError
 func (e ListModeInvalidError) IsInternalError() {}
