@@ -93,7 +93,7 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 }
 
 {{- range $_, $v := .Pairs }}
-{{- if and (not $v.Global) (not $v.Conflict) }}
+{{- if not $v.Global }}
 {{- $pname := $v.Name | toPascal }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options.
 //

@@ -76,10 +76,6 @@ description = "is the storage class for this object"
 type = "int64"
 description = "tests storage system metadata"
 
-[pairs.size]
-type = "int64"
-description = "tests pair conflict"
-
 [pairs.string_pair]
 type = "string"
 description = "tests connection string"
