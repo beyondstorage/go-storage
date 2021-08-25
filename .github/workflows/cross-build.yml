@@ -1,0 +1,89 @@
+name: "Cross Build"
+
+on: [ push,pull_request ]
+
+jobs:
+  build_js_wasm:
+    name: Build js wasm
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: GOOS=js GOARCH=wasm go build ./...
+
+  build_386:
+    name: Build 386
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+        # Since go 1.15, 386 support for darwin has been dropped.
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: GOARCH=386 go build ./...
+
+  build_arm:
+    name: Build arm
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+        # Since go 1.15, arm support for darwin has been dropped.
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: GOARCH=arm go build ./...
+
+  build_arm64:
+    name: Build arm64
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: GOARCH=arm64 go build ./...
