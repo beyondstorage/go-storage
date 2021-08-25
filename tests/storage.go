@@ -13,6 +13,8 @@ type Storage struct {
 
 	objects []*Object
 
+	Pairs []Pair
+
 	UnimplementedCopier
 	UnimplementedFetcher
 	UnimplementedMover

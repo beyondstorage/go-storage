@@ -23,5 +23,5 @@ func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
 }
 
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	return &Storage{}, nil
+	return &Storage{Pairs: pairs}, nil
 }
