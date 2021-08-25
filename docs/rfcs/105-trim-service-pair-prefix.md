@@ -7,6 +7,7 @@
 
 - Updated By:
   - [GSP-117](./117-rename-service-to-system-as-the-opposite-to-global.md): Rename `service pair` to `system pair`
+  - [#720](https://github.com/beyondstorage/go-storage/pull/720): Generation fails when a service pair has the same name with a global pair.
 
 ## Background
 
