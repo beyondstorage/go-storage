@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [v4.6.0] - 2021-08-25
 
+### Added
+
+- ci: Add cross build (#721)
+
 ### Changed
 
 - feat: Support features and default paris in connection string (#713)
