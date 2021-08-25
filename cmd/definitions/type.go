@@ -152,9 +152,6 @@ type Pair struct {
 	// Runtime generated
 	Global      bool
 	Description string
-
-	// This is a system pair having the same name and type as a global pair
-	Conflict bool
 }
 
 func (p *Pair) Type() string {
@@ -711,13 +708,8 @@ func mergePairs(global, service map[string]*Pair) map[string]*Pair {
 		ans[k] = v
 	}
 	for k, v := range service {
-		if p, ok := ans[k]; ok {
-			v.Conflict = true
-			if v.ptype == p.ptype {
-				log.Warnf("pair conflict: %s", k)
-			} else {
-				log.Fatalf("pair (%s, %s) conflicts with global pair (%s, %s)", k, v.ptype, k, p.ptype)
-			}
+		if _, ok := ans[k]; ok {
+			log.Fatalf("pair conflict: %s", k)
 		}
 		v := v
 		ans[k] = v
