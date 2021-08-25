@@ -7,6 +7,7 @@ import (
     "net/http"
     "time"
 
+    . "github.com/beyondstorage/go-storage/v4/pairs"
     "github.com/beyondstorage/go-storage/v4/pkg/httpclient"
     "github.com/beyondstorage/go-storage/v4/services"
     . "github.com/beyondstorage/go-storage/v4/types"
@@ -17,6 +18,7 @@ var _ services.ServiceError
 var _ httpclient.Options
 var _ time.Duration
 var _ http.Request
+var _ Error
 
 // Type is the type for {{ .Name }}
 const Type = "{{ .Name }}"
@@ -91,12 +93,8 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 }
 
 {{- range $_, $v := .Pairs }}
-{{- if not $v.Global }}
+{{- if and (not $v.Global) (not $v.Conflict) }}
 {{- $pname := $v.Name | toPascal }}
-{{- if $v.Conflict }}
-// Deprecated: Use pairs.With{{ $pname }} instead.
-//
-{{- end }}
 // With{{ $pname }} will apply {{ $v.Name }} value to Options.
 //
 {{ $v.Description }}
@@ -184,9 +182,9 @@ type pair{{ $pn }}{{$fnk}} struct {
     Enable{{ $pair.Name | toPascal }}    bool
     {{- end }}
     // Default pairs
-    {{- range $_, $pair := $dp }}
-    has{{ $pair.Name | toPascal }} bool
-    {{ $pair.Name | toPascal }}    {{ $pair.Type }}
+    {{- range $_, $pf := $dp }}
+    hasDefault{{ $pf.Pair.Name | toPascal }} bool
+    Default{{ $pf.Pair.Name | toPascal }}    {{ $pf.Pair.Type }}
     {{- end }}
 }
 
@@ -226,13 +224,13 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
             result.Enable{{ $pair.Name | toPascal }} = true
         {{- end }}
         // Default pairs
-        {{- range $_, $pair := $dp }}
-        case "{{ $pair.Name }}":
-            if result.has{{ $pair.Name | toPascal }} {
+        {{- range $_, $pf := $dp }}
+        case "default_{{ $pf.Pair.Name }}":
+            if result.hasDefault{{ $pf.Pair.Name | toPascal }} {
                 continue
             }
-            result.has{{ $pair.Name | toPascal }} = true
-            result.{{ $pair.Name | toPascal }} = v.Value.({{ $pair.Type }})
+            result.hasDefault{{ $pf.Pair.Name | toPascal }} = true
+            result.Default{{ $pf.Pair.Name | toPascal }} = v.Value.({{ $pf.Pair.Type }})
         {{- end }}
         }
     }
@@ -242,6 +240,16 @@ func parsePair{{ $pn }}{{ $fnk }}(opts []Pair) (pair{{ $pn }}{{ $fnk }}, error) 
     if result.hasEnable{{ $pair.Name | toPascal }} {
         result.Has{{ $pn }}Features = true
         result.{{ $pn }}Features.{{ $pair.Name | toPascal }} = true
+    }
+    {{- end }}
+
+    // Default pairs
+    {{- range $_, $pf := $dp }}
+    if result.hasDefault{{ $pf.Pair.Name | toPascal }} {
+        result.HasDefault{{ $pn }}Pairs = true
+        {{- range $_, $op := $pf.Funcs }}
+        result.Default{{ $pn }}Pairs.{{ $op | toPascal }} = append(result.Default{{ $pn }}Pairs.{{ $op | toPascal }}, With{{ $pf.Pair.Name | toPascal }}(result.Default{{ $pf.Pair.Name | toPascal }}))
+        {{- end }}
     }
     {{- end }}
 

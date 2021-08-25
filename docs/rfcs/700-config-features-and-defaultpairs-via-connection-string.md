@@ -137,15 +137,12 @@ We can get the feature pairs with prefix `enable_` from connection string or `Wi
 
 **Parse default pairs in `parsePair*New`**
 
-We can convert the defaultable pairs with prefix `default_` passed in by connection string or `WithDefaultXxx()` to pairs and append it to the pair array of supported operations in `Default*Pairs` in `ParsePair*New()`.
+We can convert the default pairs with prefix `default_` passed in by connection string or `WithDefaultXxx()` to original pairs and append it to the pair array of supported operations in `Default*Pairs` in `ParsePair*New()`.
 
-**Handle conflict**
+**Usage notes**
 
-When parsing pairs in specific operation：
-
-- We should combine default pairs and `pairs from args`, and make sure that `pairs form args` can overwrite default pairs.
-- When using `WithDefautl*Pairs()` and `WithDefaultXxx()` at the same time for initialization, we will pick `Default*Pairs` first, and append pairs that parsed from `WithDefaultXxx()`.
-- The above conflict handling should be generated.
+- Using `WithDefautl*Pairs()` and `WithDefaultXxx()` at the same time for initialization are not allowed at present.
+- `WithEnableXxx()` will fill or overwrite the value of the corresponding field in `*Features` when it is used in conjunction with `With*Features()`.
 
 ## Rationale
 
