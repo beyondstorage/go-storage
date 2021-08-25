@@ -11,16 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- feat: Support features and default paris in connection string (#713)
+- feat: Set Features with feature pairs (#716)
+- feat: Allow append pairs for New{Servicer,Storager}FromString (#718)
+- feat: Set DefaultPairs with defaultable pairs (#719)
 - ci: Add cross build (#721)
 
 ### Changed
 
-- feat: Support features and default paris in connection string (#713)
-- definitions: Fix naming format for http signer (#714)
-- feat: Set Features with feature pairs (#716)
-- feat: Allow append pairs for New{Servicer,Storager}FromString (#718)
-- feat: Set DefaultPairs with defaultable pairs (#719)
 - cmd/definitions: Remove conflict from pair (#720)
+
+### Fixed
+
+- definitions: Fix naming format for http signer (#714)
 
 ## [v4.5.0] - 2021-08-19
 
