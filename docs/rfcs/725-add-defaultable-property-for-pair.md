@@ -1,7 +1,7 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-08-26
 - RFC PR: [beyondstorage/go-storage#725](https://github.com/beyondstorage/go-storage/issues/725)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#727](https://github.com/beyondstorage/go-storage/issues/727)
 
 # GSP-725: Add Defaultable Property for Pair
 
