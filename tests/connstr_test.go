@@ -138,18 +138,35 @@ func TestFromString(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			servicer, err := services.NewServicerFromString(tt.connStr)
-			service, ok := servicer.(*Service)
+			t.Run("NewServicerFromString", func(t *testing.T) {
+				servicer, err := services.NewServicerFromString(tt.connStr)
+				service, ok := servicer.(*Service)
 
-			if tt.err == nil {
-				assert.Nil(t, err)
-				assert.True(t, ok)
-			} else {
-				assert.True(t, errors.Is(err, tt.err))
-				return
-			}
+				if tt.err == nil {
+					assert.Nil(t, err)
+					assert.True(t, ok)
+				} else {
+					assert.True(t, errors.Is(err, tt.err))
+					return
+				}
 
-			assert.Equal(t, service.Pairs, tt.pairs)
+				assert.Equal(t, service.Pairs, tt.pairs)
+			})
+			t.Run("NewStoragerFromString", func(t *testing.T) {
+				storager, err := services.NewStoragerFromString(tt.connStr)
+				storage, ok := storager.(*Storage)
+
+				if tt.err == nil {
+					assert.Nil(t, err)
+					assert.True(t, ok)
+				} else {
+					assert.True(t, errors.Is(err, tt.err))
+					return
+				}
+
+				assert.Equal(t, storage.Pairs, tt.pairs)
+			})
+
 		})
 	}
 }
