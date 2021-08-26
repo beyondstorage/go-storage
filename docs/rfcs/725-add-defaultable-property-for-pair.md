@@ -1,11 +1,17 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-08-26
-- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- RFC PR: [beyondstorage/go-storage#725](https://github.com/beyondstorage/go-storage/issues/725)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# GSP: Add Defaultable Property for Pair
+# GSP-725: Add Defaultable Property for Pair
 
 ## Background
+
+In [GSP-700], we introduced `defaultable` field in `namespace` to specify defaultable pair and generate default pairs for them to support default pairs configuration.
+
+After introducing defaultable pairs for namespace:
+- We need to maintain a pairs map in namespace described in [Pair map for namespace](https://github.com/beyondstorage/go-storage/issues/711). There will be cross-association between `service`, `namespace` and `pair`.
+- All the generated default paris are system pairs. For global pairs, shared values are only valid inside the service. Users need to assign default values separately for each service during initialization instead of using a unified function conveniently.
 
 ## Proposal
 
@@ -34,13 +40,13 @@ Generate default pairs prefixed with `default_` for the defautlable pairs, and t
 
 ### Alternative Implementation
 
-Based on [GSP-700], all the default pairs are system pairs. We can split default pair into global and system according the `Global` property.
+Based on [GSP-700], defaultable pairs maintained in namespace additionally. We can split default pair into global and system according the `Global` property.
 
 When generating `WithXxx()` for pairs, we can handle pairs group by `default` and `global`. `pairs.WithXxx()` will be generated for global default paris and `<service>.WithXxx()` will be generated for system default paris finally. 
 
 ## Compatibility
 
-`defaultable` in `Namespace` will be deprecated.
+`defaultable` in `namespace` will be deprecated.
 
 ## Implementation
 
