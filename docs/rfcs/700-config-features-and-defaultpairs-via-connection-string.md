@@ -5,6 +5,9 @@
 
 # GSP-700: Config Features and DefaultPairs via Connection String
 
+- Updated By:
+  - [GSP-725](./725-add-defaultable-property-for-pair.md): Deprecate `defaultable` in namespace and split default pairs into global and system.
+
 Previous discussion:
 
 - [Connection string needs to support config StorageFeatures and DefaultPairs](https://github.com/beyondstorage/go-storage/issues/680)

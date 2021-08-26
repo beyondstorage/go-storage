@@ -5,6 +5,9 @@
 
 # GSP-725: Add Defaultable Property for Pair
 
+- Updates:
+  - [GSP-700]: Deprecate `defaultable` in namespace and split default pairs into global and system.
+
 ## Background
 
 In [GSP-700], we introduced `defaultable` field in `namespace` to specify defaultable pair and generate default pairs for them to support default pairs configuration.
@@ -32,7 +35,7 @@ defaultable = true
 
 **Generate default pairs**
 
-Generate default pairs prefixed with `default_` for the defautlable pairs, and the generated pairs for defaultable global pairs are also global. So that:
+Generate default pairs prefixed with `default_` for the defaultable pairs, and the generated pairs for defaultable global pairs are also global. So that:
 - Support config default pairs via connection string is still in effect.
 - `WithXxx()` for the default paris will be generated separately for global and service.
 
