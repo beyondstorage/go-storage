@@ -10,7 +10,7 @@
 
 Previous discussion:
 - [How to pass `partIndex` to `QuerySignHTTP` for `WriteMultipart`?](https://github.com/beyondstorage/go-storage/issues/726)
-- https://matrix.to/#/#beyondstorage@gsp-706:matrix.org
+- [#beyondstorage@gsp-706:matrix.org](https://matrix.to/#/#beyondstorage@gsp-706:matrix.org)
 
 ## Background
 
