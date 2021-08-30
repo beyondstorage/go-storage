@@ -9,7 +9,7 @@
   - [GSP-706]: Deprecate `QuerySignHTTP()`.
 
 Previous discussion:
-- https://github.com/beyondstorage/go-storage/issues/726
+- [How to pass `partIndex` to `QuerySignHTTP` for `WriteMultipart`?](https://github.com/beyondstorage/go-storage/issues/726)
 - https://matrix.to/#/#beyondstorage@gsp-706:matrix.org
 
 ## Background
