@@ -6,7 +6,7 @@
 # GSP-729: Redesign HTTP Signer
 
 - Updates:
-  - [GSP-706]: Deprecate `QuerySignHTTP()`.
+  - [GSP-706]: Deprecate `HTTPSigner` and `QuerySignHTTP()`.
 
 Previous discussion:
 - [How to pass `partIndex` to `QuerySignHTTP` for `WriteMultipart`?](https://github.com/beyondstorage/go-storage/issues/726)
@@ -18,22 +18,23 @@ In [GSP-706], we introduced `HTTPSigner` interface to support HTTP authenticatin
 
 During the implementation for services, we found the following problems:
 - There's no appropriate way to pass in some parameters for some operations like [How to pass partIndex into QuerySignHTTP for WriteMultipart](https://github.com/beyondstorage/go-storage/issues/726).
-- Supporting all the authenticating request operations in one function makes it lengthy and hard to maintain, especially for the services that support query string authentication like s3, gcs, etc.
+- Supporting all the authenticating request operations in one function makes it slightly complicated and hard to maintain, especially for the services that support query string authentication like s3, gcs, etc.
 
 ## Proposal
 
-I propose to split `QuerySignHTTP()` into multiple operations according to `op`:
+I propose to split `HTTPSigner` into multiple interfaces and define HTTP signer interfaces one by one. For now, we will introduce the following interface:
 
 ```go
-type HTTPSigner interface {
+type StorageHTTPSigner interface {
     QuerySignHTTPRead(path string, expire time.Duration, ps ...types.Pair) (signedReq *http.Request, err error)
     QuerySignHTTPWrite(path string, size int64, expire time.Duration, ps ...types.Pair) (signedReq *http.Request, err error)
-    // ...
 }
 ```
 
-- `Read` and `Write` (add `Multiparter` related operations if needed) are the supported signature operations for now. Other operations SHOULD be introduced by new GSP.
-- Compared to the corresponding basic operation, the parameters of the `HTTPSinger` operations have the following differences:
+- `StorageHTTPSigner` is the interface associated with `Storager`, which support using query parameters to authenticate requests.
+  - `QuerySignHTTPRead` and `QuerySignHTTPWrite` are the supported signature operations for read and write in `StorageHTTPSigner` for now. Other operations SHOULD be introduced by new GSP.
+- Other interfaces like `MultipartHTTPSigner`, `AppendHTTPSigner` etc associated with `Multiparter`, `Appender` etc SHOULD be introduced by new GSP if needed.
+- Compared to the corresponding basic operation(`Read` and `Write` in `Storager`), the parameters of the `StorageHTTPSigner` operations have the following differences:
   - `expire` is required.
   - `io.Reader` typed parameter for write operations or `io.Writer` typed parameter for read operations SHOULD be removed.
   - Other parameters SHOULD be consistent.
@@ -41,7 +42,7 @@ type HTTPSigner interface {
 From service side:
 
 - If part of the operations are unsupported, `services.ErrCapabilityInsufficient` error can be returned directly.
-- There's no need to declare all the pairs for `HTTPSinger` operations, as pairs passed in are stored and can be got by calling the parse pair function of the corresponding operation.
+- There's no need to declare all the pairs for `StorageHTTPSigner` operations, as pairs passed in will be stored and can be got by calling the parse pair function of the corresponding operation.
 
 ## Rationale
 
@@ -158,12 +159,12 @@ func (bucket Bucket) GetObjectWithURL(signedURL string, options ...Option) (io.R
 
 ## Compatibility
 
-`QuerySignHTTP()` will be deprecated.
+`HTTPSigner` and `QuerySignHTTP()` will be deprecated.
 
 ## Implementation
 
-- Mark `QuerySignHTTP()` as deprecated.
-- Add commonly used operations that require using query parameters to provide authentication.
+- Mark `HTTPSigner` and `QuerySignHTTP()` as deprecated.
+- Add new interface and operations in definitions.
 - Update all services that support HTTP signer.
 
 [GSP-706]: ./706-support-http-signer.md

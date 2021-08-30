@@ -6,7 +6,7 @@
 # GSP-706: Support HTTP Signer
 
 - Updated by:
-  - [GSP-729]: Deprecate `QuerySignHTTP()`.
+  - [GSP-729]: Deprecate `HTTPSigner` and `QuerySignHTTP()`.
 
 Previous discussion:
 
