@@ -34,6 +34,7 @@ type tomlInfos map[string]tomlInfo
 
 type tomlPair struct {
 	Type        string `toml:"type"`
+	Defaultable bool   `toml:"defaultable"`
 	Description string `toml:"description,optional"`
 }
 
@@ -61,11 +62,10 @@ type tomlOp struct {
 }
 
 type tomlNamespace struct {
-	Features    []string          `toml:"features"`
-	Implement   []string          `toml:"implement"`
-	Defaultable []string          `toml:"defaultable"`
-	New         tomlOp            `toml:"new"`
-	Op          map[string]tomlOp `toml:"op"`
+	Features  []string          `toml:"features"`
+	Implement []string          `toml:"implement"`
+	New       tomlOp            `toml:"new"`
+	Op        map[string]tomlOp `toml:"op"`
 }
 
 type tomlService struct {
@@ -115,6 +115,7 @@ func parsePairs() Pairs {
 		p := Pair{
 			Name:        k,
 			Type:        v.Type,
+			Defaultable: v.Defaultable,
 			Description: v.Description,
 		}
 
@@ -242,6 +243,7 @@ func parseService(filePath string) Service {
 		ps.Pairs = append(ps.Pairs, Pair{
 			Name:        k,
 			Type:        v.Type,
+			Defaultable: v.Defaultable,
 			Description: v.Description,
 		})
 	}
@@ -265,10 +267,9 @@ func parseService(filePath string) Service {
 	// Parse namespace.
 	for name, v := range ts.Namespace {
 		n := Namespace{
-			Name:        name,
-			Implement:   v.Implement,
-			Features:    v.Features,
-			Defaultable: v.Defaultable,
+			Name:      name,
+			Implement: v.Implement,
+			Features:  v.Features,
 			New: New{
 				Required: v.New.Required,
 				Optional: v.New.Optional,

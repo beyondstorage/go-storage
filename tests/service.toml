@@ -51,6 +51,7 @@ type = "bool"
 
 [pairs.storage_class]
 type = "string"
+defaultable = true
 
 [pairs.default_service_pairs]
 type = "DefaultServicePairs"
