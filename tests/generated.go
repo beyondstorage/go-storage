@@ -72,16 +72,6 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 	s.SetSystemMetadata(sm)
 }
 
-// WithDefaultContentType will apply default_content_type value to Options.
-//
-// ContentType
-func WithDefaultContentType(v string) Pair {
-	return Pair{
-		Key:   "default_content_type",
-		Value: v,
-	}
-}
-
 // WithDefaultServicePairs will apply default_service_pairs value to Options.
 //
 // DefaultServicePairs set default pairs for service actions
@@ -198,6 +188,7 @@ var pairMap = map[string]string{
 	"continuation_token":    "string",
 	"credential":            "string",
 	"default_content_type":  "string",
+	"default_io_callback":   "func([]byte)",
 	"default_service_pairs": "DefaultServicePairs",
 	"default_storage_class": "string",
 	"default_storage_pairs": "DefaultStoragePairs",
@@ -599,6 +590,8 @@ type pairStorageNew struct {
 	// Default pairs
 	hasDefaultContentType  bool
 	DefaultContentType     string
+	hasDefaultIoCallback   bool
+	DefaultIoCallback      func([]byte)
 	hasDefaultStorageClass bool
 	DefaultStorageClass    string
 }
@@ -675,6 +668,12 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.hasDefaultContentType = true
 			result.DefaultContentType = v.Value.(string)
+		case "default_io_callback":
+			if result.hasDefaultIoCallback {
+				continue
+			}
+			result.hasDefaultIoCallback = true
+			result.DefaultIoCallback = v.Value.(func([]byte))
 		case "default_storage_class":
 			if result.hasDefaultStorageClass {
 				continue
@@ -698,6 +697,11 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 	if result.hasDefaultContentType {
 		result.HasDefaultStoragePairs = true
 		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithContentType(result.DefaultContentType))
+	}
+	if result.hasDefaultIoCallback {
+		result.HasDefaultStoragePairs = true
+		result.DefaultStoragePairs.Read = append(result.DefaultStoragePairs.Read, WithIoCallback(result.DefaultIoCallback))
+		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithIoCallback(result.DefaultIoCallback))
 	}
 	if result.hasDefaultStorageClass {
 		result.HasDefaultStoragePairs = true

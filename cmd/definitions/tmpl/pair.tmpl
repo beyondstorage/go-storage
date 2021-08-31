@@ -21,4 +21,16 @@ func With{{ $pname }}(v {{ $v.Type }}) Pair {
         Value: v,
     }
 }
+
+{{ if $v.Defaultable }}
+// WithDefault{{ $pname }} will apply default_{{ $v.Name }} value to Options.
+//
+{{ $v.Description }}
+func WithDefault{{ $pname }}(v {{ $v.Type }}) Pair {
+    return Pair{
+        Key: "default_{{ $v.Name }}",
+        Value: v,
+    }
+}
+{{- end }}
 {{- end }}
