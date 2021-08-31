@@ -29,6 +29,16 @@ func WithContentType(v string) Pair {
 	}
 }
 
+// WithDefaultContentType will apply default_content_type value to Options.
+//
+// ContentType
+func WithDefaultContentType(v string) Pair {
+	return Pair{
+		Key:   "default_content_type",
+		Value: v,
+	}
+}
+
 // WithContext will apply context value to Options.
 //
 // Context
@@ -105,6 +115,16 @@ func WithInterceptor(v Interceptor) Pair {
 func WithIoCallback(v func([]byte)) Pair {
 	return Pair{
 		Key:   "io_callback",
+		Value: v,
+	}
+}
+
+// WithDefaultIoCallback will apply default_io_callback value to Options.
+//
+// IoCallback specify what todo every time we read data from source
+func WithDefaultIoCallback(v func([]byte)) Pair {
+	return Pair{
+		Key:   "default_io_callback",
 		Value: v,
 	}
 }

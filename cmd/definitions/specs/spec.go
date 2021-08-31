@@ -134,17 +134,17 @@ func (p Pairs) Sort() {
 type Pair struct {
 	Name        string
 	Type        string
+	Defaultable bool
 	Description string
 }
 
 // Namespace is the data parsed from TOML.
 type Namespace struct {
-	Name        string
-	Features    []string // The feature names that provided by current namespace.
-	Implement   []string
-	Defaultable []string // The defaultable pairs for the current namespace.
-	New         New
-	Op          []Op
+	Name      string
+	Features  []string // The feature names that provided by current namespace.
+	Implement []string
+	New       New
+	Op        []Op
 }
 
 // Sort will sort the Namespace
