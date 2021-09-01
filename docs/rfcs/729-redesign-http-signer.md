@@ -1,7 +1,7 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-08-27
 - RFC PR: [beyondstorage/go-storage#729](https://github.com/beyondstorage/go-storage/issues/729)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#731](https://github.com/beyondstorage/go-storage/issues/731)
 
 # GSP-729: Redesign HTTP Signer
 
@@ -9,7 +9,7 @@
   - [GSP-706]: Deprecate `HTTPSigner` and `QuerySignHTTP()`.
 
 Previous discussion:
-- [How to pass `partIndex` to `QuerySignHTTP` for `WriteMultipart`?](https://github.com/beyondstorage/go-storage/issues/726)
+- [How to pass `partIndex` into `QuerySignHTTP` for `WriteMultipart`?](https://forum.beyondstorage.io/t/how-to-pass-partindex-into-querysignhttp-for-writemultipart/192)
 - [#beyondstorage@gsp-706:matrix.org](https://matrix.to/#/#beyondstorage@gsp-706:matrix.org)
 
 ## Background
@@ -17,22 +17,22 @@ Previous discussion:
 In [GSP-706], we introduced `HTTPSigner` interface to support HTTP authenticating requests, which contains `QuerySignHTTP()`. `QuerySignHTTP()` is used to authenticate requests by using query parameters.
 
 During the implementation for services, we found the following problems:
-- There's no appropriate way to pass in some parameters for some operations like [How to pass partIndex into QuerySignHTTP for WriteMultipart](https://github.com/beyondstorage/go-storage/issues/726).
+- There's no appropriate way to pass in some parameters for some operations like [How to pass partIndex into QuerySignHTTP for WriteMultipart](https://forum.beyondstorage.io/t/how-to-pass-partindex-into-querysignhttp-for-writemultipart/192).
 - Supporting all the authenticating request operations in one function makes it slightly complicated and hard to maintain, especially for the services that support query string authentication like s3, gcs, etc.
 
 ## Proposal
 
-I propose to split `HTTPSigner` into multiple interfaces and define HTTP signer interfaces one by one. For now, we will introduce the following interface:
+I propose to split `HTTPSigner` into multiple interfaces according to the current interface classification, and define HTTP signer interfaces one by one. For now, we will introduce the following interface:
 
 ```go
 type StorageHTTPSigner interface {
-    QuerySignHTTPRead(path string, expire time.Duration, ps ...types.Pair) (signedReq *http.Request, err error)
-    QuerySignHTTPWrite(path string, size int64, expire time.Duration, ps ...types.Pair) (signedReq *http.Request, err error)
+    QuerySignHTTPRead(path string, expire time.Duration, ps ...types.Pair) (req *http.Request, err error)
+    QuerySignHTTPWrite(path string, size int64, expire time.Duration, ps ...types.Pair) (req *http.Request, err error)
 }
 ```
 
 - `StorageHTTPSigner` is the interface associated with `Storager`, which support using query parameters to authenticate requests.
-  - `QuerySignHTTPRead` and `QuerySignHTTPWrite` are the supported signature operations for read and write in `StorageHTTPSigner` for now. Other operations SHOULD be introduced by new GSP.
+  - `QuerySignHTTPRead()` and `QuerySignHTTPWrite()` are the supported signature operations for read and write in `StorageHTTPSigner` for now. Other operations SHOULD be introduced by new GSP.
 - Other interfaces like `MultipartHTTPSigner`, `AppendHTTPSigner` etc associated with `Multiparter`, `Appender` etc SHOULD be introduced by new GSP if needed.
 - Compared to the corresponding basic operation(`Read` and `Write` in `Storager`), the parameters of the `StorageHTTPSigner` operations have the following differences:
   - `expire` is required.
@@ -46,7 +46,7 @@ From service side:
 
 ## Rationale
 
-### Query string authorization in s3
+### Query string authentication in s3
 
 As described in the [authentication overview](https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html#auth-methods-intro), you can provide authentication information using query string parameters.
 
