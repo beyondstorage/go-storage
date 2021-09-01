@@ -5,6 +5,9 @@
 
 # GSP-706: Support HTTP Signer
 
+- Updated by:
+  - [GSP-729]: Deprecate `HTTPSigner` and `QuerySignHTTP()`.
+
 Previous discussion:
 
 - [Allow generate signed url for upload objects](https://github.com/beyondstorage/go-storage/issues/646)
