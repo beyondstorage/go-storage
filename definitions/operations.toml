@@ -171,12 +171,20 @@ results = ["n"]
 object_mode = "page"
 
 [reacher]
-description = "is the interface for Reach."
+description = """
+is the interface for Reach.
+
+Deprecated: Use StorageHTTPSigner instead.
+"""
 
 [reacher.op.reach]
-description = "will provide a way, which can reach the object."
 params = ["path"]
 results = ["url"]
+description = """
+will provide a way, which can reach the object.
+
+Deprecated: Use QuerySignHTTPRead instead.
+"""
 
 [servicer]
 description = "can maintain multipart storage services."

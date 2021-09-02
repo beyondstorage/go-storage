@@ -509,11 +509,17 @@ func (s UnimplementedPager) WritePageWithContext(ctx context.Context, o *Object,
 }
 
 // Reacher is the interface for Reach.
+//
+// Deprecated: Use StorageHTTPSigner instead.
 type Reacher interface {
 
 	// Reach will provide a way, which can reach the object.
+	//
+	// Deprecated: Use QuerySignHTTPRead instead.
 	Reach(path string, pairs ...Pair) (url string, err error)
 	// ReachWithContext will provide a way, which can reach the object.
+	//
+	// Deprecated: Use QuerySignHTTPRead instead.
 	ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error)
 
 	mustEmbedUnimplementedReacher()
