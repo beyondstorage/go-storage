@@ -12,4 +12,9 @@ require (
 	github.com/pelletier/go-toml v1.9.3
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
+	github.com/Xuanwo/go-codegen v1.0.0
+)
+
+replace (
+	github.com/Xuanwo/go-codegen   => ../../xuanwo/go-codegen
 )
