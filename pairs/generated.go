@@ -81,7 +81,9 @@ func WithEndpoint(v string) Pair {
 
 // WithExpire will apply expire value to Options.
 //
-// Expire specify when the url returned by reach will expire
+// Expire specify when the url returned by reach will expire.
+//
+// Deprecated: Use `QuerySignHTTPRead` instead of `Reach` and `expire` is the declared argument.
 func WithExpire(v time.Duration) Pair {
 	return Pair{
 		Key:   "expire",

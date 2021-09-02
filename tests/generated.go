@@ -1762,6 +1762,8 @@ func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, p
 
 // Reach will provide a way, which can reach the object.
 //
+// Deprecated: Use QuerySignHTTPRead instead.
+//
 // This function will create a context by default.
 func (s *Storage) Reach(path string, pairs ...Pair) (url string, err error) {
 	ctx := context.Background()
@@ -1769,6 +1771,8 @@ func (s *Storage) Reach(path string, pairs ...Pair) (url string, err error) {
 }
 
 // ReachWithContext will provide a way, which can reach the object.
+//
+// Deprecated: Use QuerySignHTTPRead instead.
 func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error) {
 	defer func() {
 		err = s.formatError("reach", err, path)
