@@ -42,7 +42,6 @@ type StorageHTTPSigner interface {
 From service side:
 
 - If part of the operations are unsupported, `services.ErrCapabilityInsufficient` error can be returned directly.
-- There's no need to declare all the pairs for `StorageHTTPSigner` operations, as pairs passed in will be stored and can be got by calling the parse pair function of the corresponding operation.
 
 ## Rationale
 
