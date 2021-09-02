@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.7.0] - 2021-09-02
+
+### Added
+
+- tests: Add test for NewStorageFromString (#724)
+- docs/rfcs: GSP-725 Add Defaultable Property for Pair (#725)
+- cmd/definitions: Implement GSP-725 Add Defaultable Property for Pair (#730)
+- docs/rfcs: GSP-729 Redesign HTTP Signer (#729)
+- definitions: Implement GSP-729 Redesign HTTP Signer (#732)
+
+### Changed
+
+- docs/rfc: Remove pair declare description for GSP-729 (#735)
+
+### Deprecated
+
+- definitions: Deprecate Reacher and expire (#734)
+
 ## [v4.6.0] - 2021-08-25
 
 ### Added
@@ -647,7 +665,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.6.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.7.0...HEAD
+[v4.7.0]: https://github.com/beyondstorage/go-storage/compare/v4.6.0...v4.7.0
 [v4.6.0]: https://github.com/beyondstorage/go-storage/compare/v4.5.0...v4.6.0
 [v4.5.0]: https://github.com/beyondstorage/go-storage/compare/v4.4.0...v4.5.0
 [v4.4.0]: https://github.com/beyondstorage/go-storage/compare/v4.3.2...v4.4.0
