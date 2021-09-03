@@ -179,6 +179,8 @@ type Info struct {
 	Export      bool
 	Description string
 
+	originalDescription string
+
 	itype string
 
 	Global bool
@@ -193,6 +195,7 @@ func (i *Info) Format(s specs.Info, global bool) {
 	i.Export = s.Export
 	i.Description = formatDescription(templateutils.ToPascal(s.Name), s.Description)
 
+	i.originalDescription = s.Description
 	i.Global = global
 }
 

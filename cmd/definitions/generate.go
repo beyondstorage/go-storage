@@ -23,7 +23,6 @@ var (
 	serviceT   = newTmpl("cmd/definitions/tmpl/service")
 	operationT = newTmpl("cmd/definitions/tmpl/operation")
 	functionT  = newTmpl("cmd/definitions/tmpl/function")
-	objectT    = newTmpl("cmd/definitions/tmpl/object")
 )
 
 func generateGlobal(data *Data) {
@@ -37,7 +36,8 @@ func generateGlobal(data *Data) {
 	generateT(operationT, "types/operation.generated.go", data)
 
 	// Object generate
-	generateT(objectT, "types/object.generated.go", data)
+	generateObject(data, "types/object.generated.go")
+
 }
 
 func generateService(data *Data) {
