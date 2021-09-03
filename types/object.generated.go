@@ -30,39 +30,31 @@ const (
 //   - Object's fields SHOULD not be changed outside services.
 //   - Object CANNOT be copied
 //   - Object is concurrent safe.
-//   - Only `ID`, `Path`, `Mode` are required during list operations, other fields
+//   - Only ID, Path, Mode are required during list operations, other fields
 //     could be fetched via lazy stat logic: https://beyondstorage.io/docs/go-storage/internal/object-lazy-stat
-type Object struct {
-	// AppendOffset AppendOffset is the offset of the append object.
-	appendOffset int64
-	// ContentLength
+type Object struct { // AppendOffset is the offset of the append object.
+	appendOffset  int64
 	contentLength int64
-	// ContentMd5
-	contentMd5 string
-	// ContentType
-	contentType string
-	// Etag
-	etag string
-	// ID ID is the unique key in storage.
-	ID string
-	// LastModified
+	contentMd5    string
+	contentType   string
+	etag          string
+	// ID is the unique key in storage.
+	ID           string
 	lastModified time.Time
-	// LinkTarget LinkTarget is the symlink target for link object.
+	// LinkTarget is the symlink target for link object.
 	linkTarget string
-	// Mode
-	Mode ObjectMode
-	// MultipartID MultipartID is the part id of part object.
+	Mode       ObjectMode
+	// MultipartID is the part id of part object.
 	multipartID string
-	// Path Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
+	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's
+	// input.
 	Path string
-	// SystemMetadata SystemMetadata stores system defined metadata.
+	// SystemMetadata stores system defined metadata.
 	systemMetadata interface{}
-	// UserMetadata UserMetadata stores user defined metadata.
+	// UserMetadata stores user defined metadata.
 	userMetadata map[string]string
-
 	// client is the client in which Object is alive.
 	client Storager
-
 	// bit used as a bitmap for object value, 0 means not set, 1 means set
 	bit  uint64
 	done uint32
@@ -71,20 +63,19 @@ type Object struct {
 
 // GetAppendOffset will get AppendOffset from Object.
 //
-// AppendOffset AppendOffset is the offset of the append object.
+// // AppendOffset AppendOffset is the offset of the append object.
 func (o *Object) GetAppendOffset() (int64, bool) {
 	o.stat()
 
 	if o.bit&objectIndexAppendOffset != 0 {
 		return o.appendOffset, true
 	}
-
 	return 0, false
 }
 
 // MustGetAppendOffset will get AppendOffset from Object.
 //
-// AppendOffset AppendOffset is the offset of the append object.
+// AppendOffset is the offset of the append object.
 func (o *Object) MustGetAppendOffset() int64 {
 	o.stat()
 
@@ -96,7 +87,7 @@ func (o *Object) MustGetAppendOffset() int64 {
 
 // SetAppendOffset will set AppendOffset into Object.
 //
-// AppendOffset AppendOffset is the offset of the append object.
+// AppendOffset is the offset of the append object.
 func (o *Object) SetAppendOffset(v int64) *Object {
 	o.appendOffset = v
 	o.bit |= objectIndexAppendOffset
@@ -105,20 +96,17 @@ func (o *Object) SetAppendOffset(v int64) *Object {
 
 // GetContentLength will get ContentLength from Object.
 //
-// ContentLength
+// // ContentLength
 func (o *Object) GetContentLength() (int64, bool) {
 	o.stat()
 
 	if o.bit&objectIndexContentLength != 0 {
 		return o.contentLength, true
 	}
-
 	return 0, false
 }
 
 // MustGetContentLength will get ContentLength from Object.
-//
-// ContentLength
 func (o *Object) MustGetContentLength() int64 {
 	o.stat()
 
@@ -129,8 +117,6 @@ func (o *Object) MustGetContentLength() int64 {
 }
 
 // SetContentLength will set ContentLength into Object.
-//
-// ContentLength
 func (o *Object) SetContentLength(v int64) *Object {
 	o.contentLength = v
 	o.bit |= objectIndexContentLength
@@ -139,20 +125,17 @@ func (o *Object) SetContentLength(v int64) *Object {
 
 // GetContentMd5 will get ContentMd5 from Object.
 //
-// ContentMd5
+// // ContentMd5
 func (o *Object) GetContentMd5() (string, bool) {
 	o.stat()
 
 	if o.bit&objectIndexContentMd5 != 0 {
 		return o.contentMd5, true
 	}
-
 	return "", false
 }
 
 // MustGetContentMd5 will get ContentMd5 from Object.
-//
-// ContentMd5
 func (o *Object) MustGetContentMd5() string {
 	o.stat()
 
@@ -163,8 +146,6 @@ func (o *Object) MustGetContentMd5() string {
 }
 
 // SetContentMd5 will set ContentMd5 into Object.
-//
-// ContentMd5
 func (o *Object) SetContentMd5(v string) *Object {
 	o.contentMd5 = v
 	o.bit |= objectIndexContentMd5
@@ -173,20 +154,17 @@ func (o *Object) SetContentMd5(v string) *Object {
 
 // GetContentType will get ContentType from Object.
 //
-// ContentType
+// // ContentType
 func (o *Object) GetContentType() (string, bool) {
 	o.stat()
 
 	if o.bit&objectIndexContentType != 0 {
 		return o.contentType, true
 	}
-
 	return "", false
 }
 
 // MustGetContentType will get ContentType from Object.
-//
-// ContentType
 func (o *Object) MustGetContentType() string {
 	o.stat()
 
@@ -197,8 +175,6 @@ func (o *Object) MustGetContentType() string {
 }
 
 // SetContentType will set ContentType into Object.
-//
-// ContentType
 func (o *Object) SetContentType(v string) *Object {
 	o.contentType = v
 	o.bit |= objectIndexContentType
@@ -207,20 +183,17 @@ func (o *Object) SetContentType(v string) *Object {
 
 // GetEtag will get Etag from Object.
 //
-// Etag
+// // Etag
 func (o *Object) GetEtag() (string, bool) {
 	o.stat()
 
 	if o.bit&objectIndexEtag != 0 {
 		return o.etag, true
 	}
-
 	return "", false
 }
 
 // MustGetEtag will get Etag from Object.
-//
-// Etag
 func (o *Object) MustGetEtag() string {
 	o.stat()
 
@@ -231,18 +204,14 @@ func (o *Object) MustGetEtag() string {
 }
 
 // SetEtag will set Etag into Object.
-//
-// Etag
 func (o *Object) SetEtag(v string) *Object {
 	o.etag = v
 	o.bit |= objectIndexEtag
 	return o
 }
-
 func (o *Object) GetID() string {
 	return o.ID
 }
-
 func (o *Object) SetID(v string) *Object {
 	o.ID = v
 	return o
@@ -250,20 +219,17 @@ func (o *Object) SetID(v string) *Object {
 
 // GetLastModified will get LastModified from Object.
 //
-// LastModified
+// // LastModified
 func (o *Object) GetLastModified() (time.Time, bool) {
 	o.stat()
 
 	if o.bit&objectIndexLastModified != 0 {
 		return o.lastModified, true
 	}
-
 	return time.Time{}, false
 }
 
 // MustGetLastModified will get LastModified from Object.
-//
-// LastModified
 func (o *Object) MustGetLastModified() time.Time {
 	o.stat()
 
@@ -274,8 +240,6 @@ func (o *Object) MustGetLastModified() time.Time {
 }
 
 // SetLastModified will set LastModified into Object.
-//
-// LastModified
 func (o *Object) SetLastModified(v time.Time) *Object {
 	o.lastModified = v
 	o.bit |= objectIndexLastModified
@@ -284,20 +248,19 @@ func (o *Object) SetLastModified(v time.Time) *Object {
 
 // GetLinkTarget will get LinkTarget from Object.
 //
-// LinkTarget LinkTarget is the symlink target for link object.
+// // LinkTarget LinkTarget is the symlink target for link object.
 func (o *Object) GetLinkTarget() (string, bool) {
 	o.stat()
 
 	if o.bit&objectIndexLinkTarget != 0 {
 		return o.linkTarget, true
 	}
-
 	return "", false
 }
 
 // MustGetLinkTarget will get LinkTarget from Object.
 //
-// LinkTarget LinkTarget is the symlink target for link object.
+// LinkTarget is the symlink target for link object.
 func (o *Object) MustGetLinkTarget() string {
 	o.stat()
 
@@ -309,17 +272,15 @@ func (o *Object) MustGetLinkTarget() string {
 
 // SetLinkTarget will set LinkTarget into Object.
 //
-// LinkTarget LinkTarget is the symlink target for link object.
+// LinkTarget is the symlink target for link object.
 func (o *Object) SetLinkTarget(v string) *Object {
 	o.linkTarget = v
 	o.bit |= objectIndexLinkTarget
 	return o
 }
-
 func (o *Object) GetMode() ObjectMode {
 	return o.Mode
 }
-
 func (o *Object) SetMode(v ObjectMode) *Object {
 	o.Mode = v
 	return o
@@ -327,20 +288,19 @@ func (o *Object) SetMode(v ObjectMode) *Object {
 
 // GetMultipartID will get MultipartID from Object.
 //
-// MultipartID MultipartID is the part id of part object.
+// // MultipartID MultipartID is the part id of part object.
 func (o *Object) GetMultipartID() (string, bool) {
 	o.stat()
 
 	if o.bit&objectIndexMultipartID != 0 {
 		return o.multipartID, true
 	}
-
 	return "", false
 }
 
 // MustGetMultipartID will get MultipartID from Object.
 //
-// MultipartID MultipartID is the part id of part object.
+// MultipartID is the part id of part object.
 func (o *Object) MustGetMultipartID() string {
 	o.stat()
 
@@ -352,17 +312,15 @@ func (o *Object) MustGetMultipartID() string {
 
 // SetMultipartID will set MultipartID into Object.
 //
-// MultipartID MultipartID is the part id of part object.
+// MultipartID is the part id of part object.
 func (o *Object) SetMultipartID(v string) *Object {
 	o.multipartID = v
 	o.bit |= objectIndexMultipartID
 	return o
 }
-
 func (o *Object) GetPath() string {
 	return o.Path
 }
-
 func (o *Object) SetPath(v string) *Object {
 	o.Path = v
 	return o
@@ -370,20 +328,19 @@ func (o *Object) SetPath(v string) *Object {
 
 // GetSystemMetadata will get SystemMetadata from Object.
 //
-// SystemMetadata SystemMetadata stores system defined metadata.
+// // SystemMetadata SystemMetadata stores system defined metadata.
 func (o *Object) GetSystemMetadata() (interface{}, bool) {
 	o.stat()
 
 	if o.bit&objectIndexSystemMetadata != 0 {
 		return o.systemMetadata, true
 	}
-
 	return nil, false
 }
 
 // MustGetSystemMetadata will get SystemMetadata from Object.
 //
-// SystemMetadata SystemMetadata stores system defined metadata.
+// SystemMetadata stores system defined metadata.
 func (o *Object) MustGetSystemMetadata() interface{} {
 	o.stat()
 
@@ -395,7 +352,7 @@ func (o *Object) MustGetSystemMetadata() interface{} {
 
 // SetSystemMetadata will set SystemMetadata into Object.
 //
-// SystemMetadata SystemMetadata stores system defined metadata.
+// SystemMetadata stores system defined metadata.
 func (o *Object) SetSystemMetadata(v interface{}) *Object {
 	o.systemMetadata = v
 	o.bit |= objectIndexSystemMetadata
@@ -404,20 +361,19 @@ func (o *Object) SetSystemMetadata(v interface{}) *Object {
 
 // GetUserMetadata will get UserMetadata from Object.
 //
-// UserMetadata UserMetadata stores user defined metadata.
+// // UserMetadata UserMetadata stores user defined metadata.
 func (o *Object) GetUserMetadata() (map[string]string, bool) {
 	o.stat()
 
 	if o.bit&objectIndexUserMetadata != 0 {
 		return o.userMetadata, true
 	}
-
 	return map[string]string{}, false
 }
 
 // MustGetUserMetadata will get UserMetadata from Object.
 //
-// UserMetadata UserMetadata stores user defined metadata.
+// UserMetadata stores user defined metadata.
 func (o *Object) MustGetUserMetadata() map[string]string {
 	o.stat()
 
@@ -429,13 +385,12 @@ func (o *Object) MustGetUserMetadata() map[string]string {
 
 // SetUserMetadata will set UserMetadata into Object.
 //
-// UserMetadata UserMetadata stores user defined metadata.
+// UserMetadata stores user defined metadata.
 func (o *Object) SetUserMetadata(v map[string]string) *Object {
 	o.userMetadata = v
 	o.bit |= objectIndexUserMetadata
 	return o
 }
-
 func (o *Object) clone(xo *Object) {
 	o.appendOffset = xo.appendOffset
 	o.contentLength = xo.contentLength
@@ -450,6 +405,5 @@ func (o *Object) clone(xo *Object) {
 	o.Path = xo.Path
 	o.systemMetadata = xo.systemMetadata
 	o.userMetadata = xo.userMetadata
-
 	o.bit = xo.bit
 }
