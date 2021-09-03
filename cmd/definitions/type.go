@@ -359,15 +359,6 @@ func (f Fields) String() string {
 	return strings.Join(x, ",")
 }
 
-// StringEndswithComma will print string with comma aware.
-func (f Fields) StringEndswithComma() string {
-	content := f.String()
-	if content == "" {
-		return ""
-	}
-	return content + ","
-}
-
 // Caller will print caller foramt.
 func (f Fields) Caller() string {
 	x := make([]string, 0)
@@ -375,16 +366,6 @@ func (f Fields) Caller() string {
 		x = append(x, v.Caller())
 	}
 	return strings.Join(x, ",")
-}
-
-// HasReader will check whether we have reader here.
-func (f Fields) HasReader() bool {
-	for _, v := range f {
-		if v.ftype == "io.Reader" || v.ftype == "io.ReadCloser" {
-			return true
-		}
-	}
-	return false
 }
 
 // CallerEndswithComma will print caller with comma aware.

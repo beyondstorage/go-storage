@@ -19,10 +19,7 @@ import (
 	"github.com/beyondstorage/go-storage/v4/cmd/definitions/bindata"
 )
 
-var (
-	serviceT  = newTmpl("cmd/definitions/tmpl/service")
-	functionT = newTmpl("cmd/definitions/tmpl/function")
-)
+var serviceT = newTmpl("cmd/definitions/tmpl/service")
 
 func generateGlobal(data *Data) {
 	// Metas generate
@@ -41,7 +38,7 @@ func generateGlobal(data *Data) {
 func generateService(data *Data) {
 	generateT(serviceT, "generated.go", data.Service)
 	for _, v := range data.Service.Namespaces {
-		appendT(functionT, v.Name+".go", v)
+		generateFunc(v, v.Name+".go")
 		formatService(v.Name + ".go")
 	}
 }
@@ -50,19 +47,6 @@ func generateT(tmpl *template.Template, filePath string, data interface{}) {
 	errorMsg := fmt.Sprintf("generate template %s to %s", tmpl.Name(), filePath) + ": %v"
 
 	file, err := os.Create(filePath)
-	if err != nil {
-		log.Fatalf(errorMsg, err)
-	}
-	err = tmpl.Execute(file, data)
-	if err != nil {
-		log.Fatalf(errorMsg, err)
-	}
-}
-
-func appendT(tmpl *template.Template, filePath string, data interface{}) {
-	errorMsg := fmt.Sprintf("append template %s to %s", tmpl.Name(), filePath) + ": %v"
-
-	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatalf(errorMsg, err)
 	}
