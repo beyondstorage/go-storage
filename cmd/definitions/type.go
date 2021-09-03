@@ -216,17 +216,19 @@ func (i *Info) DisplayName() string {
 
 // Interface represents an interface
 type Interface struct {
-	Name        string
-	Description string
-	Ops         map[string]*Operation
+	Name                string
+	Description         string
+	originalDescription string
+	Ops                 map[string]*Operation
 }
 
 // NewInterface will create a new interface from spec.
 func NewInterface(in specs.Interface, fields map[string]*Field) *Interface {
 	inter := &Interface{
-		Name:        in.Name,
-		Description: formatDescription(templateutils.ToPascal(in.Name), in.Description),
-		Ops:         make(map[string]*Operation),
+		Name:                in.Name,
+		originalDescription: in.Description,
+		Description:         formatDescription(templateutils.ToPascal(in.Name), in.Description),
+		Ops:                 make(map[string]*Operation),
 	}
 	for _, v := range in.Ops {
 		// Update op maps
@@ -236,6 +238,20 @@ func NewInterface(in specs.Interface, fields map[string]*Field) *Interface {
 	return inter
 }
 
+func (i *Interface) SortedOps() []*Operation {
+	var ks []string
+	for _, v := range i.Ops {
+		ks = append(ks, v.Name)
+	}
+	sort.Strings(ks)
+
+	var ops []*Operation
+	for _, v := range ks {
+		ops = append(ops, i.Ops[v])
+	}
+	return ops
+}
+
 // DisplayName will output interface's display name.
 func (i *Interface) DisplayName() string {
 	return templateutils.ToPascal(i.Name)
@@ -243,22 +259,24 @@ func (i *Interface) DisplayName() string {
 
 // Operation represents an operation.
 type Operation struct {
-	Name        string
-	Description string
-	Pairs       []string
-	Params      Fields
-	Results     Fields
-	ObjectMode  string
-	Local       bool
+	Name                string
+	originalDescription string
+	Description         string
+	Pairs               []string
+	Params              Fields
+	Results             Fields
+	ObjectMode          string
+	Local               bool
 }
 
 // NewOperation will create an new operation from operation spec.
 func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
 	op := &Operation{
-		Name:        v.Name,
-		Local:       v.Local,
-		ObjectMode:  v.ObjectMode,
-		Description: formatDescription("", v.Description),
+		Name:                v.Name,
+		Local:               v.Local,
+		ObjectMode:          v.ObjectMode,
+		originalDescription: v.Description,
+		Description:         formatDescription("", v.Description),
 	}
 	for _, f := range v.Params {
 		op.Params = append(op.Params, fields[f])
@@ -279,39 +297,6 @@ func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
 	op.Pairs = v.Pairs
 
 	return op
-}
-
-// FormatParams print params.
-func (o *Operation) FormatParams() string {
-	s := make([]string, 0)
-	for _, v := range o.Params {
-		s = append(s, v.String())
-	}
-	return strings.Join(s, ",")
-}
-
-// FormatResults will print results.
-func (o *Operation) FormatResults() string {
-	s := make([]string, 0)
-	for _, v := range o.Results {
-		s = append(s, v.String())
-	}
-	return strings.Join(s, ",")
-}
-
-// FormatResultsWithPackageName will print results with package name
-//
-// If type is starts with this package name, we will ignore it.
-func (o *Operation) FormatResultsWithPackageName(packageName string) string {
-	s := make([]string, 0)
-	for _, v := range o.Results {
-		if strings.HasPrefix(v.ftype, packageName) {
-			s = append(s, v.Name+" "+strings.TrimPrefix(v.ftype, packageName+"."))
-			continue
-		}
-		s = append(s, v.String())
-	}
-	return strings.Join(s, ",")
 }
 
 // Function represents a function.
