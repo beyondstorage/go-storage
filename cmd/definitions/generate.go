@@ -81,6 +81,27 @@ func generatePair(data *Data, path string) {
 				return r
 			}),
 		)
+		if v.Defaultable {
+			name := "default_" + v.Name
+			pname := templateutils.ToPascal(name)
+
+			xfn := f.Function("With" + pname)
+
+			xfn.CommentF(`With%s will apply %s value to Options.
+
+%s %s`, pname, name, pname, v.originalDescription)
+			xfn.Parameter("v", v.Type())
+			xfn.Result("p", "Pair")
+			xfn.Body(
+				gg.Embed(func() gg.Node {
+					r := gg.Return()
+					r.Value("Pair").
+						Field("Key", gg.Lit(name).String()).
+						Field("Value", "v")
+					return r
+				}),
+			)
+		}
 	}
 
 	err := f.WriteFile(path)

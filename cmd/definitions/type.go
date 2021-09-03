@@ -482,14 +482,6 @@ func (d *Data) FormatPairs(p specs.Pairs, global bool) map[string]*Pair {
 		pair.Format(v, global)
 
 		m[pair.Name] = pair
-
-		if pair.Defaultable {
-			defaultName := fmt.Sprintf("default_%s", pair.Name)
-			defaultPair := &(*pair)
-			defaultPair.Name = defaultName
-			defaultPair.Defaultable = false
-			m[defaultName] = defaultPair
-		}
 	}
 	return m
 }
