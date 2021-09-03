@@ -2,6 +2,7 @@
 type = "string"
 
 [content_type]
+defaultable = true
 type = "string"
 
 [continuation_token]
@@ -18,7 +19,11 @@ description = "specify how to provide endpoint for service or storage"
 
 [expire]
 type = "time.Duration"
-description = "specify when the url returned by reach will expire"
+description = """
+specify when the url returned by reach will expire.
+
+Deprecated: Use `QuerySignHTTPRead` instead of `Reach` and `expire` is the declared argument.
+"""
 
 [interceptor]
 type = "Interceptor"
@@ -47,6 +52,7 @@ type = "string"
 
 [io_callback]
 type = "func([]byte)"
+defaultable = true
 description = "specify what todo every time we read data from source"
 
 [size]

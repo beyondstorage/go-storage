@@ -7,22 +7,6 @@ import (
 	"time"
 )
 
-// Operation names in Appender.
-const (
-	// OpAppenderCommitAppend is the operation name for commit_append in appender.
-	OpAppenderCommitAppend = "commit_append"
-	// OpAppenderCreateAppend is the operation name for create_append in appender.
-	OpAppenderCreateAppend = "create_append"
-	// OpAppenderWriteAppend is the operation name for write_append in appender.
-	OpAppenderWriteAppend = "write_append"
-)
-
-var (
-	_ = OpAppenderCommitAppend
-	_ = OpAppenderCreateAppend
-	_ = OpAppenderWriteAppend
-)
-
 // Appender is the interface for Append related operations.
 type Appender interface {
 
@@ -91,25 +75,6 @@ func (s UnimplementedAppender) WriteAppendWithContext(ctx context.Context, o *Ob
 	err = NewOperationNotImplementedError("write_append")
 	return
 }
-
-// Operation names in Blocker.
-const (
-	// OpBlockerCombineBlock is the operation name for combine_block in blocker.
-	OpBlockerCombineBlock = "combine_block"
-	// OpBlockerCreateBlock is the operation name for create_block in blocker.
-	OpBlockerCreateBlock = "create_block"
-	// OpBlockerListBlock is the operation name for list_block in blocker.
-	OpBlockerListBlock = "list_block"
-	// OpBlockerWriteBlock is the operation name for write_block in blocker.
-	OpBlockerWriteBlock = "write_block"
-)
-
-var (
-	_ = OpBlockerCombineBlock
-	_ = OpBlockerCreateBlock
-	_ = OpBlockerListBlock
-	_ = OpBlockerWriteBlock
-)
 
 // Blocker is the interface for Block related operations.
 type Blocker interface {
@@ -192,16 +157,6 @@ func (s UnimplementedBlocker) WriteBlockWithContext(ctx context.Context, o *Obje
 	return
 }
 
-// Operation names in Copier.
-const (
-	// OpCopierCopy is the operation name for copy in copier.
-	OpCopierCopy = "copy"
-)
-
-var (
-	_ = OpCopierCopy
-)
-
 // Copier is the interface for Copy.
 type Copier interface {
 
@@ -253,16 +208,6 @@ func (s UnimplementedCopier) CopyWithContext(ctx context.Context, src string, ds
 	return
 }
 
-// Operation names in Direr.
-const (
-	// OpDirerCreateDir is the operation name for create_dir in direr.
-	OpDirerCreateDir = "create_dir"
-)
-
-var (
-	_ = OpDirerCreateDir
-)
-
 // Direr is the interface for Directory.
 type Direr interface {
 
@@ -291,16 +236,6 @@ func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path strin
 	err = NewOperationNotImplementedError("create_dir")
 	return
 }
-
-// Operation names in Fetcher.
-const (
-	// OpFetcherFetch is the operation name for fetch in fetcher.
-	OpFetcherFetch = "fetch"
-)
-
-var (
-	_ = OpFetcherFetch
-)
 
 // Fetcher is the interface for Fetch.
 type Fetcher interface {
@@ -340,55 +275,6 @@ func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string,
 	err = NewOperationNotImplementedError("fetch")
 	return
 }
-
-// Operation names in HTTPSigner.
-const (
-	// OpHTTPSignerQuerySignHTTP is the operation name for query_sign_http in http_signer.
-	OpHTTPSignerQuerySignHTTP = "query_sign_http"
-)
-
-var (
-	_ = OpHTTPSignerQuerySignHTTP
-)
-
-// HTTPSigner is the interface for Signer.
-type HTTPSigner interface {
-
-	// QuerySignHTTP will return `*http.Request` with query string parameters containing signature in `URL` to represent the client's request.
-	QuerySignHTTP(op string, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-	// QuerySignHTTPWithContext will return `*http.Request` with query string parameters containing signature in `URL` to represent the client's request.
-	QuerySignHTTPWithContext(ctx context.Context, op string, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-
-	mustEmbedUnimplementedHTTPSigner()
-}
-
-// UnimplementedHTTPSigner must be embedded to have forward compatible implementations.
-type UnimplementedHTTPSigner struct{}
-
-func (s UnimplementedHTTPSigner) mustEmbedUnimplementedHTTPSigner() {}
-
-func (s UnimplementedHTTPSigner) String() string {
-	return "UnimplementedHTTPSigner"
-}
-
-func (s UnimplementedHTTPSigner) QuerySignHTTP(op string, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http")
-	return
-}
-func (s UnimplementedHTTPSigner) QuerySignHTTPWithContext(ctx context.Context, op string, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http")
-	return
-}
-
-// Operation names in Linker.
-const (
-	// OpLinkerCreateLink is the operation name for create_link in linker.
-	OpLinkerCreateLink = "create_link"
-)
-
-var (
-	_ = OpLinkerCreateLink
-)
 
 // Linker is the interface for link
 type Linker interface {
@@ -441,16 +327,6 @@ func (s UnimplementedLinker) CreateLinkWithContext(ctx context.Context, path str
 	return
 }
 
-// Operation names in Mover.
-const (
-	// OpMoverMove is the operation name for move in mover.
-	OpMoverMove = "move"
-)
-
-var (
-	_ = OpMoverMove
-)
-
 // Mover is the interface for Move.
 type Mover interface {
 
@@ -501,25 +377,6 @@ func (s UnimplementedMover) MoveWithContext(ctx context.Context, src string, dst
 	err = NewOperationNotImplementedError("move")
 	return
 }
-
-// Operation names in Multiparter.
-const (
-	// OpMultiparterCompleteMultipart is the operation name for complete_multipart in multiparter.
-	OpMultiparterCompleteMultipart = "complete_multipart"
-	// OpMultiparterCreateMultipart is the operation name for create_multipart in multiparter.
-	OpMultiparterCreateMultipart = "create_multipart"
-	// OpMultiparterListMultipart is the operation name for list_multipart in multiparter.
-	OpMultiparterListMultipart = "list_multipart"
-	// OpMultiparterWriteMultipart is the operation name for write_multipart in multiparter.
-	OpMultiparterWriteMultipart = "write_multipart"
-)
-
-var (
-	_ = OpMultiparterCompleteMultipart
-	_ = OpMultiparterCreateMultipart
-	_ = OpMultiparterListMultipart
-	_ = OpMultiparterWriteMultipart
-)
 
 // Multiparter is the interface for Multipart related operations.
 type Multiparter interface {
@@ -600,19 +457,6 @@ func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context,
 	return
 }
 
-// Operation names in Pager.
-const (
-	// OpPagerCreatePage is the operation name for create_page in pager.
-	OpPagerCreatePage = "create_page"
-	// OpPagerWritePage is the operation name for write_page in pager.
-	OpPagerWritePage = "write_page"
-)
-
-var (
-	_ = OpPagerCreatePage
-	_ = OpPagerWritePage
-)
-
 // Pager is the interface for Page related operations which support random write.
 type Pager interface {
 
@@ -664,22 +508,18 @@ func (s UnimplementedPager) WritePageWithContext(ctx context.Context, o *Object,
 	return
 }
 
-// Operation names in Reacher.
-const (
-	// OpReacherReach is the operation name for reach in reacher.
-	OpReacherReach = "reach"
-)
-
-var (
-	_ = OpReacherReach
-)
-
 // Reacher is the interface for Reach.
+//
+// Deprecated: Use StorageHTTPSigner instead.
 type Reacher interface {
 
 	// Reach will provide a way, which can reach the object.
+	//
+	// Deprecated: Use QuerySignHTTPRead instead.
 	Reach(path string, pairs ...Pair) (url string, err error)
 	// ReachWithContext will provide a way, which can reach the object.
+	//
+	// Deprecated: Use QuerySignHTTPRead instead.
 	ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error)
 
 	mustEmbedUnimplementedReacher()
@@ -702,25 +542,6 @@ func (s UnimplementedReacher) ReachWithContext(ctx context.Context, path string,
 	err = NewOperationNotImplementedError("reach")
 	return
 }
-
-// Operation names in Servicer.
-const (
-	// OpServicerCreate is the operation name for create in servicer.
-	OpServicerCreate = "create"
-	// OpServicerDelete is the operation name for delete in servicer.
-	OpServicerDelete = "delete"
-	// OpServicerGet is the operation name for get in servicer.
-	OpServicerGet = "get"
-	// OpServicerList is the operation name for list in servicer.
-	OpServicerList = "list"
-)
-
-var (
-	_ = OpServicerCreate
-	_ = OpServicerDelete
-	_ = OpServicerGet
-	_ = OpServicerList
-)
 
 // Servicer can maintain multipart storage services.
 type Servicer interface {
@@ -794,33 +615,48 @@ func (s UnimplementedServicer) ListWithContext(ctx context.Context, pairs ...Pai
 	return
 }
 
-// Operation names in Storager.
-const (
-	// OpStoragerCreate is the operation name for create in storager.
-	OpStoragerCreate = "create"
-	// OpStoragerDelete is the operation name for delete in storager.
-	OpStoragerDelete = "delete"
-	// OpStoragerList is the operation name for list in storager.
-	OpStoragerList = "list"
-	// OpStoragerMetadata is the operation name for metadata in storager.
-	OpStoragerMetadata = "metadata"
-	// OpStoragerRead is the operation name for read in storager.
-	OpStoragerRead = "read"
-	// OpStoragerStat is the operation name for stat in storager.
-	OpStoragerStat = "stat"
-	// OpStoragerWrite is the operation name for write in storager.
-	OpStoragerWrite = "write"
-)
+// StorageHTTPSigner is the interface for Storager related operations which support authentication.
+type StorageHTTPSigner interface {
 
-var (
-	_ = OpStoragerCreate
-	_ = OpStoragerDelete
-	_ = OpStoragerList
-	_ = OpStoragerMetadata
-	_ = OpStoragerRead
-	_ = OpStoragerStat
-	_ = OpStoragerWrite
-)
+	// QuerySignHTTPRead will read data from the file by using query parameters to authenticate requests.
+	QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPReadWithContext will read data from the file by using query parameters to authenticate requests.
+	QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPWrite will write data into a file by using query parameters to authenticate requests.
+	QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPWriteWithContext will write data into a file by using query parameters to authenticate requests.
+	QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	mustEmbedUnimplementedStorageHTTPSigner()
+}
+
+// UnimplementedStorageHTTPSigner must be embedded to have forward compatible implementations.
+type UnimplementedStorageHTTPSigner struct{}
+
+func (s UnimplementedStorageHTTPSigner) mustEmbedUnimplementedStorageHTTPSigner() {}
+
+func (s UnimplementedStorageHTTPSigner) String() string {
+	return "UnimplementedStorageHTTPSigner"
+}
+
+func (s UnimplementedStorageHTTPSigner) QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_read")
+	return
+}
+func (s UnimplementedStorageHTTPSigner) QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_read")
+	return
+}
+
+func (s UnimplementedStorageHTTPSigner) QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_write")
+	return
+}
+func (s UnimplementedStorageHTTPSigner) QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_write")
+	return
+}
 
 // Storager is the interface for storage service.
 type Storager interface {

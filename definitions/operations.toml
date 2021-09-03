@@ -99,14 +99,6 @@ will fetch from a given url to path.
 - A successful fetch operation should be complete, which means the object's content and metadata should be the same as requiring from the url.
 """
 
-[http_signer]
-description = "is the interface for Signer."
-
-[http_signer.op.query_sign_http]
-description = "will return `*http.Request` with query string parameters containing signature in `URL` to represent the client's request."
-params = ["op", "path", "expire"]
-results = ["req"]
-
 [mover]
 description = "is the interface for Move."
 
@@ -179,12 +171,20 @@ results = ["n"]
 object_mode = "page"
 
 [reacher]
-description = "is the interface for Reach."
+description = """
+is the interface for Reach.
+
+Deprecated: Use StorageHTTPSigner instead.
+"""
 
 [reacher.op.reach]
-description = "will provide a way, which can reach the object."
 params = ["path"]
 results = ["url"]
+description = """
+will provide a way, which can reach the object.
+
+Deprecated: Use QuerySignHTTPRead instead.
+"""
 
 [servicer]
 description = "can maintain multipart storage services."
@@ -294,6 +294,19 @@ will write data into a file.
   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if exists.
 - A successful write operation SHOULD be complete, which means the object's content and metadata should be the same as specified in write request.
 """
+
+[storage_http_signer]
+description = "is the interface for Storager related operations which support authentication."
+
+[storage_http_signer.op.query_sign_http_read]
+description = "will read data from the file by using query parameters to authenticate requests."
+params = ["path", "expire"]
+results = ["req"]
+
+[storage_http_signer.op.query_sign_http_write]
+description = "will write data into a file by using query parameters to authenticate requests."
+params = ["path", "size", "expire"]
+results = ["req"]
 
 [linker]
 description = "is the interface for link"

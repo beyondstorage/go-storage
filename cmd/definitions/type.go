@@ -75,12 +75,11 @@ func (s *Service) Pairs() []*Pair {
 
 // Namespace contains all info about a namespace
 type Namespace struct {
-	Name        string
-	Features    []*Feature
-	New         *Function
-	Funcs       []*Function
-	Interfaces  []*Interface
-	defaultable map[string]*Pair
+	Name       string
+	Features   []*Feature
+	New        *Function
+	Funcs      []*Function
+	Interfaces []*Interface
 
 	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
 }
@@ -93,23 +92,23 @@ type PairFuncs struct {
 
 // Defaultable returns sorted PairFuncs slice for defaultable pairs.
 func (n *Namespace) Defaultable() []*PairFuncs {
-	pfs := make([]*PairFuncs, 0, len(n.defaultable))
+	pfm := make(map[*Pair][]string)
+	pfs := make([]*PairFuncs, 0)
 
-	for _, v := range n.defaultable {
-		var ops []string
-		for _, op := range n.Funcs {
-			ps := make([]*Pair, 0)
-			ps = append(ps, op.Required...)
-			ps = append(ps, op.Optional...)
+	for _, op := range n.Funcs {
+		ps := make([]*Pair, 0)
+		ps = append(ps, op.Required...)
+		ps = append(ps, op.Optional...)
 
-			for _, pair := range ps {
-				if pair.Name == v.Name {
-					ops = append(ops, op.Name)
-					break
-				}
+		for _, pair := range ps {
+			if pair.Defaultable {
+				pfm[pair] = append(pfm[pair], op.Name)
 			}
 		}
-		pf := &PairFuncs{Pair: v, Funcs: ops}
+	}
+
+	for pair, ops := range pfm {
+		pf := &PairFuncs{Pair: pair, Funcs: ops}
 		pfs = append(pfs, pf)
 	}
 
@@ -150,6 +149,8 @@ type Pair struct {
 	ptype               string
 	originalDescription string
 
+	Defaultable bool
+
 	// Runtime generated
 	Global      bool
 	Description string
@@ -164,6 +165,7 @@ func (p *Pair) Format(s specs.Pair, global bool) {
 	p.Name = s.Name
 	p.ptype = s.Type
 	p.Global = global
+	p.Defaultable = s.Defaultable
 
 	p.originalDescription = s.Description
 	p.Description = formatDescription(templateutils.ToPascal(p.Name), s.Description)
@@ -480,6 +482,14 @@ func (d *Data) FormatPairs(p specs.Pairs, global bool) map[string]*Pair {
 		pair.Format(v, global)
 
 		m[pair.Name] = pair
+
+		if pair.Defaultable {
+			defaultName := fmt.Sprintf("default_%s", pair.Name)
+			defaultPair := &(*pair)
+			defaultPair.Name = defaultName
+			defaultPair.Defaultable = false
+			m[defaultName] = defaultPair
+		}
 	}
 	return m
 }
@@ -557,6 +567,7 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 			Name:        name,
 			ptype:       "bool",
 			Global:      false,
+			Defaultable: false,
 			Description: f.Description,
 		}
 		srv.pairs[featurePair.Name] = featurePair
@@ -600,24 +611,6 @@ func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
 		if _, ok := implemented[x]; ok {
 			fn.Implemented = true
 		}
-	}
-
-	// Handle defaultable pairs.
-	ns.defaultable = make(map[string]*Pair)
-	for _, defaultablePairName := range n.Defaultable {
-		pair, ok := srv.pairs[defaultablePairName]
-		if !ok {
-			log.Fatalf("invalid defaultable pair: %s", defaultablePairName)
-		}
-		name := fmt.Sprintf("default_%s", defaultablePairName)
-		defaultPair := &Pair{
-			Name:        name,
-			ptype:       pair.ptype,
-			Global:      false,
-			Description: pair.Description,
-		}
-		srv.pairs[name] = defaultPair
-		ns.defaultable[defaultablePairName] = pair
 	}
 
 	d.ValidateNamespace(srv, ns)
@@ -708,6 +701,18 @@ func mergePairs(global, service map[string]*Pair) map[string]*Pair {
 	for k, v := range global {
 		v := v
 		ans[k] = v
+		// Handle global defaultable pairs.
+		if v.Defaultable {
+			name := fmt.Sprintf("default_%s", v.Name)
+			pair := &Pair{
+				Name:        name,
+				ptype:       v.ptype,
+				Global:      true,
+				Defaultable: false,
+				Description: v.Description,
+			}
+			ans[name] = pair
+		}
 	}
 	for k, v := range service {
 		if _, ok := ans[k]; ok {
@@ -715,6 +720,18 @@ func mergePairs(global, service map[string]*Pair) map[string]*Pair {
 		}
 		v := v
 		ans[k] = v
+		// Handle system defaultable pairs.
+		if v.Defaultable {
+			name := fmt.Sprintf("default_%s", v.Name)
+			pair := &Pair{
+				Name:        name,
+				ptype:       v.ptype,
+				Global:      false,
+				Defaultable: false,
+				Description: v.Description,
+			}
+			ans[name] = pair
+		}
 	}
 	return ans
 }
