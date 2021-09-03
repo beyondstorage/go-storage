@@ -1,5 +1,5 @@
-github.com/Xuanwo/gg v0.0.0-20210903012417-03a447370afa h1:N5OBLTnGC2p9gJaFkn5ptgdZcwQXnsWPVFemnVnz66M=
-github.com/Xuanwo/gg v0.0.0-20210903012417-03a447370afa/go.mod h1:TjGrC5F6B9H//RFhXGxv/znfrz0uRq46gZdZ0f0bvVQ=
+github.com/Xuanwo/gg v0.0.1 h1:SefvV3pdOV8sovx6CSzKwNsqvUwQZbKQCtN2UOPLfyk=
+github.com/Xuanwo/gg v0.0.1/go.mod h1:TjGrC5F6B9H//RFhXGxv/znfrz0uRq46gZdZ0f0bvVQ=
 github.com/Xuanwo/go-bufferpool v0.2.0 h1:DXzqJD9lJufXbT/03GrcEvYOs4gXYUj9/g5yi6Q9rUw=
 github.com/Xuanwo/go-bufferpool v0.2.0/go.mod h1:Mle++9GGouhOwGj52i9PJLNAPmW2nb8PWBP7JJzNCzk=
 github.com/Xuanwo/templateutils v0.1.0 h1:WpkWOqQtIQ2vAIpJLa727DdN8WtxhUkkbDGa6UhntJY=
