@@ -146,7 +146,8 @@ func (f *Feature) Format(s specs.Feature) {
 type Pair struct {
 	Name string
 
-	ptype string
+	ptype               string
+	originalDescription string
 
 	Defaultable bool
 
@@ -166,6 +167,7 @@ func (p *Pair) Format(s specs.Pair, global bool) {
 	p.Global = global
 	p.Defaultable = s.Defaultable
 
+	p.originalDescription = s.Description
 	p.Description = formatDescription(templateutils.ToPascal(p.Name), s.Description)
 }
 
