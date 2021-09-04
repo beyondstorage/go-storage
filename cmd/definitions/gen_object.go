@@ -4,8 +4,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
@@ -24,9 +22,8 @@ func generateObject(data *Data, path string) {
 	cons := f.Const()
 	for k, v := range data.ObjectMeta {
 		pname := templateutils.ToPascal(v.Name)
-		cons.Field(
-			fmt.Sprintf("objectIndex%s uint64", pname),
-			fmt.Sprintf("1<<%d", k))
+		cons.TypedField(
+			"objectIndex"+pname, "uint64", gg.S("1<<%d", k))
 	}
 
 	f.LineComment(`
@@ -41,8 +38,8 @@ NOTES:
 `)
 	ob := f.Struct("Object")
 	for _, v := range data.ObjectMeta {
-		if v.originalDescription != "" {
-			ob.LineComment(v.originalDescription)
+		if v.Description != "" {
+			ob.LineComment(v.Description)
 		}
 		ob.Field(v.TypeName(), v.Type())
 	}
@@ -62,14 +59,14 @@ NOTES:
 			f.Function("Get"+v.DisplayName()).
 				Receiver("o", "*Object").
 				Result("", v.Type()).
-				Body(gg.Return().Id("o." + v.TypeName()))
+				Body(gg.Return(gg.S("o.%s", v.TypeName())))
 			f.Function("Set"+v.DisplayName()).
 				Receiver("o", "*Object").
 				Parameter("v", v.Type()).
 				Result("", "*Object").
 				Body(
-					gg.String("o.%s = v", v.TypeName()),
-					gg.Return().Id("o"),
+					gg.S("o.%s = v", v.TypeName()),
+					gg.Return("o"),
 				)
 			continue
 		}
@@ -82,51 +79,51 @@ NOTES:
 			Result("", v.Type()).
 			Result("", "bool").
 			Body(
-				gg.String("o.stat()"),
+				gg.S("o.stat()"),
 				gg.Line(),
-				gg.If(gg.String("o.bit & objectIndex%s != 0", pname)).
+				gg.If(gg.S("o.bit & objectIndex%s != 0", pname)).
 					Body(
-						gg.Return().Id("o."+v.TypeName()).Lit(true),
+						gg.Return("o."+v.TypeName(), gg.Lit(true)),
 					),
-				gg.Return().Id(templateutils.ZeroValue(v.Type())).Lit(false),
+				gg.Return(templateutils.ZeroValue(v.Type()), gg.Lit(false)),
 			)
 		f.Function("MustGet"+v.DisplayName()).
 			Receiver("o", "*Object").
 			NamedLineComment(`will get %s from Object.
 
 %s
-`, v.DisplayName(), v.originalDescription).
+`, v.DisplayName(), v.Description).
 			Result("", v.Type()).
 			Body(
-				gg.String("o.stat()"),
+				gg.S("o.stat()"),
 				gg.Line(),
-				gg.If(gg.String("o.bit & objectIndex%s == 0", pname)).
+				gg.If(gg.S("o.bit & objectIndex%s == 0", pname)).
 					Body(
-						gg.String(`panic(fmt.Sprintf("object %s is not set"))`, v.Name),
+						gg.S(`panic(fmt.Sprintf("object %s is not set"))`, v.Name),
 					),
-				gg.Return().Id("o."+v.TypeName()),
+				gg.Return("o."+v.TypeName()),
 			)
 		f.Function("Set"+v.DisplayName()).
 			Receiver("o", "*Object").
 			NamedLineComment(`will set %s into Object.
 
 %s
-`, v.DisplayName(), v.originalDescription).
+`, v.DisplayName(), v.Description).
 			Parameter("v", v.Type()).
 			Result("", "*Object").
 			Body(
-				gg.String("o.%s = v", v.TypeName()),
-				gg.String("o.bit |= objectIndex%s", pname),
-				gg.Return().Id("o"),
+				gg.S("o.%s = v", v.TypeName()),
+				gg.S("o.bit |= objectIndex%s", pname),
+				gg.Return("o"),
 			)
 	}
 	fn := f.Function("clone").
 		Receiver("o", "*Object").
 		Parameter("xo", "*Object")
 	for _, v := range data.ObjectMeta {
-		fn.Body(gg.String("o.%s = xo.%s", v.TypeName(), v.TypeName()))
+		fn.Body(gg.S("o.%s = xo.%s", v.TypeName(), v.TypeName()))
 	}
-	fn.Body(gg.String("o.bit = xo.bit"))
+	fn.Body(gg.S("o.bit = xo.bit"))
 
 	err := f.WriteFile(path)
 	if err != nil {

@@ -63,7 +63,7 @@ type Object struct { // AppendOffset is the offset of the append object.
 
 // GetAppendOffset will get AppendOffset from Object.
 //
-// // AppendOffset AppendOffset is the offset of the append object.
+// AppendOffset is the offset of the append object.
 func (o *Object) GetAppendOffset() (int64, bool) {
 	o.stat()
 
@@ -95,8 +95,6 @@ func (o *Object) SetAppendOffset(v int64) *Object {
 }
 
 // GetContentLength will get ContentLength from Object.
-//
-// // ContentLength
 func (o *Object) GetContentLength() (int64, bool) {
 	o.stat()
 
@@ -124,8 +122,6 @@ func (o *Object) SetContentLength(v int64) *Object {
 }
 
 // GetContentMd5 will get ContentMd5 from Object.
-//
-// // ContentMd5
 func (o *Object) GetContentMd5() (string, bool) {
 	o.stat()
 
@@ -153,8 +149,6 @@ func (o *Object) SetContentMd5(v string) *Object {
 }
 
 // GetContentType will get ContentType from Object.
-//
-// // ContentType
 func (o *Object) GetContentType() (string, bool) {
 	o.stat()
 
@@ -182,8 +176,6 @@ func (o *Object) SetContentType(v string) *Object {
 }
 
 // GetEtag will get Etag from Object.
-//
-// // Etag
 func (o *Object) GetEtag() (string, bool) {
 	o.stat()
 
@@ -218,8 +210,6 @@ func (o *Object) SetID(v string) *Object {
 }
 
 // GetLastModified will get LastModified from Object.
-//
-// // LastModified
 func (o *Object) GetLastModified() (time.Time, bool) {
 	o.stat()
 
@@ -248,7 +238,7 @@ func (o *Object) SetLastModified(v time.Time) *Object {
 
 // GetLinkTarget will get LinkTarget from Object.
 //
-// // LinkTarget LinkTarget is the symlink target for link object.
+// LinkTarget is the symlink target for link object.
 func (o *Object) GetLinkTarget() (string, bool) {
 	o.stat()
 
@@ -288,7 +278,7 @@ func (o *Object) SetMode(v ObjectMode) *Object {
 
 // GetMultipartID will get MultipartID from Object.
 //
-// // MultipartID MultipartID is the part id of part object.
+// MultipartID is the part id of part object.
 func (o *Object) GetMultipartID() (string, bool) {
 	o.stat()
 
@@ -328,7 +318,7 @@ func (o *Object) SetPath(v string) *Object {
 
 // GetSystemMetadata will get SystemMetadata from Object.
 //
-// // SystemMetadata SystemMetadata stores system defined metadata.
+// SystemMetadata stores system defined metadata.
 func (o *Object) GetSystemMetadata() (interface{}, bool) {
 	o.stat()
 
@@ -361,7 +351,7 @@ func (o *Object) SetSystemMetadata(v interface{}) *Object {
 
 // GetUserMetadata will get UserMetadata from Object.
 //
-// // UserMetadata UserMetadata stores user defined metadata.
+// UserMetadata stores user defined metadata.
 func (o *Object) GetUserMetadata() (map[string]string, bool) {
 	o.stat()
 

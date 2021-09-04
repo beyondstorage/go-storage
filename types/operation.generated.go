@@ -41,7 +41,8 @@ type Appender interface {
 }
 
 // UnimplementedAppender must be embedded to have forward compatible implementations.
-type UnimplementedAppender struct{}
+type UnimplementedAppender struct {
+}
 
 func (s UnimplementedAppender) mustEmbedUnimplementedAppender() {
 }
@@ -111,7 +112,8 @@ type Blocker interface {
 }
 
 // UnimplementedBlocker must be embedded to have forward compatible implementations.
-type UnimplementedBlocker struct{}
+type UnimplementedBlocker struct {
+}
 
 func (s UnimplementedBlocker) mustEmbedUnimplementedBlocker() {
 }
@@ -190,7 +192,8 @@ type Copier interface {
 }
 
 // UnimplementedCopier must be embedded to have forward compatible implementations.
-type UnimplementedCopier struct{}
+type UnimplementedCopier struct {
+}
 
 func (s UnimplementedCopier) mustEmbedUnimplementedCopier() {
 }
@@ -217,7 +220,8 @@ type Direr interface {
 }
 
 // UnimplementedDirer must be embedded to have forward compatible implementations.
-type UnimplementedDirer struct{}
+type UnimplementedDirer struct {
+}
 
 func (s UnimplementedDirer) mustEmbedUnimplementedDirer() {
 }
@@ -256,7 +260,8 @@ type Fetcher interface {
 }
 
 // UnimplementedFetcher must be embedded to have forward compatible implementations.
-type UnimplementedFetcher struct{}
+type UnimplementedFetcher struct {
+}
 
 func (s UnimplementedFetcher) mustEmbedUnimplementedFetcher() {
 }
@@ -309,7 +314,8 @@ type Linker interface {
 }
 
 // UnimplementedLinker must be embedded to have forward compatible implementations.
-type UnimplementedLinker struct{}
+type UnimplementedLinker struct {
+}
 
 func (s UnimplementedLinker) mustEmbedUnimplementedLinker() {
 }
@@ -364,7 +370,8 @@ type Mover interface {
 }
 
 // UnimplementedMover must be embedded to have forward compatible implementations.
-type UnimplementedMover struct{}
+type UnimplementedMover struct {
+}
 
 func (s UnimplementedMover) mustEmbedUnimplementedMover() {
 }
@@ -414,7 +421,8 @@ type Multiparter interface {
 }
 
 // UnimplementedMultiparter must be embedded to have forward compatible implementations.
-type UnimplementedMultiparter struct{}
+type UnimplementedMultiparter struct {
+}
 
 func (s UnimplementedMultiparter) mustEmbedUnimplementedMultiparter() {
 }
@@ -478,7 +486,8 @@ type Pager interface {
 }
 
 // UnimplementedPager must be embedded to have forward compatible implementations.
-type UnimplementedPager struct{}
+type UnimplementedPager struct {
+}
 
 func (s UnimplementedPager) mustEmbedUnimplementedPager() {
 }
@@ -519,7 +528,8 @@ type Reacher interface {
 }
 
 // UnimplementedReacher must be embedded to have forward compatible implementations.
-type UnimplementedReacher struct{}
+type UnimplementedReacher struct {
+}
 
 func (s UnimplementedReacher) mustEmbedUnimplementedReacher() {
 }
@@ -562,7 +572,8 @@ type Servicer interface {
 }
 
 // UnimplementedServicer must be embedded to have forward compatible implementations.
-type UnimplementedServicer struct{}
+type UnimplementedServicer struct {
+}
 
 func (s UnimplementedServicer) mustEmbedUnimplementedServicer() {
 }
@@ -620,7 +631,8 @@ type StorageHTTPSigner interface {
 }
 
 // UnimplementedStorageHTTPSigner must be embedded to have forward compatible implementations.
-type UnimplementedStorageHTTPSigner struct{}
+type UnimplementedStorageHTTPSigner struct {
+}
 
 func (s UnimplementedStorageHTTPSigner) mustEmbedUnimplementedStorageHTTPSigner() {
 }
@@ -749,7 +761,8 @@ type Storager interface {
 }
 
 // UnimplementedStorager must be embedded to have forward compatible implementations.
-type UnimplementedStorager struct{}
+type UnimplementedStorager struct {
+}
 
 func (s UnimplementedStorager) mustEmbedUnimplementedStorager() {
 }

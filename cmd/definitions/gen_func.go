@@ -36,7 +36,7 @@ func generateFunc(ns *Namespace, path string) {
 			for _, v := range fn.Results {
 				gfn.Result(v.Name, v.Type())
 			}
-			gfn.Body(gg.String(`panic("not implemented")`))
+			gfn.Body(gg.S(`panic("not implemented")`))
 			continue
 		}
 
@@ -54,7 +54,7 @@ func generateFunc(ns *Namespace, path string) {
 		for _, v := range fn.Results {
 			gfn.Result(v.Name, v.Type())
 		}
-		gfn.Body(gg.String(`panic("not implemented")`))
+		gfn.Body(`panic("not implemented")`)
 		continue
 	}
 

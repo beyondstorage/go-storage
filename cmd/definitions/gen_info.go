@@ -4,8 +4,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
@@ -27,9 +25,9 @@ func generateInfo(data *Data, path string) {
 		consts := f.Const()
 		for k, v := range infos {
 			consts.Field(
-				fmt.Sprintf("%sIndex%s",
+				gg.S("%sIndex%s",
 					serviceNameC, templateutils.ToPascal(v.Name)),
-				fmt.Sprintf("1<<%d", k),
+				gg.S("1<<%d", k),
 			)
 		}
 
@@ -50,14 +48,14 @@ func generateInfo(data *Data, path string) {
 				f.Function("Get"+v.DisplayName()).
 					Receiver("m", "*"+serviceNameP).
 					Result("", v.Type()).
-					Body(gg.Return().Id("m." + v.TypeName()))
+					Body(gg.Return("m." + v.TypeName()))
 				f.Function("Set"+v.DisplayName()).
 					Receiver("m", "*"+serviceNameP).
 					Parameter("v", v.Type()).
 					Result("", "*"+serviceNameP).
 					Body(
-						gg.String("m.%s = v", v.TypeName()),
-						gg.Return().Id("m"),
+						gg.S("m.%s = v", v.TypeName()),
+						gg.Return("m"),
 					)
 				continue
 			}
@@ -66,32 +64,29 @@ func generateInfo(data *Data, path string) {
 				Result("", v.Type()).
 				Result("", "bool").
 				Body(
-					gg.If(gg.String("m.bit & %sIndex%s != 0",
+					gg.If(gg.S("m.bit & %sIndex%s != 0",
 						serviceNameC, templateutils.ToPascal(v.Name))).
-						Body(
-							gg.Return().Id("m."+v.TypeName()).Lit(true)),
-					gg.Return().Id(templateutils.ZeroValue(v.Type())).Lit(false),
+						Body(gg.Return("m."+v.TypeName(), gg.Lit(true))),
+					gg.Return(templateutils.ZeroValue(v.Type()), gg.Lit(false)),
 				)
 			f.Function("MustGet"+v.DisplayName()).
 				Receiver("m", "*"+serviceNameP).
 				Result("", v.Type()).
 				Body(
-					gg.If(gg.String("m.bit & %sIndex%s == 0",
+					gg.If(gg.S("m.bit & %sIndex%s == 0",
 						serviceNameC, templateutils.ToPascal(v.Name))).
-						Body(gg.String(
+						Body(gg.S(
 							`panic(fmt.Sprintf("%s %s is not set"))`,
 							serviceNameK, v.Name)),
-					gg.Return().Id("m."+v.TypeName()),
-				)
+					gg.Return("m."+v.TypeName()))
 			f.Function("Set"+v.DisplayName()).
 				Receiver("m", "*"+serviceNameP).
 				Parameter("v", v.Type()).
 				Result("", "*"+serviceNameP).
 				Body(
-					gg.String("m.%s = v", v.TypeName()),
-					gg.String("m.bit |= %sIndex%s",
-						serviceNameC, templateutils.ToPascal(v.Name)),
-					gg.Return().Id("m"),
+					gg.S("m.%s = v", v.TypeName()),
+					gg.S("m.bit |= %sIndex%s", serviceNameC, templateutils.ToPascal(v.Name)),
+					gg.Return("m"),
 				)
 		}
 	}

@@ -38,18 +38,14 @@ func generatePair(data *Data, path string) {
 
 		xfn.NamedLineComment(`will apply %s value to Options.
 
-%s %s`, v.Name, pname, v.originalDescription)
+%s %s`, v.Name, pname, v.Description)
 		xfn.Parameter("v", v.Type())
 		xfn.Result("p", "Pair")
 		xfn.Body(
-			gg.Embed(func() gg.Node {
-				r := gg.Return()
-				r.Value("Pair").
-					Field("Key", gg.Lit(v.Name).String()).
-					Field("Value", "v")
-				return r
-			}),
-		)
+			gg.Return(
+				gg.Value("Pair").
+					Field("Key", gg.Lit(v.Name)).
+					Field("Value", "v")))
 		if v.Defaultable {
 			name := "default_" + v.Name
 			pname := templateutils.ToPascal(name)
@@ -58,18 +54,12 @@ func generatePair(data *Data, path string) {
 
 			xfn.NamedLineComment(`will apply %s value to Options.
 
-%s %s`, name, pname, v.originalDescription)
+%s %s`, name, pname, v.Description)
 			xfn.Parameter("v", v.Type())
 			xfn.Result("p", "Pair")
 			xfn.Body(
-				gg.Embed(func() gg.Node {
-					r := gg.Return()
-					r.Value("Pair").
-						Field("Key", gg.Lit(name).String()).
-						Field("Value", "v")
-					return r
-				}),
-			)
+				gg.Return(
+					gg.Value("Pair").Field("Key", gg.Lit("default_"+v.Name)).Field("Value", "v")))
 		}
 	}
 

@@ -20,7 +20,7 @@ func generateOperation(data *Data, path string) {
 		Path("time")
 
 	for _, in := range data.Interfaces {
-		f.LineComment("%s %s", in.DisplayName(), in.originalDescription)
+		f.LineComment("%s %s", in.DisplayName(), in.Description)
 
 		inter := f.Interface(in.DisplayName())
 		if in.Name == "servicer" || in.Name == "storager" {
@@ -31,7 +31,7 @@ func generateOperation(data *Data, path string) {
 			pname := templateutils.ToPascal(op.Name)
 
 			gop := inter.Function(pname).
-				NamedLineComment(op.originalDescription)
+				NamedLineComment(op.Description)
 
 			for _, p := range op.Params {
 				gop.Parameter(p.Name, p.Type())
@@ -43,7 +43,7 @@ func generateOperation(data *Data, path string) {
 			// We need to generate XxxWithContext functions if not local.
 			if !op.Local {
 				gop := inter.Function(pname + "WithContext").
-					NamedLineComment(op.originalDescription)
+					NamedLineComment(op.Description)
 				// Insert context param.
 				gop.Parameter("ctx", "context.Context")
 				for _, p := range op.Params {
@@ -68,7 +68,7 @@ func generateOperation(data *Data, path string) {
 			Receiver("s", stubName).
 			Result("", "string").
 			Body(
-				gg.Return().Lit(stubName))
+				gg.Return(gg.Lit(stubName)))
 
 		for _, op := range in.SortedOps() {
 			pname := templateutils.ToPascal(op.Name)
@@ -84,7 +84,7 @@ func generateOperation(data *Data, path string) {
 			}
 			// If not local, we need to set error
 			if !op.Local {
-				gop.Body(gg.String(`err = NewOperationNotImplementedError("%s")`, op.Name))
+				gop.Body(gg.S(`err = NewOperationNotImplementedError("%s")`, op.Name))
 			}
 			gop.Body(gg.Return())
 
@@ -102,7 +102,7 @@ func generateOperation(data *Data, path string) {
 					gop.Result(r.Name, r.Type())
 				}
 				gop.Body(
-					gg.String(`err = NewOperationNotImplementedError("%s")`, op.Name),
+					gg.S(`err = NewOperationNotImplementedError("%s")`, op.Name),
 					gg.Return(),
 				)
 			}
