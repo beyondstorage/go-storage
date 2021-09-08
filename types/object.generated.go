@@ -85,7 +85,7 @@ func (o *Object) MustGetAppendOffset() int64 {
 	return o.appendOffset
 }
 
-// SetAppendOffset will set AppendOffset into Object.
+// SetAppendOffset will get AppendOffset into Object.
 //
 // AppendOffset is the offset of the append object.
 func (o *Object) SetAppendOffset(v int64) *Object {
@@ -114,7 +114,7 @@ func (o *Object) MustGetContentLength() int64 {
 	return o.contentLength
 }
 
-// SetContentLength will set ContentLength into Object.
+// SetContentLength will get ContentLength into Object.
 func (o *Object) SetContentLength(v int64) *Object {
 	o.contentLength = v
 	o.bit |= objectIndexContentLength
@@ -141,7 +141,7 @@ func (o *Object) MustGetContentMd5() string {
 	return o.contentMd5
 }
 
-// SetContentMd5 will set ContentMd5 into Object.
+// SetContentMd5 will get ContentMd5 into Object.
 func (o *Object) SetContentMd5(v string) *Object {
 	o.contentMd5 = v
 	o.bit |= objectIndexContentMd5
@@ -168,7 +168,7 @@ func (o *Object) MustGetContentType() string {
 	return o.contentType
 }
 
-// SetContentType will set ContentType into Object.
+// SetContentType will get ContentType into Object.
 func (o *Object) SetContentType(v string) *Object {
 	o.contentType = v
 	o.bit |= objectIndexContentType
@@ -195,7 +195,7 @@ func (o *Object) MustGetEtag() string {
 	return o.etag
 }
 
-// SetEtag will set Etag into Object.
+// SetEtag will get Etag into Object.
 func (o *Object) SetEtag(v string) *Object {
 	o.etag = v
 	o.bit |= objectIndexEtag
@@ -229,7 +229,7 @@ func (o *Object) MustGetLastModified() time.Time {
 	return o.lastModified
 }
 
-// SetLastModified will set LastModified into Object.
+// SetLastModified will get LastModified into Object.
 func (o *Object) SetLastModified(v time.Time) *Object {
 	o.lastModified = v
 	o.bit |= objectIndexLastModified
@@ -260,7 +260,7 @@ func (o *Object) MustGetLinkTarget() string {
 	return o.linkTarget
 }
 
-// SetLinkTarget will set LinkTarget into Object.
+// SetLinkTarget will get LinkTarget into Object.
 //
 // LinkTarget is the symlink target for link object.
 func (o *Object) SetLinkTarget(v string) *Object {
@@ -300,7 +300,7 @@ func (o *Object) MustGetMultipartID() string {
 	return o.multipartID
 }
 
-// SetMultipartID will set MultipartID into Object.
+// SetMultipartID will get MultipartID into Object.
 //
 // MultipartID is the part id of part object.
 func (o *Object) SetMultipartID(v string) *Object {
@@ -340,7 +340,7 @@ func (o *Object) MustGetSystemMetadata() interface{} {
 	return o.systemMetadata
 }
 
-// SetSystemMetadata will set SystemMetadata into Object.
+// SetSystemMetadata will get SystemMetadata into Object.
 //
 // SystemMetadata stores system defined metadata.
 func (o *Object) SetSystemMetadata(v interface{}) *Object {
@@ -373,7 +373,7 @@ func (o *Object) MustGetUserMetadata() map[string]string {
 	return o.userMetadata
 }
 
-// SetUserMetadata will set UserMetadata into Object.
+// SetUserMetadata will get UserMetadata into Object.
 //
 // UserMetadata stores user defined metadata.
 func (o *Object) SetUserMetadata(v map[string]string) *Object {
