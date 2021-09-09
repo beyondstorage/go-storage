@@ -8,7 +8,6 @@
 // definitions/pairs.toml (1.566kB)
 // cmd/definitions/tmpl/service.tmpl (13.034kB)
 
-//go:build tools
 // +build tools
 
 package bindata

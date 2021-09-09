@@ -86,27 +86,27 @@ More examples could be found at [go-storage-example](https://github.com/beyondst
 **16** stable services that have passed all [integration tests](https://github.com/beyondstorage/go-integration-test).
 
 - [azblob](https://github.com/beyondstorage/go-service-azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [bos](https://github.com/beyondstorage/go-service-bos): [Baidu Object Storage](https://cloud.baidu.com/product/bos.html)
 - [cos](https://github.com/beyondstorage/go-service-cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
 - [dropbox](https://github.com/beyondstorage/go-service-dropbox/): [Dropbox](https://www.dropbox.com)
 - [fs](https://github.com/beyondstorage/go-service-fs/): Local file system
+- [ftp](https://github.com/beyondstorage/go-service-ftp/): FTP
 - [gcs](https://github.com/beyondstorage/go-service-gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [gdrive](https://github.com/beyondstorage/go-service-gdrive): [Google Drive](https://www.google.com/drive/)
+- [ipfs](https://github.com/beyondstorage/go-service-ipfs): [InterPlanetary File System](https://ipfs.io)
 - [kodo](https://github.com/beyondstorage/go-service-kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
+- [memory](https://github.com/beyondstorage/go-service-memory): data that only in memory
+- [minio](https://github.com/beyondstorage/go-service-minio): [MinIO](https://min.io)
+- [obs](https://github.com/beyondstorage/go-service-obs): [Huawei Object Storage Service](https://www.huaweicloud.com/product/obs.html)
 - [oss](https://github.com/beyondstorage/go-service-oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
 - [qingstor](https://github.com/beyondstorage/go-service-qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
 - [s3](https://github.com/beyondstorage/go-service-s3/): [Amazon S3](https://aws.amazon.com/s3/)
-- [ftp](https://github.com/beyondstorage/go-service-ftp/): FTP
-- [gdrive](https://github.com/beyondstorage/go-service-gdrive): [Google Drive](https://www.google.com/drive/)
-- [ipfs](https://github.com/beyondstorage/go-service-ipfs): [InterPlanetary File System](https://ipfs.io)
-- [memory](https://github.com/beyondstorage/go-service-memory): data that only in memory
-- [minio](https://github.com/beyondstorage/go-service-minio): [MinIO](https://min.io)
-- [bos](https://github.com/beyondstorage/go-service-bos): [Baidu Object Storage](https://cloud.baidu.com/product/bos.html)
-- [obs](https://github.com/beyondstorage/go-service-obs): [Huawei Object Storage Service](https://www.huaweicloud.com/product/obs.html)
 
 **3** beta services that implemented required functions, but not passed [integration tests](https://github.com/beyondstorage/go-integration-test).
 
-- [uss](https://github.com/beyondstorage/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 - [hdfs](https://github.com/beyondstorage/go-service-hdfs): [Hadoop Distributed File System](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html#Introduction)
 - [tar](https://github.com/beyondstorage/go-service-tar): tar files
+- [uss](https://github.com/beyondstorage/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 
 **4** alpha services that still under development.
 
