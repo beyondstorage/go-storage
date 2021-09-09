@@ -83,7 +83,7 @@ More examples could be found at [go-storage-example](https://github.com/beyondst
 
 ### Widely native services support
 
-**14** stable services that have passed all [integration tests](https://github.com/beyondstorage/go-integration-test).
+**16** stable services that have passed all [integration tests](https://github.com/beyondstorage/go-integration-test).
 
 - [azblob](https://github.com/beyondstorage/go-service-azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
 - [cos](https://github.com/beyondstorage/go-service-cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
@@ -99,6 +99,8 @@ More examples could be found at [go-storage-example](https://github.com/beyondst
 - [ipfs](https://github.com/beyondstorage/go-service-ipfs): [InterPlanetary File System](https://ipfs.io)
 - [memory](https://github.com/beyondstorage/go-service-memory): data that only in memory
 - [minio](https://github.com/beyondstorage/go-service-minio): [MinIO](https://min.io)
+- [bos](https://github.com/beyondstorage/go-service-bos): [Baidu Object Storage](https://cloud.baidu.com/product/bos.html)
+- [obs](https://github.com/beyondstorage/go-service-obs): [Huawei Object Storage Service](https://www.huaweicloud.com/product/obs.html)
 
 **3** beta services that implemented required functions, but not passed [integration tests](https://github.com/beyondstorage/go-integration-test).
 
