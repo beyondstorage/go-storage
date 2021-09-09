@@ -65,25 +65,25 @@ func main() {
     it, err := store.List("path")
     
     for {
-    	// Use iterator.Next to retrieve next object until we meet IteratorDone.
+    	// 使用迭代器检索下一个对象，直到检索到 IteratorDone。
     	o, err := it.Next()
     	if errors.Is(err, types.IteraoorDone) {
     		break
         }
     }
 
-    // Delete hello.txt
+    // 删除 hello.txt
     err = store.Delete("hello.txt")
 }
 ```
 
-More examples could be found at [go-storage-example](https://github.com/beyondstorage/go-storage-example).
+更多示例可以在 [go-storage-example](https://github.com/beyondstorage/go-storage-example) 找到。
 
-## Features
+## 特点
 
-### Widely native services support
+### 支持多种原生服务
 
-**14** stable services that have passed all [integration tests](https://github.com/beyondstorage/go-integration-test).
+目前已经有 **14** 个稳定的服务通过了所有的 [集成测试](https://github.com/beyondstorage/go-integration-test)。
 
 - [azblob](https://github.com/beyondstorage/go-service-azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
 - [cos](https://github.com/beyondstorage/go-service-cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
@@ -100,160 +100,160 @@ More examples could be found at [go-storage-example](https://github.com/beyondst
 - [memory](https://github.com/beyondstorage/go-service-memory): data that only in memory
 - [minio](https://github.com/beyondstorage/go-service-minio): [MinIO](https://min.io)
 
-**3** beta services that implemented required functions, but not passed [integration tests](https://github.com/beyondstorage/go-integration-test).
+另有 **3** 个公测版本的服务已实现了所需功能，但还没有通过 [集成测试](https://github.com/beyondstorage/go-integration-test)。
 
 - [uss](https://github.com/beyondstorage/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 - [hdfs](https://github.com/beyondstorage/go-service-hdfs): [Hadoop Distributed File System](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html#Introduction)
 - [tar](https://github.com/beyondstorage/go-service-tar): tar files
 
-**4** alpha services that still under development.
+最后还有 **4** 个处于内测阶段的服务仍在开发中。
 
 - [onedrive](https://github.com/beyondstorage/go-service-onedrive): [Microsoft OneDrive](https://www.microsoft.com/en-ww/microsoft-365/onedrive/online-cloud-storage)
 - [storj](https://github.com/beyondstorage/go-service-storj): [StorJ](https://www.storj.io/)
 - [webdav](https://github.com/beyondstorage/go-service-webdav): [WebDAV](http://www.webdav.org/)
 - [zip](https://github.com/beyondstorage/go-service-zip): zip files
 
-More service ideas could be found at [Service Integration Tracking](https://github.com/beyondstorage/go-storage/issues/536).
+更多关于服务的想法可以在 [Service Integration Tracking](https://github.com/beyondstorage/go-storage/issues/536) 找到。
 
-### Complete and easily extensible interface
+### 完整且易扩展的接口
 
-Basic operations
+基本操作
 
-- Metadata: get `Storager` metadata
+- 元数据: 获取 `存储` 元数据 
 ```go
 meta := store.Metadata()
-_ := meta.GetWorkDir() // Get object WorkDir
-_, ok := meta.GetWriteSizeMaximum() // Get the maximum size for write operation
+_ := meta.GetWorkDir() // 获取对象的工作目录
+_, ok := meta.GetWriteSizeMaximum() // 获取写操作的最大值与最小值
 ```
-- Read: read `Object` content
+- 读取: 读取 `对象` 内容
 ```go
 // Read 2048 byte at the offset 1024 into the io.Writer.
 n, err := store.Read("path", w, pairs.WithOffset(1024), pairs.WithSize(2048))
 ```
-- Write: write content into `Object`
+- 写入: 将内容写入 `对象`
 ```go
-// Write 2048 byte from io.Reader
+// 从 io.Reader 写入 2048 字节
 n, err := store.Write("path", r, 2048)
 ```
-- Stat: get `Object` metadata or check existences
+- 状态: 获取 `对象` 元数据并检查是否存在
 ```go
 o, err := store.Stat("path")
 if errors.Is(err, services.ErrObjectNotExist) {
-	// object is not exist
+	// 对象不存在
 }
-length, ok := o.GetContentLength() // get the object content length.
+length, ok := o.GetContentLength() // 获取对象的内容长度
 ```
-- Delete: delete an `Object`
+- 删除: 删除一个 `对象`
 ```go
-err := store.Delete("path") // Delete the object "path"
+err := store.Delete("path") // 删除对象 "路径"
 ```
-- List: list `Object` in given prefix or dir
+- 列表: 将 `对象` 中指定的前缀或目录进行列表
 ```go
 it, err := store.List("path")
 for {
 	o, err := it.Next()
 	if err != nil && errors.Is(err, types.IteratorDone) {
-        // the list is over 
+        // 列表结束
     }
-    length, ok := o.GetContentLength() // get the object content length.
+    length, ok := o.GetContentLength() // 获取对象的内容长度
 }
 ```
 
-Extended operations
+扩展操作
 
-- Copy: copy a `Object` inside storager
+- 拷贝: 复制一个 `对象` 到存储库中
 ```go
-err := store.(Copier).Copy(src, dst) // Copy an object from src to dst.
+err := store.(Copier).Copy(src, dst) // 从 src 复制一个对象到 dst
 ```
-- Move: move a `Object` inside storager
+- 移动: 移动一个 `对象` 到存储库中
 ```go
-err := store.(Mover).Move(src, dst) // Move an object from src to dst.
+err := store.(Mover).Move(src, dst) // 从 src 移动一个对象到 dst
 ```
-- Reach: generate a public accessible url to an `Object`
+- 链接: 生成一个可访问的公共链接到 `对象`
 ```go
-url, err := store.(Reacher).Reach("path") // Generate an url to the object.
+url, err := store.(Reacher).Reach("path") // 生成对象的链接
 ```
-- Dir: Dir `Object` support
+- 目录: `对象` 的目录文件夹
 ```go
-o, err := store.(Direr).CreateDir("path") // Create a dir object.
+o, err := store.(Direr).CreateDir("path") // 创建一个对象目录
 ```
 
-Large file manipulation
+大文件操作
 
-- Multipart: allow doing multipart uploads
+- 分段: 允许进行分段上传
 ```go
 ms := store.(Multiparter)
 
-// Create a multipart object.
+// 创建一个分段对象
 o, err := ms.CreateMultipart("path")
-// Write 1024 bytes from io.Reader into a multipart at index 1
+// 将 io.reader 中的 1024 字节分段写入索引 1
 n, part, err := ms.WriteMultipart(o, r, 1024, 1)
-// Complete a multipart object.
+// 完成分段对象创建
 err := ms.CompleteMultipart(o, []*Part{part})
 ```
-- Append: allow appending to an object
+- 追加: 允许追加对象
 ```go
 as := store.(Appender)
 
-// Create an appendable object.
+// 创建一个待追加对象
 o, err := as.CreateAppend("path")
-// Write 1024 bytes from io.Reader.
+// 从 io.Reader 写入 1024 字节
 n, err := as.WriteAppend(o, r, 1024)
-// Commit an append object.
+// 提交一个待追加的对象
 err = as.CommitAppend(o)
 ```
-- Block: allow combining an object with block ids
+- 块: 允许将一个对象与块 id 组合
 ```go
 bs := store.(Blocker)
 
-// Create a block object.
+// 创建一个块对象
 o, err := bs.CreateBlock("path")
-// Write 1024 bytes from io.Reader with block id "id-abc"
+// 将 io.reader 中的 1024 字节写入 id 为 ”id-abc“ 的块
 n, err := bs.WriteBlock(o, r, 1024, "id-abc")
-// Combine block via block ids.
+// 通过块 id 将块组合
 err := bs.CombineBlock(o, []string{"id-abc"})
 ```
-- Page: allow doing random writes
+- 页面：允许进行随机写入
 ```go
 ps := store.(Pager)
 
-// Create a page object.
+// 创建一个页面对象
 o, err := ps.CreatePage("path")
 // Write 1024 bytes from io.Reader at offset 2048
 n, err := ps.WritePage(o, r, 1024, 2048)
 ```
 
-### Comprehensive metadata
+### 全面广泛的元数据
 
-Global object metadata
+全局对象元数据
 
 - `id`: unique key in service
-- `name`: relative path towards service's work dir
-- `mode`: object mode can be a combination of `read`, `dir`, `part` and [more](https://github.com/beyondstorage/go-storage/blob/master/types/object.go#L11) 
-- `etag`: entity tag as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19)
-- `content-length`: object's content size.
-- `content-md5`: md5 digest as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15)
-- `content-type`: media type as defined in [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17)
-- `last-modified`: object's last updated time.
+- `name`: 指向服务工作目录的相对路径
+- `mode`: 对象模式可以由以下几种进行组合：`read`, `dir`, `part` and [more](https://github.com/beyondstorage/go-storage/blob/master/types/object.go#L11) 
+- `etag`: [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19) 中定义的实体标签
+- `content-length`: 对象的内容大小
+- `content-md5`: [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15) 中定义的 Md5 简介
+- `content-type`: [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17) 中定义的媒体类型
+- `last-modified`: 对象的上次更新时间
 
-System object metadata
+系统对象元数据
 
 Service system object metadata like `storage-class` and so on.
 
 ```go
 o, err := store.Stat("path")
 
-// Get service system metadata via API provides by go-service-s3.
+// 通过 go-service-s3 提供的 API 获取服务系统元数据
 om := s3.GetObjectSystemMetadata(o)
-_ = om.StorageClass // this object's storage class
-_ = om.ServerSideEncryptionCustomerAlgorithm // this object's sse algorithm
+_ = om.StorageClass // 此对象的存储类型
+_ = om.ServerSideEncryptionCustomerAlgorithm // 此对象的 sse 算法
 ```
 
 ### Strong Typing Everywhere
 
-Self maintained codegen [definitions](https://github.com/beyondstorage/go-storage/tree/master/cmd/definitions) helps to generate all our APIs, pairs and metadata.
+[自定义](https://github.com/beyondstorage/go-storage/tree/master/cmd/definitions) 维护的代码生成器可生成我们所有的 API、pairs 和元数据。
 
-Generated pairs which can be used as API optional arguments.
+生成的 pairs 可以用作 API 的可选参数。
 
 ```go
 func WithContentMd5(v string) Pair {
@@ -264,7 +264,7 @@ func WithContentMd5(v string) Pair {
 }
 ```
 
-Generated object metadata which can be used to get content md5 from object.
+生成的对象元数据可用于从对象中获取内容 md5。
 
 ```go
 func (o *Object) GetContentMd5() (string, bool) {
@@ -278,9 +278,9 @@ func (o *Object) GetContentMd5() (string, bool) {
 }
 ```
 
-### Server-Side Encrypt
+### 服务器端加密
 
-Server-Side Encrypt supports via system pair and system metadata, and we can use [Default Pairs](https://beyondstorage.io/docs/go-storage/pairs/index#default-pairs) to simplify the job.
+服务器端加密支持在 system pair 和 system metadata 中使用, 并且我们可以通过 [Default Pairs](https://beyondstorage.io/docs/go-storage/pairs/index#default-pairs) 来简化工作。
 
 ```go
 
@@ -292,7 +292,7 @@ func NewS3SseC(key []byte) (types.Storager, error) {
             // Required, your AES-256 key, a 32-byte binary value
             s3.WithServerSideEncryptionCustomerKey(key),
         },
-        // Now you have to provide customer key to read encrypted data
+        // 现在您必须提供客户密钥才能读取加密数据
         Read: []types.Pair{
             // Required, must be AES256
             s3.WithServerSideEncryptionCustomerAlgorithm(s3.ServerSideEncryptionAes256),
@@ -304,7 +304,7 @@ func NewS3SseC(key []byte) (types.Storager, error) {
 }
 ```
 
-## Sponsor
+## 赞助商
 
 <a href="https://vercel.com?utm_source=beyondstorage&utm_campaign=oss">
     <img src="./docs/images/vercel.svg">
