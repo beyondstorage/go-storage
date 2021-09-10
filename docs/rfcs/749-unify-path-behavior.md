@@ -27,38 +27,43 @@ All our services should support two kinds of path:
 
 - Absolute Path:
   - For Unix, the absolute path starts with `/`.
-  - For Windows, the absolute path starts with a drive letter, `/` is the current drive.
+  - For Windows, the absolute path starts with a drive letter.
 - Relative Path: 
   - The relative path is for the working directory `WorkDir`.
-  - Path with prefix `./` or `../` is allowed.
+  - Path with prefix `./` or `../` is allowed: they are relative paths for file system, but common strings for object storage service.
 
 ### WorkDir and path
 
 `WorkDir` specifies the working directory of the process.
 
-- For file system, `WorkDir` SHOULD be a passed in absolute path or relative to the current directory of the process.
-  - The default value is `/`, that means the working directory is the root path for Unix, and the current drive of the process for Windows.
-  - Services should set `WorkDir` to the path name after the evaluation of any symbolic links internal.
-- For object storage, `WorkDir` is the simulated directory or prefix of the object key. 
-  - The default value is `""`.
-  - `WorkDir` SHOULD be the unix style and SHOULD NOT with prefix `/` when the value is not empty.
+- For file system, `WorkDir` SHOULD be an absolute path.
+  - `WorkDir` MUST start with `/` for Unix. For Windows, the passed in `WorkDir` with drive letter SHOULD be allowed.
+  - The default value is `/`, that means the working directory is the root path for Unix, and the current volume of the process for Windows.
+  - Services SHOULD set `WorkDir` to the path name after the evaluation of any symbolic links internal.
+- For object storage, `WorkDir` is the simulated directory or prefix of the object key.
+  - `WorkDir` SHOULD be Unix style with the prefix `/`.
+  - The default value is `/`.
+  - Form service side, the prefix `/` needs to be removed for internal processing, but `/` needs to be added to the fields returned to the user.
   
 `path` is the file path for file system, or an object key for object storage. Also, it could be a prefix filter for `List` operation.
 
-- `path` could be an absolute path or a relative path.
-- Services SHOULD convert it to the absolute path at the beginning of the operation.
-- For the unique key `Object.ID` in storage, it should be an absolute path, unless there's a returned unique identifier like in dropbox.
+- For file system services on Windows, `path` MUST be the relative path for `WorkDir`. For file system on Unix, `path` could be an absolute path or a relative path.
+- For object storage service, `path` MUST be Unix style.
+- For the unique key `Object.ID` in storage, it SHOULD be an absolute path compatible with the target platform, unless there's a returned unique identifier like in dropbox.
+- For the path `Object.Path` in storage, it SHOULD be Unix style.
 - Users SHOULD follow the file and object naming of different services.
 
 ### Path Separator
 
-All the passed in path SHOULD be unix style, no matter Linux platform or Windows platform, no matter object storage service or file system.
-When the drive letter is included for Windows, it should be something like `c:/a/b`.
+Input path for users that contains system-related path separator SHOULD be allowed. When the drive letter is included for Windows, it should be something like `c:\\a\\b`.
+
+From go-storage side:
+
+- Replace each separator character in path with a slash (`/`) character could be generated for the input path.
 
 From service side:
 
-- Services SHOULD convert `/` in path to the system-related path separator at the beginning of the operation.
-- The output path SHOULD be compatible with the target operating system-defined file path.
+- Services SHOULD replace `/` in path to the system-related path separator at the beginning of the operation.
 
 ## Rationale
 
@@ -73,10 +78,6 @@ Package `filepath` implements utility routines for manipulating filename paths i
   - Objects with a prefix of `./` or `../`, or with key names ending with period(s) (`.`) are allowed but should be aware of the prefix limitations.
 - For [object key in oss](https://www.alibabacloud.com/help/doc-detail/87728.htm)
   - The name cannot start with a forward slash (`/`) or a backslash (`\`).
-  
-### Alternative Way
-
-For path separator, users should provide the correct path, like `c:\a\b`, `..\a\b` or `c:\\a\\b` for Windows. Services should handle the different style path, and the final returned path format should be compatible with the target operating system.
 
 ## Compatibility
 
