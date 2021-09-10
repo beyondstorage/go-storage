@@ -38,12 +38,12 @@ import (
     _ "github.com/beyondstorage/go-service-gcs/v2"
     // 添加 azblob 支持
     _ "github.com/beyondstorage/go-service-azblob/v2"
-    // 更多支持，可在 BeyondStorage 下获取。
+    // 更多支持，可在 BeyondStorage 下获取
     _ "github.com/beyondstorage/go-service-xxx" 
 )
 
 func main() {
-    // 连接字符串并初始化存储器。
+    // 连接字符串并初始化存储器
     store, err := services.NewStoragerFromString("s3://bucket_name/path/to/workdir")
     if err != nil {
         log.Fatalf("service init failed: %v", err)
@@ -55,17 +55,17 @@ func main() {
     // 从 hello.txt 中读取数据到 io.Writer
     n, err := store.Read("hello.txt", w)
 
-    // 检查 hello.txt 是否存在元数据并获取之。
+    // 检查 hello.txt 是否存在元数据并获取
     o, err := store.Stat("hello.txt")
 
-    // 使用对象函数获取元数据。
+    // 使用对象函数获取元数据
     length, ok := o.GetContentLength()
     
-    // List 将在路径下创建一个对象的迭代器。
+    // 将在目录路径下创建一个对象的迭代器
     it, err := store.List("path")
     
     for {
-    	// 使用迭代器检索下一个对象，直到检索到 IteratorDone。
+    	// 使用迭代器检索下一个对象，直到迭代完成
     	o, err := it.Next()
     	if errors.Is(err, types.IteraoorDone) {
     		break
@@ -228,13 +228,13 @@ n, err := ps.WritePage(o, r, 1024, 2048)
 全局对象元数据
 
 - `id`: unique key in service
-- `name`: 指向服务工作目录的相对路径
-- `mode`: 对象模式可以由以下几种进行组合：`read`, `dir`, `part` and [more](https://github.com/beyondstorage/go-storage/blob/master/types/object.go#L11) 
+- `name`: 指向服务所在工作目录的相对路径
+- `mode`: 对象的模式可以由以下几种进行组合：`read`, `dir`, `part` and [more](https://github.com/beyondstorage/go-storage/blob/master/types/object.go#L11) 
 - `etag`: [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19) 中定义的实体标签
 - `content-length`: 对象的内容大小
 - `content-md5`: [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15) 中定义的 Md5 简介
 - `content-type`: [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.17) 中定义的媒体类型
-- `last-modified`: 对象的上次更新时间
+- `last-modified`: 对象上次更新的时间
 
 系统对象元数据
 
@@ -253,7 +253,7 @@ _ = om.ServerSideEncryptionCustomerAlgorithm // 此对象的 sse 算法
 
 [自定义](https://github.com/beyondstorage/go-storage/tree/master/cmd/definitions) 维护的代码生成器可生成我们所有的 API、pairs 和元数据。
 
-生成的 pairs 可以用作 API 的可选参数。
+生成的 pairs 可用作 API 的可选参数。
 
 ```go
 func WithContentMd5(v string) Pair {
