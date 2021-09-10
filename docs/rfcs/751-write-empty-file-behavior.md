@@ -1,9 +1,9 @@
 - Author:  Abyss-w <mad.hatter@foxmail.com>
-- Start Date: 2021-9-10
-- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Start Date: 2021-09-10
+- RFC PR: [beyondstorage/go-storage#751](https://github.com/beyondstorage/go-storage/pull/751)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# GSP-0: Write Empty File Behavior
+# GSP-751: Write Empty File Behavior
 
 ## Background
 
