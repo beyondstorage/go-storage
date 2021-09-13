@@ -139,15 +139,14 @@ type Feature struct {
 
 func (f *Feature) Format(s specs.Feature) {
 	f.Name = s.Name
-	f.Description = formatDescription(templateutils.ToPascal(f.Name), s.Description)
+	f.Description = s.Description
 }
 
 // Pair is the pair definition.
 type Pair struct {
 	Name string
 
-	ptype               string
-	originalDescription string
+	ptype string
 
 	Defaultable bool
 
@@ -166,9 +165,7 @@ func (p *Pair) Format(s specs.Pair, global bool) {
 	p.ptype = s.Type
 	p.Global = global
 	p.Defaultable = s.Defaultable
-
-	p.originalDescription = s.Description
-	p.Description = formatDescription(templateutils.ToPascal(p.Name), s.Description)
+	p.Description = s.Description
 }
 
 // Info is the metadata definition.
@@ -178,8 +175,6 @@ type Info struct {
 	Name        string
 	Export      bool
 	Description string
-
-	originalDescription string
 
 	itype string
 
@@ -193,9 +188,8 @@ func (i *Info) Format(s specs.Info, global bool) {
 	i.Name = s.Name
 	i.itype = s.Type
 	i.Export = s.Export
-	i.Description = formatDescription(templateutils.ToPascal(s.Name), s.Description)
+	i.Description = s.Description
 
-	i.originalDescription = s.Description
 	i.Global = global
 }
 
@@ -216,19 +210,17 @@ func (i *Info) DisplayName() string {
 
 // Interface represents an interface
 type Interface struct {
-	Name                string
-	Description         string
-	originalDescription string
-	Ops                 map[string]*Operation
+	Name        string
+	Description string
+	Ops         map[string]*Operation
 }
 
 // NewInterface will create a new interface from spec.
 func NewInterface(in specs.Interface, fields map[string]*Field) *Interface {
 	inter := &Interface{
-		Name:                in.Name,
-		originalDescription: in.Description,
-		Description:         formatDescription(templateutils.ToPascal(in.Name), in.Description),
-		Ops:                 make(map[string]*Operation),
+		Name:        in.Name,
+		Description: in.Description,
+		Ops:         make(map[string]*Operation),
 	}
 	for _, v := range in.Ops {
 		// Update op maps
@@ -259,24 +251,22 @@ func (i *Interface) DisplayName() string {
 
 // Operation represents an operation.
 type Operation struct {
-	Name                string
-	originalDescription string
-	Description         string
-	Pairs               []string
-	Params              Fields
-	Results             Fields
-	ObjectMode          string
-	Local               bool
+	Name        string
+	Description string
+	Pairs       []string
+	Params      Fields
+	Results     Fields
+	ObjectMode  string
+	Local       bool
 }
 
 // NewOperation will create an new operation from operation spec.
 func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
 	op := &Operation{
-		Name:                v.Name,
-		Local:               v.Local,
-		ObjectMode:          v.ObjectMode,
-		originalDescription: v.Description,
-		Description:         formatDescription("", v.Description),
+		Name:        v.Name,
+		Local:       v.Local,
+		ObjectMode:  v.ObjectMode,
+		Description: v.Description,
 	}
 	for _, f := range v.Params {
 		op.Params = append(op.Params, fields[f])
@@ -359,47 +349,6 @@ func (f Fields) String() string {
 	return strings.Join(x, ",")
 }
 
-// Caller will print caller foramt.
-func (f Fields) Caller() string {
-	x := make([]string, 0)
-	for _, v := range f {
-		x = append(x, v.Caller())
-	}
-	return strings.Join(x, ",")
-}
-
-// CallerEndswithComma will print caller with comma aware.
-func (f Fields) CallerEndswithComma() string {
-	content := f.Caller()
-	if content == "" {
-		return ""
-	}
-	return content + ","
-}
-
-// TrimLast will trim the last fields.
-func (f Fields) TrimLast() Fields {
-	return f[:len(f)-1]
-}
-
-// PathCaller will print caller with path aware.
-func (f Fields) PathCaller() string {
-	x := make([]string, 0)
-	for _, v := range f {
-		if v.ftype != "string" {
-			break
-		}
-
-		x = append(x, v.Caller())
-	}
-
-	content := strings.Join(x, ",")
-	if content == "" {
-		return ""
-	}
-	return "," + content
-}
-
 // Field represent a field.
 type Field struct {
 	Name  string
@@ -416,14 +365,6 @@ func (f *Field) String() string {
 
 func (f *Field) Type() string {
 	return f.ftype
-}
-
-// Caller will print the caller formatGlobal of field.
-func (f *Field) Caller() string {
-	if strings.HasPrefix(f.Type(), "...") {
-		return f.Name + "..."
-	}
-	return f.Name
 }
 
 // Format will create a new field.
@@ -710,12 +651,4 @@ func mergeInfos(a, b []*Info) []*Info {
 	}
 
 	return fn(a, b)
-}
-
-func formatDescription(name, desc string) string {
-	desc = strings.Trim(desc, "\n")
-	if name == "" {
-		return strings.ReplaceAll(desc, "\n", "\n// ")
-	}
-	return fmt.Sprintf("// %s %s", name, strings.ReplaceAll(desc, "\n", "\n// "))
 }
