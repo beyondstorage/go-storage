@@ -43,7 +43,7 @@ import (
 )
 
 func main() {
-    // 连接字符串并初始化存储器
+    // 使用连接字符串初始化存储器
     store, err := services.NewStoragerFromString("s3://bucket_name/path/to/workdir")
     if err != nil {
         log.Fatalf("service init failed: %v", err)
@@ -61,7 +61,7 @@ func main() {
     // 使用对象的函数获取元数据
     length, ok := o.GetContentLength()
     
-    // 列表将在路径下创建一个对象的迭代器
+    // List 将创建路径下对象的迭代器
     it, err := store.List("path")
     
     for {
@@ -213,7 +213,7 @@ n, err := bs.WriteBlock(o, r, 1024, "id-abc")
 // 通过块 id 组合区块
 err := bs.CombineBlock(o, []string{"id-abc"})
 ```
-- 页面：允许进行随机写入
+- 页：允许进行随机写入
 ```go
 ps := store.(Pager)
 
@@ -229,7 +229,7 @@ n, err := ps.WritePage(o, r, 1024, 2048)
 
 - `id`: 服务中的唯一键
 - `name`: 服务工作目录的相对路径
-- `mode`: 对象的模式可以由以下几种进行组合：`read`, `dir`, `part` and [more](https://github.com/beyondstorage/go-storage/blob/master/types/object.go#L11) 
+- `mode`: 对象的模式可以由以下几种进行组合：`read`, `dir`, `part` 以及 [更多](https://github.com/beyondstorage/go-storage/blob/master/types/object.go#L11) 
 - `etag`: 实体标签，定义于 [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.19) 
 - `content-length`: 对象的内容大小
 - `content-md5`: [rfc2616](https://tools.ietf.org/html/rfc2616#section-14.15) 中定义的 Md5 简介
@@ -280,7 +280,7 @@ func (o *Object) GetContentMd5() (string, bool) {
 
 ### 服务器端加密
 
-服务器端加密支持在 system pair 和 system metadata 中使用, 并且我们可以通过 [Default Pairs](https://beyondstorage.io/docs/go-storage/pairs/index#default-pairs) 来简化工作。
+支持通过 system pair 和 system metadata 指定在服务端对数据进行加密编码, 并且我们可以通过 [Default Pairs](https://beyondstorage.io/docs/go-storage/pairs/index#default-pairs) 来简化工作。
 
 ```go
 
