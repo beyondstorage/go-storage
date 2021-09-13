@@ -3,7 +3,7 @@ module github.com/beyondstorage/go-storage/v4
 go 1.15
 
 require (
-	github.com/Xuanwo/gg v0.0.2-0.20210908042440-190549324a74
+	github.com/Xuanwo/gg v0.1.0
 	github.com/Xuanwo/templateutils v0.1.0
 	github.com/dave/dst v0.26.2
 	github.com/golang/mock v1.6.0
