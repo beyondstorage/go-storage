@@ -43,7 +43,7 @@ import (
 )
 
 func main() {
-    // 使用连接字符串初始化存储器
+    // 使用连接字符串初始化 storager
     store, err := services.NewStoragerFromString("s3://bucket_name/path/to/workdir")
     if err != nil {
         log.Fatalf("service init failed: %v", err)
@@ -83,28 +83,30 @@ func main() {
 
 ### 支持多种本地服务
 
-目前已经有 **14** 个稳定的服务通过了所有的 [集成测试](https://github.com/beyondstorage/go-integration-test)。
+目前已经有 **16** 个稳定的服务通过了所有的 [集成测试](https://github.com/beyondstorage/go-integration-test)。
 
 - [azblob](https://github.com/beyondstorage/go-service-azblob/): [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- [bos](https://github.com/beyondstorage/go-service-bos): [Baidu Object Storage](https://cloud.baidu.com/product/bos.html)
 - [cos](https://github.com/beyondstorage/go-service-cos/): [Tencent Cloud Object Storage](https://cloud.tencent.com/product/cos)
 - [dropbox](https://github.com/beyondstorage/go-service-dropbox/): [Dropbox](https://www.dropbox.com)
 - [fs](https://github.com/beyondstorage/go-service-fs/): Local file system
+- [ftp](https://github.com/beyondstorage/go-service-ftp/): FTP
 - [gcs](https://github.com/beyondstorage/go-service-gcs/): [Google Cloud Storage](https://cloud.google.com/storage/)
+- [gdrive](https://github.com/beyondstorage/go-service-gdrive): [Google Drive](https://www.google.com/drive/)
+- [ipfs](https://github.com/beyondstorage/go-service-ipfs): [InterPlanetary File System](https://ipfs.io)
 - [kodo](https://github.com/beyondstorage/go-service-kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
+- [memory](https://github.com/beyondstorage/go-service-memory): data that only in memory
+- [minio](https://github.com/beyondstorage/go-service-minio): [MinIO](https://min.io)
+- [obs](https://github.com/beyondstorage/go-service-obs): [Huawei Object Storage Service](https://www.huaweicloud.com/product/obs.html)
 - [oss](https://github.com/beyondstorage/go-service-oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
 - [qingstor](https://github.com/beyondstorage/go-service-qingstor/): [QingStor Object Storage](https://www.qingcloud.com/products/qingstor/)
 - [s3](https://github.com/beyondstorage/go-service-s3/): [Amazon S3](https://aws.amazon.com/s3/)
-- [ftp](https://github.com/beyondstorage/go-service-ftp/): FTP
-- [gdrive](https://github.com/beyondstorage/go-service-gdrive): [Google Drive](https://www.google.com/drive/)
-- [ipfs](https://github.com/beyondstorage/go-service-ipfs): [InterPlanetary File System](https://ipfs.io)
-- [memory](https://github.com/beyondstorage/go-service-memory): data that only in memory
-- [minio](https://github.com/beyondstorage/go-service-minio): [MinIO](https://min.io)
 
 另有 **3** 个公测版本的服务已实现了所需功能，但还没有通过 [集成测试](https://github.com/beyondstorage/go-integration-test)。
 
-- [uss](https://github.com/beyondstorage/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 - [hdfs](https://github.com/beyondstorage/go-service-hdfs): [Hadoop Distributed File System](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html#Introduction)
 - [tar](https://github.com/beyondstorage/go-service-tar): tar files
+- [uss](https://github.com/beyondstorage/go-service-uss/): [UPYUN Storage Service](https://www.upyun.com/products/file-storage)
 
 最后还有 **4** 个处于内测阶段的服务仍在开发中。
 
@@ -119,7 +121,7 @@ func main() {
 
 基本操作
 
-- 元数据: 获取 `存储器` 元数据 
+- 元数据: 获取 `storager` 元数据 
 ```go
 meta := store.Metadata()
 _ := meta.GetWorkDir() // 获取对象的工作目录
@@ -161,11 +163,11 @@ for {
 
 扩展操作
 
-- 拷贝: 复制一个 `对象` 到存储库内
+- 拷贝: 复制一个 `对象` 到 storager
 ```go
 err := store.(Copier).Copy(src, dst) // 从 src 复制一个对象到 dst
 ```
-- 移动: 移动一个 `对象` 到存储库内
+- 移动: 移动一个 `对象` 到 storager
 ```go
 err := store.(Mover).Move(src, dst) // 从 src 移动一个对象到 dst
 ```
@@ -251,7 +253,7 @@ _ = om.ServerSideEncryptionCustomerAlgorithm // 此对象的 sse 算法
 
 ### 强类型的接口
 
-自我维护的代码生成器 [定义](https://github.com/beyondstorage/go-storage/tree/master/cmd/definitions) 有助于生成我们所有的 API、配对和元数据。
+自我维护的代码生成器 [定义](https://github.com/beyondstorage/go-storage/tree/master/cmd/definitions) 有助于生成我们所有的 API、pairs 和元数据。
 
 生成的 pairs 可用作 API 的可选参数。
 
@@ -296,7 +298,7 @@ func NewS3SseC(key []byte) (types.Storager, error) {
         Read: []types.Pair{
             // 需要, 必须为 AES256
             s3.WithServerSideEncryptionCustomerAlgorithm(s3.ServerSideEncryptionAes256),
-            // Required, your AES-256 key, a 32-byte binary value
+            // 你的 AES-256 密钥, 需要是一个 32 字节的二进制值
             s3.WithServerSideEncryptionCustomerKey(key),
         }}
     
