@@ -6,7 +6,7 @@
 # GSP-751: Write Empty File Behavior
 
 - Previous discussion:
-    - [Specify the behavior for writing empty file](https://forum.beyondstorage.io/t/topic/204)
+  - [Specify the behavior for writing empty file](https://forum.beyondstorage.io/t/topic/204)
 
 ## Background
 
@@ -19,8 +19,8 @@ In our definition, the `Write` API will upload a file to the path. We do not do 
 ```go
 _, err = s3.s.Write(path,nil, 0)
 if err != nil {
-    s3.logger.Error("write", zap.String("path", path), zap.Error(err))
-    return nil, nil, err
+s3.logger.Error("write", zap.String("path", path), zap.Error(err))
+return nil, nil, err
 }
 ```
 
@@ -29,8 +29,8 @@ If we want to upload an empty file, we need to do so:
 ```go
 _, err = s3.s.Write(path, bytes.NewReader([]byte{}), 0)
 if err != nil {
-    s3.logger.Error("write", zap.String("path", path), zap.Error(err))
-    return nil, nil, err
+s3.logger.Error("write", zap.String("path", path), zap.Error(err))
+return nil, nil, err
 }
 ```
 
@@ -38,15 +38,18 @@ This is not convenient for the users.
 
 ## Proposal
 
-I propose to allow the user to pass in a nil `io.Reader` when calling `Write`.
-
-- For services that do not support uploading nil `io.Reader`, but support upload object with size 0 , we should check if `io.Reader` is `nil`. If it is `nil`, we need to create a `io.Reader` before calling the API. For example, `s3`, `kodo`, etc.
-- For services that support uploading nil `io.Reader`, we don't need to check if the `reader` is `nil`, we can call the API directly. Like `oss`, etc.
-- For services that do not support uploading both nil `io.Reader` and objects of size 0, we should mark that they do not support uploading empty files, and check whether `io.Reader` is nil or size 0. Like `azfile`, etc.
+I propose to allow the user to pass in a nil `io.Reader` and `0` size to create an empty file when calling `Write`.
 
 ## Rationale
 
-N/A
+### Possible Q&As
+
+- What will happen if we got a nil `io.Reader` but `size != 0`?
+  - We will set the size to `0` before calling the API.
+  - If the API call is successful we will return size `0`.
+- What will happen if we got a valid `io.Reader` but `size = 0`?
+  - We will upload files of `io.Reader` length.
+  - If the upload is successful, we will return the size as the length of the `io.Reader`.
 
 ## Compatibility
 
