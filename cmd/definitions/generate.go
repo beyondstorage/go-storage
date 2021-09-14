@@ -19,8 +19,6 @@ import (
 	"github.com/beyondstorage/go-storage/v4/cmd/definitions/bindata"
 )
 
-var serviceT = newTmpl("cmd/definitions/tmpl/service")
-
 func generateGlobal(data *Data) {
 	// Metas generate
 	generateInfo(data, "types/info.generated.go")
@@ -36,7 +34,7 @@ func generateGlobal(data *Data) {
 }
 
 func generateService(data *Data) {
-	generateT(serviceT, "generated.go", data.Service)
+	generateSrv(data.Service, "generated.go")
 	for _, v := range data.Service.Namespaces {
 		generateFunc(v, v.Name+".go")
 		formatService(v.Name + ".go")
