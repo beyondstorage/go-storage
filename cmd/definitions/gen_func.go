@@ -14,7 +14,7 @@ func generateFunc(ns *Namespace, path string) {
 
 	nsNameP := templateutils.ToPascal(ns.Name)
 
-	for _, fn := range ns.Funcs {
+	for _, fn := range ns.ParsedFunctions() {
 		if fn.Implemented {
 			continue
 		}
@@ -22,19 +22,21 @@ func generateFunc(ns *Namespace, path string) {
 		fnNameC := templateutils.ToCamel(fn.Name)
 		fnNameP := templateutils.ToPascal(fn.Name)
 
-		if fn.Local {
+		op := fn.GetOperation()
+
+		if op.Local {
 			gfn := f.NewFunction(fnNameC).
 				WithReceiver("s", "*"+nsNameP)
-			for _, v := range fn.Params {
+			for _, v := range op.ParsedParams() {
 				// We need to remove pair from generated functions.
-				if v.Type() == "...Pair" {
+				if v.Type == "...Pair" {
 					continue
 				}
-				gfn.AddParameter(v.Name, v.Type())
+				gfn.AddParameter(v.Name, v.Type)
 			}
 			gfn.AddParameter("opt", "pair"+nsNameP+fnNameP)
-			for _, v := range fn.Results {
-				gfn.AddResult(v.Name, v.Type())
+			for _, v := range op.ParsedResults() {
+				gfn.AddResult(v.Name, v.Type)
 			}
 			gfn.AddBody(gg.S(`panic("not implemented")`))
 			continue
@@ -43,16 +45,16 @@ func generateFunc(ns *Namespace, path string) {
 		gfn := f.NewFunction(fnNameC).
 			WithReceiver("s", "*"+nsNameP)
 		gfn.AddParameter("ctx", "context.Context")
-		for _, v := range fn.Params {
+		for _, v := range op.ParsedParams() {
 			// We need to remove pair from generated functions.
-			if v.Type() == "...Pair" {
+			if v.Type == "...Pair" {
 				continue
 			}
-			gfn.AddParameter(v.Name, v.Type())
+			gfn.AddParameter(v.Name, v.Type)
 		}
 		gfn.AddParameter("opt", "pair"+nsNameP+fnNameP)
-		for _, v := range fn.Results {
-			gfn.AddResult(v.Name, v.Type())
+		for _, v := range op.ParsedResults() {
+			gfn.AddResult(v.Name, v.Type)
 		}
 		gfn.AddBody(`panic("not implemented")`)
 		continue

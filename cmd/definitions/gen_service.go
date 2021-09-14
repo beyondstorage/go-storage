@@ -39,7 +39,7 @@ func generateSrv(data *Service, path string) {
 	// Generate object system metadata.
 	f.AddLineComment("ObjectSystemMetadata stores system metadata for object.")
 	osm := f.NewStruct("ObjectSystemMetadata")
-	for _, info := range data.Infos {
+	for _, info := range data.SortedInfos() {
 		if info.Scope != "object" {
 			continue
 		}
@@ -51,7 +51,7 @@ func generateSrv(data *Service, path string) {
 			pname = info.DisplayName()
 		}
 		// FIXME: we will support comment on field later.
-		osm.AddField(pname, info.Type())
+		osm.AddField(pname, info.Type)
 	}
 
 	f.AddLineComment(`
@@ -87,7 +87,7 @@ setObjectSystemMetadata will set ObjectSystemMetadata into Object.
 	// Generate storage system metadata.
 	f.AddLineComment("StorageSystemMetadata stores system metadata for object.")
 	ssm := f.NewStruct("StorageSystemMetadata")
-	for _, info := range data.Infos {
+	for _, info := range data.SortedInfos() {
 		if info.Scope != "object" {
 			continue
 		}
@@ -99,7 +99,7 @@ setObjectSystemMetadata will set ObjectSystemMetadata into Object.
 			pname = info.DisplayName()
 		}
 		// FIXME: we will support comment on field later.
-		ssm.AddField(pname, info.Type())
+		ssm.AddField(pname, info.Type)
 	}
 
 	f.AddLineComment(`
@@ -130,7 +130,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 	)
 
 	// Generate service pairs.
-	for _, pair := range data.Pairs() {
+	for _, pair := range data.SortedPairs() {
 		// We don't need to generate global pairs here.
 		if pair.Global {
 			continue
@@ -146,8 +146,8 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		// Set to true as default.
 		value := "true"
 		// bool type pairs don't need input.
-		if pair.Type() != "bool" {
-			fn.AddParameter("v", pair.Type())
+		if pair.Type != "bool" {
+			fn.AddParameter("v", pair.Type)
 			value = "v"
 		}
 		fn.AddResult("", "Pair")
@@ -160,19 +160,19 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 	// Generate pair map
 	f.NewVar().AddField("pairMap", gg.Embed(func() gg.Node {
 		i := gg.Value("map[string]string")
-		for _, pair := range data.Pairs() {
-			i.AddField(gg.Lit(pair.Name), gg.Lit(pair.Type()))
+		for _, pair := range data.SortedPairs() {
+			i.AddField(gg.Lit(pair.Name), gg.Lit(pair.Type))
 		}
 		return i
 	}))
 
 	// Generate every namespace.
-	for _, ns := range data.Namespaces {
+	for _, ns := range data.SortedNamespaces() {
 		nsNameP := templateutils.ToPascal(ns.Name)
 
 		// Generate interface assert.
 		inters := f.NewVar()
-		for _, inter := range ns.Interfaces {
+		for _, inter := range ns.ParsedInterfaces() {
 			interNameP := templateutils.ToPascal(inter.Name)
 			inters.AddTypedField(
 				"_", interNameP, gg.S("&%s{}", nsNameP))
@@ -180,7 +180,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 
 		// Generate feature struct.
 		features := f.NewStruct(nsNameP + "Features")
-		for _, fs := range ns.Features {
+		for _, fs := range ns.ParsedFeatures() {
 			features.AddLineComment(fs.Description)
 			features.AddField(templateutils.ToPascal(fs.Name), "bool")
 		}
@@ -195,34 +195,26 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 
 		// Generate required pairs.
 		pairStruct.AddLineComment("Required pairs")
-		for _, pair := range ns.New.Required {
+		for _, pair := range ns.New.ParsedRequired() {
 			pairNameP := templateutils.ToPascal(pair.Name)
 			pairStruct.AddField("Has"+pairNameP, "bool")
-			pairStruct.AddField(pairNameP, pair.Type())
+			pairStruct.AddField(pairNameP, pair.Type)
 		}
 
 		// Generate optional pairs.
 		pairStruct.AddLineComment("Optional pairs")
-		for _, pair := range ns.New.Optional {
+		for _, pair := range ns.New.ParsedOptional() {
 			pairNameP := templateutils.ToPascal(pair.Name)
 			pairStruct.AddField("Has"+pairNameP, "bool")
-			pairStruct.AddField(pairNameP, pair.Type())
+			pairStruct.AddField(pairNameP, pair.Type)
 		}
 
 		// Generate feature handle logic.
 		pairStruct.AddLineComment("Enable features")
-		for _, feature := range ns.Features {
+		for _, feature := range ns.ParsedFeatures() {
 			featureNameP := templateutils.ToPascal(feature.Name)
 			pairStruct.AddField("hasEnable"+featureNameP, "bool")
 			pairStruct.AddField("Enable"+featureNameP, "bool")
-		}
-
-		// Generate default pairs.
-		pairStruct.AddLineComment("Default pairs")
-		for _, dp := range ns.Defaultable() {
-			dpNameP := templateutils.ToPascal(dp.Pair.Name)
-			pairStruct.AddField("hasDefault"+dpNameP, "bool")
-			pairStruct.AddField("Default"+dpNameP, dp.Pair.Type())
 		}
 
 		// Generate parse newPair.
@@ -240,25 +232,25 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 				AddBody(gg.Embed(func() gg.Node {
 					is := gg.Switch(gg.S("v.Key"))
 
-					for _, pair := range ns.New.Required {
+					for _, pair := range ns.New.ParsedRequired() {
 						pairNameP := templateutils.ToPascal(pair.Name)
 						is.NewCase(gg.Lit(pair.Name)).AddBody(
 							gg.If(gg.S("result.Has%s", pairNameP)).
 								AddBody(gg.Continue()),
 							gg.S("result.Has%s = true", pairNameP),
-							gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type()),
+							gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type),
 						)
 					}
-					for _, pair := range ns.New.Optional {
+					for _, pair := range ns.New.ParsedOptional() {
 						pairNameP := templateutils.ToPascal(pair.Name)
 						is.NewCase(gg.Lit(pair.Name)).AddBody(
 							gg.If(gg.S("result.Has%s", pairNameP)).
 								AddBody(gg.Continue()),
 							gg.S("result.Has%s = true", pairNameP),
-							gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type()),
+							gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type),
 						)
 					}
-					for _, feature := range ns.Features {
+					for _, feature := range ns.ParsedFeatures() {
 						featureNameP := templateutils.ToPascal(feature.Name)
 						is.NewCase(gg.Lit("enable_"+feature.Name)).AddBody(
 							gg.If(gg.S("result.hasEnable%s", featureNameP)).
@@ -267,22 +259,13 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 							gg.S("result.Enable%s = true", featureNameP),
 						)
 					}
-					for _, dp := range ns.Defaultable() {
-						dpNameP := templateutils.ToPascal(dp.Pair.Name)
-						is.NewCase(gg.Lit("default_"+dp.Pair.Name)).AddBody(
-							gg.If(gg.S("result.hasDefault%s", dpNameP)).
-								AddBody(gg.Continue()),
-							gg.S("result.hasDefault%s = true", dpNameP),
-							gg.S("result.Default%s = v.Value.(%s)", dpNameP, dp.Pair.Type()),
-						)
-					}
 					return is
 				})),
 			gg.LineComment("Enable features"),
 			gg.Embed(func() gg.Node {
 				// Generate features enable here.
 				group := gg.NewGroup()
-				for _, feature := range ns.Features {
+				for _, feature := range ns.ParsedFeatures() {
 					featureNameP := templateutils.ToPascal(feature.Name)
 
 					gg.If(gg.S("result.hasEnable%s", featureNameP)).
@@ -296,14 +279,15 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 			gg.Embed(func() gg.Node {
 				// Generate default pari handle logic here.
 				group := gg.NewGroup()
-				for _, dp := range ns.Defaultable() {
+
+				for _, dp := range ns.ParsedDefaultable() {
 					pairNameP := templateutils.ToPascal(dp.Pair.Name)
 
 					xif := group.
-						NewIf(gg.S("result.hasDefault%s", pairNameP)).
+						NewIf(gg.S("result.HasDefault%s", pairNameP)).
 						AddBody(gg.S("result.HasDefault%sPairs = true", nsNameP))
 					for _, op := range dp.Funcs {
-						opN := templateutils.ToPascal(op)
+						opN := templateutils.ToPascal(op.Name)
 
 						xif.AddBody(gg.S(
 							"result.Default%sPairs.%s = append(result.Default%sPairs.%s, With%s(result.Default%s))",
@@ -316,7 +300,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 				// Generate required validate logic here.
 				group := gg.NewGroup()
 
-				for _, pair := range ns.New.Required {
+				for _, pair := range ns.New.ParsedRequired() {
 					pairNameP := templateutils.ToPascal(pair.Name)
 					group.NewIf(gg.S("!result.Has%s", pairNameP)).
 						AddBody(gg.S(
@@ -331,13 +315,13 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		// Generate default pairs.
 		f.AddLineComment("Default%sPairs is default pairs for specific action", nsNameP)
 		dps := f.NewStruct(fmt.Sprintf("Default%sPairs", nsNameP))
-		for _, fn := range ns.Funcs {
+		for _, fn := range ns.ParsedFunctions() {
 			fnNameP := templateutils.ToPascal(fn.Name)
 			dps.AddField(fnNameP, "[]Pair")
 		}
 
 		// Generate pair.
-		for _, fn := range ns.Funcs {
+		for _, fn := range ns.ParsedFunctions() {
 			fnNameP := templateutils.ToPascal(fn.Name)
 			pairStructName := fmt.Sprintf("pair%s%s", nsNameP, fnNameP)
 
@@ -347,18 +331,18 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 
 			// Generate required pairs.
 			pairStruct.AddLineComment("Required pairs")
-			for _, pair := range fn.Required {
+			for _, pair := range fn.ParsedRequired() {
 				pairNameP := templateutils.ToPascal(pair.Name)
 				pairStruct.AddField("Has"+pairNameP, "bool")
-				pairStruct.AddField(pairNameP, pair.Type())
+				pairStruct.AddField(pairNameP, pair.Type)
 			}
 
 			// Generate optional pairs.
 			pairStruct.AddLineComment("Optional pairs")
-			for _, pair := range fn.Optional {
+			for _, pair := range fn.ParsedOptional() {
 				pairNameP := templateutils.ToPascal(pair.Name)
 				pairStruct.AddField("Has"+pairNameP, "bool")
-				pairStruct.AddField(pairNameP, pair.Type())
+				pairStruct.AddField(pairNameP, pair.Type)
 			}
 
 			pairParseName := fmt.Sprintf("parsePair%s%s", nsNameP, fnNameP)
@@ -375,22 +359,22 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 					AddBody(gg.Embed(func() gg.Node {
 						is := gg.Switch(gg.S("v.Key"))
 
-						for _, pair := range fn.Required {
+						for _, pair := range fn.ParsedRequired() {
 							pairNameP := templateutils.ToPascal(pair.Name)
 							is.NewCase(gg.Lit(pair.Name)).AddBody(
 								gg.If(gg.S("result.Has%s", pairNameP)).
 									AddBody(gg.Continue()),
 								gg.S("result.Has%s = true", pairNameP),
-								gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type()),
+								gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type),
 							)
 						}
-						for _, pair := range fn.Optional {
+						for _, pair := range fn.ParsedOptional() {
 							pairNameP := templateutils.ToPascal(pair.Name)
 							is.NewCase(gg.Lit(pair.Name)).AddBody(
 								gg.If(gg.S("result.Has%s", pairNameP)).
 									AddBody(gg.Continue()),
 								gg.S("result.Has%s = true", pairNameP),
-								gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type()),
+								gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type),
 							)
 						}
 						dcas := is.NewDefault()
@@ -411,7 +395,7 @@ If user enable this feature, service should ignore not support pair error.`),
 					// Generate required validate logic here.
 					group := gg.NewGroup()
 
-					for _, pair := range fn.Required {
+					for _, pair := range fn.ParsedRequired() {
 						pairNameP := templateutils.ToPascal(pair.Name)
 						group.NewIf(gg.S("!result.Has%s", pairNameP)).
 							AddBody(gg.S(
@@ -425,16 +409,17 @@ If user enable this feature, service should ignore not support pair error.`),
 		}
 
 		// Generate public functions.
-		for _, fn := range ns.Funcs {
+		for _, fn := range ns.ParsedFunctions() {
 			fnNameP := templateutils.ToPascal(fn.Name)
-			if fn.Local {
+			op := fn.GetOperation()
+			if op.Local {
 				// Generate a local function.
 				xfn := f.NewFunction(fnNameP).WithReceiver("s", "*"+nsNameP)
-				for _, field := range fn.Params {
-					xfn.AddParameter(field.Name, field.Type())
+				for _, field := range op.ParsedParams() {
+					xfn.AddParameter(field.Name, field.Type)
 				}
-				for _, field := range fn.Results {
-					xfn.AddResult(field.Name, field.Type())
+				for _, field := range op.ParsedResults() {
+					xfn.AddResult(field.Name, field.Type)
 				}
 				xfn.AddBody(
 					gg.S("pairs = append(pairs, s.defaultPairs.%s...)", fnNameP),
@@ -446,9 +431,9 @@ If user enable this feature, service should ignore not support pair error.`),
 						gg.Embed(func() gg.Node {
 							ic := gg.Call(templateutils.ToCamel(fn.Name)).
 								WithOwner("s")
-							for _, v := range fn.Params {
+							for _, v := range op.ParsedParams() {
 								// We don't need to call pair again.
-								if v.Type() == "...Pair" {
+								if v.Type == "...Pair" {
 									continue
 								}
 								ic.AddParameter(v.Name)
@@ -462,11 +447,11 @@ If user enable this feature, service should ignore not support pair error.`),
 			// TODO: generate comment here.
 			xfn := f.NewFunction(fnNameP).
 				WithReceiver("s", "*"+nsNameP)
-			for _, field := range fn.Params {
-				xfn.AddParameter(field.Name, field.Type())
+			for _, field := range op.ParsedParams() {
+				xfn.AddParameter(field.Name, field.Type)
 			}
-			for _, field := range fn.Results {
-				xfn.AddResult(field.Name, field.Type())
+			for _, field := range op.ParsedResults() {
+				xfn.AddResult(field.Name, field.Type)
 			}
 			xfn.AddBody(
 				"ctx := context.Background()",
@@ -475,8 +460,8 @@ If user enable this feature, service should ignore not support pair error.`),
 						ic := gg.Call(fnNameP + "WithContext").
 							WithOwner("s")
 						ic.AddParameter("ctx")
-						for _, v := range fn.Params {
-							if v.Type() == "...Pair" {
+						for _, v := range op.ParsedParams() {
+							if v.Type == "...Pair" {
 								ic.AddParameter("pairs...")
 								continue
 							}
@@ -488,19 +473,19 @@ If user enable this feature, service should ignore not support pair error.`),
 			xfn = f.NewFunction(fnNameP+"WithContext").
 				WithReceiver("s", "*"+nsNameP)
 			xfn.AddParameter("ctx", "context.Context")
-			for _, field := range fn.Params {
-				xfn.AddParameter(field.Name, field.Type())
+			for _, field := range op.ParsedParams() {
+				xfn.AddParameter(field.Name, field.Type)
 			}
-			for _, field := range fn.Results {
-				xfn.AddResult(field.Name, field.Type())
+			for _, field := range op.ParsedResults() {
+				xfn.AddResult(field.Name, field.Type)
 			}
 			xfn.AddBody(
 				gg.Defer(gg.Embed(func() gg.Node {
 					caller := gg.Call("formatError").WithOwner("s")
 					caller.AddParameter(gg.Lit(fn.Name)).AddParameter("err")
-					for _, v := range fn.Params {
+					for _, v := range op.ParsedParams() {
 						// formatError only accept string as input.
-						if v.Type() != "string" {
+						if v.Type != "string" {
 							continue
 						}
 						caller.AddParameter(v.Name)
@@ -511,10 +496,10 @@ If user enable this feature, service should ignore not support pair error.`),
 					return fn
 				})),
 				gg.Embed(func() gg.Node {
-					if fn.ObjectMode == "" {
+					if op.ObjectMode == "" {
 						return gg.Line()
 					}
-					mode := templateutils.ToPascal(fn.ObjectMode)
+					mode := templateutils.ToPascal(op.ObjectMode)
 					return gg.If(gg.S("!o.Mode.Is%s()", mode)).AddBody(
 						gg.S("err = services.ObjectModeInvalidError{Expected: Mode%s, Actual: o.Mode}", mode),
 						gg.Return(),
@@ -530,9 +515,9 @@ If user enable this feature, service should ignore not support pair error.`),
 						ic := gg.Call(templateutils.ToCamel(fn.Name)).
 							WithOwner("s")
 						ic.AddParameter("ctx")
-						for _, v := range fn.Params {
+						for _, v := range op.ParsedParams() {
 							// We don't need to call pair again.
-							if v.Type() == "...Pair" {
+							if v.Type == "...Pair" {
 								continue
 							}
 							ic.AddParameter(v.Name)
@@ -545,7 +530,7 @@ If user enable this feature, service should ignore not support pair error.`),
 
 	// Generate init function
 	initFn := f.NewFunction("init")
-	for _, ns := range data.Namespaces {
+	for _, ns := range data.SortedNamespaces() {
 		nsNameP := templateutils.ToPascal(ns.Name)
 		initFn.AddBody(gg.Call("Register" + nsNameP + "r").
 			WithOwner("services").

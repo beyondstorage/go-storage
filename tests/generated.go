@@ -149,7 +149,7 @@ func WithStringPair(v string) Pair {
 	return Pair{Key: "string_pair", Value: v}
 }
 
-var pairMap = map[string]string{"content_md5": "string", "content_type": "string", "context": "context.Context", "continuation_token": "string", "credential": "string", "default_content_type": "string", "default_io_callback": "func([]byte)", "default_service_pairs": "DefaultServicePairs", "default_storage_class": "string", "default_storage_pairs": "DefaultStoragePairs", "disable_uri_cleaning": "bool", "enable_loose_pair": "bool", "enable_virtual_dir": "bool", "endpoint": "string", "expire": "time.Duration", "http_client_options": "*httpclient.Options", "interceptor": "Interceptor", "io_callback": "func([]byte)", "list_mode": "ListMode", "location": "string", "multipart_id": "string", "name": "string", "object_mode": "ObjectMode", "offset": "int64", "service_features": "ServiceFeatures", "size": "int64", "storage_class": "string", "storage_features": "StorageFeatures", "string_pair": "string", "work_dir": "string"}
+var pairMap = map[string]string{"default_service_pairs": "DefaultServicePairs", "default_storage_class": "string", "default_storage_pairs": "DefaultStoragePairs", "disable_uri_cleaning": "bool", "enable_loose_pair": "bool", "enable_virtual_dir": "bool", "service_features": "ServiceFeatures", "storage_class": "string", "storage_features": "StorageFeatures", "string_pair": "string"}
 var _ Servicer = &Service{}
 
 type ServiceFeatures struct {
@@ -163,8 +163,14 @@ type pairServiceNew struct {
 	HasCredential bool
 	Credential    string
 	// Optional pairs
+	HasDefaultContentType  bool
+	DefaultContentType     string
+	HasDefaultIoCallback   bool
+	DefaultIoCallback      func([]byte)
 	HasDefaultServicePairs bool
 	DefaultServicePairs    DefaultServicePairs
+	HasDefaultStorageClass bool
+	DefaultStorageClass    string
 	HasEndpoint            bool
 	Endpoint               string
 	HasHTTPClientOptions   bool
@@ -172,7 +178,6 @@ type pairServiceNew struct {
 	HasServiceFeatures     bool
 	ServiceFeatures        ServiceFeatures
 	// Enable features
-	// Default pairs
 }
 
 // parsePairServiceNew will parse Pair slice into *pairServiceNew
@@ -188,12 +193,30 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasCredential = true
 			result.Credential = v.Value.(string)
+		case "default_content_type":
+			if result.HasDefaultContentType {
+				continue
+			}
+			result.HasDefaultContentType = true
+			result.DefaultContentType = v.Value.(string)
+		case "default_io_callback":
+			if result.HasDefaultIoCallback {
+				continue
+			}
+			result.HasDefaultIoCallback = true
+			result.DefaultIoCallback = v.Value.(func([]byte))
 		case "default_service_pairs":
 			if result.HasDefaultServicePairs {
 				continue
 			}
 			result.HasDefaultServicePairs = true
 			result.DefaultServicePairs = v.Value.(DefaultServicePairs)
+		case "default_storage_class":
+			if result.HasDefaultStorageClass {
+				continue
+			}
+			result.HasDefaultStorageClass = true
+			result.DefaultStorageClass = v.Value.(string)
 		case "endpoint":
 			if result.HasEndpoint {
 				continue
@@ -455,6 +478,12 @@ type pairStorageNew struct {
 	HasName bool
 	Name    string
 	// Optional pairs
+	HasDefaultContentType  bool
+	DefaultContentType     string
+	HasDefaultIoCallback   bool
+	DefaultIoCallback      func([]byte)
+	HasDefaultStorageClass bool
+	DefaultStorageClass    string
 	HasDefaultStoragePairs bool
 	DefaultStoragePairs    DefaultStoragePairs
 	HasDisableURICleaning  bool
@@ -472,13 +501,6 @@ type pairStorageNew struct {
 	EnableLoosePair     bool
 	hasEnableVirtualDir bool
 	EnableVirtualDir    bool
-	// Default pairs
-	hasDefaultContentType  bool
-	DefaultContentType     string
-	hasDefaultIoCallback   bool
-	DefaultIoCallback      func([]byte)
-	hasDefaultStorageClass bool
-	DefaultStorageClass    string
 }
 
 // parsePairStorageNew will parse Pair slice into *pairStorageNew
@@ -494,6 +516,24 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.HasName = true
 			result.Name = v.Value.(string)
+		case "default_content_type":
+			if result.HasDefaultContentType {
+				continue
+			}
+			result.HasDefaultContentType = true
+			result.DefaultContentType = v.Value.(string)
+		case "default_io_callback":
+			if result.HasDefaultIoCallback {
+				continue
+			}
+			result.HasDefaultIoCallback = true
+			result.DefaultIoCallback = v.Value.(func([]byte))
+		case "default_storage_class":
+			if result.HasDefaultStorageClass {
+				continue
+			}
+			result.HasDefaultStorageClass = true
+			result.DefaultStorageClass = v.Value.(string)
 		case "default_storage_pairs":
 			if result.HasDefaultStoragePairs {
 				continue
@@ -542,38 +582,20 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.hasEnableVirtualDir = true
 			result.EnableVirtualDir = true
-		case "default_content_type":
-			if result.hasDefaultContentType {
-				continue
-			}
-			result.hasDefaultContentType = true
-			result.DefaultContentType = v.Value.(string)
-		case "default_io_callback":
-			if result.hasDefaultIoCallback {
-				continue
-			}
-			result.hasDefaultIoCallback = true
-			result.DefaultIoCallback = v.Value.(func([]byte))
-		case "default_storage_class":
-			if result.hasDefaultStorageClass {
-				continue
-			}
-			result.hasDefaultStorageClass = true
-			result.DefaultStorageClass = v.Value.(string)
 		}
 	}
 	// Enable features
 
-	if result.hasDefaultContentType {
+	if result.HasDefaultContentType {
 		result.HasDefaultStoragePairs = true
 		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithContentType(result.DefaultContentType))
 	}
-	if result.hasDefaultIoCallback {
+	if result.HasDefaultIoCallback {
 		result.HasDefaultStoragePairs = true
 		result.DefaultStoragePairs.Read = append(result.DefaultStoragePairs.Read, WithIoCallback(result.DefaultIoCallback))
 		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithIoCallback(result.DefaultIoCallback))
 	}
-	if result.hasDefaultStorageClass {
+	if result.HasDefaultStorageClass {
 		result.HasDefaultStoragePairs = true
 		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithStorageClass(result.DefaultStorageClass))
 	}
