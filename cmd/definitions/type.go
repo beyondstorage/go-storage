@@ -384,6 +384,10 @@ func (s *Service) SortedNamespaces() []*Namespace {
 func (s *Service) SortedPairs() []*Pair {
 	var ps []*Pair
 
+	for _, v := range s.d.PairsMap {
+		v := v
+		ps = append(ps, v)
+	}
 	for _, v := range s.Pairs {
 		v := v
 		ps = append(ps, v)
