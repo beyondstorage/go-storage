@@ -20,7 +20,7 @@ func generateObject(data *Data, path string) {
 
 	f.AddLineComment("Field index in object bit")
 	cons := f.NewConst()
-	for k, v := range data.ObjectMeta {
+	for k, v := range data.ObjectMeta() {
 		pname := templateutils.ToPascal(v.Name)
 		cons.AddTypedField(
 			"objectIndex"+pname, "uint64", gg.S("1<<%d", k))
@@ -37,11 +37,11 @@ NOTES:
     could be fetched via lazy stat logic: https://beyondstorage.io/docs/go-storage/internal/object-lazy-stat
 `)
 	ob := f.NewStruct("Object")
-	for _, v := range data.ObjectMeta {
+	for _, v := range data.ObjectMeta() {
 		if v.Description != "" {
 			ob.AddLineComment(v.Description)
 		}
-		ob.AddField(v.TypeName(), v.Type())
+		ob.AddField(v.TypeName(), v.Type)
 	}
 
 	ob.AddLineComment("client is the client in which Object is alive.")
@@ -52,17 +52,17 @@ NOTES:
 	ob.AddField("done", "uint32")
 	ob.AddField("m", "sync.Mutex")
 
-	for _, v := range data.ObjectMeta {
+	for _, v := range data.ObjectMeta() {
 		pname := templateutils.ToPascal(v.Name)
 
 		if v.Export {
 			f.NewFunction("Get"+v.DisplayName()).
 				WithReceiver("o", "*Object").
-				AddResult("", v.Type()).
+				AddResult("", v.Type).
 				AddBody(gg.Return(gg.S("o.%s", v.TypeName())))
 			f.NewFunction("Set"+v.DisplayName()).
 				WithReceiver("o", "*Object").
-				AddParameter("v", v.Type()).
+				AddParameter("v", v.Type).
 				AddResult("", "*Object").
 				AddBody(
 					gg.S("o.%s = v", v.TypeName()),
@@ -77,7 +77,7 @@ NOTES:
 `, v.DisplayName(), v.DisplayName(), v.Description)
 		f.NewFunction("Get"+v.DisplayName()).
 			WithReceiver("o", "*Object").
-			AddResult("", v.Type()).
+			AddResult("", v.Type).
 			AddResult("", "bool").
 			AddBody(
 				gg.S("o.stat()"),
@@ -86,7 +86,7 @@ NOTES:
 					AddBody(
 						gg.Return("o."+v.TypeName(), gg.Lit(true)),
 					),
-				gg.Return(templateutils.ZeroValue(v.Type()), gg.Lit(false)),
+				gg.Return(templateutils.ZeroValue(v.Type), gg.Lit(false)),
 			)
 
 		f.AddLineComment(`MustGet%s will get %s from Object.
@@ -95,7 +95,7 @@ NOTES:
 `, v.DisplayName(), v.DisplayName(), v.Description)
 		f.NewFunction("MustGet"+v.DisplayName()).
 			WithReceiver("o", "*Object").
-			AddResult("", v.Type()).
+			AddResult("", v.Type).
 			AddBody(
 				gg.S("o.stat()"),
 				gg.Line(),
@@ -112,7 +112,7 @@ NOTES:
 `, v.DisplayName(), v.DisplayName(), v.Description)
 		f.NewFunction("Set"+v.DisplayName()).
 			WithReceiver("o", "*Object").
-			AddParameter("v", v.Type()).
+			AddParameter("v", v.Type).
 			AddResult("", "*Object").
 			AddBody(
 				gg.S("o.%s = v", v.TypeName()),
@@ -123,7 +123,7 @@ NOTES:
 	fn := f.NewFunction("clone").
 		WithReceiver("o", "*Object").
 		AddParameter("xo", "*Object")
-	for _, v := range data.ObjectMeta {
+	for _, v := range data.ObjectMeta() {
 		fn.AddBody(gg.S("o.%s = xo.%s", v.TypeName(), v.TypeName()))
 	}
 	fn.AddBody(gg.S("o.bit = xo.bit"))

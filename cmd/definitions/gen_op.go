@@ -19,7 +19,7 @@ func generateOperation(data *Data, path string) {
 		AddPath("net/http").
 		AddPath("time")
 
-	for _, in := range data.Interfaces {
+	for _, in := range data.Interfaces() {
 		f.AddLineComment("%s %s", in.DisplayName(), in.Description)
 
 		inter := f.NewInterface(in.DisplayName())
@@ -33,11 +33,11 @@ func generateOperation(data *Data, path string) {
 			inter.AddLineComment("%s %s", pname, op.Description)
 			gop := inter.NewFunction(pname)
 
-			for _, p := range op.Params {
-				gop.AddParameter(p.Name, p.Type())
+			for _, p := range op.ParsedParams() {
+				gop.AddParameter(p.Name, p.Type)
 			}
-			for _, r := range op.Results {
-				gop.AddResult(r.Name, r.Type())
+			for _, r := range op.ParsedResults() {
+				gop.AddResult(r.Name, r.Type)
 			}
 
 			// We need to generate XxxWithContext functions if not local.
@@ -47,11 +47,11 @@ func generateOperation(data *Data, path string) {
 
 				// Insert context param.
 				gop.AddParameter("ctx", "context.Context")
-				for _, p := range op.Params {
-					gop.AddParameter(p.Name, p.Type())
+				for _, p := range op.ParsedParams() {
+					gop.AddParameter(p.Name, p.Type)
 				}
-				for _, r := range op.Results {
-					gop.AddResult(r.Name, r.Type())
+				for _, r := range op.ParsedResults() {
+					gop.AddResult(r.Name, r.Type)
 				}
 			}
 			// Insert an empty for different functions.
@@ -77,11 +77,11 @@ func generateOperation(data *Data, path string) {
 			gop := f.NewFunction(pname).
 				WithReceiver("s", stubName)
 
-			for _, p := range op.Params {
-				gop.AddParameter(p.Name, p.Type())
+			for _, p := range op.ParsedParams() {
+				gop.AddParameter(p.Name, p.Type)
 			}
-			for _, r := range op.Results {
-				gop.AddResult(r.Name, r.Type())
+			for _, r := range op.ParsedResults() {
+				gop.AddResult(r.Name, r.Type)
 			}
 			// If not local, we need to set error
 			if !op.Local {
@@ -96,11 +96,11 @@ func generateOperation(data *Data, path string) {
 
 				// Insert context param.
 				gop.AddParameter("ctx", "context.Context")
-				for _, p := range op.Params {
-					gop.AddParameter(p.Name, p.Type())
+				for _, p := range op.ParsedParams() {
+					gop.AddParameter(p.Name, p.Type)
 				}
-				for _, r := range op.Results {
-					gop.AddResult(r.Name, r.Type())
+				for _, r := range op.ParsedResults() {
+					gop.AddResult(r.Name, r.Type)
 				}
 				gop.AddBody(
 					gg.S(`err = NewOperationNotImplementedError("%s")`, op.Name),

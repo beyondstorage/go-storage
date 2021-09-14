@@ -5,196 +5,559 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"sort"
-	"strings"
 
 	"github.com/Xuanwo/templateutils"
+	"github.com/pelletier/go-toml"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/beyondstorage/go-storage/v4/cmd/definitions/specs"
+	"github.com/beyondstorage/go-storage/v4/cmd/definitions/bindata"
 )
 
 // Data is the biggest container for all definitions.
 type Data struct {
-	Pairs       map[string]*Pair
-	Infos       []*Info
-	InfosMap    map[string][]*Info
-	ObjectMeta  []*Info
 	FeaturesMap map[string]*Feature
+	PairsMap    map[string]*Pair
+	// scope -> category -> name -> info
+	InfosMap      map[string]map[string]map[string]*Info
+	FieldsMap     map[string]*Field
+	OperationsMap map[string]map[string]*Operation
+	InterfacesMap map[string]*Interface
 
 	Service *Service
-
-	Interfaces    []*Interface
-	interfacesMap map[string]*Interface
-
-	// Store all specs for encoding
-	featuresSpec   specs.Features
-	pairSpec       specs.Pairs
-	infoSpec       specs.Infos
-	operationsSpec specs.Operations
-	serviceSpec    specs.Service
 }
 
-// Service is the service definition.
-type Service struct {
-	Name       string
-	Namespaces []*Namespace
-	pairs      map[string]*Pair
-	Infos      []*Info
+// NewData will formatGlobal the whole data.
+func NewData() *Data {
+	data := &Data{}
+
+	data.LoadFeatures()
+	data.LoadPairs()
+	data.LoadInfos()
+	data.LoadFields()
+	data.LoadOperations()
+	return data
 }
 
-// Sort will sort the service
-func (s *Service) Sort() {
-	// Make sure namespaces sorted by name.
-	sort.Slice(s.Namespaces, func(i, j int) bool {
-		n := s.Namespaces
-
-		return n[i].Name < n[j].Name
+func (d *Data) Interfaces() []*Interface {
+	var ins []*Interface
+	for _, v := range d.InterfacesMap {
+		v := v
+		ins = append(ins, v)
+	}
+	sort.Slice(ins, func(i, j int) bool {
+		return ins[i].Name < ins[j].Name
 	})
+	return ins
+}
 
-	for _, v := range s.Namespaces {
-		v.Sort()
+func (d *Data) StorageMeta() []*Info {
+	var infos []*Info
+	for _, v := range d.InfosMap["storage"]["meta"] {
+		v := v
+		infos = append(infos, v)
+	}
+
+	sort.Slice(infos, func(i, j int) bool {
+		return compareInfo(infos[i], infos[j])
+	})
+	return infos
+}
+
+func (d *Data) ObjectMeta() []*Info {
+	var infos []*Info
+	for _, v := range d.InfosMap["object"]["meta"] {
+		v := v
+		infos = append(infos, v)
+	}
+
+	sort.Slice(infos, func(i, j int) bool {
+		return compareInfo(infos[i], infos[j])
+	})
+	return infos
+}
+
+func (d *Data) LoadFeatures() {
+	err := parseTOML(bindata.MustAsset(featurePath), &d.FeaturesMap)
+	if err != nil {
+		log.Fatalf("parse feature: %v", err)
+	}
+	for k, v := range d.FeaturesMap {
+		v.Name = k
 	}
 }
 
-// Pairs returns a sorted pair.
-func (s *Service) Pairs() []*Pair {
-	keys := make([]string, 0, len(s.pairs))
-
-	for k := range s.pairs {
-		keys = append(keys, k)
+// LoadPairs will formatGlobal PairsMap for pair spec
+func (d *Data) LoadPairs() {
+	err := parseTOML(bindata.MustAsset(pairPath), &d.PairsMap)
+	if err != nil {
+		log.Fatalf("parse pair: %v", err)
 	}
-	sort.Strings(keys)
 
-	ps := make([]*Pair, 0, len(s.pairs))
-	for _, v := range keys {
-		ps = append(ps, s.pairs[v])
+	// Inject pairs
+	d.PairsMap["context"] = &Pair{
+		Type: "context.Context",
 	}
-	return ps
+	d.PairsMap["http_client_options"] = &Pair{
+		Type: "*httpclient.Options",
+	}
+
+	var defaultPairs []*Pair
+	for k, v := range d.PairsMap {
+		v.Name = k
+		// Pairs from bindata must be global.
+		v.Global = true
+
+		if v.Defaultable {
+			defaultPairs = append(defaultPairs, &Pair{
+				Name:        fmt.Sprintf("default_%s", v.Name),
+				Type:        v.Type,
+				Description: v.Description,
+				Global:      true,
+			})
+		}
+	}
+	for _, v := range defaultPairs {
+		v := v
+		d.PairsMap[v.Name] = v
+	}
 }
 
-// Namespace contains all info about a namespace
-type Namespace struct {
-	Name       string
-	Features   []*Feature
-	New        *Function
-	Funcs      []*Function
-	Interfaces []*Interface
+func (d *Data) LoadInfos() {
+	d.InfosMap = map[string]map[string]map[string]*Info{
+		"object": {
+			"meta": nil,
+		},
+		"storage": {
+			"meta": nil,
+		},
+	}
 
-	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
+	omm := make(map[string]*Info)
+	err := parseTOML(bindata.MustAsset(infoObjectMeta), &omm)
+	if err != nil {
+		log.Fatalf("parse pair: %v", err)
+	}
+	d.InfosMap["object"]["meta"] = omm
+
+	smm := make(map[string]*Info)
+	err = parseTOML(bindata.MustAsset(infoStorageMeta), &smm)
+	if err != nil {
+		log.Fatalf("parse pair: %v", err)
+	}
+	d.InfosMap["storage"]["meta"] = smm
+
+	for scope, v := range d.InfosMap {
+		for category, v := range v {
+			for name, v := range v {
+				v.Name = name
+				v.Category = category
+				v.Scope = scope
+				// SortedInfos from bindata must be global.
+				v.Global = true
+			}
+		}
+	}
 }
 
-// PairFuncs contains pair and the func names that contain it.
-type PairFuncs struct {
-	Pair  *Pair
-	Funcs []string
+func (d *Data) LoadFields() {
+	err := parseTOML(bindata.MustAsset(fieldPath), &d.FieldsMap)
+	if err != nil {
+		log.Fatalf("parse field: %v", err)
+	}
+	for k, v := range d.FieldsMap {
+		v.Name = k
+	}
 }
 
-// Defaultable returns sorted PairFuncs slice for defaultable pairs.
-func (n *Namespace) Defaultable() []*PairFuncs {
-	pfm := make(map[*Pair][]string)
-	pfs := make([]*PairFuncs, 0)
+func (d *Data) LoadOperations() {
+	err := parseTOML(bindata.MustAsset(operationPath), &d.InterfacesMap)
+	if err != nil {
+		log.Fatalf("parse operations: %v", err)
+	}
 
-	for _, op := range n.Funcs {
-		ps := make([]*Pair, 0)
-		ps = append(ps, op.Required...)
-		ps = append(ps, op.Optional...)
+	d.OperationsMap = map[string]map[string]*Operation{
+		"service": make(map[string]*Operation),
+		"storage": make(map[string]*Operation),
+	}
+	for k, v := range d.InterfacesMap {
+		v.Name = k
 
-		for _, pair := range ps {
-			if pair.Defaultable {
-				pfm[pair] = append(pfm[pair], op.Name)
+		for name, op := range v.Op {
+			op.Name = name
+			op.d = d
+
+			op.Params = append(op.Params, "pairs")
+			if !op.Local {
+				op.Results = append(op.Results, "err")
+			}
+
+			op := op
+			if k == "servicer" {
+				d.OperationsMap["service"][op.Name] = op
+			} else {
+				d.OperationsMap["storage"][op.Name] = op
+			}
+		}
+	}
+}
+
+// ValidateNamespace will inject a namespace to insert generated PairsMap.
+func (d *Data) ValidateNamespace(n *Namespace) {
+	for _, v := range n.ParsedFunctions() {
+		// For now, we disallow required Pairs for Storage.
+		if n.Name == "Storage" && len(v.Required) > 0 {
+			log.Fatalf("Operation [%s] cannot specify required Pairs.", v.Name)
+		}
+
+		existPairs := map[string]bool{}
+		log.Infof("check function %s", v.Name)
+		for _, p := range v.Optional {
+			existPairs[p] = true
+		}
+
+		op := v.GetOperation()
+		for _, ps := range op.Pairs {
+			if existPairs[ps] {
+				continue
+			}
+			log.Fatalf("Operation [%s] requires Pair [%s] support, please add virtual implementation for this pair.", v.Name, ps)
+		}
+	}
+}
+
+func (d *Data) LoadService(filePath string) {
+	bs, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Fatalf("read file %s: %v", filePath, err)
+	}
+
+	d.Service = &Service{
+		d: d,
+	}
+	err = parseTOML(bs, d.Service)
+	if err != nil {
+		log.Fatalf("parse service: %v", err)
+	}
+
+	srv := d.Service
+
+	// Handle pairs
+	var defaultPairs []*Pair
+	for k, v := range srv.Pairs {
+		v.Name = k
+
+		if v.Defaultable {
+			defaultPairs = append(defaultPairs, &Pair{
+				Name:        fmt.Sprintf("default_%s", v.Name),
+				Type:        v.Type,
+				Description: v.Description,
+			})
+		}
+	}
+	for _, v := range defaultPairs {
+		v := v
+		srv.Pairs[v.Name] = v
+	}
+
+	// Handle all infos
+	for scope, v := range srv.Infos {
+		for category, v := range v {
+			for name, v := range v {
+				v.Name = name
+				v.Category = category
+				v.Scope = scope
 			}
 		}
 	}
 
-	for pair, ops := range pfm {
-		pf := &PairFuncs{Pair: pair, Funcs: ops}
-		pfs = append(pfs, pf)
+	// Handle namespace.
+	for name, ns := range srv.Namespaces {
+		ns.Name = name
+		ns.srv = srv
+		// Append namespace itself into implement.
+		ns.Implement = append(ns.Implement, ns.Name+"r")
+
+		// Handle features.
+		for _, featureName := range ns.Features {
+			f, ok := d.FeaturesMap[featureName]
+			if !ok {
+				log.Fatalf("feature not registered: %s", featureName)
+			}
+
+			if featureName == "loose_pair" {
+				ns.HasFeatureLoosePair = true
+			}
+
+			// Generate enable feature pairs.
+			pairName := fmt.Sprintf("enable_%s", featureName)
+			srv.Pairs[pairName] = &Pair{
+				Name:        pairName,
+				Type:        "bool",
+				Description: f.Description,
+			}
+		}
+
+		// Handle New function.
+		if ns.New == nil {
+			ns.New = &Function{}
+		}
+		ns.New.Name = "new"
+		ns.New.srv = srv
+		ns.New.ns = ns
+		ns.New.Implemented = true
+		for _, v := range d.PairsMap {
+			if v.Defaultable {
+				ns.New.Optional = append(ns.New.Optional, "default_"+v.Name)
+			}
+		}
+		for _, v := range srv.Pairs {
+			if v.Defaultable {
+				ns.New.Optional = append(ns.New.Optional, "default_"+v.Name)
+			}
+		}
+
+		// Handle other functions.
+		for k, v := range ns.Op {
+			v.srv = srv
+			v.ns = ns
+			v.Name = k
+			v.Implemented = true
+		}
+
+		// Service could not declare all ops, so we need to fill them instead.
+		for _, implement := range ns.Implement {
+			in := d.InterfacesMap[implement]
+
+			for _, op := range in.Op {
+				if _, ok := ns.Op[op.Name]; ok {
+					continue
+				}
+				ns.Op[op.Name] = &Function{
+					srv:         srv,
+					ns:          ns,
+					Name:        op.Name,
+					Implemented: false,
+				}
+			}
+		}
+
+		implemented := parseFunc(ns.Name)
+		for k := range implemented {
+			sk := templateutils.ToSnack(k)
+			if _, ok := ns.Op[sk]; !ok {
+				continue
+			}
+			ns.Op[sk].Implemented = true
+		}
+
+		//d.ValidateNamespace(ns)
 	}
-
-	sort.Slice(pfs, func(i, j int) bool {
-		return pfs[i].Pair.Name < pfs[j].Pair.Name
-	})
-
-	return pfs
 }
 
-// Sort will sort the namespace
-func (n *Namespace) Sort() {
-	sort.Slice(n.Funcs, func(i, j int) bool {
-		x := n.Funcs
-		return x[i].Name < x[j].Name
-	})
+// Service is the service definition.
+type Service struct {
+	d *Data
 
-	n.New.Sort()
-	for _, v := range n.Funcs {
-		v.Sort()
-	}
+	Name       string                `toml:"name"`
+	Namespaces map[string]*Namespace `toml:"namespace"`
+	Pairs      map[string]*Pair      `toml:"pairs"`
+	// scope -> category -> name -> info
+	Infos map[string]map[string]map[string]*Info `toml:"infos"`
 }
 
+func (s *Service) SortedNamespaces() []*Namespace {
+	var ns []*Namespace
+	for _, v := range s.Namespaces {
+		v := v
+		ns = append(ns, v)
+	}
+
+	sort.Slice(ns, func(i, j int) bool {
+		return ns[i].Name < ns[j].Name
+	})
+	return ns
+}
+
+// SortedPairs returns a sorted pair.
+func (s *Service) SortedPairs() []*Pair {
+	var ps []*Pair
+
+	for _, v := range s.d.PairsMap {
+		v := v
+		ps = append(ps, v)
+	}
+	for _, v := range s.Pairs {
+		v := v
+		ps = append(ps, v)
+	}
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i].Name < ps[j].Name
+	})
+	return ps
+}
+
+func (s *Service) SortedInfos() []*Info {
+	var infos []*Info
+	for _, v := range s.Infos {
+		for _, v := range v {
+			for _, v := range v {
+				infos = append(infos, v)
+			}
+		}
+	}
+
+	sort.Slice(infos, func(i, j int) bool {
+		return compareInfo(infos[i], infos[j])
+	})
+	return infos
+}
+
+func (s *Service) GetPair(name string) *Pair {
+	p, ok := s.d.PairsMap[name]
+	if ok {
+		return p
+	}
+
+	p, ok = s.Pairs[name]
+	if ok {
+		return p
+	}
+
+	log.Fatalf("pair %s is not registered", name)
+	return nil
+}
+
+// Namespace contains all info about a namespace
+type Namespace struct {
+	Features  []string             `toml:"features"`
+	Implement []string             `toml:"implement"`
+	New       *Function            `toml:"new"`
+	Op        map[string]*Function `toml:"op"`
+
+	// Runtime generated
+	srv                 *Service
+	Name                string
+	HasFeatureLoosePair bool // Add a marker to support feature loose_pair
+}
+
+func (ns *Namespace) ParsedFeatures() []*Feature {
+	var ps []*Feature
+
+	for _, v := range ns.Features {
+		f, ok := ns.srv.d.FeaturesMap[v]
+		if !ok {
+			log.Fatalf("feature not registered: %s", v)
+		}
+		ps = append(ps, f)
+	}
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i].Name < ps[j].Name
+	})
+	return ps
+}
+
+func (ns *Namespace) ParsedInterfaces() []*Interface {
+	var is []*Interface
+	for _, name := range ns.Implement {
+		i, ok := ns.srv.d.InterfacesMap[name]
+		if !ok {
+			log.Fatalf("interface %s is not registered", name)
+		}
+
+		is = append(is, i)
+	}
+
+	sort.Slice(is, func(i, j int) bool {
+		return is[i].Name < is[j].Name
+	})
+	return is
+}
+
+func (ns *Namespace) ParsedFunctions() []*Function {
+	var fns []*Function
+
+	for _, v := range ns.Op {
+		v := v
+		fns = append(fns, v)
+	}
+
+	sort.Slice(fns, func(i, j int) bool {
+		return fns[i].Name < fns[j].Name
+	})
+	return fns
+}
+
+type pairFunc struct {
+	Pair  *Pair
+	Funcs []*Function
+}
+
+func (ns *Namespace) ParsedDefaultable() []*pairFunc {
+	m := make(map[*Pair][]*Function)
+
+	for _, v := range ns.ParsedFunctions() {
+		v := v
+		for _, name := range v.Optional {
+			p := ns.srv.GetPair(name)
+			if p.Defaultable {
+				m[p] = append(m[p], v)
+			}
+		}
+	}
+
+	var ps []*pairFunc
+	for p, fn := range m {
+		p, fn := p, fn
+		pfn := &pairFunc{
+			Pair:  p,
+			Funcs: fn,
+		}
+		sort.Slice(pfn.Funcs, func(i, j int) bool {
+			return pfn.Funcs[i].Name < pfn.Funcs[j].Name
+		})
+		ps = append(ps, pfn)
+	}
+
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i].Pair.Name < ps[j].Pair.Name
+	})
+	return ps
+}
+
+// Feature is all global features that available.
+//
+// Feature will be defined in features.toml.
 type Feature struct {
-	Name        string
-	Description string
-}
+	Description string `toml:"description"`
 
-func (f *Feature) Format(s specs.Feature) {
-	f.Name = s.Name
-	f.Description = s.Description
+	// Runtime generated.
+	Name string
 }
 
 // Pair is the pair definition.
 type Pair struct {
-	Name string
-
-	ptype string
-
-	Defaultable bool
+	Name        string
+	Type        string `toml:"type"`
+	Defaultable bool   `toml:"defaultable"`
+	Description string `toml:"description"`
 
 	// Runtime generated
-	Global      bool
-	Description string
-}
-
-func (p *Pair) Type() string {
-	return parseType(p.ptype)
-}
-
-// Format will formatGlobal current pair
-func (p *Pair) Format(s specs.Pair, global bool) {
-	p.Name = s.Name
-	p.ptype = s.Type
-	p.Global = global
-	p.Defaultable = s.Defaultable
-	p.Description = s.Description
+	Global bool
 }
 
 // Info is the metadata definition.
 type Info struct {
-	Scope       string
-	Category    string
-	Name        string
-	Export      bool
-	Description string
+	Export      bool   `toml:"export"`
+	Description string `toml:"description"`
+	Type        string `toml:"type"`
 
-	itype string
-
-	Global bool
-}
-
-// Format will formatGlobal info spec into Info
-func (i *Info) Format(s specs.Info, global bool) {
-	i.Scope = s.Scope
-	i.Category = s.Category
-	i.Name = s.Name
-	i.itype = s.Type
-	i.Export = s.Export
-	i.Description = s.Description
-
-	i.Global = global
-}
-
-func (i *Info) Type() string {
-	return parseType(i.itype)
+	// Runtime generated.
+	Scope    string
+	Category string
+	Name     string
+	Global   bool
 }
 
 func (i *Info) TypeName() string {
@@ -204,43 +567,31 @@ func (i *Info) TypeName() string {
 		return templateutils.ToCamel(i.Name)
 	}
 }
+
 func (i *Info) DisplayName() string {
 	return templateutils.ToPascal(i.Name)
 }
 
 // Interface represents an interface
 type Interface struct {
-	Name        string
-	Description string
-	Ops         map[string]*Operation
-}
+	Description string                `toml:"description"`
+	Op          map[string]*Operation `toml:"op"`
 
-// NewInterface will create a new interface from spec.
-func NewInterface(in specs.Interface, fields map[string]*Field) *Interface {
-	inter := &Interface{
-		Name:        in.Name,
-		Description: in.Description,
-		Ops:         make(map[string]*Operation),
-	}
-	for _, v := range in.Ops {
-		// Update op maps
-		inter.Ops[v.Name] = NewOperation(v, fields)
-	}
-
-	return inter
+	// Runtime generated
+	Name string
 }
 
 func (i *Interface) SortedOps() []*Operation {
-	var ks []string
-	for _, v := range i.Ops {
-		ks = append(ks, v.Name)
-	}
-	sort.Strings(ks)
-
 	var ops []*Operation
-	for _, v := range ks {
-		ops = append(ops, i.Ops[v])
+
+	for _, v := range i.Op {
+		v := v
+		ops = append(ops, v)
 	}
+
+	sort.Slice(ops, func(i, j int) bool {
+		return ops[i].Name < ops[j].Name
+	})
 	return ops
 }
 
@@ -251,404 +602,96 @@ func (i *Interface) DisplayName() string {
 
 // Operation represents an operation.
 type Operation struct {
-	Name        string
-	Description string
-	Pairs       []string
-	Params      Fields
-	Results     Fields
-	ObjectMode  string
-	Local       bool
+	Description string   `toml:"description"`
+	Pairs       []string `toml:"pairs"`
+	Params      []string `toml:"params"`
+	Results     []string `toml:"results"`
+	ObjectMode  string   `toml:"object_mode"`
+	Local       bool     `toml:"local"`
+
+	// Runtime generated.
+	d    *Data
+	Name string
 }
 
-// NewOperation will create an new operation from operation spec.
-func NewOperation(v specs.Operation, fields map[string]*Field) *Operation {
-	op := &Operation{
-		Name:        v.Name,
-		Local:       v.Local,
-		ObjectMode:  v.ObjectMode,
-		Description: v.Description,
+func (op *Operation) ParsedParams() []*Field {
+	var fs []*Field
+	for _, f := range op.Params {
+		fs = append(fs, op.d.FieldsMap[f])
 	}
-	for _, f := range v.Params {
-		op.Params = append(op.Params, fields[f])
-	}
-	// Inject pairs
-	op.Params = append(op.Params, fields["pairs"])
+	return fs
+}
 
-	for _, f := range v.Results {
-		op.Results = append(op.Results, fields[f])
+func (op *Operation) ParsedResults() []*Field {
+	var fs []*Field
+	for _, f := range op.Results {
+		fs = append(fs, op.d.FieldsMap[f])
 	}
-	// As long as the function is not local, an error may be occur
-	if !op.Local {
-		// Inject error for non-local functions.
-		op.Results = append(op.Results, fields["err"])
-	}
-
-	// Add pairs
-	op.Pairs = v.Pairs
-
-	return op
+	return fs
 }
 
 // Function represents a function.
 type Function struct {
-	*Operation
+	Required []string `toml:"required"`
+	Optional []string `toml:"optional"`
 
-	Simulated bool // This op is simulated, user can decide whether use the virtual function or not.
-
-	Required []*Pair // TODO: other functions could not have required pairs.
-	Optional []*Pair
-	Virtual  []*Pair // This op's virtual pairs, user can decide whether use the virtual pairs.
-
+	// Runtime generated.
+	srv         *Service
+	ns          *Namespace
+	Name        string
 	Implemented bool // flag for whether this function has been implemented or not.
 }
 
-// NewFunction will createn a new function.
-func NewFunction(o *Operation) *Function {
-	return &Function{Operation: o}
-}
-
-// Format will formatGlobal a function with Op.
-func (f *Function) Format(s specs.Op, p map[string]*Pair) {
-	for _, v := range s.Required {
-		pair, ok := p[v]
-		if !ok {
-			log.Fatalf("pair %s is not exist", v)
-		}
-		f.Required = append(f.Required, pair)
+func (f *Function) ParsedRequired() []*Pair {
+	var ps []*Pair
+	for _, v := range f.Required {
+		ps = append(ps, f.srv.GetPair(v))
 	}
-	for _, v := range s.Optional {
-		pair, ok := p[v]
-		if !ok {
-			log.Fatalf("pair %s is not exist", v)
-		}
-		f.Optional = append(f.Optional, pair)
-	}
-}
 
-// Sort will sort this function.
-func (f *Function) Sort() {
-	sort.Slice(f.Required, func(i, j int) bool {
-		x := f.Required
-		return x[i].Name < x[j].Name
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i].Name < ps[j].Name
 	})
-	sort.Slice(f.Optional, func(i, j int) bool {
-		x := f.Optional
-		return x[i].Name < x[j].Name
-	})
+	return ps
 }
 
-// Fields is a slice for field.
-type Fields []*Field
-
-// String implements the stringer interface.
-func (f Fields) String() string {
-	x := make([]string, 0)
-	for _, v := range f {
-		x = append(x, v.String())
+func (f *Function) ParsedOptional() []*Pair {
+	var ps []*Pair
+	for _, v := range f.Optional {
+		ps = append(ps, f.srv.GetPair(v))
 	}
-	return strings.Join(x, ",")
+
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i].Name < ps[j].Name
+	})
+	return ps
 }
 
-// Field represent a field.
+func (f *Function) GetOperation() *Operation {
+	op, ok := f.srv.d.OperationsMap[f.ns.Name][f.Name]
+	if !ok {
+		log.Fatalf("operation %s in namespace %s is not registered", f.Name, f.ns.Name)
+	}
+	return op
+}
+
+// Field represents a field.
 type Field struct {
-	Name  string
-	ftype string
+	Type string `toml:"type"`
+
+	// Runtime generated.
+	Name string
 }
 
-// String will print field in string formatGlobal.
-func (f *Field) String() string {
-	if f.Name == "" {
-		return f.Type()
-	}
-	return fmt.Sprintf("%s %s", f.Name, f.Type())
+func parseTOML(src []byte, in interface{}) (err error) {
+	return toml.Unmarshal(src, in)
 }
 
-func (f *Field) Type() string {
-	return f.ftype
-}
-
-// Format will create a new field.
-func (f *Field) Format(s specs.Field) {
-	f.ftype = s.Type
-	f.Name = s.Name
-}
-
-func (d *Data) FormatFeatures(p specs.Features) map[string]*Feature {
-	m := make(map[string]*Feature)
-	for _, v := range p {
-		f := &Feature{}
-		f.Format(v)
-
-		m[f.Name] = f
+func compareInfo(x, y *Info) bool {
+	if x.Scope != y.Scope {
+		return x.Scope < y.Scope
 	}
-	return m
-}
-
-// FormatPairs will formatGlobal pairs for pair spec
-func (d *Data) FormatPairs(p specs.Pairs, global bool) map[string]*Pair {
-	m := make(map[string]*Pair)
-	for _, v := range p {
-		pair := &Pair{}
-		pair.Format(v, global)
-
-		m[pair.Name] = pair
+	if x.Category != y.Category {
+		return x.Category < y.Category
 	}
-	return m
-}
-
-// FormatInfos will formatGlobal metas for meta spec
-func (d *Data) FormatInfos(m specs.Infos, global bool) []*Info {
-	is := make([]*Info, 0, len(m))
-	for _, v := range m {
-		i := &Info{}
-		i.Format(v, global)
-
-		is = append(is, i)
-	}
-
-	d.InfosMap = make(map[string][]*Info)
-	for _, v := range is {
-		v := v
-
-		typeName := fmt.Sprintf("%s-%s", v.Scope, v.Category)
-		if typeName == "object-meta" {
-			d.ObjectMeta = append(d.ObjectMeta, v)
-			continue
-		}
-
-		d.InfosMap[typeName] = append(d.InfosMap[typeName], v)
-	}
-
-	return is
-}
-
-// FormatOperations will formatGlobal operations from operation spec
-func (d *Data) FormatOperations(o specs.Operations) (ins []*Interface, inm map[string]*Interface) {
-	fileds := make(map[string]*Field)
-	for _, v := range o.Fields {
-		f := &Field{}
-		f.Format(v)
-
-		fileds[v.Name] = f
-	}
-
-	// Build all interfaces.
-	inm = make(map[string]*Interface)
-	for _, in := range o.Interfaces {
-		inter := NewInterface(in, fileds)
-
-		ins = append(ins, inter)
-		inm[inter.Name] = inter
-	}
-
-	return
-}
-
-// FormatNamespace will formatGlobal a namespace.
-func (d *Data) FormatNamespace(srv *Service, n specs.Namespace) *Namespace {
-	ns := &Namespace{Name: n.Name}
-
-	nsInterface := n.Name + "r"
-
-	// Handle features
-	for _, featureName := range n.Features {
-		f, ok := d.FeaturesMap[featureName]
-		if !ok {
-			log.Fatalf("feature not registered: %s", featureName)
-		}
-
-		if f.Name == "loose_pair" {
-			ns.HasFeatureLoosePair = true
-		}
-
-		ns.Features = append(ns.Features, f)
-
-		// Generate feature pairs.
-		name := fmt.Sprintf("enable_%s", featureName)
-		featurePair := &Pair{
-			Name:        name,
-			ptype:       "bool",
-			Global:      false,
-			Defaultable: false,
-			Description: f.Description,
-		}
-		srv.pairs[featurePair.Name] = featurePair
-	}
-
-	// Handle New function
-	ns.New = NewFunction(&Operation{Name: "new"})
-	ns.New.Format(specs.Op{
-		Required: n.New.Required,
-		Optional: n.New.Optional,
-	}, srv.pairs)
-
-	// Handle other interfaces.
-	fns := make(map[string]*Function)
-
-	// Add namespace itself into implements.
-	implements := append(n.Implement[:], nsInterface)
-	for _, interfaceName := range implements {
-		inter := d.interfacesMap[interfaceName]
-
-		// Add interface into namespace's interface list.
-		ns.Interfaces = append(ns.Interfaces, inter)
-
-		// Add all functions under interface into namespace's func list.
-		for k, v := range inter.Ops {
-			v := v
-
-			f := NewFunction(v)
-			ns.Funcs = append(ns.Funcs, f)
-			fns[k] = f
-		}
-	}
-
-	for _, v := range n.Op {
-		fns[v.Name].Format(v, srv.pairs)
-	}
-
-	implemented := parseFunc(n.Name)
-	for _, fn := range fns {
-		x := templateutils.ToCamel(fn.Name)
-		if _, ok := implemented[x]; ok {
-			fn.Implemented = true
-		}
-	}
-
-	d.ValidateNamespace(srv, ns)
-	return ns
-}
-
-// ValidateNamespace will inject a namespace to insert generated pairs.
-func (d *Data) ValidateNamespace(srv *Service, n *Namespace) {
-	for _, v := range n.Funcs {
-		// For now, we disallow required pairs for Storage.
-		if n.Name == "Storage" && len(v.Required) > 0 {
-			log.Fatalf("Operation [%s] cannot specify required pairs.", v.Name)
-		}
-
-		existPairs := map[string]bool{}
-		for _, p := range v.Optional {
-			existPairs[p.Name] = true
-		}
-		for _, p := range v.Virtual {
-			existPairs[p.Name] = true
-		}
-
-		for _, ps := range v.Pairs {
-			if existPairs[ps] {
-				continue
-			}
-			log.Fatalf("Operation [%s] requires Pair [%s] support, please add virtual implementation for this pair.", v.Name, ps)
-		}
-	}
-}
-
-// FormatService will formatGlobal services from service spec
-func (d *Data) FormatService(s specs.Service) *Service {
-	d.serviceSpec = s
-
-	srv := &Service{
-		Name:  s.Name,
-		pairs: mergePairs(d.Pairs, d.FormatPairs(s.Pairs, false)),
-		Infos: mergeInfos(d.Infos, d.FormatInfos(s.Infos, false)),
-	}
-
-	for _, v := range s.Namespaces {
-		ns := d.FormatNamespace(srv, v)
-
-		srv.Namespaces = append(srv.Namespaces, ns)
-	}
-
-	return srv
-}
-
-// Sort will sort the data.
-func (d *Data) Sort() {
-	// Sort all specs.
-	d.pairSpec.Sort()
-	d.infoSpec.Sort()
-	d.operationsSpec.Sort()
-
-	d.serviceSpec.Sort()
-
-	if d.Service != nil {
-		d.Service.Sort()
-	}
-}
-
-// NewData will formatGlobal the whole data.
-func NewData() *Data {
-	f := specs.ParsedFeatures
-	p := specs.ParsedPairs
-	m := specs.ParsedInfos
-	o := specs.ParsedOperations
-
-	data := &Data{
-		pairSpec:       p,
-		infoSpec:       m,
-		operationsSpec: o,
-		featuresSpec:   f,
-	}
-	data.FeaturesMap = data.FormatFeatures(f)
-	data.Pairs = data.FormatPairs(p, true)
-	data.Infos = data.FormatInfos(m, true)
-	data.Interfaces, data.interfacesMap = data.FormatOperations(o)
-
-	return data
-}
-
-func mergePairs(global, service map[string]*Pair) map[string]*Pair {
-	ans := make(map[string]*Pair)
-	for k, v := range global {
-		v := v
-		ans[k] = v
-		// Handle global defaultable pairs.
-		if v.Defaultable {
-			name := fmt.Sprintf("default_%s", v.Name)
-			pair := &Pair{
-				Name:        name,
-				ptype:       v.ptype,
-				Global:      true,
-				Defaultable: false,
-				Description: v.Description,
-			}
-			ans[name] = pair
-		}
-	}
-	for k, v := range service {
-		if _, ok := ans[k]; ok {
-			log.Fatalf("pair conflict: %s", k)
-		}
-		v := v
-		ans[k] = v
-		// Handle system defaultable pairs.
-		if v.Defaultable {
-			name := fmt.Sprintf("default_%s", v.Name)
-			pair := &Pair{
-				Name:        name,
-				ptype:       v.ptype,
-				Global:      false,
-				Defaultable: false,
-				Description: v.Description,
-			}
-			ans[name] = pair
-		}
-	}
-	return ans
-}
-
-func mergeInfos(a, b []*Info) []*Info {
-	fn := func(ms ...[]*Info) []*Info {
-		ans := make([]*Info, 0)
-		for _, m := range ms {
-			for _, v := range m {
-				v := v
-				ans = append(ans, v)
-			}
-		}
-		return ans
-	}
-
-	return fn(a, b)
+	return x.Name < y.Name
 }

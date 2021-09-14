@@ -7,43 +7,47 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/beyondstorage/go-storage/v4/cmd/definitions/specs"
+	"github.com/urfave/cli/v2"
 )
 
+var app = &cli.App{
+	Name:  "definitions",
+	Usage: "definitions [service.toml]",
+	Before: func(c *cli.Context) error {
+		if c.Args().Len() > 1 {
+			log.Fatalf("args length should be 0 or 1, actual %d", c.Args().Len())
+		}
+		return nil
+	},
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name: "debug",
+		},
+	},
+	Action: func(c *cli.Context) error {
+		if c.Bool("debug") {
+			log.SetLevel(log.DebugLevel)
+			log.SetReportCaller(true)
+		}
+
+		if c.Args().Len() == 0 {
+			generateGlobal(NewData())
+			return nil
+		}
+
+		data := NewData()
+		filePath := c.Args().First()
+		data.LoadService(filePath)
+		generateService(data)
+
+		log.Printf("%s generate finished", filePath)
+		return nil
+	},
+}
+
 func main() {
-	run(os.Args)
-}
-
-func run(args []string) {
-	switch v := len(args); v {
-	case 1:
-		actionGlobal()
-	case 2:
-		actionService(args[1])
-	default:
-		log.Fatalf("args length should be 1 or 2, actual %d", v)
-	}
-}
-
-func actionGlobal() {
-	data := parse()
-	data.Sort()
-
-	generateGlobal(data)
-}
-
-func actionService(filePath string) {
-	data := parse()
-
-	srv, err := specs.ParseService(filePath)
+	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatalf("parse: %v", err)
+		os.Exit(1)
 	}
-	data.Service = data.FormatService(srv)
-
-	data.Sort()
-
-	generateService(data)
-	log.Printf("%s generate finished", filePath)
 }

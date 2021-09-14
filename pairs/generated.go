@@ -23,13 +23,6 @@ func WithContentType(v string) (p Pair) {
 	return Pair{Key: "content_type", Value: v}
 }
 
-// WithDefaultContentType will apply default_content_type value to Options.
-//
-// DefaultContentType
-func WithDefaultContentType(v string) (p Pair) {
-	return Pair{Key: "default_content_type", Value: v}
-}
-
 // WithContext will apply context value to Options.
 //
 // Context
@@ -49,6 +42,20 @@ func WithContinuationToken(v string) (p Pair) {
 // Credential specify how to provide credential for service or storage
 func WithCredential(v string) (p Pair) {
 	return Pair{Key: "credential", Value: v}
+}
+
+// WithDefaultContentType will apply default_content_type value to Options.
+//
+// DefaultContentType
+func WithDefaultContentType(v string) (p Pair) {
+	return Pair{Key: "default_content_type", Value: v}
+}
+
+// WithDefaultIoCallback will apply default_io_callback value to Options.
+//
+// DefaultIoCallback specify what todo every time we read data from source
+func WithDefaultIoCallback(v func([]byte)) (p Pair) {
+	return Pair{Key: "default_io_callback", Value: v}
 }
 
 // WithEndpoint will apply endpoint value to Options.
@@ -86,13 +93,6 @@ func WithInterceptor(v Interceptor) (p Pair) {
 // IoCallback specify what todo every time we read data from source
 func WithIoCallback(v func([]byte)) (p Pair) {
 	return Pair{Key: "io_callback", Value: v}
-}
-
-// WithDefaultIoCallback will apply default_io_callback value to Options.
-//
-// DefaultIoCallback specify what todo every time we read data from source
-func WithDefaultIoCallback(v func([]byte)) (p Pair) {
-	return Pair{Key: "default_io_callback", Value: v}
 }
 
 // WithListMode will apply list_mode value to Options.
