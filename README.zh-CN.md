@@ -289,16 +289,16 @@ func (o *Object) GetContentMd5() (string, bool) {
 func NewS3SseC(key []byte) (types.Storager, error) {
     defaultPairs := s3.DefaultStoragePairs{
         Write: []types.Pair{
-            // 需要, 必须为 AES256
+            // 要求密钥的加密算法必须为 AES256
             s3.WithServerSideEncryptionCustomerAlgorithm(s3.ServerSideEncryptionAes256),
-            // 你的 AES-256 密钥, 需要是一个 32 字节的二进制值
+            // 你的 AES-256 密钥, 必须具有 32 个字节长度
             s3.WithServerSideEncryptionCustomerKey(key),
         },
         // 现在你必须提供客户密钥才能读取加密数据
         Read: []types.Pair{
-            // 需要, 必须为 AES256
+            // 要求密钥的加密算法必须为 AES256
             s3.WithServerSideEncryptionCustomerAlgorithm(s3.ServerSideEncryptionAes256),
-            // 你的 AES-256 密钥, 需要是一个 32 字节的二进制值
+            // 你的 AES-256 密钥, 必须具有 32 个字节长度
             s3.WithServerSideEncryptionCustomerKey(key),
         }}
     
