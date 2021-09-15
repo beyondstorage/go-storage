@@ -22,8 +22,8 @@ func generatePair(data *Data, path string) {
 		AddPath("github.com/beyondstorage/go-storage/v4/pkg/httpclient").
 		AddDot("github.com/beyondstorage/go-storage/v4/types")
 
-	ps := make([]*Pair, 0, len(data.Pairs))
-	for _, v := range data.Pairs {
+	ps := make([]*Pair, 0, len(data.PairsMap))
+	for _, v := range data.PairsMap {
 		v := v
 		ps = append(ps, v)
 	}
@@ -38,28 +38,13 @@ func generatePair(data *Data, path string) {
 
 %s %s`, pname, v.Name, pname, v.Description)
 		xfn := f.NewFunction("With" + pname)
-		xfn.AddParameter("v", v.Type())
+		xfn.AddParameter("v", v.Type)
 		xfn.AddResult("p", "Pair")
 		xfn.AddBody(
 			gg.Return(
 				gg.Value("Pair").
 					AddField("Key", gg.Lit(v.Name)).
 					AddField("Value", "v")))
-		if v.Defaultable {
-			name := "default_" + v.Name
-			pname := templateutils.ToPascal(name)
-
-			f.AddLineComment(`With%s will apply %s value to Options.
-
-%s %s`, pname, name, pname, v.Description)
-
-			xfn := f.NewFunction("With" + pname)
-			xfn.AddParameter("v", v.Type())
-			xfn.AddResult("p", "Pair")
-			xfn.AddBody(
-				gg.Return(
-					gg.Value("Pair").AddField("Key", gg.Lit("default_"+v.Name)).AddField("Value", "v")))
-		}
 	}
 
 	err := f.WriteFile(path)

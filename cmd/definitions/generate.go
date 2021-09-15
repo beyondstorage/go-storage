@@ -4,22 +4,20 @@
 package main
 
 import (
-	"fmt"
 	"go/parser"
 	"go/token"
 	"os"
 	"sort"
-	"text/template"
 
-	"github.com/Xuanwo/templateutils"
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/beyondstorage/go-storage/v4/cmd/definitions/bindata"
 )
 
 func generateGlobal(data *Data) {
+	// Iterator generate
+	generateIterator("types/iterator.generated.go")
+
 	// Metas generate
 	generateInfo(data, "types/info.generated.go")
 
@@ -35,30 +33,10 @@ func generateGlobal(data *Data) {
 
 func generateService(data *Data) {
 	generateSrv(data.Service, "generated.go")
-	for _, v := range data.Service.Namespaces {
+	for _, v := range data.Service.SortedNamespaces() {
 		generateFunc(v, v.Name+".go")
 		formatService(v.Name + ".go")
 	}
-}
-
-func generateT(tmpl *template.Template, filePath string, data interface{}) {
-	errorMsg := fmt.Sprintf("generate template %s to %s", tmpl.Name(), filePath) + ": %v"
-
-	file, err := os.Create(filePath)
-	if err != nil {
-		log.Fatalf(errorMsg, err)
-	}
-	err = tmpl.Execute(file, data)
-	if err != nil {
-		log.Fatalf(errorMsg, err)
-	}
-}
-
-func newTmpl(name string) *template.Template {
-	return template.Must(
-		template.New(name).
-			Funcs(templateutils.FuncMap()).
-			Parse(string(bindata.MustAsset(name + ".tmpl"))))
 }
 
 func formatService(filename string) {
