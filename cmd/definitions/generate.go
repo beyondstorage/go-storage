@@ -15,6 +15,9 @@ import (
 )
 
 func generateGlobal(data *Data) {
+	// Iterator generate
+	generateIterator("types/iterator.generated.go")
+
 	// Metas generate
 	generateInfo(data, "types/info.generated.go")
 

@@ -64,7 +64,8 @@ func generateOperation(data *Data, path string) {
 		f.NewStruct(stubName)
 
 		f.NewFunction("mustEmbedUnimplemented"+in.DisplayName()).
-			WithReceiver("s", stubName)
+			WithReceiver("s", stubName).
+			AddBody(gg.Line())
 		f.NewFunction("String").
 			WithReceiver("s", stubName).
 			AddResult("", "string").

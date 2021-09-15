@@ -45,6 +45,7 @@ type UnimplementedAppender struct {
 }
 
 func (s UnimplementedAppender) mustEmbedUnimplementedAppender() {
+
 }
 func (s UnimplementedAppender) String() string {
 	return "UnimplementedAppender"
@@ -116,6 +117,7 @@ type UnimplementedBlocker struct {
 }
 
 func (s UnimplementedBlocker) mustEmbedUnimplementedBlocker() {
+
 }
 func (s UnimplementedBlocker) String() string {
 	return "UnimplementedBlocker"
@@ -196,6 +198,7 @@ type UnimplementedCopier struct {
 }
 
 func (s UnimplementedCopier) mustEmbedUnimplementedCopier() {
+
 }
 func (s UnimplementedCopier) String() string {
 	return "UnimplementedCopier"
@@ -224,6 +227,7 @@ type UnimplementedDirer struct {
 }
 
 func (s UnimplementedDirer) mustEmbedUnimplementedDirer() {
+
 }
 func (s UnimplementedDirer) String() string {
 	return "UnimplementedDirer"
@@ -264,6 +268,7 @@ type UnimplementedFetcher struct {
 }
 
 func (s UnimplementedFetcher) mustEmbedUnimplementedFetcher() {
+
 }
 func (s UnimplementedFetcher) String() string {
 	return "UnimplementedFetcher"
@@ -318,6 +323,7 @@ type UnimplementedLinker struct {
 }
 
 func (s UnimplementedLinker) mustEmbedUnimplementedLinker() {
+
 }
 func (s UnimplementedLinker) String() string {
 	return "UnimplementedLinker"
@@ -374,6 +380,7 @@ type UnimplementedMover struct {
 }
 
 func (s UnimplementedMover) mustEmbedUnimplementedMover() {
+
 }
 func (s UnimplementedMover) String() string {
 	return "UnimplementedMover"
@@ -425,6 +432,7 @@ type UnimplementedMultiparter struct {
 }
 
 func (s UnimplementedMultiparter) mustEmbedUnimplementedMultiparter() {
+
 }
 func (s UnimplementedMultiparter) String() string {
 	return "UnimplementedMultiparter"
@@ -490,6 +498,7 @@ type UnimplementedPager struct {
 }
 
 func (s UnimplementedPager) mustEmbedUnimplementedPager() {
+
 }
 func (s UnimplementedPager) String() string {
 	return "UnimplementedPager"
@@ -532,6 +541,7 @@ type UnimplementedReacher struct {
 }
 
 func (s UnimplementedReacher) mustEmbedUnimplementedReacher() {
+
 }
 func (s UnimplementedReacher) String() string {
 	return "UnimplementedReacher"
@@ -576,6 +586,7 @@ type UnimplementedServicer struct {
 }
 
 func (s UnimplementedServicer) mustEmbedUnimplementedServicer() {
+
 }
 func (s UnimplementedServicer) String() string {
 	return "UnimplementedServicer"
@@ -635,6 +646,7 @@ type UnimplementedStorageHTTPSigner struct {
 }
 
 func (s UnimplementedStorageHTTPSigner) mustEmbedUnimplementedStorageHTTPSigner() {
+
 }
 func (s UnimplementedStorageHTTPSigner) String() string {
 	return "UnimplementedStorageHTTPSigner"
@@ -765,6 +777,7 @@ type UnimplementedStorager struct {
 }
 
 func (s UnimplementedStorager) mustEmbedUnimplementedStorager() {
+
 }
 func (s UnimplementedStorager) String() string {
 	return "UnimplementedStorager"
