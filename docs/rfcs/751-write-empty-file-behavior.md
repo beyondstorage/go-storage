@@ -19,7 +19,7 @@ In our definition, the `Write` function will upload a file to the path. We do no
 ```go
 _, err = store.Write(path,nil, 0)
 if err != nil {
-    return err
+return err
 }
 ```
 
@@ -46,17 +46,26 @@ func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...Pair) (n 
 }
 ```
 
-- What will happen if we got a nil `io.Reader` and `size = 0`?
-  - As described above, we will create a `io.Reader` of size 0 and upload it.
-  - We will upload data of length `size` as long as the length of `io.Reader` is the same as `size`.
-- What will happen if we got a nil `io.Reader` but `size != 0`?
-  - We will return an error. In this case, the user's action is wrong, so we should return an error to alert the user.
-- What will happen if we got a valid `io.Reader` but `size = 0`?
-  - We will upload an empty file with 0 size. We should follow the user's wishes and upload data of size 0.
-  - If the upload is successful, we will return the size of `0`.
-- What will happen if we got a valid `io.Reader` but `size != the length of io.Reader`?
-  - If the size is smaller than the length of `io.Reader`, we will upload a file of size. If the upload is successful, size is returned.
-  - If the size is larger than the length of `io.Reader`, we will return an error.
+Next are some situations that users will encounter when calling `Write`.
+
+### nil io.Reader and zero size
+
+- As described above, we will create a `io.Reader` of size 0 and upload it.
+- We will upload data of length `size` as long as the length of `io.Reader` is the same as `size`.
+
+### nil io.Reader and valid size
+
+- We will return an error. In this case, the user's action is wrong, so we should return an error to alert the user.
+
+### valid io.Reader and zero size
+
+- We will upload an empty file with 0 size. We should follow the user's wishes and upload data of size 0.
+- If the upload is successful, we will return the size of `0`.
+
+### valid io.Reader and valid size
+
+- If the size is smaller than the length of `io.Reader`, we will upload a file of size. If the upload is successful, size is returned.
+- If the size is larger than the length of `io.Reader`, we will return an error.
 
 ## Rationale
 
