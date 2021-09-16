@@ -19,7 +19,7 @@ In our definition, the `Write` function will upload a file to the path. We do no
 ```go
 _, err = store.Write(path,nil, 0)
 if err != nil {
-return err
+    return err
 }
 ```
 
