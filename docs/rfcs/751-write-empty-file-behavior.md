@@ -40,17 +40,23 @@ I propose to allow the user to pass in a nil `io.Reader` and `0` size to create 
 
 ```go
 func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
-// We can create a Reader with size 0 like this.
-r = bytes.NewReader([]byte{})
-// Then we can call the API with r and 0 size.
+    // We can create a Reader with size 0 like this.
+    r = bytes.NewReader([]byte{})
+    // Then we can call the API with r and 0 size.
 }
 ```
 
+- What will happen if we got a nil `io.Reader` and `size = 0`?
+  - As described above, we will create a `io.Reader` of size 0 and upload it.
+  - We will upload data of length `size` as long as the length of `io.Reader` is the same as `size`.
 - What will happen if we got a nil `io.Reader` but `size != 0`?
-  - We will return an error. We can't make decisions for users.
+  - We will return an error. In this case, the user's action is wrong, so we should return an error to alert the user.
 - What will happen if we got a valid `io.Reader` but `size = 0`?
-  - We will upload files of `io.Reader` length.
-  - If the upload is successful, we will return the size as the length of the `io.Reader`.
+  - We will upload an empty file with 0 size. We should follow the user's wishes and upload data of size 0.
+  - If the upload is successful, we will return the size of `0`.
+- What will happen if we got a valid `io.Reader` but `size != the length of io.Reader`?
+  - If the size is smaller than the length of `io.Reader`, we will upload a file of size. If the upload is successful, size is returned.
+  - If the size is larger than the length of `io.Reader`, we will return an error.
 
 ## Rationale
 
@@ -61,7 +67,8 @@ N/A
 This change will not break services and users. We can do this as follows:
 
 - Add this behavior to `Write` in `go-storage`.
-- Services bump to the latest version of `go-storage' (if the latest version does not contain this behavior, bump to the latest master branch), and all descriptions of this behavior are updated. Then changes are made to the services that need to be modified.
+- Add integration tests in `go-integration-test`.
+- All services implement this behavior.
 
 ## Implementation
 
@@ -72,6 +79,7 @@ This change will not break services and users. We can do this as follows:
     - When write a file with a nil `io.Reader` and `0` size
     - When write a file with a nil `io.Reader` and `non-zero` size
     - When write a file with a non-nil `io.Reader` and `0` size
+    - When write a file with a valid `io.Reader` and length greater than size
 - `go-service-*`
   - Implement this behavior.
   - Ensure that integration tests pass.
