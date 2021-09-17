@@ -33,9 +33,13 @@ From user side:
 
 - System-related directory separator including `\` for Unix and `//` for Windows SHOULD be allowed.
 
+From go-storage side:
+
+- go-storage SHOULD be able to tolerate mixed use of directory separator and replace each separator with a slash (`/`) character could be generated for the input path.
+
 From service side:
 
-- Services SHOULD replace separator in the passed-in path to the system-related directory separator at the beginning of operations.
+- Services SHOULD replace separator in the passed-in path to the current system-related directory separator at the beginning of operations.
   
 ### Implementation
 
@@ -82,7 +86,7 @@ n. err := store.Read("hello.txt", w)
 
 **Object:{Path, ID}**
 
-`Object` is the smallest unit in go-storage, returned by creating a file or object to identify an operation object, and the fields should not be changed outside services. `Object.ID` is the unique key in storage, and `Object.Path` is either the absolute path or the relative path based on the working directory depends on user's input.
+`Object` is the smallest unit in go-storage, returned by creating/stat/retrieve a file or object to identify the operation object, and the fields should not be changed outside services. `Object.ID` is the unique key in storage, and `Object.Path` is either the absolute path or the relative path based on the working directory depends on user's input.
 
 - `Object.ID` SHOULD be an absolute path compatible with the target platform.
   - If a service like Dropbox returns a unique identifier, then `Object.ID` will be the returned identifier.
@@ -138,8 +142,10 @@ This change will not break services and users.
 
 ## Implementation
 
-- Update descriptions for `work_dir` and `ID`, `path` of `Object`.
+- Update descriptions for `work_dir` and `ID`, `Path` of `Object`.
+- Generate code that replaces separator with `/` in go-storage.
 - Add test cases for path:
-  - Basic operation with absolute path and relative path.
+  - Basic operation with absolute path.
   - Basic operation with path using different separator.
+  - Add `Object.ID` check for the current tests.
 - Update path behavior in services.
