@@ -1,7 +1,7 @@
 - Author:  Abyss-w <mad.hatter@foxmail.com>
 - Start Date: 2021-09-10
 - RFC PR: [beyondstorage/go-storage#751](https://github.com/beyondstorage/go-storage/pull/751)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#756](https://github.com/beyondstorage/go-storage/issues/756)
 
 # GSP-751: Write Empty File Behavior
 
@@ -19,7 +19,7 @@ In our definition, the `Write` function will upload a file to the path. We do no
 ```go
 _, err = store.Write(path,nil, 0)
 if err != nil {
-return err
+    return err
 }
 ```
 
