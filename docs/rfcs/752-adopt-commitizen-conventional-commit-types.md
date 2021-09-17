@@ -1,9 +1,9 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-09-10
-- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/pull/0)
+- RFC PR: [beyondstorage/go-storage#752](https://github.com/beyondstorage/go-storage/pull/752)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# Proposal: Adopt commitizen/conventional-commit-types
+# GSP-752: Adopt commitizen/conventional-commit-types
 
 Previous Discussion:
 
@@ -17,7 +17,7 @@ Angular specification is currently the most widely used writing style, more reas
 
 ## Proposal
 
-Adopt `commitizen/conventional-commit-types` in our commits.
+`commitizen/conventional-commit-types` should be adopted in our commits.
 
 Each commit message consists of a **header**, a **body**, and a **footer**.
 
@@ -65,7 +65,7 @@ Must be one of the following:
 
 The scope should be the name of the package affected in go-storage.
 
-The following is the list of supported scopes:
+The following is the current list of supported scopes:
 
 - cmd
 - definitions
@@ -106,7 +106,7 @@ The footer can contain information about breaking changes and is also the place 
 
 #### Breaking changes
 
-Breaking Change section should start with the phrase "BREAKING CHANGE: " followed by a summary of the breaking change, a blank line, and a detailed description of the breaking change that also includes migration instructions.
+Breaking change section should start with the phrase "BREAKING CHANGE: " followed by a summary of the breaking change, a blank line, and a detailed description of the breaking change that also includes migration instructions.
 
 ```txt
 BREAKING CHANGE: <breaking change summary>
@@ -150,9 +150,7 @@ We can make our repo Commitizen-friendly. Then we can simply use `git cz` or jus
 
 #### commitlint
 
-[commitlint](https://github.com/conventional-changelog/commitlint) is used to check the format of commit message.
-
-We can set rules to check the commit message.
+[commitlint](https://github.com/conventional-changelog/commitlint) is used to check the format of commit message. We can set rules to check the commit message.
 
 #### Generate changelog
 
