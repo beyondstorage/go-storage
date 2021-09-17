@@ -10,11 +10,11 @@ import (
 )
 
 func generateFunc(ns *Namespace, path string) {
-	f := gg.Group()
+	f := gg.NewGroup()
 
 	nsNameP := templateutils.ToPascal(ns.Name)
 
-	for _, fn := range ns.Funcs {
+	for _, fn := range ns.ParsedFunctions() {
 		if fn.Implemented {
 			continue
 		}
@@ -22,39 +22,41 @@ func generateFunc(ns *Namespace, path string) {
 		fnNameC := templateutils.ToCamel(fn.Name)
 		fnNameP := templateutils.ToPascal(fn.Name)
 
-		if fn.Local {
-			gfn := f.Function(fnNameC).
-				Receiver("s", "*"+nsNameP)
-			for _, v := range fn.Params {
+		op := fn.GetOperation()
+
+		if op.Local {
+			gfn := f.NewFunction(fnNameC).
+				WithReceiver("s", "*"+nsNameP)
+			for _, v := range op.ParsedParams() {
 				// We need to remove pair from generated functions.
-				if v.Type() == "...Pair" {
+				if v.Type == "...Pair" {
 					continue
 				}
-				gfn.Parameter(v.Name, v.Type())
+				gfn.AddParameter(v.Name, v.Type)
 			}
-			gfn.Parameter("opt", "pair"+nsNameP+fnNameP)
-			for _, v := range fn.Results {
-				gfn.Result(v.Name, v.Type())
+			gfn.AddParameter("opt", "pair"+nsNameP+fnNameP)
+			for _, v := range op.ParsedResults() {
+				gfn.AddResult(v.Name, v.Type)
 			}
-			gfn.Body(gg.String(`panic("not implemented")`))
+			gfn.AddBody(gg.S(`panic("not implemented")`))
 			continue
 		}
 
-		gfn := f.Function(fnNameC).
-			Receiver("s", "*"+nsNameP)
-		gfn.Parameter("ctx", "context.Context")
-		for _, v := range fn.Params {
+		gfn := f.NewFunction(fnNameC).
+			WithReceiver("s", "*"+nsNameP)
+		gfn.AddParameter("ctx", "context.Context")
+		for _, v := range op.ParsedParams() {
 			// We need to remove pair from generated functions.
-			if v.Type() == "...Pair" {
+			if v.Type == "...Pair" {
 				continue
 			}
-			gfn.Parameter(v.Name, v.Type())
+			gfn.AddParameter(v.Name, v.Type)
 		}
-		gfn.Parameter("opt", "pair"+nsNameP+fnNameP)
-		for _, v := range fn.Results {
-			gfn.Result(v.Name, v.Type())
+		gfn.AddParameter("opt", "pair"+nsNameP+fnNameP)
+		for _, v := range op.ParsedResults() {
+			gfn.AddResult(v.Name, v.Type)
 		}
-		gfn.Body(gg.String(`panic("not implemented")`))
+		gfn.AddBody(`panic("not implemented")`)
 		continue
 	}
 
