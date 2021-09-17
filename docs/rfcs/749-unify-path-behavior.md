@@ -12,64 +12,106 @@ Previous Discussion:
 
 ## Background
 
-Unix and Windows all use a different syntax for filesystem paths. Normally, when specifying file paths on Windows, we would use backslashes(`\`). However, in Java, and many other places outside the Windows world, backslashes are the escape character, so we have to double them up, like `C:\\trash\\blah\\blah`. Forward slashes(`/`), on the other hand, do not need to be doubled up and work on both Windows and Unix. There is no harm in having double forward slashes. They do nothing to the path and just take up space (`//` is equivalent to `/./`).
+For file system, paths are used extensively to represent the directory/file relationships. Resources can be represented by either absolute or relative paths. And the directory separator is platform specific.
 
-In our services, we have to handle paths like path splicing and path conversion. And here comes the problems:
+For object storage, the key of an object uniquely identifies the object in a bucket. Key name prefixes and delimiters could be used to group objects or simulate directory.
 
-- Different path separators may exist in a path at the same time, is it possible or how to use cross-platform paths for users?
-- For fs storage service on Windows platform, the behavior of `work_dir` is undefined. Drive letters in connection string cannot be handled for Windows at this stage.
+In our services, path could be a file path for file system, or a file hosting service, also it could be an object for object storage. So we need to unify path behavior for different platforms and storages.
 
 ## Proposal
 
-### Absolute Path and Relative Path
+### Absolute path and relative path
 
 All our services should support two kinds of path:
 
-- Absolute Path:
-  - For Unix, the absolute path starts with `/`.
-  - For Windows, the absolute path starts with a drive letter.
-- Relative Path: 
-  - The relative path is for the working directory `WorkDir`.
-  - Path with prefix `./` or `../` is allowed: they are relative paths for file system, but common strings for object storage service.
+- Absolute path: must include the root directory.
+- Relative path: a relative path based on the working directory.
 
-### WorkDir and path
+### Directory separator
 
-`WorkDir` specifies the working directory of the process.
+From user side:
 
-- For file system, `WorkDir` SHOULD be an absolute path.
-  - `WorkDir` MUST start with `/` for Unix. For Windows, the passed in `WorkDir` with drive letter SHOULD be allowed.
-  - The default value is `/`, that means the working directory is the root path for Unix, and the current volume of the process for Windows.
-  - Services SHOULD set `WorkDir` to the path name after the evaluation of any symbolic links internal.
-- For object storage, `WorkDir` is the simulated directory or prefix of the object key.
-  - `WorkDir` SHOULD be Unix style with the prefix `/`.
-  - The default value is `/`.
-  - Form service side, the prefix `/` needs to be removed for internal processing, but `/` needs to be added to the fields returned to the user.
-  
-`path` is the file path for file system, or an object key for object storage. Also, it could be a prefix filter for `List` operation.
-
-- For file system services on Windows, `path` MUST be the relative path for `WorkDir`. For file system on Unix, `path` could be an absolute path or a relative path.
-- For object storage service, `path` MUST be Unix style.
-- For the unique key `Object.ID` in storage, it SHOULD be an absolute path compatible with the target platform, unless there's a returned unique identifier like in dropbox.
-- For the path `Object.Path` in storage, it SHOULD be Unix style.
-- Users SHOULD follow the file and object naming of different services.
-
-### Path Separator
-
-Input path for users that contains system-related path separator SHOULD be allowed. When the drive letter is included for Windows, it should be something like `c:\\a\\b`.
-
-From go-storage side:
-
-- Replace each separator character in path with a slash (`/`) character could be generated for the input path.
+- System-related directory separator including `\` for Unix and `//` for Windows SHOULD be allowed.
 
 From service side:
 
-- Services SHOULD replace `/` in path to the system-related path separator at the beginning of the operation.
+- Services SHOULD replace separator in the passed-in path to the system-related directory separator at the beginning of operations.
+  
+### Implementation
+
+**work_dir**
+
+The pair `work_dir` is used to specific the working directory for service or storage. For object storage, it's the simulated directory or prefix of the object key.
+
+- `work_dir` SHOULD be an absolute path.
+- `work_dir` SHOULD be default to `/` if not set.
+- `work_dir` MUST be Unix style path for object storage services.
+
+```go
+// set work_dir for init
+pairs.WithWorkDir("/path/to/workdir")
+
+// set default value for `work_dir`
+store := &Storage{
+   // ...
+    workDir: "/",
+}
+if opt.HasWorkDir {
+    store.workDir = opt.WorkDir
+}
+```
+
+**path**
+
+The field `path` is used as an input parameter for operation, indicating the file path for file system, object key for object storage or prefix filter for `List` operator.
+
+- `path` could be absolut path or relative path based on `work_dir`.
+- `path` MUST be Unix style path but SHOULD NOT contain the prefix `/` for object storage services.
+
+```go
+// absolute path for Read
+n, err := store.Read("/path/to/workdir/hello.txt", w)
+
+// relative path for Read
+n. err := store.Read("hello.txt", w)
+```
+
+**Object:{Path, ID}**
+
+`Object` is the smallest unit in go-storage, returned by creating a file or object to identify an operation object, and the fields should not be changed outside services. `Object.ID` is the unique key in storage, and `Object.Path` is either the absolute path or the relative path based on the working directory depends on user's input.
+
+- `Object.ID` SHOULD be an absolute path compatible with the target platform.
+  - If a service like Dropbox returns a unique identifier, then `Object.ID` will be the returned identifier.
+  - For object storage services, the prefix `/` of the full path needs to be removed for internal processing, and added back to `Object.ID`.
+- `Object.Path` SHOULD be Unix style.
+
+Take s3 as an example:
+
+```go
+// get absolute path for object
+func (s *Storage) getAbsPath(path string) string {
+	// remove prefix `/`
+	prefix := strings.TrimPrefix(s.workDir, "/")
+    return prefix + path
+}
+
+// return Object for stat
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+	// use absolute path for request
+    rp := s.getAbsPath(path)
+    input := &s3.HeadObjectInput{
+        Bucket: aws.String(s.name),
+        Key:    aws.String(rp),
+    }
+    // ...
+    o = s.newObject(true)
+    o.ID = rp
+    o.Path = path
+    // ...
+}
+```
 
 ## Rationale
-
-### filepath
-
-Package `filepath` implements utility routines for manipulating filename paths in a way compatible with the target operating system-defined file paths. `FromSlash` returns the result of replacing each slash (`/`) character in path with a separator character.
 
 ### Object key
 
@@ -78,12 +120,22 @@ Package `filepath` implements utility routines for manipulating filename paths i
   - Objects with a prefix of `./` or `../`, or with key names ending with period(s) (`.`) are allowed but should be aware of the prefix limitations.
 - For [object key in oss](https://www.alibabacloud.com/help/doc-detail/87728.htm)
   - The name cannot start with a forward slash (`/`) or a backslash (`\`).
+  
+### How to be compatible with file system on Windows?
+
+Exception rules could be described in the RFC of the corresponding service. Path behavior for local file system is defined [here](https://github.com/beyondstorage/go-service-fs/pull/78).
 
 ## Compatibility
 
-- `work_dir` must start with `/` is only for Unix.
-- The format for `name` and `work_dir` in connection string need to be reconsidered as we can't separate them by `/` anymore.
+This change will not break services and users.
+
+- Services should implement or update the path behavior.
+- `work_dir` in connection string need to be reconsidered.
 
 ## Implementation
 
-N/A
+- Update descriptions for `work_dir` and `ID`, `path` of `Object`.
+- Add test cases for path:
+  - Basic operation with absolute path and relative path.
+  - Basic operation with path using different separator.
+- Update path behavior in services.
