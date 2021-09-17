@@ -47,17 +47,19 @@ The pair `work_dir` is used to specific the working directory for service or sto
 - `work_dir` SHOULD be default to `/` if not set.
 - `work_dir` MUST be Unix style path for object storage services.
 
+Take the example of setting working directory: 
+
 ```go
 // set work_dir for init
 pairs.WithWorkDir("/path/to/workdir")
 
 // set default value for `work_dir`
 store := &Storage{
-   // ...
-    workDir: "/",
+	// ... 
+	workDir: "/",
 }
 if opt.HasWorkDir {
-    store.workDir = opt.WorkDir
+	store.workDir = opt.WorkDir
 }
 ```
 
@@ -68,11 +70,13 @@ The field `path` is used as an input parameter for operation, indicating the fil
 - `path` could be absolut path or relative path based on `work_dir`.
 - `path` MUST be Unix style path but SHOULD NOT contain the prefix `/` for object storage services.
 
+Take the example of calling `Read`:
+
 ```go
-// absolute path for Read
+// absolute path for Read 
 n, err := store.Read("/path/to/workdir/hello.txt", w)
 
-// relative path for Read
+// relative path for Read 
 n. err := store.Read("hello.txt", w)
 ```
 
@@ -90,24 +94,24 @@ Take s3 as an example:
 ```go
 // get absolute path for object
 func (s *Storage) getAbsPath(path string) string {
-	// remove prefix `/`
+	// remove prefix `/` 
 	prefix := strings.TrimPrefix(s.workDir, "/")
-    return prefix + path
+	return prefix + path
 }
 
 // return Object for stat
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
-	// use absolute path for request
-    rp := s.getAbsPath(path)
-    input := &s3.HeadObjectInput{
-        Bucket: aws.String(s.name),
-        Key:    aws.String(rp),
-    }
-    // ...
-    o = s.newObject(true)
-    o.ID = rp
-    o.Path = path
-    // ...
+	// use absolute path for request 
+	rp := s.getAbsPath(path)
+	input := &s3.HeadObjectInput{
+		Bucket: aws.String(s.name), 
+		Key:    aws.String(rp),
+	}
+	// ... 
+	o = s.newObject(true)
+	o.ID = rp
+	o.Path = path 
+	// ...
 }
 ```
 
