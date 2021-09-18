@@ -750,6 +750,11 @@ type Storager interface {
 	//
 	// ## Behavior
 	//
+	// - Write SHOULD support users pass nil `io.Reader`.
+	//   - Service that has native support for pass nil `io.Reader` doesn't NEED to check the `io.Reader`
+	// is nil or not.
+	//   - Service that doesn't have native support for pass nil `io.Reader` SHOULD check and create an empty
+	// `io.Reader` if it is nil.
 	// - Write SHOULD NOT return an error as the object exist.
 	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
 	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
@@ -761,6 +766,11 @@ type Storager interface {
 	//
 	// ## Behavior
 	//
+	// - Write SHOULD support users pass nil `io.Reader`.
+	//   - Service that has native support for pass nil `io.Reader` doesn't NEED to check the `io.Reader`
+	// is nil or not.
+	//   - Service that doesn't have native support for pass nil `io.Reader` SHOULD check and create an empty
+	// `io.Reader` if it is nil.
 	// - Write SHOULD NOT return an error as the object exist.
 	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
 	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
