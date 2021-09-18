@@ -1,0 +1,26 @@
+name: "Build Test"
+
+on: [ push,pull_request ]
+
+jobs:
+  build_test:
+    name: Build Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.16"
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Format
+        run: if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then exit 1; fi
+
+      - name: Build
+        run: make build
+
+      - name: Git Diff
+        run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi
