@@ -1,7 +1,7 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-09-08
 - RFC PR: [beyondstorage/go-storage#749](https://github.com/beyondstorage/go-storage/pull/749)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#758](https://github.com/beyondstorage/go-storage/issues/758)
 
 # GSP-749: Unify Path Behavior
 
