@@ -31,7 +31,7 @@ All our services should support two kinds of path:
 
 From user side:
 
-- System-related directory separator including `\` for Unix and `//` for Windows SHOULD be allowed.
+- System-related directory separator including `/` for Unix and `\\` for Windows SHOULD be allowed.
 
 From go-storage side:
 
@@ -49,15 +49,18 @@ The pair `work_dir` is used to specific the working directory for service or sto
 
 - `work_dir` SHOULD be an absolute path.
 - `work_dir` SHOULD be default to `/` if not set.
-- `work_dir` MUST be Unix style path for object storage services.
+- `work_dir` SHOULD be Unix style path for object storage services.
 
 Take the example of setting working directory: 
 
 ```go
-// set work_dir for init
-pairs.WithWorkDir("/path/to/workdir")
+// users could set work_dir for init
+store, _ := s3.NewStorager(
+	// ...
+	pairs.WithWorkDir("/path/to/workdir"),
+)
 
-// set default value for `work_dir`
+// services should set default value for `work_dir`
 store := &Storage{
 	// ... 
 	workDir: "/",
@@ -72,7 +75,7 @@ if opt.HasWorkDir {
 The field `path` is used as an input parameter for operation, indicating the file path for file system, object key for object storage or prefix filter for `List` operator.
 
 - `path` could be absolut path or relative path based on `work_dir`.
-- `path` MUST be Unix style path but SHOULD NOT contain the prefix `/` for object storage services.
+- `path` SHOULD be consistent with the path style of `work_dir`.
 
 Take the example of calling `Read`:
 
