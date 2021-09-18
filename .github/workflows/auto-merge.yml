@@ -1,0 +1,55 @@
+name: Dependabot Auto Build
+on: pull_request_target
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      dependency-names: ${{ steps.metadata.outputs.dependency-names }}
+    steps:
+      - name: Dependabot metadata
+        uses: Xuanwo/fetch-metadata@v1.2.2
+        id: metadata
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+  dependabot:
+    needs: metadata
+    if: ${{ needs.metadata.outputs.dependency-names != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.16"
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.ROBOT_GITHUB_TOKEN }}
+
+      - name: Auto build
+        run: make build
+
+      - name: Auto commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        if: ${{contains(needs.metadata.outputs.dependency-names, 'github.com/beyondstorage/go-storage/v4')}}
+        with:
+          commit_message: Auto build to generate code
+
+      - name: Auto merge
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.ROBOT_GITHUB_TOKEN }}
+
+      - name: Auto approve
+        run: gh pr review "$PR_URL" -a
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.ROBOT_GITHUB_TOKEN }}
