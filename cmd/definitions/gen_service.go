@@ -193,20 +193,39 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 			AddField("pairs", "[]Pair").
 			AddLine()
 
+		var needDefaultPairs = true
+		defaultPairs := fmt.Sprintf("Default%sPairs", nsNameP)
 		// Generate required pairs.
 		pairStruct.AddLineComment("Required pairs")
 		for _, pair := range ns.New.ParsedRequired() {
 			pairNameP := templateutils.ToPascal(pair.Name)
+			if pairNameP == defaultPairs {
+				needDefaultPairs = false
+			}
 			pairStruct.AddField("Has"+pairNameP, "bool")
 			pairStruct.AddField(pairNameP, pair.Type)
+			if pair.Defaultable {
+				needDefaultPairs = true
+			}
 		}
 
 		// Generate optional pairs.
 		pairStruct.AddLineComment("Optional pairs")
 		for _, pair := range ns.New.ParsedOptional() {
 			pairNameP := templateutils.ToPascal(pair.Name)
+			if pairNameP == defaultPairs {
+				needDefaultPairs = false
+			}
 			pairStruct.AddField("Has"+pairNameP, "bool")
 			pairStruct.AddField(pairNameP, pair.Type)
+			if pair.Defaultable {
+				needDefaultPairs = true
+			}
+		}
+
+		if needDefaultPairs {
+			pairStruct.AddField("HasDefault"+nsNameP+"Pairs", "bool")
+			pairStruct.AddField("Default"+nsNameP+"Pairs", "Default"+nsNameP+"Pairs")
 		}
 
 		// Generate feature handle logic.
@@ -268,7 +287,8 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 				for _, feature := range ns.ParsedFeatures() {
 					featureNameP := templateutils.ToPascal(feature.Name)
 
-					gg.If(gg.S("result.hasEnable%s", featureNameP)).
+					group.
+						NewIf(gg.S("result.hasEnable%s", featureNameP)).
 						AddBody(
 							gg.S("result.Has%sFeatures = true", nsNameP),
 							gg.S("result.%sFeatures.%s = true", nsNameP, featureNameP),
@@ -276,8 +296,9 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 				}
 				return group
 			}),
+			gg.LineComment("Default pairs"),
 			gg.Embed(func() gg.Node {
-				// Generate default pari handle logic here.
+				// Generate default pair handle logic here.
 				group := gg.NewGroup()
 
 				for _, dp := range ns.ParsedDefaultable() {

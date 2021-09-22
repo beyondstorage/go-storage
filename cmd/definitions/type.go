@@ -307,15 +307,8 @@ func (d *Data) LoadService(filePath string) {
 		ns.New.srv = srv
 		ns.New.ns = ns
 		ns.New.Implemented = true
-		for _, v := range d.PairsMap {
-			if v.Defaultable {
-				ns.New.Optional = append(ns.New.Optional, "default_"+v.Name)
-			}
-		}
-		for _, v := range srv.Pairs {
-			if v.Defaultable {
-				ns.New.Optional = append(ns.New.Optional, "default_"+v.Name)
-			}
+		for _, v := range ns.ParsedDefaultable() {
+			ns.New.Optional = append(ns.New.Optional, "default_"+v.Pair.Name)
 		}
 
 		// Handle other functions.

@@ -163,14 +163,8 @@ type pairServiceNew struct {
 	HasCredential bool
 	Credential    string
 	// Optional pairs
-	HasDefaultContentType  bool
-	DefaultContentType     string
-	HasDefaultIoCallback   bool
-	DefaultIoCallback      func([]byte)
 	HasDefaultServicePairs bool
 	DefaultServicePairs    DefaultServicePairs
-	HasDefaultStorageClass bool
-	DefaultStorageClass    string
 	HasEndpoint            bool
 	Endpoint               string
 	HasHTTPClientOptions   bool
@@ -193,30 +187,12 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasCredential = true
 			result.Credential = v.Value.(string)
-		case "default_content_type":
-			if result.HasDefaultContentType {
-				continue
-			}
-			result.HasDefaultContentType = true
-			result.DefaultContentType = v.Value.(string)
-		case "default_io_callback":
-			if result.HasDefaultIoCallback {
-				continue
-			}
-			result.HasDefaultIoCallback = true
-			result.DefaultIoCallback = v.Value.(func([]byte))
 		case "default_service_pairs":
 			if result.HasDefaultServicePairs {
 				continue
 			}
 			result.HasDefaultServicePairs = true
 			result.DefaultServicePairs = v.Value.(DefaultServicePairs)
-		case "default_storage_class":
-			if result.HasDefaultStorageClass {
-				continue
-			}
-			result.HasDefaultStorageClass = true
-			result.DefaultStorageClass = v.Value.(string)
 		case "endpoint":
 			if result.HasEndpoint {
 				continue
@@ -238,6 +214,8 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 		}
 	}
 	// Enable features
+
+	// Default pairs
 
 	if !result.HasCredential {
 		return pairServiceNew{}, services.PairRequiredError{Keys: []string{"credential"}}
@@ -585,7 +563,15 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 		}
 	}
 	// Enable features
-
+	if result.hasEnableLoosePair {
+		result.HasStorageFeatures = true
+		result.StorageFeatures.LoosePair = true
+	}
+	if result.hasEnableVirtualDir {
+		result.HasStorageFeatures = true
+		result.StorageFeatures.VirtualDir = true
+	}
+	// Default pairs
 	if result.HasDefaultContentType {
 		result.HasDefaultStoragePairs = true
 		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithContentType(result.DefaultContentType))
