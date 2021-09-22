@@ -193,39 +193,20 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 			AddField("pairs", "[]Pair").
 			AddLine()
 
-		var needDefaultPairs = true
-		defaultPairs := fmt.Sprintf("Default%sPairs", nsNameP)
 		// Generate required pairs.
 		pairStruct.AddLineComment("Required pairs")
 		for _, pair := range ns.New.ParsedRequired() {
 			pairNameP := templateutils.ToPascal(pair.Name)
-			if pairNameP == defaultPairs {
-				needDefaultPairs = false
-			}
 			pairStruct.AddField("Has"+pairNameP, "bool")
 			pairStruct.AddField(pairNameP, pair.Type)
-			if pair.Defaultable {
-				needDefaultPairs = true
-			}
 		}
 
 		// Generate optional pairs.
 		pairStruct.AddLineComment("Optional pairs")
 		for _, pair := range ns.New.ParsedOptional() {
 			pairNameP := templateutils.ToPascal(pair.Name)
-			if pairNameP == defaultPairs {
-				needDefaultPairs = false
-			}
 			pairStruct.AddField("Has"+pairNameP, "bool")
 			pairStruct.AddField(pairNameP, pair.Type)
-			if pair.Defaultable {
-				needDefaultPairs = true
-			}
-		}
-
-		if needDefaultPairs {
-			pairStruct.AddField("HasDefault"+nsNameP+"Pairs", "bool")
-			pairStruct.AddField("Default"+nsNameP+"Pairs", "Default"+nsNameP+"Pairs")
 		}
 
 		// Generate feature handle logic.
