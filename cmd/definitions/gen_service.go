@@ -5,6 +5,8 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
@@ -518,6 +520,10 @@ If user enable this feature, service should ignore not support pair error.`),
 						for _, v := range op.ParsedParams() {
 							// We don't need to call pair again.
 							if v.Type == "...Pair" {
+								continue
+							}
+							if v.Name == "path" {
+								ic.AddParameter(filepath.ToSlash(v.Name))
 								continue
 							}
 							ic.AddParameter(v.Name)

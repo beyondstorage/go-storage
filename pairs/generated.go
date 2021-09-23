@@ -147,9 +147,10 @@ func WithSize(v int64) (p Pair) {
 // WithWorkDir will apply work_dir value to Options.
 //
 // WorkDir specify the work dir for service or storage, every operation will be relative to this dir.
-// work_dir MUST start with / for every storage services.
+// work_dir SHOULD be an absolute path.
 // work_dir will be default to / if not set.
-// For fs storage service on windows platform, the behavior is undefined.
+// work_dir SHOULD be Unix style for object storage services.
+// For fs storage service on windows platform, the behavior is defined separately.
 func WithWorkDir(v string) (p Pair) {
 	return Pair{Key: "work_dir", Value: v}
 }
