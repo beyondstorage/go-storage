@@ -236,6 +236,7 @@ func (d *Data) LoadService(filePath string) {
 	d.Service = &Service{
 		d: d,
 	}
+	d.Service.Pairs = make(map[string]*Pair)
 	err = parseTOML(bs, d.Service)
 	if err != nil {
 		log.Fatalf("parse service: %v", err)
@@ -309,6 +310,33 @@ func (d *Data) LoadService(filePath string) {
 		ns.New.Implemented = true
 		for _, v := range ns.ParsedDefaultable() {
 			ns.New.Optional = append(ns.New.Optional, "default_"+v.Pair.Name)
+		}
+		// add default_*_pairs and *_features
+		hasDefaultNsPairs := false
+		hasNsFeatures := false
+		defaultNsPairsName := fmt.Sprintf("default_%s_pairs", ns.Name)
+		nsFeaturesName := fmt.Sprintf("%s_features", ns.Name)
+		for _, v := range ns.New.Optional {
+			if v == defaultNsPairsName {
+				hasDefaultNsPairs = true
+			}
+			if v == nsFeaturesName {
+				hasNsFeatures = true
+			}
+		}
+		if !hasDefaultNsPairs {
+			ns.New.Optional = append(ns.New.Optional, defaultNsPairsName)
+			srv.Pairs[defaultNsPairsName] = &Pair{
+				Name: defaultNsPairsName,
+				Type: templateutils.ToPascal(defaultNsPairsName),
+			}
+		}
+		if !hasNsFeatures {
+			ns.New.Optional = append(ns.New.Optional, nsFeaturesName)
+			srv.Pairs[nsFeaturesName] = &Pair{
+				Name: nsFeaturesName,
+				Type: templateutils.ToPascal(nsFeaturesName),
+			}
 		}
 
 		// Handle other functions.
