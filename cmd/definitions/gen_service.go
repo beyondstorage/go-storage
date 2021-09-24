@@ -5,8 +5,6 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
-
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
@@ -18,6 +16,7 @@ func generateSrv(data *Service, path string) {
 	f.AddPackage(data.Name)
 	f.NewImport().
 		AddPath("context").
+		AddPath("path/filepath").
 		AddPath("io").
 		AddPath("net/http").
 		AddPath("time").
@@ -524,8 +523,8 @@ If user enable this feature, service should ignore not support pair error.`),
 							if v.Type == "...Pair" {
 								continue
 							}
-							if v.Name == "path" {
-								ic.AddParameter(filepath.ToSlash(v.Name))
+							if v.Name == "path" || v.Name == "src" || v.Name == "dst" || v.Name == "target" {
+								ic.AddParameter(gg.S("filepath.ToSlash(%s)", v.Name))
 								continue
 							}
 							ic.AddParameter(v.Name)
