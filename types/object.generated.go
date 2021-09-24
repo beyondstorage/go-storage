@@ -39,6 +39,9 @@ type Object struct { // AppendOffset is the offset of the append object.
 	contentType   string
 	etag          string
 	// ID is the unique key in storage.
+	//
+	// ID SHOULD be an absolute path compatible with the target operating system-defined file paths,
+	// or a unique identifier specified by service.
 	ID           string
 	lastModified time.Time
 	// LinkTarget is the symlink target for link object.
@@ -48,6 +51,8 @@ type Object struct { // AppendOffset is the offset of the append object.
 	multipartID string
 	// Path is either the absolute path or the relative path towards storage's WorkDir depends on user's
 	// input.
+	//
+	// Path SHOULD be Unix style.
 	Path string
 	// SystemMetadata stores system defined metadata.
 	systemMetadata interface{}

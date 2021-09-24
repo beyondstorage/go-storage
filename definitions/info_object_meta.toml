@@ -17,7 +17,11 @@ type = "string"
 [id]
 type = "string"
 export = true
-description = "ID is the unique key in storage."
+description = """
+ID is the unique key in storage.
+
+ID SHOULD be an absolute path compatible with the target operating system-defined file paths, or a unique identifier specified by service.
+"""
 
 [last-modified]
 type = "time.Time"
@@ -37,7 +41,11 @@ description = "MultipartID is the part id of part object."
 [path]
 type = "string"
 export = true
-description = "Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input."
+description = """
+Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
+
+Path SHOULD be Unix style.
+"""
 
 [system-metadata]
 type = "interface{}"
