@@ -318,9 +318,11 @@ func (d *Data) LoadService(filePath string) {
 		nsFeaturesName := fmt.Sprintf("%s_features", ns.Name)
 		for _, v := range ns.New.Optional {
 			if v == defaultNsPairsName {
+				log.Warnf("Please remove %s pair as it will be automatically generated.", defaultNsPairsName)
 				hasDefaultNsPairs = true
 			}
 			if v == nsFeaturesName {
+				log.Warnf("Please remove %s pair as it will be automatically generated.", nsFeaturesName)
 				hasNsFeatures = true
 			}
 		}
