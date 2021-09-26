@@ -408,7 +408,7 @@ func (s *Service) List(pairs ...Pair) (sti *StoragerIterator, err error) {
 func (s *Service) ListWithContext(ctx context.Context, pairs ...Pair) (sti *StoragerIterator, err error) {
 	defer func() {
 		err =
-			s.formatError("list", err)
+			s.formatError("list", err, "")
 	}()
 
 	pairs = append(pairs, s.defaultPairs.List...)
