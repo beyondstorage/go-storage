@@ -16,9 +16,9 @@ func generateSrv(data *Service, path string) {
 	f.AddPackage(data.Name)
 	f.NewImport().
 		AddPath("context").
-		AddPath("path/filepath").
 		AddPath("io").
 		AddPath("net/http").
+		AddPath("strings").
 		AddPath("time").
 		AddLine().
 		AddDot("github.com/beyondstorage/go-storage/v4/pairs").
@@ -529,7 +529,7 @@ If user enable this feature, service should ignore not support pair error.`),
 								continue
 							}
 							if v.Name == "path" || v.Name == "src" || v.Name == "dst" || v.Name == "target" {
-								ic.AddParameter(gg.S("filepath.ToSlash(%s)", v.Name))
+								ic.AddParameter(gg.S("strings.ReplaceAll(%s, \"\\\\\", \"/\")", v.Name))
 								continue
 							}
 							ic.AddParameter(v.Name)
