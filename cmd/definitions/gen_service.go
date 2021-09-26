@@ -486,12 +486,18 @@ If user enable this feature, service should ignore not support pair error.`),
 				gg.Defer(gg.Embed(func() gg.Node {
 					caller := gg.Call("formatError").WithOwner("s")
 					caller.AddParameter(gg.Lit(fn.Name)).AddParameter("err")
-					paths := op.PathCaller()
-					if len(paths) == 0 && nsNameP == "Service" {
-						caller.AddParameter("\"\"")
+					paramsNum := 2
+					for _, v := range op.ParsedParams() {
+						// formatError only accept string as input.
+						if v.Type != "string" {
+							continue
+						}
+						caller.AddParameter(v.Name)
+						paramsNum += 1
 					}
-					for _, v := range paths {
-						caller.AddParameter(v)
+					if paramsNum == 2 && nsNameP == "Service" {
+						caller.AddParameter("\"\"")
+						paramsNum += 1
 					}
 
 					fn := gg.Function("").

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"sort"
-	"strings"
 
 	"github.com/Xuanwo/templateutils"
 	"github.com/pelletier/go-toml"
@@ -654,19 +653,6 @@ func (op *Operation) ParsedResults() []*Field {
 	return fs
 }
 
-func (op *Operation) PathCaller() []string {
-	x := make([]string, 0)
-	for _, v := range op.ParsedParams() {
-		if v.Type != "string" {
-			break
-		}
-
-		x = append(x, v.Caller())
-	}
-
-	return x
-}
-
 // Function represents a function.
 type Function struct {
 	Required []string `toml:"required"`
@@ -717,14 +703,6 @@ type Field struct {
 
 	// Runtime generated.
 	Name string
-}
-
-// Caller will print the caller formatGlobal of field.
-func (f *Field) Caller() string {
-	if strings.HasPrefix(f.Type, "...") {
-		return f.Name + "..."
-	}
-	return f.Name
 }
 
 func parseTOML(src []byte, in interface{}) (err error) {
