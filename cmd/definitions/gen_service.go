@@ -529,7 +529,7 @@ If user enable this feature, service should ignore not support pair error.`),
 								continue
 							}
 							if v.Name == "path" || v.Name == "src" || v.Name == "dst" || v.Name == "target" {
-								ic.AddParameter(gg.S("strings.ReplaceAll(%s, \"\\\\\", \"/\")", v.Name))
+								ic.AddParameter(gg.S(`strings.ReplaceAll(%s, "\\", "/")`, v.Name))
 								continue
 							}
 							ic.AddParameter(v.Name)
