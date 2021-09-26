@@ -22,8 +22,8 @@ I propose to add `MultipartHTTPSigner` interface.
 
 ```go
 type MultipartHTTPSigner interface {
-    signHTTPCreateMultipart(path string, expire time.Duration, ps ...types.Paires) (req *http.Request, err error)
-    signHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
+signHTTPCreateMultipart(path string, expire time.Duration, ps ...types.Paires) (req *http.Request, err error)
+signHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
 }
 ```
 
@@ -34,9 +34,18 @@ type MultipartHTTPSigner interface {
   - `io.Reader` typed parameter for writeMultipart operations SHOULD be removed.
   - Other parameters SHOULD be consistent.
 
-From service side:
+Also I propose to support `delete` in `StorageHTTPSigner`(Proposed in [GSP-729](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/729-redesign-http-signer.md#proposal)).
 
-- If part of the operations are unsupported, `services.ErrCapabilityInsufficient` error can be returned directly.
+```go
+type StorageHTTPSigner interface {
+    QuerySignHTTPDelete(path string, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
+}
+```
+
+- `QuerySignHTTPDelete` is the supported signature operation for `delete` in `StorageHTTPSigner` for now.
+- compared to the corresponding basic operation (`delete` in `Storager`),  the parameters of the `QuerySignHTTPDelete` operation has the following differences:
+  - `expire` is required.
+  - Original parameters SHOULD be consistent.
 
 ## Rationale
 
@@ -51,9 +60,11 @@ N/A
 - `go-storage`
   - Add new interface and operations in definitions.
 - `go-integration-test`
-  - Add integration tests for `MultipartHTTPSigner`. Split into the following two functions:
+  - Add integration tests for `MultipartHTTPSigner`. Create a new file `multipart_http_signer.go`. Split into the following two functions:
     - `TestMultipartHTTPSignerCreateMultipart(t *testing.T, store types.Storager) {}`
     - `TestMultipartHTTPSignerWriteMultipart(t *testing.T, store types.Storager) {}`
+  - Add integration tests for `QuerySignHTTPDelete` in `storage_http_signer.go`.
+    - `TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {}`
 - `go-service-*`
   - Update all services that support HTTP signer.
   - Ensure that integration tests pass.
