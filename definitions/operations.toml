@@ -311,6 +311,34 @@ description = "will write data into a file by using query parameters to authenti
 params = ["path", "size", "expire"]
 results = ["req"]
 
+[storage_http_signer.op.query_sign_http_delete]
+description = "will delete an object from service by using query parameters to authenticate requests."
+params = ["path", "expire"]
+results = ["req"]
+
+[multipart_http_signer]
+description = "is the interface for Multiparter related operations which support authentication."
+
+[multipart_http_signer.op.query_sign_http_create_multipart]
+description = "will create a new multipart by using query parameters to authenticate requests."
+params = ["path", "expire"]
+results = ["req"]
+
+[multipart_http_signer.op.query_sign_http_write_multipart]
+description = "will write content to a multipart by using query parameters to authenticate requests."
+params = ["o", "size", "index", "expire"]
+results = ["req"]
+
+[multipart_http_signer.op.query_sign_http_list_multipart]
+description = "will list parts belong to this multipart by using query parameters to authenticate requests."
+params = ["o", "expire"]
+results = ["req"]
+
+[multipart_http_signer.op.query_sign_http_complete_multipart]
+description = "will complete a multipart upload and construct an Object by using query parameters to authenticate requests."
+params = ["o", "parts", "expire"]
+results = ["req"]
+
 [linker]
 description = "is the interface for link"
 
