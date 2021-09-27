@@ -394,6 +394,82 @@ func (s UnimplementedMover) MoveWithContext(ctx context.Context, src string, dst
 	return
 }
 
+// MultipartHTTPSigner is the interface for Multiparter related operations which support authentication.
+type MultipartHTTPSigner interface {
+	// QuerySignHTTPCompleteMultipart will complete a multipart upload and construct an Object by
+	// using query parameters to authenticate requests.
+	QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPCompleteMultipartWithContext will complete a multipart upload and construct
+	// an Object by using query parameters to authenticate requests.
+	QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPCreateMultipart will create a new multipart by using query parameters to authenticate
+	// requests.
+	QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPCreateMultipartWithContext will create a new multipart by using query parameters
+	// to authenticate requests.
+	QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPListMultipart will list parts belong to this multipart by using query parameters
+	// to authenticate requests.
+	QuerySignHTTPListMultipart(o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPListMultipartWithContext will list parts belong to this multipart by using query
+	// parameters to authenticate requests.
+	QuerySignHTTPListMultipartWithContext(ctx context.Context, o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPWriteMultipart will write content to a multipart by using query parameters to authenticate
+	// requests.
+	QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPWriteMultipartWithContext will write content to a multipart by using query parameters
+	// to authenticate requests.
+	QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	mustEmbedUnimplementedMultipartHTTPSigner()
+}
+
+// UnimplementedMultipartHTTPSigner must be embedded to have forward compatible implementations.
+type UnimplementedMultipartHTTPSigner struct {
+}
+
+func (s UnimplementedMultipartHTTPSigner) mustEmbedUnimplementedMultipartHTTPSigner() {
+
+}
+func (s UnimplementedMultipartHTTPSigner) String() string {
+	return "UnimplementedMultipartHTTPSigner"
+}
+func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_complete_multipart")
+	return
+}
+func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_complete_multipart")
+	return
+}
+func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_create_multipart")
+	return
+}
+func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_create_multipart")
+	return
+}
+func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPListMultipart(o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_list_multipart")
+	return
+}
+func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPListMultipartWithContext(ctx context.Context, o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_list_multipart")
+	return
+}
+func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_write_multipart")
+	return
+}
+func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_write_multipart")
+	return
+}
+
 // Multiparter is the interface for Multipart related operations.
 type Multiparter interface {
 	// CompleteMultipart will complete a multipart upload and construct an Object.
@@ -626,6 +702,13 @@ func (s UnimplementedServicer) ListWithContext(ctx context.Context, pairs ...Pai
 
 // StorageHTTPSigner is the interface for Storager related operations which support authentication.
 type StorageHTTPSigner interface {
+	// QuerySignHTTPDelete will delete an object from service by using query parameters to authenticate
+	// requests.
+	QuerySignHTTPDelete(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPDeleteWithContext will delete an object from service by using query parameters
+	// to authenticate requests.
+	QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
 	// QuerySignHTTPRead will read data from the file by using query parameters to authenticate requests.
 	QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
 	// QuerySignHTTPReadWithContext will read data from the file by using query parameters to authenticate
@@ -650,6 +733,14 @@ func (s UnimplementedStorageHTTPSigner) mustEmbedUnimplementedStorageHTTPSigner(
 }
 func (s UnimplementedStorageHTTPSigner) String() string {
 	return "UnimplementedStorageHTTPSigner"
+}
+func (s UnimplementedStorageHTTPSigner) QuerySignHTTPDelete(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_delete")
+	return
+}
+func (s UnimplementedStorageHTTPSigner) QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_delete")
+	return
 }
 func (s UnimplementedStorageHTTPSigner) QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
 	err = NewOperationNotImplementedError("query_sign_http_read")

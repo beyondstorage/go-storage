@@ -22,10 +22,10 @@ I propose to add `MultipartHTTPSigner` interface.
 
 ```go
 type MultipartHTTPSigner interface {
-    QuerySignHTTPCreateMultipart(path string, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
-    QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
-    QuerySignHTTPListMultipart(o *Object, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
-    QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
+    QuerySignHTTPCreateMultipart(path string, expire time.Duration, ps ...types.Pair) (req *http.Request, err error)
+    QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, ps ...types.Pair) (req *http.Request, err error)
+    QuerySignHTTPListMultipart(o *Object, expire time.Duration, ps ...types.Pair) (req *http.Request, err error)
+    QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, ps ...types.Pair) (req *http.Request, err error)
 }
 ```
 
@@ -40,7 +40,7 @@ Also I propose to support `delete` in `StorageHTTPSigner`(Proposed in [GSP-729](
 
 ```go
 type StorageHTTPSigner interface {
-    QuerySignHTTPDelete(path string, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
+    QuerySignHTTPDelete(path string, expire time.Duration, ps ...types.Pair) (req *http.Request, err error)
 }
 ```
 
