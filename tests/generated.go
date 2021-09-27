@@ -5,7 +5,7 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"path/filepath"
+	"strings"
 	"time"
 
 	. "github.com/beyondstorage/go-storage/v4/pairs"
@@ -1229,7 +1229,7 @@ func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, p
 	if err != nil {
 		return
 	}
-	return s.copy(ctx, filepath.ToSlash(src), filepath.ToSlash(dst), opt)
+	return s.copy(ctx, strings.ReplaceAll(src, "\\", "/"), strings.ReplaceAll(dst, "\\", "/"), opt)
 }
 func (s *Storage) Create(path string, pairs ...Pair) (o *Object) {
 	pairs = append(pairs, s.defaultPairs.Create...)
@@ -1256,7 +1256,7 @@ func (s *Storage) CreateAppendWithContext(ctx context.Context, path string, pair
 	if err != nil {
 		return
 	}
-	return s.createAppend(ctx, filepath.ToSlash(path), opt)
+	return s.createAppend(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 func (s *Storage) CreateMultipart(path string, pairs ...Pair) (o *Object, err error) {
 	ctx := context.Background()
@@ -1275,7 +1275,7 @@ func (s *Storage) CreateMultipartWithContext(ctx context.Context, path string, p
 	if err != nil {
 		return
 	}
-	return s.createMultipart(ctx, filepath.ToSlash(path), opt)
+	return s.createMultipart(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 func (s *Storage) Delete(path string, pairs ...Pair) (err error) {
 	ctx := context.Background()
@@ -1294,7 +1294,7 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...P
 	if err != nil {
 		return
 	}
-	return s.delete(ctx, filepath.ToSlash(path), opt)
+	return s.delete(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 func (s *Storage) Fetch(path string, url string, pairs ...Pair) (err error) {
 	ctx := context.Background()
@@ -1313,7 +1313,7 @@ func (s *Storage) FetchWithContext(ctx context.Context, path string, url string,
 	if err != nil {
 		return
 	}
-	return s.fetch(ctx, filepath.ToSlash(path), url, opt)
+	return s.fetch(ctx, strings.ReplaceAll(path, "\\", "/"), url, opt)
 }
 func (s *Storage) List(path string, pairs ...Pair) (oi *ObjectIterator, err error) {
 	ctx := context.Background()
@@ -1332,7 +1332,7 @@ func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...Pai
 	if err != nil {
 		return
 	}
-	return s.list(ctx, filepath.ToSlash(path), opt)
+	return s.list(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 func (s *Storage) ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error) {
 	ctx := context.Background()
@@ -1381,7 +1381,7 @@ func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, p
 	if err != nil {
 		return
 	}
-	return s.move(ctx, filepath.ToSlash(src), filepath.ToSlash(dst), opt)
+	return s.move(ctx, strings.ReplaceAll(src, "\\", "/"), strings.ReplaceAll(dst, "\\", "/"), opt)
 }
 func (s *Storage) Reach(path string, pairs ...Pair) (url string, err error) {
 	ctx := context.Background()
@@ -1400,7 +1400,7 @@ func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...Pa
 	if err != nil {
 		return
 	}
-	return s.reach(ctx, filepath.ToSlash(path), opt)
+	return s.reach(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 func (s *Storage) Read(path string, w io.Writer, pairs ...Pair) (n int64, err error) {
 	ctx := context.Background()
@@ -1419,7 +1419,7 @@ func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer,
 	if err != nil {
 		return
 	}
-	return s.read(ctx, filepath.ToSlash(path), w, opt)
+	return s.read(ctx, strings.ReplaceAll(path, "\\", "/"), w, opt)
 }
 func (s *Storage) Stat(path string, pairs ...Pair) (o *Object, err error) {
 	ctx := context.Background()
@@ -1438,7 +1438,7 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...Pai
 	if err != nil {
 		return
 	}
-	return s.stat(ctx, filepath.ToSlash(path), opt)
+	return s.stat(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
 	ctx := context.Background()
@@ -1457,7 +1457,7 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 	if err != nil {
 		return
 	}
-	return s.write(ctx, filepath.ToSlash(path), r, size, opt)
+	return s.write(ctx, strings.ReplaceAll(path, "\\", "/"), r, size, opt)
 }
 func (s *Storage) WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
 	ctx := context.Background()
