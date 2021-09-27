@@ -22,14 +22,16 @@ I propose to add `MultipartHTTPSigner` interface.
 
 ```go
 type MultipartHTTPSigner interface {
-signHTTPCreateMultipart(path string, expire time.Duration, ps ...types.Paires) (req *http.Request, err error)
-signHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
+    QuerySignHTTPCreateMultipart(path string, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
+    QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
+    QuerySignHTTPListMultipart(o *Object, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
+    QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, ps ...types.Pairs) (req *http.Request, err error)
 }
 ```
 
 - `MultipartHTTPSigner` is the interface associated with `Multipart`, which support using query parameters to authenticate requests.
-  - `SignHTTPCreateMultipart` and `SignHTTPWriteMultipart` are the supported signature operations for `createMultipart` and `writeMultipart` in `MultipartHTTPSigner` for now.
-- Compared to the corresponding basic operation (`createMultipart` and `writeMultipart` in `Multiparter`), the parameters of the `MultipartHTTPSigner` operations have the following differences:
+  - `QuerySignHTTPCreateMultipart`, `QuerySignHTTPWriteMultipart`, `QuerySignHTTPListMultipart` and `QuerySignHTTPCompleteMultipart` are the supported signature operations for `createMultipart`, `writeMultipart`, `listMultipart` and `completeMultipart` in `MultipartHTTPSigner` for now.
+- Compared to the corresponding basic operation (`createMultipart`, `writeMultipart`, `listMultipart` and `completeMultipart` in `Multiparter`), the parameters of the `MultipartHTTPSigner` operations have the following differences:
   - `expire` is required.
   - `io.Reader` typed parameter for writeMultipart operations SHOULD be removed.
   - Other parameters SHOULD be consistent.
@@ -43,9 +45,13 @@ type StorageHTTPSigner interface {
 ```
 
 - `QuerySignHTTPDelete` is the supported signature operation for `delete` in `StorageHTTPSigner` for now.
-- compared to the corresponding basic operation (`delete` in `Storager`),  the parameters of the `QuerySignHTTPDelete` operation has the following differences:
+- Compared to the corresponding basic operation (`delete` in `Storager`),  the parameters of the `QuerySignHTTPDelete` operation has the following differences:
   - `expire` is required.
   - Original parameters SHOULD be consistent.
+
+From service side:
+
+- If part of the operations are unsupported, `services.ErrCapabilityInsufficient` error can be returned directly.
 
 ## Rationale
 
@@ -60,9 +66,11 @@ N/A
 - `go-storage`
   - Add new interface and operations in definitions.
 - `go-integration-test`
-  - Add integration tests for `MultipartHTTPSigner`. Create a new file `multipart_http_signer.go`. Split into the following two functions:
+  - Add integration tests for `MultipartHTTPSigner`. Create a new file `multipart_http_signer.go`. Split into the following four functions:
     - `TestMultipartHTTPSignerCreateMultipart(t *testing.T, store types.Storager) {}`
     - `TestMultipartHTTPSignerWriteMultipart(t *testing.T, store types.Storager) {}`
+    - `TestMultipartHTTPSignerListMultipart(t *testing.T, store types.Storager) {}`
+    - `TestMultipartHTTPSignerCompleteMultipart(t *testing.T, store types.Storager) {}`
   - Add integration tests for `QuerySignHTTPDelete` in `storage_http_signer.go`.
     - `TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {}`
 - `go-service-*`
