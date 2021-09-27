@@ -1,7 +1,7 @@
 - Author: abyss-w <mad.hatter@foxmail.com>
 - Start Date: 2021-09-26
 - RFC PR: [beyondstorage/go-storage#826](https://github.com/beyondstorage/go-storage/pull/826)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#827](https://github.com/beyondstorage/go-storage/issues/827)
 
 # GSP-826: Add Multipart HTTP Signer Support
 
