@@ -280,6 +280,11 @@ func (d *Data) LoadService(filePath string) {
 		// Append namespace itself into implement.
 		ns.Implement = append(ns.Implement, ns.Name+"r")
 
+		// When no function is declared under the namespace of the service, we should initialize the map `ns.Op`.
+		if ns.Op == nil {
+			ns.Op = make(map[string]*Function, 0)
+		}
+
 		// Handle features.
 		for _, featureName := range ns.Features {
 			f, ok := d.FeaturesMap[featureName]
