@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- feat: Generate code via Xuanwo/gg
+- feat: Generate code via Xuanwo/gg (#728, #737, #738, #739, #740, #742)
 - docs/rfcs: GSP-749 Unify Path Behavior (#749)
 - docs: Add README.zh-CN.md (#750)
 - docs/rfcs: GSP-751 Write Empty File Behavior (#751)
