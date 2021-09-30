@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v4.8.0] - 2021-09-30
+
+### Added
+
+- feat: Generate code via Xuanwo/gg (#728, #737, #738, #739, #740, #742)
+- docs/rfcs: GSP-749 Unify Path Behavior (#749)
+- docs: Add README.zh-CN.md (#750)
+- docs/rfcs: GSP-751 Write Empty File Behavior (#751)
+- docs: Add description of GSP-751 (#759)
+- feat: Implement GSP-749 unify path behavior (#822)
+- feat: Replace separator with / in path for service (#823)
+- docs/rfcs: GSP-826 Add Multipart HTTP Signer Support (#826)
+- feat: Add Multipart HTTP Signer support (#829)
+
+### Changed
+
+- docs: Add the services bos and obs to the README (#748)
+- refactor: Cleanup definition generate logic (#754)
+- feat: Migrate internal iterator generator to definitions (#755)
+- ci: Sync github actions (#757)
+
+### Fixed
+
+- fix: Compilation fails if Default*Pairs unimplemented in service (#821)
+- fix: Not enough arguments in call to Service.formatError (#824)
+- fix: Replace each backslash in path with a slash (#825)
+- fix: Fixed the error when no function is declared under the namespace (#831)
+
+### Upgraded
+
+- build(deps): bump github.com/pelletier/go-toml from 1.9.3 to 1.9.4 (#746)
+
 ## [v4.7.0] - 2021-09-02
 
 ### Added
@@ -665,7 +697,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.7.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.8.0...HEAD
+[v4.8.0]: https://github.com/beyondstorage/go-storage/compare/v4.7.0...v4.8.0
 [v4.7.0]: https://github.com/beyondstorage/go-storage/compare/v4.6.0...v4.7.0
 [v4.6.0]: https://github.com/beyondstorage/go-storage/compare/v4.5.0...v4.6.0
 [v4.5.0]: https://github.com/beyondstorage/go-storage/compare/v4.4.0...v4.5.0
