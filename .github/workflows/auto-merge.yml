@@ -38,7 +38,6 @@ jobs:
 
       - name: Auto commit
         uses: stefanzweifel/git-auto-commit-action@v4
-        if: ${{contains(needs.metadata.outputs.dependency-names, 'github.com/beyondstorage/go-storage/v4')}}
         with:
           commit_message: Auto build to generate code
 
