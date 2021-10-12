@@ -1,15 +1,17 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-10-11
-- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- RFC PR: [beyondstorage/go-storage#837](https://github.com/beyondstorage/go-storage/issues/837)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# Proposal: Support Feature Flag
+# GSP-837: Support Feature Flag
 
 ## Background
 
-We use go-integration-test to execute integration tests on services. And all services should add integration tests for operations declared in `service.toml`.
+For go-service-*, the supported interfaces are declared in `implement` under namespace in `service.toml`. Also, the implemented features are declared in `features` in `service.toml`.
 
-For some features or behavior, not all services are supported. When we make these behaviors mandatory test cases, there are problems with some integration test cases not passing.
+For users, the capability set to access the service is not available:
+
+We use go-integration-test to execute integration tests on services. For some features or behavior, not all services are supported. When we make these behaviors mandatory test cases, there are problems with some integration test cases not passing.
 
 ## Proposal
 
