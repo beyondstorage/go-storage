@@ -15,12 +15,12 @@ Now We don't support Content-Disposition. Add support for Content-Disposition wi
 
 So I propose following changes:
 
-- Add content-disposition pair to global pairs and object pairs
+- Add content-disposition pair to global pairs
 - Add process of content-disposition field
   - For write operation: User can use `content-disposition` to set the object metadata
   - For read operation: User can set `content-disposition` for this request
 
-####  Add content-disposition pair to global pairs and object pairs
+Add content-disposition pair to global pairs
 
 Add property for pair:
 
@@ -29,9 +29,7 @@ Add property for pair:
 type = "string"
 ```
 
-####  Generate pairs
-
-#### Add process of content-disposition field
+Add process of content-disposition field
 
 Add content-disposition in service.tomal in go-service-* 
 
@@ -56,4 +54,8 @@ No breaking changes.
 - Add content-disposition pair to pairs.toml in go-storage
 - Add content-disposition pair to info_object_meta.toml in go-storage
 - Add process of content-disposition field in read&write relevant operation for each service
+
+## Previous Discusstion
+
+This proposal came out of [Beyondstorage forum Topic#227](https://forum.beyondstorage.io/t/topic/227)
 
