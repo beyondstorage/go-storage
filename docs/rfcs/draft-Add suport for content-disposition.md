@@ -55,7 +55,7 @@ No breaking changes.
 - Add content-disposition pair to info_object_meta.toml in go-storage
 - Add process of content-disposition field in read&write relevant operation for each service
 
-## Previous Discusstion
+## Previous Discussion
 
 This proposal came out of [Beyondstorage forum Topic#227](https://forum.beyondstorage.io/t/topic/227)
 
