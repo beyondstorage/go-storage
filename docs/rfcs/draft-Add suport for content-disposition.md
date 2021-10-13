@@ -43,7 +43,7 @@ if opt.HasContentDisposition {
 
 ## Rational
 
-- This proposal came out of [Beyondstorage forum Topic#227](https://forum.beyondstorage.io/t/topic/227)
+- None
 
 ## Compatibility
 
