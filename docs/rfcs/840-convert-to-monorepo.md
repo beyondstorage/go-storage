@@ -1,9 +1,9 @@
 - Author: Xuanwo <github@xuanwo.io>
 - Start Date: 2021-10-13
-- RFC PR: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- RFC PR: [beyondstorage/go-storage#840](https://github.com/beyondstorage/go-storage/issues/840)
 - Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
 
-# GSP-0: Convert to monorepo
+# GSP-840: Convert to monorepo
 
 - Previous Discussion: [Proposal: Convert go-storage to monorepo](https://forum.beyondstorage.io/t/topic/251)
 
