@@ -11,11 +11,14 @@ The Content-Disposition header provides a mechanism, allowing each component of 
 
 Now We don't support Content-Disposition. Add support for Content-Disposition will allow user to decide how to show message. 
 
+[Beyondstorage forum Topic#227](https://forum.beyondstorage.io/t/topic/227)
+
 ## Proposal
 
 So I propose following changes:
 
 - Add content-disposition pair to global pairs
+- Add content-disposition to object metadata
 - Add process of content-disposition field
   - For write operation: User can use `content-disposition` to set the object metadata
   - For read operation: User can set `content-disposition` for this request
@@ -30,8 +33,6 @@ type = "string"
 ```
 
 ### Add process of content-disposition field
-
-Add content-disposition in service.toml in go-service-* 
 
 Add content-disposition process at read&write operation like:
 
@@ -54,7 +55,3 @@ No breaking changes.
 - Add content-disposition pair to pairs.toml in go-storage
 - Add content-disposition pair to info_object_meta.toml in go-storage
 - Add process of content-disposition field in read&write relevant operation for each service
-
-## Previous Discussion
-
-[Beyondstorage forum Topic#227](https://forum.beyondstorage.io/t/topic/227)
