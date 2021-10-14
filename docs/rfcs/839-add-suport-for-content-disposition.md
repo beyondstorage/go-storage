@@ -56,8 +56,8 @@ No breaking changes.
 
 ### go-storage implementation
 
-- Add `content-disposition` to pairs.toml in go-storage
-- Add `content-disposition` pair to info_object_meta.toml in go-storage
+- Add `content-disposition` pair to pairs.toml in go-storage
+- Add `content-disposition` to info_object_meta.toml in go-storage
 
 ### service implementation
 
