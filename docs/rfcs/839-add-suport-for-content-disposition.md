@@ -24,6 +24,7 @@ So I propose following changes:
   - For write operation: User can use `content-disposition` to set the object metadata
   - For read operation: User can set `content-disposition` for this request
 
+
 ### Write with content-disposition
 
 User can take write operation with `content-disposition` as example:
@@ -46,7 +47,7 @@ After read operation with `content-disposition`, `content-disposition` filed in 
 
 ## Rational
 
-N/A
+- None
 
 ## Compatibility
 
@@ -54,12 +55,12 @@ No breaking changes.
 
 ## Implementation
 
-### go-storage implementation 
+### go-storage implement
 
-- Add `content-disposition` to pairs.toml in go-storage
-- Add `content-disposition` to info_object_meta.toml in go-storage
+- Add `content-disposition` pair to pairs.toml in go-storage
+- Add `content-disposition` pair to info_object_meta.toml in go-storage
 
-### service implementation 
+### service implement
 
 - Add `content-disposition` to optional pairs 
 - Add process of `content-disposition` field in read&write relevant operations if we needed
