@@ -5,8 +5,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
-	. "github.com/beyondstorage/go-storage/v4/types"
+	"go.beyondstorage.io/v5/pkg/httpclient"
+	. "go.beyondstorage.io/v5/types"
 )
 
 // WithContentMd5 will apply content_md5 value to Options.

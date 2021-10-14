@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/beyondstorage/go-storage/v4/pairs"
-	"github.com/beyondstorage/go-storage/v4/types"
+	"go.beyondstorage.io/v5/pairs"
+	"go.beyondstorage.io/v5/types"
 )
 
 var (

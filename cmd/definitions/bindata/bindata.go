@@ -7,8 +7,6 @@
 // definitions/operations.toml (10.788kB)
 // definitions/pairs.toml (1.616kB)
 
-// +build tools
-
 package bindata
 
 import (
