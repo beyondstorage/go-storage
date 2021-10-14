@@ -3,7 +3,7 @@ package tests
 import (
 	"context"
 
-	. "github.com/beyondstorage/go-storage/v4/types"
+	. "go.beyondstorage.io/v5/types"
 )
 
 type Service struct {

@@ -7,6 +7,7 @@
 // definitions/operations.toml (10.788kB)
 // definitions/pairs.toml (1.616kB)
 
+//go:build tools
 // +build tools
 
 package bindata

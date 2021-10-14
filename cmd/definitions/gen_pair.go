@@ -19,8 +19,8 @@ func generatePair(data *Data, path string) {
 		AddPath("context").
 		AddPath("time").
 		AddLine().
-		AddPath("github.com/beyondstorage/go-storage/v4/pkg/httpclient").
-		AddDot("github.com/beyondstorage/go-storage/v4/types")
+		AddPath("go.beyondstorage.io/v5/pkg/httpclient").
+		AddDot("go.beyondstorage.io/v5/types")
 
 	ps := make([]*Pair, 0, len(data.PairsMap))
 	for _, v := range data.PairsMap {

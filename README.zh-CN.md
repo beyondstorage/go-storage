@@ -3,7 +3,7 @@
 ## [网站](https://beyondstorage.io) | [文档](https://beyondstorage.io/docs/go-storage/index) | [社区](https://beyondstorage.io/community)
 
 [![Build Status](https://github.com/beyondstorage/go-storage/workflows/Unit%20Test/badge.svg?branch=master)](https://github.com/beyondstorage/go-storage/actions?query=workflow%3A%22Unit+Test%22)
-[![Go dev](https://pkg.go.dev/badge/github.com/beyondstorage/go-storage/v4)](https://pkg.go.dev/github.com/beyondstorage/go-storage/v4)
+[![Go dev](https://pkg.go.dev/badge/go.beyondstorage.io/v5)](https://pkg.go.dev/go.beyondstorage.io/v5)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/beyondstorage/go-storage/blob/master/LICENSE)
 [![go storage dev](https://img.shields.io/matrix/beyondstorage@go-storage:matrix.org.svg?label=go-storage&logo=matrix)](https://matrix.to/#/#beyondstorage@go-storage:matrix.org)
 
@@ -27,8 +27,8 @@ package main
 import (
     "log"
 
-    "github.com/beyondstorage/go-storage/v4/services"
-    "github.com/beyondstorage/go-storage/v4/types"
+    "go.beyondstorage.io/v5/services"
+    "go.beyondstorage.io/v5/types"
 
     // 添加 fs 支持
     _ "github.com/beyondstorage/go-service-fs/v3"
