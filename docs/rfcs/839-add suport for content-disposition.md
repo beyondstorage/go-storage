@@ -4,14 +4,14 @@
 - Tracking Issue: [beyondstorage/go-storage#836](https://github.com/beyondstorage/go-storage/issues/836)
 
 # GSP-839: Add support for Content-Disposition
+Previous Disscussion:
+- [Add support about Content-Disposition](https://forum.beyondstorage.io/t/topic/227)
 
 ## Background
 
 The Content-Disposition header provides a mechanism, allowing each component of a message to be tagged with an indication of its desired presentation. It is wildly used by storage products, such as [Azure](https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-properties), [AWS](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html),  [TencentCloud](https://cloud.tencent.com/developer/section/1189916), etc.
 
 Now We don't support Content-Disposition. Add support for Content-Disposition will allow user to decide how to show message. 
-
-[Beyondstorage forum Topic#227](https://forum.beyondstorage.io/t/topic/227)
 
 ## Proposal
 
@@ -23,24 +23,11 @@ So I propose following changes:
   - For write operation: User can use `content-disposition` to set the object metadata
   - For read operation: User can set `content-disposition` for this request
 
-### Add content-disposition pair to global pairs
+Add content-disposition pair to global pairs
 
-Add property for pair:
+Add content-disposition to object metadata
 
-```
-[content_disposition]
-type = "string"
-```
-
-### Add process of content-disposition field
-
-Add content-disposition process at read&write operation like:
-
-```
-if opt.HasContentDisposition {
-	input.ContentDisposition = &opt.ContentDisposition
-}
-```
+Add content-disposition process in read&write relevant operations if we need.
 
 ## Rational
 
@@ -54,4 +41,4 @@ No breaking changes.
 
 - Add content-disposition pair to pairs.toml in go-storage
 - Add content-disposition pair to info_object_meta.toml in go-storage
-- Add process of content-disposition field in read&write relevant operation for each service
+- Add process of content-disposition field in read&write relevant operations for necessery service
