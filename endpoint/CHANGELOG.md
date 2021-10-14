@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## v1.2.0 - 2021-10-14
+
+### Added
+
+- feat: Add support for http://example.com (https://github.com/beyondstorage/go-endpoint/pull/17)
+
+### Changed
+
+- Package rename to `go.beyondstorage.io/endpoint`
+
 ## [v1.1.0] - 2021-07-28
 
 ### Added
@@ -28,6 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add Parse support
 - Add http/https/file protocol support
 
-[Unreleased]: https://github.com/beyondstorage/go-endpoint/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/endpoint/v1.2.0...HEAD
 [v1.1.0]: https://github.com/beyondstorage/go-endpoint/compare/v1.0.1...v1.1.0
 [v1.0.1]: https://github.com/beyondstorage/go-endpoint/compare/v1.0.0...v1.0.1
