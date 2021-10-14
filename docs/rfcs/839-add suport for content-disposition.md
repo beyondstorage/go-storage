@@ -1,9 +1,10 @@
-- Author: Joey-1445601153,  <github@Joey-1445611153>
+- Author: Joey-1445601153  <github.com/Joey-1445601153>
 - Start Date: 2021-10-12
 - RFC PR: [beyondstorage/go-storage#839](https://github.com/beyondstorage/go-storage/issues/839)
-- Tracking Issue: [beyondstorage/go-storage#836](https://github.com/beyondstorage/go-storage/issues/836)
+- Tracking Issue: 
 
 # GSP-839: Add support for Content-Disposition
+
 Previous Disscussion:
 - [Add support about Content-Disposition](https://forum.beyondstorage.io/t/topic/227)
 
@@ -20,14 +21,29 @@ So I propose following changes:
 - Add content-disposition pair to global pairs
 - Add content-disposition to object metadata
 - Add process of content-disposition field
-  - For write operation: User can use `content-disposition` to set the object metadata
-  - For read operation: User can set `content-disposition` for this request
+  - For write operation: User can use content-disposition to set the object metadata
+  - For read operation: User can set content-disposition for this request
 
-Add content-disposition pair to global pairs
 
-Add content-disposition to object metadata
+### Write with content-disposition
 
-Add content-disposition process in read&write relevant operations if we need.
+User can take write operation with content-disposition as example:
+
+```
+n, err := store.Write(path, r, length, pairs.WithContentDisposition("<content-disposition>"))
+```
+
+After write operation with content-disposition, presentational information of the object will be specified.
+
+### Read with content-disposition
+
+User can take read operation with content-disposition as example:
+
+```
+n, err := store.Read(path, w, pairs.WithContentDisposition("<content-disposition>"))
+```
+
+After read operation with content-disposition, content-disposition filed in response header will be the value that is used in read operation. 
 
 ## Rational
 
@@ -39,6 +55,12 @@ No breaking changes.
 
 ## Implementation
 
+### go-storage implement
+
 - Add content-disposition pair to pairs.toml in go-storage
 - Add content-disposition pair to info_object_meta.toml in go-storage
-- Add process of content-disposition field in read&write relevant operations for necessery service
+
+### service implement
+
+- Add content-disposition to optional pairs 
+- Add process of content-disposition field in read&write relevant operations if we needed
