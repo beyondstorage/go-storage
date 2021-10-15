@@ -1,7 +1,7 @@
 - Author: Joey-1445601153  <github.com/Joey-1445601153>
 - Start Date: 2021-10-12
 - RFC PR: [beyondstorage/go-storage#839](https://github.com/beyondstorage/go-storage/issues/839)
-- Tracking Issue: beyondstorage/go-storage#0
+- Tracking Issue: [beyondstorage/go-storage#852](https://github.com/beyondstorage/go-storage/issues/852)
 
 # GSP-839: Add Support for Content-Disposition
 
@@ -28,7 +28,7 @@ So I propose following changes:
 
 User can take write operation with `content-disposition` as example:
 
-```
+```go
 n, err := store.Write(path, r, length, pairs.WithContentDisposition("<content-disposition>"))
 ```
 
@@ -38,7 +38,7 @@ After write operation with `content-disposition`, presentational information of 
 
 User can take read operation with `content-disposition` as example:
 
-```
+```go
 n, err := store.Read(path, w, pairs.WithContentDisposition("<content-disposition>"))
 ```
 
@@ -61,5 +61,5 @@ No breaking changes.
 
 ### service implementation
 
-- Add `content-disposition` to optional pairs 
-- Add process of `content-disposition` field in read&write relevant operations if we needed
+- Add `content-disposition` to optional pairs if we need
+- Add process of `content-disposition` field in read&write relevant operations if we need
