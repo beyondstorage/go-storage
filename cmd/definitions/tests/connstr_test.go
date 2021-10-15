@@ -4,10 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/beyondstorage/go-storage/v4/pairs"
-	"github.com/beyondstorage/go-storage/v4/services"
-	. "github.com/beyondstorage/go-storage/v4/types"
 	"github.com/stretchr/testify/assert"
+	"go.beyondstorage.io/v5/pairs"
+	"go.beyondstorage.io/v5/services"
+	. "go.beyondstorage.io/v5/types"
 )
 
 func TestFromString(t *testing.T) {

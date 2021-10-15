@@ -75,9 +75,9 @@ go-storage
 
 The module path will be:
 
-- `github.com/beyondstorage/go-storage/v4/types` -> `beyondstorage.io/go/v4/types`
-- `github.com/beyondstorage/go-service-s3/v2` -> `beyondstorage.io/go/services/s3/v2`
-- `github.com/beyondstorage/go-service-gcs/v2` -> `beyondstorage.io/go/services/gcs/v2`
+- `github.com/beyondstorage/go-storage/v4/types` -> `go.beyondstorage.io/v4/types`
+- `github.com/beyondstorage/go-service-s3/v2` -> `go.beyondstorage.io/services/s3/v2`
+- `github.com/beyondstorage/go-service-gcs/v2` -> `go.beyondstorage.io/services/gcs/v2`
 
 ## Rationale
 
