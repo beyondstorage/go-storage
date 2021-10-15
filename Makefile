@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-PACKAGES = credential endpoint
+PACKAGES = credential endpoint services/s3
 
 .PHONY: all check format vet lint build test generate tidy integration_test $(PACKAGES)
 
@@ -34,7 +34,7 @@ build: tidy generate format check
 	@go build -tags tools ./...
 	@echo "ok"
 
-build-all: $(PACKAGES)
+build-all: build $(PACKAGES)
 
 $(PACKAGES):
 	pushd $@ && make build && popd
