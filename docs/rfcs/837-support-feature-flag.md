@@ -7,29 +7,75 @@
 
 ## Background
 
-Behavior consistency is the most important thing for go-storage, and we do have different capabilities and limitations in storage services.
+In [GSP-669: Feature Lifecycle](./669-feature-lifecycle.md), we specified the feature lifecycle to address the repetitive work and ineffective tracking, accelerating the iteration of new features. However, we encountered new problems: 
 
-For storage service development, configuration in `service.toml` makes it easy to specify the interfaces and features supported by the service. However, for application, the capabilities to access the service is not available:
+We may find problems with the new interface or feature only during the service implementation, and have to redesign and release the version for this purpose.
 
-We use go-integration-test to execute integration tests on services. For features or specific behavior, not all services are supported. When we make these behaviors mandatory test cases, there are problems with some integration test cases not passing.
+Moreover, we do have different capabilities and limitations in storage services, for application or user, the capabilities to access the service is not available.
 
 ## Proposal
 
-So I propose to support feature flag to enable or disable operations or features selectively for users or applications.
+So I propose to support feature flag for operational rampups, and also provide interfaces for users or applications to acquire service capabilities.
 
-### Capabilities in services
+### Feature flag
 
-Services SHOULD declare what the service can do and what operations and features the service can provide, and expose interfaces to obtain the capabilities. 
+Feature flag is designed to push features through a predictable lifecycle where a feature can easily be created, enhanced, tested, and then cleaned up by being elevated to a full-fledged feature or discarded altogether.
 
-For the supported operations and features in storage services:
+The basic status of a pre-implemented feature might look like this:
 
-- Each operation SHOULD be completely enabled (implemented) or completely disabled (unimplemented).
-- Interface behavior consistency, like [Idempotent Storager Delete Operation](./46-idempotent-delete.md), [Write Behavior Consistency](./134-write-behavior-consistency.md), etc should be the basic behavior of the operation and does not need to be marked.
-- Definitions for specific behaviors, like [Write Empty File Behavior](./751-write-empty-file-behavior.md), should be treated as features and added into `features.toml`.
+- Feature in development: It begins after the first design proposal is approved and covers the development, testing, and enhancement phases, and possibly even the user experience phase.
+- Feature to be released: When the functionality is stable and user-friendly, it can be transferred to a supported interface.
 
-### Feature flag in applications
+#### Add `development` property for interface
 
-Application (or user) could obtain the capabilities of the service before requesting an operation or feature, then use feature flags to enable or disable features selectively.
+Specify whether the interface is in development status when adding a new interface in go-storage.
+
+```toml
+[storage_http_signer]
+development = true
+```
+
+The data type of `development` is bool: `true` means the interface is in development, and `false` means in stable status. The default value is `false`. 
+
+And go-storage will generate development struct for services.
+
+```go
+type DevelopmentInterfaces struct {
+	StorageHTTPSigner bool
+}
+
+func WithDevelopmentInterfaces(v DevelopmentInterfaces) Pair {
+    return Pair{
+        Key:   DevelopmentInterfaces,
+        Value: v,
+    }
+}
+```
+
+Service implementer should check all operations in development status manually when required.
+
+### Service capabilities
+
+- Services SHOULD declare what the service can do and what operations or features the service can provide.
+- Application or user could obtain the capabilities of the service before requesting an operation or feature.
+
+#### Add `implemented` property for operation
+
+For services that support only part of the operations in an interface, `implemented` property will identify whether the operation is implemented:
+
+```toml
+[namespace.storage.op.query_sign_http_write]
+implemented = false
+```
+
+And go-storage will generate `` to expose the capabilities for services.
+
+```go
+// Get the supported operations and features
+func(s *Storage) GetCapabilities() []string {}
+
+func(s *Storage) FeatureEnabled(op string) bool {}
+```
 
 ## Rationale
 
@@ -48,87 +94,15 @@ Feature flags solutions:
 
 - [Unleash](https://www.getunleash.io/) is a feature management lets you turn new features on/off in production with no need for redeployment.
 - [go-feature-flag](https://github.com/thomaspoignant/go-feature-flag) is a simple and complete feature flag solution, without any complex backend system to install.
-- ...
-
-### Alternative Way
-
-Instead of expose `GetCapabilities` liked interface in service, we can add flags configuration in go-integration test. And the configurations fields include at least `flagName` and `enabled`.
-When executing integration tests on services, services need to init with configs first.
+- [Etsy's Feature flagging API](https://github.com/etsy/feature) used for operational rampups and A/B testing.
 
 ## Compatibility
 
-All integration tests for services could be affected. We could migrate as follows:
-
-- Release new versions for go-storage and go-integration-test.
-- All services bump to the new version with all integration test calls updated.
+No breaking changes.
 
 ## Implementation
 
-### Capabilities in services
-
-From go-storage side:
-
-For features:
-- Add features in `features.toml`. For now, features that need to be added are:
-  - write_empty_file
-- Generate functions to obtain feature list according to `features` for services.
-  
-  ```go
-  func(s *Storage) GetFeatures() []string {}
-  ```
-  
-For operations:
-- Generate capability list for services, and enables all operations in the supported interfaces by default.
-  
-  ```go
-  type Storage struct {
-    // ...
-    capabilities []string
-  }
-  
-  func(s *Storage) GetCapabilities() []string {
-    if 0 != len(s.capabilities) {
-        return s.capabilities
-    }
-    s.capabilities = append(s.capabilities, types.OpStoragerRead)
-    // ...
-    return s.capabilities
-  }
-  ```
-  
-- Generate functions to identify whether the operation in the supported interface is implemented (or enabled) for services.
-  
-  ```go
-  func(s *Storage) IsEnabled(op string) bool {
-    s.GetCapabilities()
-    for index := range s.capabilities {
-        if op == s.capabilities[index] {
-            return true
-        }
-    }
-    return false
-  }
-  ```
-
-From services side:
-
-- Services SHOULD declare the supported features in `features` in `service.toml`.
-- Services SHOULD maintain the capability list. Usually removes the name of an unsupported operation from the capability list.
-
-### Feature flag in go-integration-test
-
-From go-integration-test side, it should run the test cases according to the features, and cases related to operations in `Storager` should always be executed.
-
-We could split test cases into basic cases and feature cases:
-- Basic cases are for basic functional testing of interfaces. They SHOULD always be executed.
-  - For operations in interface, we need to check whether the operation is enabled first.
-- Feature cases are for specific features. They SHOULD be executed when the feature is `on`.
-  - First, we need to get the feature list of the storage. Then execute the corresponding feature cases according to the feature names.
-  - `map[string]FeatureTestFunc` could be used to maintain a mapping relationship between feature name and feature case.
-    
-    ```go
-    type FeatureTestFunc func(t *testing.T, store types.Storager)
-
-    var featureTestFnMap map[string]FeatureTestFunc
-    ```
-  
+- Add `development` property for interface and `implemented` property for operation.
+- Generate code for services.
+- Refactor go-integration-test to run the tests cases according to service capabilities.
+- Add `implemented` property for operations in services and pass integration test.
