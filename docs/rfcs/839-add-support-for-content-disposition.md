@@ -1,4 +1,4 @@
-- Author: Joey-1445601153  <github.com/Joey-1445601153>
+- Author: Joey-1445601153 <github.com/Joey-1445601153>
 - Start Date: 2021-10-12
 - RFC PR: [beyondstorage/go-storage#839](https://github.com/beyondstorage/go-storage/issues/839)
 - Tracking Issue: [beyondstorage/go-storage#852](https://github.com/beyondstorage/go-storage/issues/852)
@@ -61,5 +61,5 @@ No breaking changes.
 
 ### service implementation
 
-- Add `content-disposition` to optional pairs if we need
-- Add process of `content-disposition` field in read&write relevant operations if we need
+- Add `content-disposition` to optional pairs
+- Add process of `content-disposition` field in read&write relevant operations
