@@ -2,6 +2,9 @@
 type = "int64"
 description = "AppendOffset is the offset of the append object."
 
+[content-disposition]
+type = "string"
+
 [content-length]
 type = "int64"
 

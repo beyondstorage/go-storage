@@ -9,19 +9,20 @@ import (
 
 // Field index in object bit
 const (
-	objectIndexAppendOffset   uint64 = 1 << 0
-	objectIndexContentLength  uint64 = 1 << 1
-	objectIndexContentMd5     uint64 = 1 << 2
-	objectIndexContentType    uint64 = 1 << 3
-	objectIndexEtag           uint64 = 1 << 4
-	objectIndexID             uint64 = 1 << 5
-	objectIndexLastModified   uint64 = 1 << 6
-	objectIndexLinkTarget     uint64 = 1 << 7
-	objectIndexMode           uint64 = 1 << 8
-	objectIndexMultipartID    uint64 = 1 << 9
-	objectIndexPath           uint64 = 1 << 10
-	objectIndexSystemMetadata uint64 = 1 << 11
-	objectIndexUserMetadata   uint64 = 1 << 12
+	objectIndexAppendOffset       uint64 = 1 << 0
+	objectIndexContentDisposition uint64 = 1 << 1
+	objectIndexContentLength      uint64 = 1 << 2
+	objectIndexContentMd5         uint64 = 1 << 3
+	objectIndexContentType        uint64 = 1 << 4
+	objectIndexEtag               uint64 = 1 << 5
+	objectIndexID                 uint64 = 1 << 6
+	objectIndexLastModified       uint64 = 1 << 7
+	objectIndexLinkTarget         uint64 = 1 << 8
+	objectIndexMode               uint64 = 1 << 9
+	objectIndexMultipartID        uint64 = 1 << 10
+	objectIndexPath               uint64 = 1 << 11
+	objectIndexSystemMetadata     uint64 = 1 << 12
+	objectIndexUserMetadata       uint64 = 1 << 13
 )
 
 // Object is the smallest unit in go-storage.
@@ -33,11 +34,12 @@ const (
 //   - Only ID, Path, Mode are required during list operations, other fields
 //     could be fetched via lazy stat logic: https://beyondstorage.io/docs/go-storage/internal/object-lazy-stat
 type Object struct { // AppendOffset is the offset of the append object.
-	appendOffset  int64
-	contentLength int64
-	contentMd5    string
-	contentType   string
-	etag          string
+	appendOffset       int64
+	contentDisposition string
+	contentLength      int64
+	contentMd5         string
+	contentType        string
+	etag               string
 	// ID is the unique key in storage.
 	//
 	// ID SHOULD be an absolute path compatible with the target operating system-defined file paths,
@@ -96,6 +98,33 @@ func (o *Object) MustGetAppendOffset() int64 {
 func (o *Object) SetAppendOffset(v int64) *Object {
 	o.appendOffset = v
 	o.bit |= objectIndexAppendOffset
+	return o
+}
+
+// GetContentDisposition will get ContentDisposition from Object.
+func (o *Object) GetContentDisposition() (string, bool) {
+	o.stat()
+
+	if o.bit&objectIndexContentDisposition != 0 {
+		return o.contentDisposition, true
+	}
+	return "", false
+}
+
+// MustGetContentDisposition will get ContentDisposition from Object.
+func (o *Object) MustGetContentDisposition() string {
+	o.stat()
+
+	if o.bit&objectIndexContentDisposition == 0 {
+		panic(fmt.Sprintf("object content-disposition is not set"))
+	}
+	return o.contentDisposition
+}
+
+// SetContentDisposition will get ContentDisposition into Object.
+func (o *Object) SetContentDisposition(v string) *Object {
+	o.contentDisposition = v
+	o.bit |= objectIndexContentDisposition
 	return o
 }
 
@@ -388,6 +417,7 @@ func (o *Object) SetUserMetadata(v map[string]string) *Object {
 }
 func (o *Object) clone(xo *Object) {
 	o.appendOffset = xo.appendOffset
+	o.contentDisposition = xo.contentDisposition
 	o.contentLength = xo.contentLength
 	o.contentMd5 = xo.contentMd5
 	o.contentType = xo.contentType
