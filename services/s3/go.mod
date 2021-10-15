@@ -1,6 +1,6 @@
 module go.beyondstorage.io/services/s3/v3
 
-go 1.14
+go 1.15
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.9.2
@@ -11,5 +11,5 @@ require (
 	github.com/google/uuid v1.3.0
 	go.beyondstorage.io/credential v1.0.0
 	go.beyondstorage.io/endpoint v1.2.0
-	go.beyondstorage.io/v5 v5.0.0-20211014090623-b7f9fc34d0e2
+	go.beyondstorage.io/v5 v5.0.0
 )
