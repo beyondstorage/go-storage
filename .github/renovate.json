@@ -7,7 +7,7 @@
   ],
   "ignorePaths": [
     "**/docs/**"
-  ]
+  ],
   "major": {
     "enabled": false
   }
