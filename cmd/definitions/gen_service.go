@@ -21,10 +21,10 @@ func generateSrv(data *Service, path string) {
 		AddPath("strings").
 		AddPath("time").
 		AddLine().
-		AddDot("github.com/beyondstorage/go-storage/v4/pairs").
-		AddPath("github.com/beyondstorage/go-storage/v4/pkg/httpclient").
-		AddPath("github.com/beyondstorage/go-storage/v4/services").
-		AddDot("github.com/beyondstorage/go-storage/v4/types")
+		AddDot("go.beyondstorage.io/v5/pairs").
+		AddPath("go.beyondstorage.io/v5/pkg/httpclient").
+		AddPath("go.beyondstorage.io/v5/services").
+		AddDot("go.beyondstorage.io/v5/types")
 
 	f.NewVar().
 		AddDecl("_", "Storager").

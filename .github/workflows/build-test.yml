@@ -20,7 +20,7 @@ jobs:
         run: if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then exit 1; fi
 
       - name: Build
-        run: make build
+        run: make build-all
 
       - name: Git Diff
         run: if [ "$(git diff | wc -l)" -gt 0 ]; then exit 1; fi

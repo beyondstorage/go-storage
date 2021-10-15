@@ -1,6 +1,7 @@
 SHELL := /bin/bash
+PACKAGES = credential endpoint services/s3
 
-.PHONY: all check format vet lint build test generate tidy integration_test
+.PHONY: all check format vet lint build test generate tidy integration_test $(PACKAGES)
 
 help:
 	@echo "Please use \`make <target>\` where <target> is one of"
@@ -32,6 +33,11 @@ build: tidy generate format check
 	@echo "build storage"
 	@go build -tags tools ./...
 	@echo "ok"
+
+build-all: build $(PACKAGES)
+
+$(PACKAGES):
+	pushd $@ && make build && popd
 
 test:
 	@echo "run test"
