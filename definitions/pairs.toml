@@ -1,3 +1,6 @@
+[content-disposition]
+type = "string"
+
 [content_md5]
 type = "string"
 
