@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-PACKAGES = credential endpoint
+PACKAGES = credential endpoint services/s3
 
 .PHONY: all check format vet lint build test generate tidy integration_test $(PACKAGES)
 
