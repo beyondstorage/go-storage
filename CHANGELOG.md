@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v5.0.0] - 2021-10-15
+
+Since this release, we will use `go.beyondstorage.io/v5` as new module name.
+
+### Added
+
+- GSP-840: Convert to monorepo (#840)
+- GSP-839: Add Support for Content-Disposition (#839)
+
+### Changed
+
+- *: Rename to go.beyondstorage.io (#842)
+- credential,endpoint: Split from pkg (#843)
+- refactor(tests): Move go-integration-tests here (#847)
+
 ## [v4.8.0] - 2021-09-30
 
 ### Added
@@ -697,7 +712,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Add pair based option and metadata support.
 - Add qingstor services.
 
-[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v4.8.0...HEAD
+[Unreleased]: https://github.com/beyondstorage/go-storage/compare/v5.0.0...HEAD
+[v5.0.0]: https://github.com/beyondstorage/go-storage/compare/v4.8.0...v5.0.0
 [v4.8.0]: https://github.com/beyondstorage/go-storage/compare/v4.7.0...v4.8.0
 [v4.7.0]: https://github.com/beyondstorage/go-storage/compare/v4.6.0...v4.7.0
 [v4.6.0]: https://github.com/beyondstorage/go-storage/compare/v4.5.0...v4.6.0
