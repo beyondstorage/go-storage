@@ -9,11 +9,11 @@ import (
 	. "go.beyondstorage.io/v5/types"
 )
 
-// WithContentDisposition will apply content-disposition value to Options.
+// WithContentDisposition will apply content_disposition value to Options.
 //
 // ContentDisposition
 func WithContentDisposition(v string) (p Pair) {
-	return Pair{Key: "content-disposition", Value: v}
+	return Pair{Key: "content_disposition", Value: v}
 }
 
 // WithContentMd5 will apply content_md5 value to Options.
