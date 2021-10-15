@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
+  "ignorePaths": [
+    "**/docs/**"
+  ],
+  "major": {
+    "enabled": false
+  }
+}
