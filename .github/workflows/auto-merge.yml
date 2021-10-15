@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   metadata:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       dependency-names: ${{ steps.metadata.outputs.dependency-names }}
     steps:
@@ -20,7 +20,7 @@ jobs:
   dependabot:
     needs: metadata
     if: ${{ needs.metadata.outputs.dependency-names != '' }}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
