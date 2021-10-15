@@ -61,5 +61,5 @@ No breaking changes.
 
 ### service implementation
 
-- Add `content-disposition` to optional pairs if we need
+- Add `content-disposition` to optional pairs
 - Add process of `content-disposition` field in read&write relevant operations if we need
