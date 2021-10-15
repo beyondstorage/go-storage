@@ -34,7 +34,7 @@ build: tidy generate format check
 	@go build -tags tools ./...
 	@echo "ok"
 
-build-all: $(PACKAGES)
+build-all: build $(PACKAGES)
 
 $(PACKAGES):
 	pushd $@ && make build && popd
