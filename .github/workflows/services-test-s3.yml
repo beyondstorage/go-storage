@@ -23,9 +23,6 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Load secret
         uses: 1password/load-secrets-action@v1
         env:
@@ -33,7 +30,11 @@ jobs:
           STORAGE_S3_NAME: op://Engineering/S3/testing/name
           STORAGE_S3_LOCATION: op://Engineering/S3/testing/location
 
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Test
         env:
           STORAGE_S3_INTEGRATION_TEST: on
+        working-directory: services/s3
         run: make integration_test
