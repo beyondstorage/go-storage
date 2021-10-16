@@ -1,0 +1,39 @@
+name: "Services Test S3"
+
+on:
+   push:
+     paths:
+       - 'services/s3/**'
+   pull_request:
+     paths:
+       - 'services/s3/**'
+
+jobs:
+  services_test_s3:
+    name: "Services Test S3"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_S3_CREDENTIAL: op://Engineering/S3/credential
+          STORAGE_S3_NAME: op://Engineering/S3/credential
+          STORAGE_S3_LOCATION: op://Engineering/S3/location
+
+      - name: Test
+        env:
+          STORAGE_S3_INTEGRATION_TEST: on
+        run: make integration_test
