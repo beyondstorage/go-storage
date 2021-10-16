@@ -30,7 +30,7 @@ jobs:
         uses: 1password/load-secrets-action@v1
         env:
           STORAGE_S3_CREDENTIAL: op://Engineering/S3/credential
-          STORAGE_S3_NAME: op://Engineering/S3/credential
+          STORAGE_S3_NAME: op://Engineering/S3/name
           STORAGE_S3_LOCATION: op://Engineering/S3/location
 
       - name: Test
