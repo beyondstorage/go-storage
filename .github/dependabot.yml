@@ -4,4 +4,15 @@ updates:
     directory: "/"
     schedule:
       interval: daily
-    open-pull-requests-limit: 1
+  - package-ecosystem: gomod
+    directory: "/endpoint"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/credential"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/s3"
+    schedule:
+      interval: daily
