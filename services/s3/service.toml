@@ -4,7 +4,7 @@ name = "s3"
 
 [namespace.service.new]
 required = ["credential"]
-optional = [ "endpoint", "http_client_options", "force_path_style", "disable_100_continue", "use_accelerate", "use_arn_region"]
+optional = [ "endpoint", "http_client_options", "force_path_style", "use_accelerate", "use_arn_region"]
 
 [namespace.service.op.create]
 required = ["location"]
