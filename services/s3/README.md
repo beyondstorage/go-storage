@@ -1,3 +1,5 @@
+[![Services Test S3](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-s3.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-s3.yml)
+
 # s3
 
 AWS S3 service support for [go-storage](https://github.com/beyondstorage/go-storage).
