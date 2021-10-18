@@ -16,7 +16,7 @@ go get go.beyondstorage.io/services/cos/v3
 import (
 	"log"
 
-	_ "go.beyondstorage.io/v5/services/cos/v3"
+	_ "go.beyondstorage.io/services/cos/v3"
 	"go.beyondstorage.io/v5/services"
 )
 
