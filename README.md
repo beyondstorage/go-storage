@@ -5,13 +5,9 @@
 [![Go dev](https://pkg.go.dev/badge/go.beyondstorage.io/v5)](https://pkg.go.dev/go.beyondstorage.io/v5)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/beyondstorage/go-storage/blob/master/LICENSE)
 
-
 [![Matrix](https://img.shields.io/matrix/beyondstorage@go-storage:matrix.org.svg?label=go-storage&logo=matrix)](https://matrix.to/#/#beyondstorage@go-storage:matrix.org)
 [![Slack](https://img.shields.io/badge/slack-4A154B?logo=slack)](https://join.slack.com/t/beyond-storage/shared_invite/zt-pf4yk96u-7znnJVYpQvY57C3rRrbDPg)
 [![Telegram](https://img.shields.io/badge/telegram-2CA5E0?logo=telegram)](https://t.me/beyondstorage_go_storage)
-
-https://img.shields.io/badge/slack-chat-green.svg
-
 
 [![Build Test](https://github.com/beyondstorage/go-storage/actions/workflows/build-test.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/build-test.yml)
 [![Cross Build](https://github.com/beyondstorage/go-storage/actions/workflows/cross-build.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/cross-build.yml)
