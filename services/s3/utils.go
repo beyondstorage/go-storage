@@ -16,7 +16,6 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
-
 	"go.beyondstorage.io/credential"
 	"go.beyondstorage.io/endpoint"
 	ps "go.beyondstorage.io/v5/pairs"
@@ -27,7 +26,8 @@ import (
 
 // Service is the s3 service config.
 type Service struct {
-	cfg          *aws.Config
+	cfg          aws.Config
+	options      []func(*s3.Options)
 	service      *s3.Client
 	defaultPairs DefaultServicePairs
 	features     ServiceFeatures
@@ -94,39 +94,19 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		return nil, err
 	}
 
-	//Set s3 config's endpoint
-	customResolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-		if opt.HasEndpoint {
-			ep, err := endpoint.Parse(opt.Endpoint)
-			if err != nil {
-				return aws.Endpoint{}, err
-			}
-
-			var url string
-			switch ep.Protocol() {
-			case endpoint.ProtocolHTTP:
-				url, _, _ = ep.HTTP()
-			case endpoint.ProtocolHTTPS:
-				url, _, _ = ep.HTTPS()
-			default:
-				return aws.Endpoint{}, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
-			}
-			return aws.Endpoint{
-				URL: url,
-			}, nil
-		}
-		// returning EndpointNotFoundError will allow the service to fallback to it's default resolution
-		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
-	})
-
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithEndpointResolver(customResolver))
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithHTTPClient(httpclient.New(opt.HTTPClientOptions)))
 	if err != nil {
 		return nil, err
 	}
 
 	// Set s3 config's http client
-	cfg.HTTPClient = httpclient.New(opt.HTTPClientOptions)
+	if opt.HasHTTPClientOptions {
+		cfg.HTTPClient = httpclient.New(opt.HTTPClientOptions)
+	}
 
+	var opts []func(*s3.Options)
+
+	// Handle credential
 	cp, err := credential.Parse(opt.Credential)
 	if err != nil {
 		return nil, err
@@ -139,9 +119,64 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
 	}
 
+	// Parse endpoint.
+	if opt.HasEndpoint {
+		ep, err := endpoint.Parse(opt.Endpoint)
+		if err != nil {
+			return nil, err
+		}
+
+		var url string
+		switch ep.Protocol() {
+		case endpoint.ProtocolHTTP:
+			url, _, _ = ep.HTTP()
+		case endpoint.ProtocolHTTPS:
+			url, _, _ = ep.HTTPS()
+		default:
+			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		}
+		opts = append(opts, s3.WithEndpointResolver(s3.EndpointResolverFromURL(url)))
+	}
+
+	// Handle s3 API options.
+	//
+	// S3 will calculate payload's content-sha256 by default, we change this behavior for following reasons:
+	// - To support uploading content without seek support: stdin, bytes.Reader
+	// - To allow user decide when to calculate the hash, especially for big files
+	//
+	// We will ignore all errors returned by middleware.Stack handler, as we don't know whether this middleware exists.
+	apiOptions := s3.WithAPIOptions(func(stack *middleware.Stack) error {
+		// With removing PayloadSHA256 and adding UnsignedPayload, signer will set "X-Amz-Content-Sha256" to "UNSIGNED-PAYLOAD"
+		_ = signerv4.RemoveComputePayloadSHA256Middleware(stack)
+		_ = signerv4.AddUnsignedPayloadMiddleware(stack)
+		_ = signerv4.RemoveContentSHA256HeaderMiddleware(stack)
+		_ = signerv4.AddContentSHA256HeaderMiddleware(stack)
+		return nil
+	})
+	opts = append(opts, apiOptions)
+
+	if opt.ForcePathStyle {
+		opts = append(opts, func(o *s3.Options) {
+			o.UsePathStyle = true
+		})
+	}
+	if opt.UseAccelerate {
+		opts = append(opts, func(o *s3.Options) {
+			o.UseAccelerate = true
+		})
+	}
+	if opt.UseArnRegion {
+		opts = append(opts, func(o *s3.Options) {
+			o.UseARNRegion = true
+		})
+	}
+
+	service := s3.NewFromConfig(cfg, opts...)
+
 	srv = &Service{
-		cfg:     &cfg,
-		service: newS3Service(&cfg),
+		cfg:     cfg,
+		options: opts,
+		service: service,
 	}
 
 	if opt.HasDefaultServicePairs {
@@ -200,49 +235,33 @@ func formatError(err error) error {
 	}
 }
 
-func newS3Service(cfgs *aws.Config) (srv *s3.Client) {
-	// S3 will calculate payload's content-sha256 by default, we change this behavior for following reasons:
-	// - To support uploading content without seek support: stdin, bytes.Reader
-	// - To allow user decide when to calculate the hash, especially for big files
-	srv = s3.NewFromConfig(*cfgs, func(options *s3.Options) {
-		options.APIOptions = append(options.APIOptions,
-			func(stack *middleware.Stack) error {
-				// With removing PayloadSHA256 and adding UnsignedPayload, signer will set "X-Amz-Content-Sha256" to "UNSIGNED-PAYLOAD"
-				signerv4.RemoveComputePayloadSHA256Middleware(stack)
-				signerv4.AddUnsignedPayloadMiddleware(stack)
-				signerv4.RemoveContentSHA256HeaderMiddleware(stack)
-				return signerv4.AddContentSHA256HeaderMiddleware(stack)
-			})
-	})
-
-	return
-}
-
 // newStorage will create a new client.
 func (s *Service) newStorage(pairs ...typ.Pair) (st *Storage, err error) {
-	optStorage, err := parsePairStorageNew(pairs)
+	opt, err := parsePairStorageNew(pairs)
 	if err != nil {
 		return nil, err
 	}
 
-	if optStorage.HasLocation {
-		s.cfg.Region = optStorage.Location
+	// Copy config to prevent change the service config.
+	cfg := s.cfg
+	if opt.HasLocation {
+		cfg.Region = opt.Location
 	}
 
 	st = &Storage{
-		service: newS3Service(s.cfg),
-		name:    optStorage.Name,
+		service: s3.NewFromConfig(cfg, s.options...),
+		name:    opt.Name,
 		workDir: "/",
 	}
 
-	if optStorage.HasDefaultStoragePairs {
-		st.defaultPairs = optStorage.DefaultStoragePairs
+	if opt.HasDefaultStoragePairs {
+		st.defaultPairs = opt.DefaultStoragePairs
 	}
-	if optStorage.HasStorageFeatures {
-		st.features = optStorage.StorageFeatures
+	if opt.HasStorageFeatures {
+		st.features = opt.StorageFeatures
 	}
-	if optStorage.HasWorkDir {
-		st.workDir = optStorage.WorkDir
+	if opt.HasWorkDir {
+		st.workDir = opt.WorkDir
 	}
 	return st, nil
 }

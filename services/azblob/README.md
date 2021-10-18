@@ -7,7 +7,7 @@ Azure azblob service support for [go-storage](https://github.com/beyondstorage/g
 ## Install
 
 ```go
-go get github.com/beyondstorage/go-service-azblob/v3
+go get go.beyondstorage.io/services/azblob/v3
 ```
 
 ## Usage
