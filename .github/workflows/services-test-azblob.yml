@@ -28,12 +28,13 @@ jobs:
         env:
           STORAGE_AZBLOB_CREDENTIAL: op://Engineering/Azblob/testing/credential
           STORAGE_AZBLOB_NAME: op://Engineering/Azblob/testing/name
+          STORAGE_AZBLOB_ENDPOINT: op://Engineering/Azblob/testing/endpoint
 
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Test
         env:
-          STORAGE_S3_INTEGRATION_TEST: on
+          STORAGE_AZBLOB_INTEGRATION_TEST: on
         working-directory: services/azblob
         run: make integration_test
