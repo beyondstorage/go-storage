@@ -1,3 +1,5 @@
+[![Services Test Azblob](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-azblob.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-azblob.yml)
+
 # azblob
 
 Azure azblob service support for [go-storage](https://github.com/beyondstorage/go-storage).
