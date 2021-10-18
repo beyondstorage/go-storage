@@ -247,8 +247,6 @@ type pairServiceNew struct {
 	// Optional pairs
 	HasDefaultServicePairs bool
 	DefaultServicePairs    DefaultServicePairs
-	HasDisable100Continue  bool
-	Disable100Continue     bool
 	HasEndpoint            bool
 	Endpoint               string
 	HasForcePathStyle      bool
@@ -283,12 +281,6 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasDefaultServicePairs = true
 			result.DefaultServicePairs = v.Value.(DefaultServicePairs)
-		case "disable_100_continue":
-			if result.HasDisable100Continue {
-				continue
-			}
-			result.HasDisable100Continue = true
-			result.Disable100Continue = v.Value.(bool)
 		case "endpoint":
 			if result.HasEndpoint {
 				continue
