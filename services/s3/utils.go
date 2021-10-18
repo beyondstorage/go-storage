@@ -155,6 +155,22 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	})
 	opts = append(opts, apiOptions)
 
+	if opt.ForcePathStyle {
+		opts = append(opts, func(o *s3.Options) {
+			o.UsePathStyle = true
+		})
+	}
+	if opt.UseAccelerate {
+		opts = append(opts, func(o *s3.Options) {
+			o.UseAccelerate = true
+		})
+	}
+	if opt.UseArnRegion {
+		opts = append(opts, func(o *s3.Options) {
+			o.UseARNRegion = true
+		})
+	}
+
 	service := s3.NewFromConfig(cfg, opts...)
 
 	srv = &Service{
@@ -221,31 +237,31 @@ func formatError(err error) error {
 
 // newStorage will create a new client.
 func (s *Service) newStorage(pairs ...typ.Pair) (st *Storage, err error) {
-	optStorage, err := parsePairStorageNew(pairs)
+	opt, err := parsePairStorageNew(pairs)
 	if err != nil {
 		return nil, err
 	}
 
 	// Copy config to prevent change the service config.
 	cfg := s.cfg
-	if optStorage.HasLocation {
-		cfg.Region = optStorage.Location
+	if opt.HasLocation {
+		cfg.Region = opt.Location
 	}
 
 	st = &Storage{
 		service: s3.NewFromConfig(cfg, s.options...),
-		name:    optStorage.Name,
+		name:    opt.Name,
 		workDir: "/",
 	}
 
-	if optStorage.HasDefaultStoragePairs {
-		st.defaultPairs = optStorage.DefaultStoragePairs
+	if opt.HasDefaultStoragePairs {
+		st.defaultPairs = opt.DefaultStoragePairs
 	}
-	if optStorage.HasStorageFeatures {
-		st.features = optStorage.StorageFeatures
+	if opt.HasStorageFeatures {
+		st.features = opt.StorageFeatures
 	}
-	if optStorage.HasWorkDir {
-		st.workDir = optStorage.WorkDir
+	if opt.HasWorkDir {
+		st.workDir = opt.WorkDir
 	}
 	return st, nil
 }
