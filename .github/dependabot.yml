@@ -16,3 +16,7 @@ updates:
     directory: "/services/s3"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/azblob"
+    schedule:
+      interval: daily
