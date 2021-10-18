@@ -20,3 +20,7 @@ updates:
     directory: "/services/bos"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/cos"
+    schedule:
+      interval: daily
