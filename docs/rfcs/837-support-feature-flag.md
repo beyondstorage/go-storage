@@ -5,76 +5,99 @@
 
 # GSP-837: Support Feature Flag
 
+- Updates:
+  - [GSP-1: Unify storager behavior](./1-unify-storager-behavior.md): Abandon interface splitting
+
 ## Background
 
-In [GSP-669: Feature Lifecycle](./669-feature-lifecycle.md), we specified the feature lifecycle to address the repetitive work and ineffective tracking, accelerating the iteration of new features. However, we encountered new problems: 
+In [GSP-87: Feature Gates](./87-feature-gates.md), we have the concept of `features` first. And then in [GSP-109: Redesign Features](./109-redesign-features.md), we have a huge redesign about it. We have the following features for now:
 
-We may find problems with the new interface or feature only during the service implementation, and have to redesign and release the version for this purpose.
+- LoosePair
+- VirtualDir
+- VirtualLink
+- VirtualObjectMetadata
 
-Moreover, we do have different capabilities and limitations in storage services, for application or user, the capabilities to access the service is not available.
+It's obvious that they are only a subset of all features we support. 
+
+In fact, we can categorize all features into three kinds:
+
+- Native support
+- No native support but could be virtual
+- Can't support
+
+In the past, we only care about features that "No native support but could be virtual". Because other features can be handled easily: if we support, everything will work fine; If not, we just don't implement the interface.
+
+However, [GSP-751: Write Empty File Behavior](./751-write-empty-file-behavior.md) rise a new question: How to handle the different behavior of the same interface?
+
+Maybe it's time for us to drop the idea that we introduced in [GSP-1: Unify storager behavior](./1-unify-storager-behavior.md).
 
 ## Proposal
 
-So I propose to support feature flag for operational rampups, and also provide interfaces for users or applications to acquire service capabilities.
+I propose to support feature flag for operational rampups, and also provide interfaces for users or applications to acquire service capabilities.
 
-### Feature flag
+### Support Feature
 
-Feature flag is designed to push features through a predictable lifecycle where a feature can easily be created, enhanced, tested, and then cleaned up by being elevated to a full-fledged feature or discarded altogether.
-
-The basic status of a pre-implemented feature might look like this:
-
-- Feature in development: It begins after the first design proposal is approved and covers the development, testing, and enhancement phases, and possibly even the user experience phase.
-- Feature to be released: When the functionality is stable and user-friendly, it can be transferred to a supported interface.
-
-#### Add `development` property for interface
-
-Specify whether the interface is in development status when adding a new interface in go-storage.
-
-```toml
-[storage_http_signer]
-development = true
-```
-
-The data type of `development` is bool: `true` means the interface is in development, and `false` means in stable status. The default value is `false`. 
-
-And go-storage will generate development struct for services.
+Generate an uint64 `Feature` to represent the features supported by the storage service:
 
 ```go
-type DevelopmentInterfaces struct {
-	StorageHTTPSigner bool
+// Feature is a uint64 which represents the features storage service have.
+type Feature uint64
+
+// All features that storage used.
+const (
+	FeatureCreate = 1 << iota
+	FeatureDelete
+	...
+	
+	FeatureCopy
+	
+	FeatureLoosePair
+	FeatureVirtualDir
+	FeatureVirtualLink
+	FeatureVirtualObjectMetadata
+)
+
+// CanCopy returns whether this storage support Copy operation or not.
+func (f Feature) CanCopy() bool {
+	return c&FeatureCopy != 0
 }
 
-func WithDevelopmentInterfaces(v DevelopmentInterfaces) Pair {
-    return Pair{
-        Key:   DevelopmentInterfaces,
-        Value: v,
-    }
-}
+...
 ```
 
-Service implementer should check all operations in development status manually when required.
+### Add operations back to Storager
 
-### Service capabilities
-
-- Services SHOULD declare what the service can do and what operations or features the service can provide.
-- Application or user could obtain the capabilities of the service before requesting an operation or feature.
-
-#### Add `implemented` property for operation
-
-For services that support only part of the operations in an interface, `implemented` property will identify whether the operation is implemented:
-
-```toml
-[namespace.storage.op.query_sign_http_write]
-implemented = false
-```
-
-And go-storage will generate `` to expose the capabilities for services.
+Add all storage related operations like `Copy`, `Move`, etc back to `Storager`, and support returning an uint64 to represent `Feature` in `Storager`:
 
 ```go
-// Get the supported operations and features
-func(s *Storage) GetCapabilities() []string {}
+type Storager interface {
+	Feature() Feature
+	
+	// Storage
+	Create(path string, pairs ...Pair) (o *Object)
+	Delete(path string, pairs ...Pair) (err error)
+	DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
+	...
+	
+	// Copy
+	Copy(src string, dst string, pairs ...Pair) (err error)
+	CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
+	
+	...
+}
+```
 
-func(s *Storage) FeatureEnabled(op string) bool {}
+Service implementer needs to implement all the operations. `ErrCapabilityInsufficient` should be returned when an operation is not supported.
+
+Caller need to check `Feature` before use them.
+
+```go
+if store.Feature().FeatureCopy() {
+	err := store.Copy(oldpath, newpath)
+	if err != nil {
+		return err
+	}
+}
 ```
 
 ## Rationale
@@ -96,13 +119,42 @@ Feature flags solutions:
 - [go-feature-flag](https://github.com/thomaspoignant/go-feature-flag) is a simple and complete feature flag solution, without any complex backend system to install.
 - [Etsy's Feature flagging API](https://github.com/etsy/feature) used for operational rampups and A/B testing.
 
+### Alternative Way
+
+Instead of adding operations in all interfaces except the current `Servicer` and `Storager` back to `Storager`, maybe we can keep the current interfaces and generate the following interface for service according to `service.toml`:
+
+```go
+type Storage interface {
+	Storager
+	Appender
+	Feature() Feature
+}
+```
+
+Service implementer should implement all the supported interfaces.
+
 ## Compatibility
 
-No breaking changes.
+The following interfaces will be deprecated, and the related operations will be added back to `Storager` interface. Caller need to check `Feature` before use them.
+
+- Appender
+- Blocker
+- Copier
+- Direr
+- Mover
+- Multiparter
+- Pager
+- Reacher
+- StorageHTTPSigner
+- MultipartHTTPSigner
 
 ## Implementation
 
-- Add `development` property for interface and `implemented` property for operation.
-- Generate code for services.
-- Refactor go-integration-test to run the tests cases according to service capabilities.
-- Add `implemented` property for operations in services and pass integration test.
+- For go-storage
+  - Generate `Feature`
+  - Deprecate interfaces other than `Servicer` and `Storager`, and add the related operations back to `Storager`
+- For storage services
+  - Remove `features` and `implement` fields in `service.toml`
+  - Implement `Feature() Feature` for `Storage` and `Service`
+- For go-integration-test
+  - go-integration-test should run the test cases according to `Feature`.
