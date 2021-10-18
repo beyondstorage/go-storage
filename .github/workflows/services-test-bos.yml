@@ -1,0 +1,40 @@
+name: "Services Test Bos"
+
+on:
+   push:
+     paths:
+       - 'services/bos/**'
+   pull_request:
+     paths:
+       - 'services/bos/**'
+
+jobs:
+  services_test_bos:
+    name: "Services Test Bos"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_BOS_CREDENTIAL: op://Engineering/Bos/testing/credential
+          STORAGE_BOS_NAME: op://Engineering/Bos/testing/name
+          STORAGE_BOS_ENDPOINT: op://Engineering/Bos/testing/endpoint
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_BOS_INTEGRATION_TEST: on
+        working-directory: services/bos
+        run: make integration_test
