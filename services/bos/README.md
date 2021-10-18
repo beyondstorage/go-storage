@@ -1,3 +1,5 @@
+[![Services Test Bos](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-bos.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-bos.yml)
+
 # bos
 
 BOS(Baidu Object Storage) service support for [go-storage](https://github.com/beyondstorage/go-storage).
