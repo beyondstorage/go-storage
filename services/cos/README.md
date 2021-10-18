@@ -1,3 +1,5 @@
+[![Services Test Cos](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-cos.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-cos.yml)
+
 # cos
 
 [COS(Cloud Object Storage)](https://cloud.tencent.com/product/cos) service support for [go-storage](https://github.com/beyondstorage/go-storage).
@@ -5,7 +7,7 @@
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/cos/v2
+go get go.beyondstorage.io/services/cos/v3
 ```
 
 ## Usage
@@ -14,7 +16,7 @@ go get go.beyondstorage.io/services/cos/v2
 import (
 	"log"
 
-	_ "go.beyondstorage.io/v5/services/cos/v2"
+	_ "go.beyondstorage.io/v5/services/cos/v3"
 	"go.beyondstorage.io/v5/services"
 )
 

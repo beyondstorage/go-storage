@@ -35,6 +35,6 @@ jobs:
 
       - name: Test
         env:
-          STORAGE_Cos_INTEGRATION_TEST: on
+          STORAGE_COS_INTEGRATION_TEST: on
         working-directory: services/cos
         run: make integration_test
