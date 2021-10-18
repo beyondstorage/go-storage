@@ -28,7 +28,6 @@ jobs:
         env:
           STORAGE_AZBLOB_CREDENTIAL: op://Engineering/Azblob/testing/credential
           STORAGE_AZBLOB_NAME: op://Engineering/Azblob/testing/name
-          STORAGE_AZBLOB_LOCATION: op://Engineering/Azblob/testing/location
 
       - name: Checkout repository
         uses: actions/checkout@v2
