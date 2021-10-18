@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	bos "go.beyondstorage.io/services/bos"
+	bos "go.beyondstorage.io/services/bos/v2"
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/types"
 )

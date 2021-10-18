@@ -7,7 +7,7 @@ BOS(Baidu Object Storage) service support for [go-storage](https://github.com/be
 ## Install
 
 ```go
-go get go.beyondstorage.io/v5/services/bos
+go get go.beyondstorage.io/services/bos/v2
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ go get go.beyondstorage.io/v5/services/bos
 import (
 	"log"
 
-	_ "go.beyondstorage.io/v5/services/bos/"
+	_ "go.beyondstorage.io/v5/services/bos/v2"
 	"go.beyondstorage.io/v5/services"
 )
 

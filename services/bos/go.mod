@@ -1,4 +1,4 @@
-module go.beyondstorage.io/services/bos
+module go.beyondstorage.io/services/bos/v2
 
 go 1.15
 
