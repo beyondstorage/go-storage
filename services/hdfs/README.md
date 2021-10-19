@@ -1,3 +1,5 @@
+[![Services Test Hdfs](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-hdfs.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-hdfs.yml)
+
 # hdfs 
 
 Hadoop Distributed File System (HDFS) support for [go-storage](https://github.com/beyondstorage/go-storage).
