@@ -1,4 +1,4 @@
-name: "Integration Test"
+name: "Services Test FTP"
 
 on: [push, pull_request]
 
@@ -33,7 +33,7 @@ jobs:
           fileName: ftpserver-linux-amd64
 
       - name: Prepare config file
-        run: mv ./tests/ftpserver.json ./ftpserver.json
+        run: mv ../../services/ftp/tests/ftpserver.json ./ftpserver.json
 
       - name: Create test dir
         run: mkdir tmp
