@@ -4,5 +4,5 @@
 package ftp
 
 import (
-	_ "github.com/beyondstorage/go-storage/v4/cmd/definitions"
+	_ "go.beyondstorage.io/v5/cmd/definitions"
 )
