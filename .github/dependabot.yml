@@ -35,4 +35,8 @@ updates:
   - package-ecosystem: gomod
     directory: "/services/gcs"
     schedule:
-      interval: daily    
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/hdfs"
+    schedule:
+      interval: daily       
