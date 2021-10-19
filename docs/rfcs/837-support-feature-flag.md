@@ -7,10 +7,11 @@
 
 - Updates:
   - [GSP-1: Unify storager behavior](./1-unify-storager-behavior.md): Abandon interface splitting
+  - [GSP-109: Redesign Features](./109-redesign-features.md): Reimplement `Features`
 
 ## Background
 
-In [GSP-87: Feature Gates](./87-feature-gates.md), we have the concept of `features` first. And then in [GSP-109: Redesign Features](./109-redesign-features.md), we have a huge redesign about it. We have the following features for now:
+In [GSP-87: Feature Gates](./87-feature-gates.md), we have the concept of `features` to resolve inconsistent behavior. And then in [GSP-109: Redesign Features](./109-redesign-features.md), we have a huge redesign about it. We have the following features for now:
 
 - LoosePair
 - VirtualDir
@@ -29,37 +30,38 @@ In the past, we only care about features that "No native support but could be vi
 
 However, [GSP-751: Write Empty File Behavior](./751-write-empty-file-behavior.md) rise a new question: How to handle the different behavior of the same interface?
 
+Moreover, we do have different capabilities and limitations in storage services, for application or user, the capabilities to access the service is not accurately available by way of interface type assertion.
+
 Maybe it's time for us to drop the idea that we introduced in [GSP-1: Unify storager behavior](./1-unify-storager-behavior.md).
 
 ## Proposal
 
 I propose to support feature flag for operational rampups, and also provide interfaces for users or applications to acquire service capabilities.
 
-### Support Feature
+### Reimplement Features
 
-Generate an uint64 `Feature` to represent the features supported by the storage service:
+- Generate `ServiceFeatures` and `StorageFeatures` structs on go-storage side to represent the features supported by the storage container and storage service, respectively.
+- Deprecate `ServiceFeatures` and `StorageFeatures` structs in services side, including `WithStorageFeatures()/WithServiceFeatures()` functions.
 
 ```go
-// Feature is a uint64 which represents the features storage service have.
-type Feature uint64
-
-// All features that storage used.
-const (
-	FeatureCreate = 1 << iota
-	FeatureDelete
+// StorageFeatures indicates features supported by storage.
+type StorageFeatures strcut {
+	// native support or can't support
+	Create                bool
+	Delete                bool
 	...
-	
-	FeatureCopy
-	
-	FeatureLoosePair
-	FeatureVirtualDir
-	FeatureVirtualLink
-	FeatureVirtualObjectMetadata
-)
+	Copy                  bool
+	...
+	// no native support but could be virtual
+	LoosePair             bool
+	VirtualDir            bool
+	VirtualLink           bool
+	VirtualObjectMetadata bool
+}
 
 // CanCopy returns whether this storage support Copy operation or not.
-func (f Feature) CanCopy() bool {
-	return c&FeatureCopy != 0
+func (f StorageFeatures) CanCopy() bool {
+	return f.Copy
 }
 
 ...
@@ -67,12 +69,14 @@ func (f Feature) CanCopy() bool {
 
 ### Add operations back to Storager
 
-Add all storage related operations like `Copy`, `Move`, etc back to `Storager`, and support returning an uint64 to represent `Feature` in `Storager`:
+- Add all operations in interfaces for storage service like `Copy`, `Move`, etc back to `Storager`.
+- Support `Feature()` that returns `StorageFeatures` and `ServiceFeatures` in `Storager` and `Servicer` interfaces, respectively.
 
 ```go
 type Storager interface {
-	Feature() Feature
-	
+	Feature() StorageFeatures
+
+    String() string
 	// Storage
 	Create(path string, pairs ...Pair) (o *Object)
 	Delete(path string, pairs ...Pair) (err error)
@@ -84,15 +88,37 @@ type Storager interface {
 	CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
 	
 	...
+	
+	mustEmbedUnimplementedStorager()
 }
+
+// UnimplementedStorager must be embedded to have forward compatible implementations.
+type UnimplementedStorager struct {
+}
+
+func (s UnimplementedStorager) mustEmbedUnimplementedStorager() {
+
+}
+func (s UnimplementedStorager) String() string {
+	return "UnimplementedStorager"
+}
+func (s UnimplementedStorager) Create(path string, pairs ...Pair) (o *Object) {
+	return
+}
+func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("delete")
+	return
+}
+
+...
 ```
 
-Service implementer needs to implement all the operations. `ErrCapabilityInsufficient` should be returned when an operation is not supported.
+Stub implementations for all non-supported operations will be generated. Service implementor should implement `Feature()` to return the features supported by storage service.
 
-Caller need to check `Feature` before use them.
+Caller need to check `StorageFeatures` or `ServiceFeatures` before use them.
 
 ```go
-if store.Feature().FeatureCopy() {
+if store.Feature().CanCopy() {
 	err := store.Copy(oldpath, newpath)
 	if err != nil {
 		return err
@@ -119,23 +145,9 @@ Feature flags solutions:
 - [go-feature-flag](https://github.com/thomaspoignant/go-feature-flag) is a simple and complete feature flag solution, without any complex backend system to install.
 - [Etsy's Feature flagging API](https://github.com/etsy/feature) used for operational rampups and A/B testing.
 
-### Alternative Way
-
-Instead of adding operations in all interfaces except the current `Servicer` and `Storager` back to `Storager`, maybe we can keep the current interfaces and generate the following interface for service according to `service.toml`:
-
-```go
-type Storage interface {
-	Storager
-	Appender
-	Feature() Feature
-}
-```
-
-Service implementer should implement all the supported interfaces.
-
 ## Compatibility
 
-The following interfaces will be deprecated, and the related operations will be added back to `Storager` interface. Caller need to check `Feature` before use them.
+Interface type assertion for storage capability will be deprecated: the following interfaces will be deprecated, and the related operations will be added back to `Storager` interface. Caller need to check supported features before use them.
 
 - Appender
 - Blocker
@@ -151,10 +163,11 @@ The following interfaces will be deprecated, and the related operations will be 
 ## Implementation
 
 - For go-storage
-  - Generate `Feature`
-  - Deprecate interfaces other than `Servicer` and `Storager`, and add the related operations back to `Storager`
+  - Deprecate the current generated `ServiceFeatures` and `StorageFeatures` for services, and re-generate them on go-storage side.
+  - Deprecate interfaces other than `Servicer` and `Storager`, and add the related operations back to `Storager`.
 - For storage services
-  - Remove `features` and `implement` fields in `service.toml`
-  - Implement `Feature() Feature` for `Storage` and `Service`
+  - Remove `features` and `implement` fields in `service.toml`.
+  - Implement `Feature()` for `Storage` and `Service`.
 - For go-integration-test
-  - go-integration-test should run the test cases according to `Feature`.
+  - go-integration-test should not use type assertions, but run the test cases according to features.
+  
