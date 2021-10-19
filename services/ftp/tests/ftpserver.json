@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "accesses": [
+    {
+      "sync_and_delete": {
+        "enable": true
+      },
+      "user": "user",
+      "pass": "password",
+      "fs": "os",
+      "params": {
+        "basePath": "./tmp"
+      }
+    }
+  ],
+  "passive_transfer_port_range": {
+    "start": 2122,
+    "end": 10000
+  }
+}
