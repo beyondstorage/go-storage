@@ -1,3 +1,5 @@
+[![Services Test Dropbox](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-dropbox.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-dropbox.yml)
+
 # dropbox
 
 [Dropbox](https://www.dropbox.com) service support for [go-storage](https://github.com/beyondstorage/go-storage).
