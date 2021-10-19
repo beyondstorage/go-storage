@@ -5,7 +5,7 @@
 ## Install
 
 ```go
-go get github.com/beyondstorage/go-service-ipfs
+go get go.beyondstorage.io/services/ipfs
 ```
 
 ## Usage
