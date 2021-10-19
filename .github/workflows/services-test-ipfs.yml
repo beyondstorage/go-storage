@@ -3,10 +3,10 @@ name: "Services Test Ipfs"
 on: 
    push:
      paths:
-       - 'services/Ipfs/**'
+       - 'services/ipfs/**'
    pull_request:
      paths:
-       - 'services/Ipfs/**'
+       - 'services/ipfs/**'
 
 jobs:
   integration_test:
