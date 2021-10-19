@@ -1,6 +1,12 @@
 name: "Services Test Ftp"
 
-on: [push, pull_request]
+on: 
+   push:
+     paths:
+       - 'services/ftp/**'
+   pull_request:
+     paths:
+       - 'services/ftp/**'
 
 jobs:
   integration_test_1:
