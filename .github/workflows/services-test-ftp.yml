@@ -47,8 +47,7 @@ jobs:
         run: make build
 
       - name: Integration Test
-        env:
-          working-directory: services/ftp
+        working-directory: services/ftp
         run: make integration_test
 
   integration_test_2:
@@ -92,6 +91,5 @@ jobs:
         run: make build
 
       - name: Integration Test
-        env:
-          working-directory: services/ftp
+        working-directory: services/ftp
         run: make integration_test
