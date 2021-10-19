@@ -1,0 +1,39 @@
+name: "Services Test Gdrive"
+
+on:
+   push:
+     paths:
+       - 'services/gdrive/**'
+   pull_request:
+     paths:
+       - 'services/gdrive/**'
+
+jobs:
+  services_test_gdrive:
+    name: "Services Test Gdrive"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_GDRIVE_CREDENTIAL: op://Engineering/Gdrive/testing/credential
+          STORAGE_GDRIVE_NAME: op://Engineering/Gdrive/testing/name
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_GDRIVE_INTEGRATION_TEST: on
+        working-directory: services/gdrive
+        run: make integration_test

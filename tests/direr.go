@@ -17,7 +17,7 @@ func TestDirer(t *testing.T, store types.Storager) {
 
 		Convey("When CreateDir", func() {
 			path := uuid.New().String()
-			o, err := d.CreateDir(path)
+			_, err := d.CreateDir(path)
 
 			defer func() {
 				err := store.Delete(path, pairs.WithObjectMode(types.ModeDir))
@@ -30,7 +30,7 @@ func TestDirer(t *testing.T, store types.Storager) {
 				So(err, ShouldBeNil)
 			})
 
-			o, err = d.CreateDir(path)
+			o, err := d.CreateDir(path)
 			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
