@@ -1,3 +1,5 @@
+[![Services Test Gdrive](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-gdrive.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-gdrive.yml)
+
 # gdrive
 
 Google Drive service support for [go-storage](https://github.com/beyondstorage/go-storage).
