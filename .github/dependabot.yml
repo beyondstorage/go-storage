@@ -44,3 +44,7 @@ updates:
     directory: "/services/ipfs"
     schedule:
       interval: daily    
+  - package-ecosystem: gomod
+    directory: "/services/hdfs"
+    schedule:
+      interval: daily 
