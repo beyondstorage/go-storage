@@ -36,3 +36,7 @@ updates:
     directory: "/services/gcs"
     schedule:
       interval: daily    
+  - package-ecosystem: gomod
+    directory: "/services/gdrive"
+    schedule:
+      interval: daily    
