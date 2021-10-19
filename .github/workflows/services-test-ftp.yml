@@ -1,4 +1,4 @@
-name: "Services Test FTP"
+name: "Services Test Ftp"
 
 on: [push, pull_request]
 
