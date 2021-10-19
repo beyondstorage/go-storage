@@ -7,7 +7,12 @@
 
 - Updates:
   - [GSP-1: Unify storager behavior](./1-unify-storager-behavior.md): Abandon interface splitting
+  - [GSP-44: Add CommitAppend in Appender](./44-commit-append.md): Move `CommitAppend` operations to `Storager`
+  - [GSP-49: Add CreateDir Operation](./49-add-create-dir-operation.md): Move `CreateDir` operation to `Storager`
+  - [GSP-86: Add Create Link Operation](./86-add-create-link-operation.md): Move `CreateLink` operation to `Storager`
   - [GSP-109: Redesign Features](./109-redesign-features.md): Reimplement `Features`
+  - [GSP-729: Redesign HTTP Signer](./729-redesign-http-signer.md): Move HTTP signer related operations to `Storager`
+  - [GSP-826: Add Multipart HTTP Signer Support](./826-add-multipart-http-signer-support.md): Move multipart HTTP signer related operations to `Storager`
 
 ## Background
 
@@ -82,8 +87,8 @@ func (f *StorageFeatures) EnableVirtualDir() {
 ```go
 type Storager interface {
 	Feature() StorageFeatures
-
-    String() string
+	
+	String() string
 	// Storage
 	Create(path string, pairs ...Pair) (o *Object)
 	Delete(path string, pairs ...Pair) (err error)
