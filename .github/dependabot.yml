@@ -40,3 +40,7 @@ updates:
     directory: "/services/gdrive"
     schedule:
       interval: daily    
+- package-ecosystem: gomod
+    directory: "/services/hdfs"
+    schedule:
+      interval: daily 
