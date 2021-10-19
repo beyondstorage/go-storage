@@ -28,3 +28,7 @@ updates:
     directory: "/services/dropbox"
     schedule:
       interval: daily  
+  - package-ecosystem: gomod
+    directory: "/services/gcs"
+    schedule:
+      interval: daily  

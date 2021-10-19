@@ -1,0 +1,40 @@
+name: "Services Test Gcs"
+
+on:
+   push:
+     paths:
+       - 'services/gcs/**'
+   pull_request:
+     paths:
+       - 'services/gcs/**'
+
+jobs:
+  services_test_gcs:
+    name: "Services Test Gcs"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_GCS_CREDENTIAL: op://Engineering/Gcs/testing/credential
+          STORAGE_GCS_NAME: op://Engineering/Gcs/testing/name
+          STORAGE_GCS_PROJECT_ID: op://Engineering/Gcs/testing/project_id
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_GCS_INTEGRATION_TEST: on
+        working-directory: services/gcs
+        run: make integration_test
