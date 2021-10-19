@@ -1,0 +1,39 @@
+name: "Services Test Ftp"
+
+on:
+   push:
+     paths:
+       - 'services/ftp/**'
+   pull_request:
+     paths:
+       - 'services/ftp/**'
+
+jobs:
+  services_test_ftp:
+    name: "Services Test Ftp"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_FTP_CREDENTIAL: op://Engineering/Ftp/testing/credential
+          STORAGE_FTP_ENDPOINT: op://Engineering/Ftp/testing/endpoint
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_FTP_INTEGRATION_TEST: on
+        working-directory: services/ftp
+        run: make integration_test
