@@ -15,7 +15,10 @@ jobs:
 
     strategy:
       matrix:
-        go: [ "1.15", "1.16" ]
+        # Remove 1.15 test so that we only have one running tests for dropbox.
+        # This will be helpful for resolving rate limit problem.
+        # ref: https://github.com/beyondstorage/go-storage/issues/893
+        go: [ "1.16" ]
 
     steps:
       - name: Set up Go 1.x
