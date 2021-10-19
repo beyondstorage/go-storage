@@ -39,4 +39,8 @@ updates:
   - package-ecosystem: gomod
     directory: "/services/gdrive"
     schedule:
-      interval: daily    
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/kodo"
+    schedule:
+      interval: daily     
