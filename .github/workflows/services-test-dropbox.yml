@@ -1,0 +1,38 @@
+name: "Services Test Dropbox"
+
+on:
+   push:
+     paths:
+       - 'services/dropbox/**'
+   pull_request:
+     paths:
+       - 'services/dropbox/**'
+
+jobs:
+  services_test_dropbox:
+    name: "Services Test Dropbox"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_DROPBOX_CREDENTIAL: op://Engineering/Dropbox/testing/credential
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_DROPBOX_INTEGRATION_TEST: on
+        working-directory: services/dropbox
+        run: make integration_test

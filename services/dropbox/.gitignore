@@ -1,0 +1,7 @@
+coverage.*
+bin/
+Makefile.env
+
+# Jetbrain IED
+.idea
+*.iml
