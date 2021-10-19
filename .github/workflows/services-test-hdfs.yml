@@ -3,10 +3,10 @@ name: "Services Test Hdfs"
 on: 
    push:
      paths:
-       - 'services/ftp/**'
+       - 'services/hdfs/**'
    pull_request:
      paths:
-       - 'services/ftp/**'
+       - 'services/hdfs/**'
 
 jobs:
   integration_test:
@@ -47,5 +47,5 @@ jobs:
         env:
           STORAGE_HDFS_INTEGRATION_TEST: "on"
           STORAGE_HDFS_ENDPOINT: "tcp:127.0.0.1:9000"
-        working-directory: services/ftp
+        working-directory: services/hdfs
         run: make integration_test
