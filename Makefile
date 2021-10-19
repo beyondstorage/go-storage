@@ -1,7 +1,6 @@
 SHELL := /bin/bash
-PACKAGES = credential endpoint services/s3
 
-.PHONY: all check format vet lint build test generate tidy integration_test $(PACKAGES)
+.PHONY: all check format vet build test generate tidy integration_test build-all
 
 help:
 	@echo "Please use \`make <target>\` where <target> is one of"
@@ -9,54 +8,45 @@ help:
 	@echo "  build               to create bin directory and build"
 	@echo "  generate            to generate code"
 	@echo "  test                to run test"
-	@echo "  integration_test    to run integration test"
+	@echo "  build-all           to build all packages"
 
 check: vet
 
 format:
-	@echo "gofmt"
-	@gofmt -w -l .
-	@echo "ok"
+	gofmt -w -l .
 
 vet:
-	@echo "go vet"
-	@go vet ./...
-	@echo "ok"
+	go vet ./...
 
 generate:
-	@echo "generate code"
-	@go generate -tags tools ./...
-	@gofmt -w -l .
-	@echo "ok"
+	go generate -tags tools ./...
+	gofmt -w -l .
 
 build: tidy generate format check
-	@echo "build storage"
-	@go build -tags tools ./...
-	@echo "ok"
+	go build -tags tools ./...
 
-build-all: build $(PACKAGES)
-
-$(PACKAGES):
-	pushd $@ && make build && popd
+build-all:
+	for f in $$(find . -name go.mod);     \
+		do make -C $$(dirname $$f) build;  \
+	done
 
 test:
-	@echo "run test"
-	@go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
-	@go tool cover -html="coverage.txt" -o "coverage.html"
-	@echo "ok"
+	go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+	go tool cover -html="coverage.txt" -o "coverage.html"
 
-integration_test:
-	@echo "run integration test"
-	@pushd tests \
-		&& go test -race -v ./... \
-		&& popd
-	@echo "ok"
+test-all:
+	for f in $$(find . -name go.mod);     \
+		do make -C $$(dirname $$f) test;  \
+	done
 
 tidy:
-	@go mod tidy
-	@go mod verify
+	go mod tidy
+	go mod verify
+
+tidy-all:
+	for f in $$(find . -name go.mod);     \
+		do make -C $$(dirname $$f) tidy;  \
+	done
 
 clean:
-	@echo "clean generated files"
-	@find . -type f -name 'generated.go' -delete
-	@echo "Done"
+	find . -type f -name 'generated.go' -delete
