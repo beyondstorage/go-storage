@@ -1,6 +1,6 @@
 [![Services Test Gcs](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-gcs.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-gcs.yml)
 
-# go-services-gcs
+# gcs
 
 [Google Cloud Storage](https://cloud.google.com/storage/) service support for [go-storage](https://github.com/beyondstorage/go-storage).
 
