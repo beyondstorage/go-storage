@@ -41,11 +41,13 @@ I propose to support feature flag for operational rampups, and also provide inte
 ### Reimplement Features
 
 - Generate `ServiceFeatures` and `StorageFeatures` structs on go-storage side to represent the features supported by the storage container and storage service, respectively.
-- Deprecate `ServiceFeatures` and `StorageFeatures` structs in services side, including `WithStorageFeatures()/WithServiceFeatures()` functions.
+  - `CanXxx()` function is to check if the operation is supported.
+  - `EnableXxx()` function is to enable the feature that no native support but could be virtual.
+  - `ServiceFeatures` and `StorageFeatures` structs in services side will be deprecated, as will the `WithStorageFeatures()`/`WithServiceFeatures()` functions. `enable_virtual_dir` and other pairs will be reserved to enable virtual features for Caller.
 
 ```go
 // StorageFeatures indicates features supported by storage.
-type StorageFeatures strcut {
+type StorageFeatures struct {
 	// native support or can't support
 	Create                bool
 	Delete                bool
@@ -62,6 +64,11 @@ type StorageFeatures strcut {
 // CanCopy returns whether this storage support Copy operation or not.
 func (f StorageFeatures) CanCopy() bool {
 	return f.Copy
+}
+
+// EnableVirtualDir will enable virtual_dir feature.
+func (f *StorageFeatures) EnableVirtualDir() {
+	f.VirtualDir = true
 }
 
 ...
@@ -166,7 +173,7 @@ Interface type assertion for storage capability will be deprecated: the followin
   - Deprecate the current generated `ServiceFeatures` and `StorageFeatures` for services, and re-generate them on go-storage side.
   - Deprecate interfaces other than `Servicer` and `Storager`, and add the related operations back to `Storager`.
 - For storage services
-  - Remove `features` and `implement` fields in `service.toml`.
+  - Remove `implement` fields in `service.toml`.
   - Implement `Feature()` for `Storage` and `Service`.
 - For go-integration-test
   - go-integration-test should not use type assertions, but run the test cases according to features.
