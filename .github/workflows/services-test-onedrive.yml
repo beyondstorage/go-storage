@@ -1,0 +1,38 @@
+name: "Services Test Onedrive"
+
+on:
+   push:
+     paths:
+       - 'services/onedrive/**'
+   pull_request:
+     paths:
+       - 'services/onedrive/**'
+
+jobs:
+  services_test_s3:
+    name: "Services Test Onedrive"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.15", "1.16" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_S3_CREDENTIAL: op://Engineering/Onedrive/testing/credential
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_S3_INTEGRATION_TEST: on
+        working-directory: services/onedrive
+        run: make integration_test
