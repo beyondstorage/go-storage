@@ -3,10 +3,10 @@ name: "Services Test Minio"
 on:
    push:
      paths:
-       - 'services/s3/**'
+       - 'services/minio/**'
    pull_request:
      paths:
-       - 'services/s3/**'
+       - 'services/minio/**'
 
 jobs:
   integration_test:

@@ -1,3 +1,5 @@
+[![Services Test Minio](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-minio.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-minio.yml)
+
 # minio
 
 [MinIO](https://min.io/) is an open source cloud-native high-performance object storage service. 
