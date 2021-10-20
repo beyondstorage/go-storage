@@ -36,5 +36,5 @@ jobs:
       - name: Test
         env:
           STORAGE_BOS_INTEGRATION_TEST: on
-        working-directory: services/Kodo
+        working-directory: services/kodo
         run: make integration_test
