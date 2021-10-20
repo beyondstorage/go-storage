@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	featurePath     = "definitions/features.toml"
-	fieldPath       = "definitions/fields.toml"
-	infoObjectMeta  = "definitions/info_object_meta.toml"
-	infoStorageMeta = "definitions/info_storage_meta.toml"
-	operationPath   = "definitions/operations.toml"
-	pairPath        = "definitions/pairs.toml"
+	featurePath     = "features.toml"
+	fieldPath       = "fields.toml"
+	infoObjectMeta  = "info_object_meta.toml"
+	infoStorageMeta = "info_storage_meta.toml"
+	operationPath   = "operations.toml"
+	pairPath        = "pairs.toml"
 )
 
 func parseFunc(name string) map[string]*templateutils.Method {
