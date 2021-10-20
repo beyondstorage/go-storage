@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"golang.org/x/oauth2"
@@ -99,7 +99,7 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 	}
 	switch cp.Protocol() {
 	case credential.ProtocolFile:
-		credJSON, err = ioutil.ReadFile(cp.File())
+		credJSON, err = os.ReadFile(cp.File())
 		if err != nil {
 			return nil, err
 		}

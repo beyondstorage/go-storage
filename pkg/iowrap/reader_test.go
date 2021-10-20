@@ -2,7 +2,6 @@ package iowrap
 
 import (
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"testing"
 
@@ -316,7 +315,7 @@ func TestCallbackifyReader_Read(t *testing.T) {
 		called = true
 	})
 
-	_, _ = ioutil.ReadAll(x)
+	_, _ = io.ReadAll(x)
 
 	assert.True(t, called)
 }
@@ -344,7 +343,7 @@ func TestCallbackifyReadCloser_Read(t *testing.T) {
 		called = true
 	})
 
-	_, _ = ioutil.ReadAll(x)
+	_, _ = io.ReadAll(x)
 
 	assert.True(t, called)
 }

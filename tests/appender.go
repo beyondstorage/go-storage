@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"testing"
 
@@ -119,7 +118,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 			}()
 
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			r := bytes.NewReader(content)
 
 			n, err := ap.WriteAppend(o, r, size)
@@ -147,7 +146,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 			}()
 
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 
 			_, err = ap.WriteAppend(o, bytes.NewReader(content), size)
 			if err != nil {

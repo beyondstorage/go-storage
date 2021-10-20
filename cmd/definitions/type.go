@@ -5,7 +5,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sort"
 
 	"github.com/Xuanwo/templateutils"
@@ -228,7 +228,7 @@ func (d *Data) ValidateNamespace(n *Namespace) {
 }
 
 func (d *Data) LoadService(filePath string) {
-	bs, err := ioutil.ReadFile(filePath)
+	bs, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("read file %s: %v", filePath, err)
 	}
