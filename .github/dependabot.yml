@@ -45,6 +45,14 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
-    directory: "/services/memory"
+    directory: "/services/ipfs"
     schedule:
-      interval: daily 
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/kodo"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+      directory: "/services/memory"
+      schedule:
+        interval: daily
