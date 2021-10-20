@@ -53,6 +53,10 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
-      directory: "/services/memory"
-      schedule:
-        interval: daily
+    directory: "/services/memory"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/obs"
+    schedule:
+      interval: daily
