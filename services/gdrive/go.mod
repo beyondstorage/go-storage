@@ -1,6 +1,6 @@
 module go.beyondstorage.io/services/gdrive
 
-go 1.15
+go 1.16
 
 require (
 	github.com/dgraph-io/ristretto v0.1.0

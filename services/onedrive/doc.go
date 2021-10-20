@@ -1,5 +1,5 @@
 /*
-Package onedrive provided support for microsoft onedrive(https://www.microsoft.com/zh-cn/microsoft-365/onedrive/online-cloud-storage).
+Package onedrive provided support for Microsoft onedrive(https://www.microsoft.com/zh-cn/microsoft-365/onedrive/online-cloud-storage).
 */
 package onedrive
 

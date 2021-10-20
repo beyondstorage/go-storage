@@ -1,6 +1,6 @@
 module go.beyondstorage.io/services/onedrive
 
-go 1.15
+go 1.16
 
 require (
 	github.com/goh-chunlin/go-onedrive v1.1.1
