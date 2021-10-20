@@ -1,0 +1,88 @@
+name = "oss"
+
+[namespace.service]
+
+[namespace.service.new]
+required = ["credential"]
+optional = ["service_features", "default_service_pairs", "endpoint", "http_client_options"]
+
+[namespace.storage]
+features = ["virtual_dir"]
+implement = ["appender", "direr", "multiparter", "linker"]
+
+[namespace.storage.new]
+required = ["name"]
+optional = ["storage_features", "default_storage_pairs", "work_dir"]
+
+[namespace.storage.op.create]
+optional = ["multipart_id", "object_mode"]
+
+[namespace.storage.op.create_dir]
+optional = ["storage_class"]
+
+[namespace.storage.op.delete]
+optional = ["multipart_id", "object_mode"]
+
+[namespace.storage.op.stat]
+optional = ["multipart_id", "object_mode"]
+
+[namespace.storage.op.list]
+optional = ["list_mode"]
+
+[namespace.storage.op.read]
+optional = ["offset", "io_callback", "size"]
+
+[namespace.storage.op.write]
+optional = ["content_md5", "content_type", "io_callback", "storage_class", "server_side_encryption", "server_side_data_encryption", "server_side_encryption_key_id"]
+
+[namespace.storage.op.create_append]
+optional = ["content_type", "server_side_encryption", "storage_class"]
+
+[namespace.storage.op.write_append]
+optional = ["content_md5", "io_callback"]
+
+[namespace.storage.op.create_multipart]
+optional = ["content_type", "server_side_encryption", "server_side_encryption_key_id", "server_side_data_encryption", "storage_class"]
+
+[namespace.storage.op.write_multipart]
+optional = ["content_md5"]
+
+[pairs.service_features]
+type = "ServiceFeatures"
+description = "set service features"
+
+[pairs.default_service_pairs]
+type = "DefaultServicePairs"
+description = "set default pairs for service actions"
+
+[pairs.storage_features]
+type = "StorageFeatures"
+description = "set storage features"
+
+[pairs.default_storage_pairs]
+type = "DefaultStoragePairs"
+description = "set default pairs for storager actions"
+
+[pairs.storage_class]
+type = "string"
+
+[pairs.server_side_encryption]
+type = "string"
+description = "specifies the encryption algorithm. Can be AES256, KMS or SM4.\n\nFor Chinese users, refer to https://help.aliyun.com/document_detail/31871.html for details.\n\nFor global users, refer to https://www.alibabacloud.com/help/doc-detail/31871.htm for details, and double-check whether SM4 can be used."
+
+[pairs.server_side_data_encryption]
+type = "string"
+description = "specifies the encryption algorithm when server_side_encryption is KMS. Can only be set to SM4. If this is not set, AES256 will be used.\n\nFor Chinese users, refer to https://help.aliyun.com/document_detail/31871.html for details.\n\nFor global users, refer to https://www.alibabacloud.com/help/doc-detail/31871.htm for details, and double-check whether SM4 can be used."
+
+[pairs.server_side_encryption_key_id]
+type = "string"
+description = "is the KMS-managed user master key. Only valid when server_side_encryption is KMS."
+
+[infos.object.meta.storage-class]
+type = "string"
+
+[infos.object.meta.server_side_encryption]
+type = "string"
+
+[infos.object.meta.server_side_encryption_key_id]
+type = "string"
