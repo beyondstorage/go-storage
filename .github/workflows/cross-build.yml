@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        go: [ "1.15", "1.16" ]
+        go: [ "1.16", "1.17" ]
 
     steps:
       - name: Set up Go 1.x
@@ -29,7 +29,7 @@ jobs:
 
     strategy:
       matrix:
-        go: [ "1.15", "1.16" ]
+        go: [ "1.16", "1.17" ]
         # Since go 1.15, 386 support for darwin has been dropped.
         os: [ ubuntu-latest, windows-latest ]
 
@@ -51,7 +51,7 @@ jobs:
 
     strategy:
       matrix:
-        go: [ "1.15", "1.16" ]
+        go: [ "1.16", "1.17" ]
         # Since go 1.15, arm support for darwin has been dropped.
         os: [ ubuntu-latest, windows-latest ]
 
@@ -73,7 +73,7 @@ jobs:
 
     strategy:
       matrix:
-        go: [ "1.15", "1.16" ]
+        go: [ "1.16", "1.17" ]
         os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:

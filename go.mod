@@ -1,6 +1,6 @@
 module go.beyondstorage.io/v5
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Xuanwo/gg v0.2.0

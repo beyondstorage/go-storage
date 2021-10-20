@@ -1,6 +1,6 @@
 module go.beyondstorage.io/services/gcs/v3
 
-go 1.15
+go 1.16
 
 require (
 	cloud.google.com/go/storage v1.18.2

@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"testing"
 )
 
@@ -15,7 +14,7 @@ func BenchmarkPlainReader(b *testing.B) {
 	b.SetBytes(n)
 	for i := 0; i < b.N; i++ {
 		r := bytes.NewReader(content)
-		_, _ = ioutil.ReadAll(r)
+		_, _ = io.ReadAll(r)
 	}
 }
 
@@ -40,7 +39,7 @@ func BenchmarkIntCallbackReader(b *testing.B) {
 				x += i
 			},
 		}
-		_, _ = ioutil.ReadAll(r)
+		_, _ = io.ReadAll(r)
 	}
 }
 
@@ -65,6 +64,6 @@ func BenchmarkBytesCallbackReader(b *testing.B) {
 				x += len(i)
 			},
 		}
-		_, _ = ioutil.ReadAll(r)
+		_, _ = io.ReadAll(r)
 	}
 }

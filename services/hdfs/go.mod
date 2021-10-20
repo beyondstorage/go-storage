@@ -1,6 +1,6 @@
 module go.beyondstorage.io/services/hdfs
 
-go 1.15
+go 1.16
 
 require (
 	github.com/colinmarc/hdfs/v2 v2.2.0

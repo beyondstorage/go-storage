@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"errors"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"testing"
 
@@ -25,7 +24,7 @@ func TestCopier(t *testing.T, store types.Storager) {
 
 		Convey("When Copy a file", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			src := uuid.New().String()
 
 			_, err := store.Write(src, bytes.NewReader(content), size)
@@ -72,7 +71,7 @@ func TestCopier(t *testing.T, store types.Storager) {
 
 		Convey("When Copy to an existing file", func() {
 			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), srcSize))
+			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), srcSize))
 			src := uuid.New().String()
 
 			_, err := store.Write(src, bytes.NewReader(content), srcSize)

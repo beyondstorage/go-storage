@@ -3,7 +3,6 @@ package memory
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/google/uuid"
@@ -22,7 +21,7 @@ func setup(b *testing.B, size int64) (store *Storage, path string) {
 	}
 
 	path = uuid.NewString()
-	content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+	content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -49,7 +48,7 @@ func BenchmarkStorage_Read(b *testing.B) {
 
 			b.SetBytes(v.size)
 			for i := 0; i < b.N; i++ {
-				_, _ = store.Read(path, ioutil.Discard)
+				_, _ = store.Read(path, io.Discard)
 			}
 		})
 	}
@@ -69,7 +68,7 @@ func BenchmarkStorage_Write(b *testing.B) {
 			store, _ := setup(b, v.size)
 
 			path := uuid.NewString()
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), v.size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), v.size))
 			if err != nil {
 				b.Fatal(err)
 			}
