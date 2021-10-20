@@ -1,3 +1,5 @@
+[![Services Test Memory](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-memory.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-memory.yml)
+
 # memory
 
 memory service support for [go-storage](https://github.com/beyondstorage/go-storage).
