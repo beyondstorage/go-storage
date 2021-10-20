@@ -44,3 +44,7 @@ updates:
     directory: "/services/hdfs"
     schedule:
       interval: daily 
+  - package-ecosystem: gomod
+    directory: "/services/memory"
+    schedule:
+      interval: daily 
