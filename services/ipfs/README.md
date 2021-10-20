@@ -1,3 +1,5 @@
+[![Services Test Ipfs](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-ipfs.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-ipfs.yml)
+
 # ipfs
 
 [InterPlanetary File System(IPFS)](https://ipfs.io/) support for [go-storage](https://github.com/beyondstorage/go-storage).
