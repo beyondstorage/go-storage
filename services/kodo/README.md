@@ -1,3 +1,5 @@
+[![Services Test Kodo](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-kodo.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-kodo.yml)
+
 # kodo
 
 [qiniu kodo](https://www.qiniu.com/products/kodo) service support for [go-storage](https://github.com/beyondstorage/go-storage).
