@@ -1,6 +1,6 @@
 module go.beyondstorage.io/services/bos/v2
 
-go 1.15
+go 1.16
 
 require (
 	github.com/baidubce/bce-sdk-go v0.9.90
