@@ -60,3 +60,7 @@ updates:
     directory: "/services/minio"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/obs"
+    schedule:
+      interval: daily
