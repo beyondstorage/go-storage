@@ -1,5 +1,5 @@
 /*
-Package example provided support for local file system.
+Package obs provided support for the Huawei Object Storage Service(https://www.huaweicloud.com/intl/en-us/product/obs.html).
 */
 package obs
 
