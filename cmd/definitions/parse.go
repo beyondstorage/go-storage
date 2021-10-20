@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/Xuanwo/templateutils"
@@ -25,7 +24,7 @@ func parseFunc(name string) map[string]*templateutils.Method {
 	data := make(map[string]*templateutils.Method)
 	filename := fmt.Sprintf("%s.go", name)
 
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if os.IsNotExist(err) {
 		return data
 	}
