@@ -1,5 +1,5 @@
 /*
-Package example provided support for local file system.
+Package onedrive provided support for microsoft onedrive(https://www.microsoft.com/zh-cn/microsoft-365/onedrive/online-cloud-storage).
 */
 package onedrive
 
