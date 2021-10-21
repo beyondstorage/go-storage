@@ -1,0 +1,40 @@
+name: "Services Test Qingstor"
+
+on:
+   push:
+     paths:
+       - 'services/qingstor/**'
+   pull_request:
+     paths:
+       - 'services/qingstor/**'
+
+jobs:
+  services_test_qingstor:
+    name: "Services Test Qingstor"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.16", "1.17" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_QINGSTOR_CREDENTIAL: op://Engineering/Qingstor/testing/credential
+          STORAGE_QINGSTOR_NAME: op://Engineering/Qingstor/testing/name
+          STORAGE_QINGSTOR_ENDPOINT: op://Engineering/Qingstor/testing/endpoint
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_QINGSTOR_INTEGRATION_TEST: on
+        working-directory: services/qingstor
+        run: make integration_test
