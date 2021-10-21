@@ -65,6 +65,10 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
+    directory: "/services/onedrive"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
     directory: "/services/qingstor"
     schedule:
       interval: daily
