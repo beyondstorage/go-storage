@@ -1,5 +1,5 @@
 /*
-Package us3 provided support for Ucloud(https://docs.ucloud.cn/opensdk-go).
+Package us3 provided support for Ucloud(https://docs.ucloud.cn).
 */
 package us3
 
