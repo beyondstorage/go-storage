@@ -88,3 +88,7 @@ updates:
     directory: "/services/us3"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/uss"
+    schedule:
+      interval: daily
