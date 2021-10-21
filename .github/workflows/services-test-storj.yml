@@ -35,6 +35,6 @@ jobs:
 
       - name: Test
         env:
-          STORAGE_Storj_INTEGRATION_TEST: on
+          STORAGE_STORJ_INTEGRATION_TEST: on
         working-directory: services/storj
         run: make integration_test
