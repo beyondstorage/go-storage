@@ -458,7 +458,16 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
 	rp := s.getAbsPath(path)
 
-	output, err := s.bucket.GetObject(rp)
+	options := make([]oss.Option, 0)
+	if opt.HasOffset && !opt.HasSize {
+		nr := fmt.Sprintf("%d-", opt.Offset)
+		options = append(options, oss.NormalizedRange(nr))
+	} else if !opt.HasOffset && opt.HasSize {
+		options = append(options, oss.Range(0, opt.Size-1))
+	} else if opt.HasOffset && opt.HasSize {
+		options = append(options, oss.Range(opt.Offset, opt.Offset+opt.Size-1))
+	}
+	output, err := s.bucket.GetObject(rp, options...)
 	if err != nil {
 		return 0, err
 	}
