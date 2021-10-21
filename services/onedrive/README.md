@@ -1,5 +1,3 @@
-[![Services Test Onedrive](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-onedrive.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-onedrive.yml)
-
 ## onedrive
 
 Microsoft [OneDrive] (formerly SkyDrive) is a file hosting service and synchronization service operated 
