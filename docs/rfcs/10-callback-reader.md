@@ -27,7 +27,7 @@ After all these work, we can work well with progress bar:
 
 ```go
 import (
-	"io"
+	"io/ioutil"
 	"log"
 
 	"github.com/schollz/progressbar/v2"
@@ -54,9 +54,9 @@ func main()  {
  		log.Fatalf("service read failed: %v", err)
  	}
  
- 	_, err = io.ReadAll(r)
+ 	_, err = ioutil.ReadAll(r)
  	if err != nil {
- 		log.Fatalf("io read failed: %v", err)
+ 		log.Fatalf("ioutil read failed: %v", err)
  	}
 }
 ```
