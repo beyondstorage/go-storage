@@ -214,6 +214,18 @@ const (
 	StorageClassDeepArchive        = s3types.ObjectStorageClassDeepArchive
 )
 
+// s3 service response error code
+//
+// ref: https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#RESTErrorResponses
+const (
+	// AccessDenied access denied
+	responseAccessDenied = "AccessDenied"
+	// NoSuchKey the specified key does not exist.
+	responseCodeNoSuchKey = "NoSuchKey"
+	// NoSuchUpload the specified multipart upload dose not exist.
+	responseCodeNoSuchUpload = "NoSuchUpload"
+)
+
 func formatError(err error) error {
 	if _, ok := err.(services.InternalError); ok {
 		return err
@@ -226,13 +238,22 @@ func formatError(err error) error {
 
 	switch e.Code {
 	// AWS SDK will use status code to generate awserr.Error, so "NotFound" should also be supported.
-	case "NoSuchKey", "NotFound":
+	case responseCodeNoSuchKey, "NotFound":
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
-	case "AccessDenied":
+	case responseAccessDenied:
 		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
 	default:
 		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 	}
+}
+
+func checkError(err error, code string) bool {
+	e := &smithy.OperationError{}
+	if ok := errors.As(err, &e); !ok {
+		return false
+	}
+
+	return strings.Contains(e.Error(), code)
 }
 
 // newStorage will create a new client.
@@ -281,6 +302,9 @@ func (s *Service) formatError(op string, err error, name string) error {
 
 // getAbsPath will calculate object storage's abs path
 func (s *Storage) getAbsPath(path string) string {
+	if strings.HasPrefix(path, s.workDir) {
+		return strings.TrimPrefix(path, "/")
+	}
 	prefix := strings.TrimPrefix(s.workDir, "/")
 	return prefix + path
 }
