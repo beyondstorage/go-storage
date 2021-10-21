@@ -84,3 +84,7 @@ updates:
     directory: "/services/tar"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/uss"
+    schedule:
+      interval: daily
