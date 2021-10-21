@@ -1,0 +1,51 @@
+name: "Services Test Hdfs"
+
+on: 
+   push:
+     paths:
+       - 'services/hdfs/**'
+   pull_request:
+     paths:
+       - 'services/hdfs/**'
+
+jobs:
+  integration_test:
+    name: "Integration Test"
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        go: [ "1.16", "1.17" ]
+        hdfs-version: [ "2.10.1", "3.2.2", "3.3.0", "3.3.1" ]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Checkout python env
+        uses: actions/setup-python@v2
+        with:
+            python-version: '3.8'
+
+      - name: Checkout java env
+        uses: actions/setup-java@v1
+        with:
+            java-version: '11'
+
+      - name: Setup-hdfs env
+        uses: beyondstorage/setup-hdfs@master
+        with:
+            hdfs-version: ${{ matrix.hdfs-version }}
+
+      - name: Test
+        env:
+          STORAGE_HDFS_INTEGRATION_TEST: "on"
+          STORAGE_HDFS_ENDPOINT: "tcp:127.0.0.1:9000"
+        working-directory: services/hdfs
+        run: make integration_test

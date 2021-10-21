@@ -1,0 +1,4 @@
+coverage.*
+bin/
+.idea
+Makefile.env

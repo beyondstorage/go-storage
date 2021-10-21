@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/Xuanwo/templateutils"
@@ -13,19 +12,19 @@ import (
 )
 
 const (
-	featurePath     = "definitions/features.toml"
-	fieldPath       = "definitions/fields.toml"
-	infoObjectMeta  = "definitions/info_object_meta.toml"
-	infoStorageMeta = "definitions/info_storage_meta.toml"
-	operationPath   = "definitions/operations.toml"
-	pairPath        = "definitions/pairs.toml"
+	featurePath     = "features.toml"
+	fieldPath       = "fields.toml"
+	infoObjectMeta  = "info_object_meta.toml"
+	infoStorageMeta = "info_storage_meta.toml"
+	operationPath   = "operations.toml"
+	pairPath        = "pairs.toml"
 )
 
 func parseFunc(name string) map[string]*templateutils.Method {
 	data := make(map[string]*templateutils.Method)
 	filename := fmt.Sprintf("%s.go", name)
 
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if os.IsNotExist(err) {
 		return data
 	}

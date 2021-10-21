@@ -1,0 +1,101 @@
+name: "Services Test Ftp"
+
+on: 
+   push:
+     paths:
+       - 'services/ftp/**'
+   pull_request:
+     paths:
+       - 'services/ftp/**'
+
+jobs:
+  integration_test_1:
+    name: Integration Test (fclairamb/ftpserver)
+    runs-on: ${{ matrix.os }}
+    env:
+      STORAGE_FTP_INTEGRATION_TEST: on
+      STORAGE_FTP_CREDENTIAL: basic:user:password
+      STORAGE_FTP_ENDPOINT: tcp:127.0.0.1:2121
+
+    strategy:
+      matrix:
+        go: ["1.16", "1.17"]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download ftpserver release
+        uses: robinraju/release-downloader@v1.1
+        with:
+          repository: fclairamb/ftpserver
+          tag: v0.10.0
+          fileName: ftpserver-linux-amd64
+
+      - name: Prepare config file
+        run: mv services/ftp/tests/ftpserver.json ./ftpserver.json
+
+      - name: Create test dir
+        run: mkdir tmp
+
+      - name: Start ftp server
+        run: |
+          chmod 777 ftpserver-linux-amd64
+          ./ftpserver-linux-amd64 &
+
+      - name: Build
+        run: make build
+
+      - name: Integration Test
+        working-directory: services/ftp
+        run: make integration_test
+
+  integration_test_2:
+    name: Integration Test (asf/mina-ftpserver)
+    runs-on: ${{ matrix.os }}
+    env:
+      STORAGE_FTP_INTEGRATION_TEST: on
+      STORAGE_FTP_CREDENTIAL: basic:admin:admin
+      STORAGE_FTP_ENDPOINT: tcp:127.0.0.1:2121
+
+    strategy:
+      matrix:
+        go: ["1.16", "1.17"]
+        java: ["8"]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download apache ftpserver 
+        run: wget https://dlcdn.apache.org/mina/ftpserver/1.1.1/dist/apache-ftpserver-1.1.1.zip
+
+      - name: Unzip file
+        run: unzip apache-ftpserver-1.1.1.zip
+
+      - name: Clean ftp home
+        run: rm apache-ftpserver-1.1.1/res/home/README.txt
+
+      - name: Start ftp server
+        run: |
+          chmod 777 apache-ftpserver-1.1.1/bin/ftpd.sh
+          ./apache-ftpserver-1.1.1/bin/ftpd.sh res/conf/ftpd-typical.xml &
+
+      - name: Build
+        run: make build
+
+      - name: Integration Test
+        working-directory: services/ftp
+        run: make integration_test

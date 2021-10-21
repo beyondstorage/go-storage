@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"path/filepath"
 	"strings"
@@ -44,7 +43,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 		Convey("When Read a file", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -79,7 +78,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 		Convey("When Read a file with offset or size", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -171,7 +170,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			})
 
 			secondSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), secondSize))
+			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), secondSize))
 
 			_, err = store.Write(path, bytes.NewReader(content), secondSize)
 
@@ -215,7 +214,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 		Convey("When Write and Read a file with IoCallback", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -358,7 +357,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 		Convey("When write a file with a valid io.Reader and length greater than size", func() {
 			n := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			size := rand.Int63n(n)
-			r, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), n))
+			r, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), n))
 			path := uuid.New().String()
 
 			_, err := store.Write(path, bytes.NewReader(r), size)
@@ -392,7 +391,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			})
 
 			Convey("Read should get Object without error", func() {
-				content, _ := ioutil.ReadAll(io.LimitReader(bytes.NewReader(r), size))
+				content, _ := io.ReadAll(io.LimitReader(bytes.NewReader(r), size))
 				var buf bytes.Buffer
 				n, err := store.Read(path, &buf)
 
@@ -411,7 +410,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 		Convey("When Stat a file", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -446,7 +445,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 		Convey("When Delete a file", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -568,7 +567,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 		Convey("When testing GSP-749 unify path behavior", func() {
 			Convey("When using absolute path", func() {
 				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-				content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+				content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 				if err != nil {
 					t.Error(err)
 				}
@@ -615,7 +614,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 			Convey("When using backslash in path", func() {
 				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-				content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+				content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 				if err != nil {
 					t.Error(err)
 				}

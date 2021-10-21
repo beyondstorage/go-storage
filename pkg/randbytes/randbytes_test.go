@@ -3,7 +3,6 @@ package randbytes
 import (
 	"crypto/rand"
 	"io"
-	"io/ioutil"
 	"testing"
 )
 
@@ -25,13 +24,13 @@ func BenchmarkRand(b *testing.B) {
 	b.SetBytes(toCopy)
 	r := NewRand()
 	for i := 0; i < b.N; i++ {
-		_, _ = io.CopyN(ioutil.Discard, r, toCopy)
+		_, _ = io.CopyN(io.Discard, r, toCopy)
 	}
 }
 
 func BenchmarkCrypto(b *testing.B) {
 	b.SetBytes(toCopy)
 	for i := 0; i < b.N; i++ {
-		_, _ = io.CopyN(ioutil.Discard, rand.Reader, toCopy)
+		_, _ = io.CopyN(io.Discard, rand.Reader, toCopy)
 	}
 }

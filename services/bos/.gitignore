@@ -1,0 +1,6 @@
+coverage.*
+bin/
+
+# Jetbrain IDE
+.idea
+*.iml

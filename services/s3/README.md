@@ -1,3 +1,5 @@
+[![Services Test S3](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-s3.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-s3.yml)
+
 # s3
 
 AWS S3 service support for [go-storage](https://github.com/beyondstorage/go-storage).
@@ -5,7 +7,7 @@ AWS S3 service support for [go-storage](https://github.com/beyondstorage/go-stor
 ## Install
 
 ```go
-go get go.beyondstorage.io/v5/services/s3/v3
+go get go.beyondstorage.io/services/s3/v3
 ```
 
 ## Usage
@@ -14,7 +16,7 @@ go get go.beyondstorage.io/v5/services/s3/v3
 import (
 	"log"
 
-	_ "go.beyondstorage.io/v5/services/s3/v3"
+	_ "go.beyondstorage.io/services/s3/v3"
 	"go.beyondstorage.io/v5/services"
 )
 

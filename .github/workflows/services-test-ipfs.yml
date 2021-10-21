@@ -1,0 +1,43 @@
+name: "Services Test Ipfs"
+
+on: 
+   push:
+     paths:
+       - 'services/ipfs/**'
+   pull_request:
+     paths:
+       - 'services/ipfs/**'
+
+jobs:
+  integration_test:
+    name: "Integration Test"
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go: [ "1.16", "1.17" ]
+        ipfs: ["0.8", "0.9"]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up IPFS ${{ matrix.ipfs }}
+        uses: ibnesayeed/setup-ipfs@8f99e662ba25be9a1158fffdeea57e9024468bfd
+        id: ipfs_setup
+        with:
+          ipfs_version: ${{ matrix.ipfs }}
+          run_daemon: true
+
+      - name: Test
+        env:
+          STORAGE_IPFS_INTEGRATION_TEST: "on"
+          STORAGE_IPFS_ENDPOINT: "http:127.0.0.1:5001"
+          STORAGE_IPFS_GATEWAY: "http:127.0.0.1:8080"
+        working-directory: services/ipfs
+        run: make integration_test

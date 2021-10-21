@@ -1,6 +1,6 @@
 module go.beyondstorage.io/v5
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Xuanwo/gg v0.2.0
@@ -8,7 +8,6 @@ require (
 	github.com/dave/dst v0.26.2
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
-	github.com/kevinburke/go-bindata v3.22.0+incompatible
 	github.com/pelletier/go-toml v1.9.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smartystreets/goconvey v1.6.6
