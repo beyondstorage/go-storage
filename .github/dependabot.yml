@@ -96,3 +96,7 @@ updates:
     directory: "/services/webdav"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/azfile"
+    schedule:
+      interval: daily

@@ -1,0 +1,40 @@
+name: "Services Test Azfile"
+
+on:
+   push:
+     paths:
+       - 'services/Azfile/**'
+   pull_request:
+     paths:
+       - 'services/Azfile/**'
+
+jobs:
+  services_test_azfile:
+    name: "Services Test Azfile"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.16", "1.17" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_AZFILE_CREDENTIAL: op://Engineering/Azfile/testing/credential
+          STORAGE_AZFILE_NAME: op://Engineering/Azfile/testing/name
+          STORAGE_AZFILE_ENDPOINT: op://Engineering/Azfile/testing/endpoint
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_AZFILE_INTEGRATION_TEST: on
+        working-directory: services/azfile
+        run: make integration_test
