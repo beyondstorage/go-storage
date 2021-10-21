@@ -68,3 +68,7 @@ updates:
     directory: "/services/onedrive"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/oss"
+    schedule:
+      interval: daily
