@@ -92,3 +92,7 @@ updates:
     directory: "/services/uss"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/zip"
+    schedule:
+      interval: daily
