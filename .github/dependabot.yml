@@ -76,3 +76,7 @@ updates:
     directory: "/services/qingstor"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/storj"
+    schedule:
+      interval: daily

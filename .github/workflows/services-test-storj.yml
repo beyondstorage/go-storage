@@ -1,0 +1,40 @@
+name: "Services Test Storj"
+
+on:
+   push:
+     paths:
+       - 'services/storj/**'
+   pull_request:
+     paths:
+       - 'services/storj/**'
+
+jobs:
+  services_test_storj:
+    name: "Services Test Storj"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.16", "1.17" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_STORJ_CREDENTIAL: op://Engineering/Storj/testing/credential
+          STORAGE_STORJ_NAME: op://Engineering/Storj/testing/name
+          STORAGE_STORJ_LOCATION: op://Engineering/Storj/testing/location
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_STORJ_INTEGRATION_TEST: on
+        working-directory: services/storj
+        run: make integration_test
