@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -60,7 +60,7 @@ func newStorager(pairs ...typ.Pair) (store *Storage, err error) {
 	}
 	switch cp.Protocol() {
 	case credential.ProtocolFile:
-		token, err = ioutil.ReadFile(cp.File())
+		token, err = os.ReadFile(cp.File())
 		if err != nil {
 			return nil, err
 		}

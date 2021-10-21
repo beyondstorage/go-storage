@@ -12,7 +12,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -104,7 +103,7 @@ func (o *onedriveClient) DownloadItem(ctx context.Context, absPath string) (rc i
 	}
 
 	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		errContent, _ := ioutil.ReadAll(resp.Body)
+		errContent, _ := io.ReadAll(resp.Body)
 		err = fmt.Errorf("upload resource failed, cause %s:%s", resp.Status, string(errContent))
 		return
 	}
@@ -242,7 +241,7 @@ func (o *onedriveClient) Upload(ctx context.Context, absPath string, fileSize in
 			return n, err
 		}
 		if res.StatusCode != 202 && res.StatusCode != 201 && res.StatusCode != 200 {
-			errContent, _ := ioutil.ReadAll(res.Body)
+			errContent, _ := io.ReadAll(res.Body)
 			err = fmt.Errorf("upload resource failed, cause %s:%s", res.Status, string(errContent))
 			return n, err
 		}
