@@ -3,10 +3,10 @@ name: "Services Test Azfile"
 on:
    push:
      paths:
-       - 'services/Azfile/**'
+       - 'services/azfile/**'
    pull_request:
      paths:
-       - 'services/Azfile/**'
+       - 'services/azfile/**'
 
 jobs:
   services_test_azfile:
