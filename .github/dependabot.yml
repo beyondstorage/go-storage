@@ -97,6 +97,10 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
+    directory: "/services/zip"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
     directory: "/services/azfile"
     schedule:
       interval: daily
