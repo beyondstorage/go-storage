@@ -89,6 +89,10 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
+    directory: "/services/uss"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
     directory: "/services/webdav"
     schedule:
       interval: daily
