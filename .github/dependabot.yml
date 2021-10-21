@@ -80,3 +80,7 @@ updates:
     directory: "/services/storj"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/tar"
+    schedule:
+      interval: daily
