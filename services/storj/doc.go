@@ -1,5 +1,5 @@
 /*
-Package storj provided support for local file system.
+Package storj provided support for Storj Decentralized Cloud Storage(https://www.storj.io).
 */
 package storj
 
