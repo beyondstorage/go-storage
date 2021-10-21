@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -252,7 +251,7 @@ func TestStorage_Read(t *testing.T) {
 			func(ctx context.Context, inputPath string, input *service.GetObjectInput) (*service.GetObjectOutput, error) {
 				assert.Equal(t, "test_src", inputPath)
 				return &service.GetObjectOutput{
-					Body: ioutil.NopCloser(bytes.NewBuffer([]byte("content"))),
+					Body: io.NopCloser(bytes.NewBuffer([]byte("content"))),
 				}, nil
 			},
 			false, nil,
