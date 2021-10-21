@@ -61,6 +61,14 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
+    directory: "/services/obs"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/onedrive"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
     directory: "/services/oss"
     schedule:
       interval: daily
