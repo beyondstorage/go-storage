@@ -32,8 +32,4 @@ The most common case to use a Storager service could be following:
 */
 package storage
 
-// We used to insert "-tags tools" here, but go-bindata doesn't support the new build
-// tag that introduced in go 1.17. So we remove the tags here.
-// In the further, we will move to go 1.16 embed to solve this problem.
-//go:generate go run github.com/kevinburke/go-bindata/go-bindata -nometadata -o ./cmd/definitions/bindata/bindata.go -pkg bindata ./definitions
 //go:generate go run -tags tools ./cmd/definitions
