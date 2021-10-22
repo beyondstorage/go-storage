@@ -3,6 +3,7 @@ package s3
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -210,10 +211,14 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 		abortInput := s.formatAbortMultipartUploadInput(path, opt)
 
 		_, err = s.service.AbortMultipartUpload(ctx, abortInput)
-		if err != nil && checkError(err, responseCodeNoSuchUpload) {
+
+		if err != nil {
 			// AbortMultipartUpload is idempotent in s3, but non-idempotent in minio, we need to omit `NoSuchUpload` error for compatibility.
 			// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
-			err = nil
+			e := &s3types.NoSuchUpload{}
+			if errors.As(err, &e) {
+				err = nil
+			}
 		}
 		if err != nil {
 			return err

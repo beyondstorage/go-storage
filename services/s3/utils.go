@@ -16,6 +16,7 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
+
 	"go.beyondstorage.io/credential"
 	"go.beyondstorage.io/endpoint"
 	ps "go.beyondstorage.io/v5/pairs"
@@ -214,46 +215,29 @@ const (
 	StorageClassDeepArchive        = s3types.ObjectStorageClassDeepArchive
 )
 
-// s3 service response error code
-//
-// ref: https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#RESTErrorResponses
-const (
-	// AccessDenied access denied
-	responseAccessDenied = "AccessDenied"
-	// NoSuchKey the specified key does not exist.
-	responseCodeNoSuchKey = "NoSuchKey"
-	// NoSuchUpload the specified multipart upload dose not exist.
-	responseCodeNoSuchUpload = "NoSuchUpload"
-)
-
 func formatError(err error) error {
 	if _, ok := err.(services.InternalError); ok {
 		return err
 	}
 
 	e := &smithy.GenericAPIError{}
-	if ok := errors.As(err, &e); !ok {
-		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
+	if errors.As(err, &e) {
+		switch e.Code {
+		// AWS SDK will use status code to generate awserr.Error, so "NotFound" should also be supported.
+		case "NoSuchKey", "NotFound":
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		case "AccessDenied":
+			return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+		}
 	}
 
-	switch e.Code {
-	// AWS SDK will use status code to generate awserr.Error, so "NotFound" should also be supported.
-	case responseCodeNoSuchKey, "NotFound":
+	noSuchKey := &s3types.NoSuchKey{}
+	notFound := &s3types.NotFound{}
+	if errors.As(err, &noSuchKey) || errors.As(err, &notFound) {
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
-	case responseAccessDenied:
-		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
-	default:
-		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
-	}
-}
-
-func checkError(err error, code string) bool {
-	e := &smithy.OperationError{}
-	if ok := errors.As(err, &e); !ok {
-		return false
 	}
 
-	return strings.Contains(e.Error(), code)
+	return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 }
 
 // newStorage will create a new client.
