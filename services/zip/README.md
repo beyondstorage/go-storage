@@ -1,4 +1,4 @@
-## zip
+# zip
 
 zip services support for [go-storage](https://github.com/beyondstorage/go-storage)
 

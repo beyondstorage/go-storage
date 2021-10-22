@@ -1,6 +1,6 @@
 [![Services Test Ftp](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-ftp.yml/badge.svg)](https://github.com/beyondstorage/go-storage/actions/workflows/services-test-ftp.yml)
 
-# go-service-ftp
+# ftp
 
 [FTP](https://datatracker.ietf.org/doc/html/rfc959) service support for [go-storage](https://github.com/beyondstorage/go-storage).
 
