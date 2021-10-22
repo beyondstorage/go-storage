@@ -108,3 +108,7 @@ updates:
     directory: "/services/cephfs"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/example"
+    schedule:
+      interval: daily
