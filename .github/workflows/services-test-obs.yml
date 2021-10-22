@@ -3,10 +3,10 @@ name: "Services Test Obs"
 on:
    push:
      paths:
-       - 'services/Obs/**'
+       - 'services/obs/**'
    pull_request:
      paths:
-       - 'services/Obs/**'
+       - 'services/obs/**'
 
 jobs:
   services_test_obs:
