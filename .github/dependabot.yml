@@ -109,6 +109,14 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
+    directory: "/services/example"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/fs"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
     directory: "/services/ocios"
     schedule:
       interval: daily
