@@ -1,4 +1,4 @@
-package example
+package ocios
 
 import (
 	"go.beyondstorage.io/v5/services"
