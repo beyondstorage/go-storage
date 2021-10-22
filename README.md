@@ -37,15 +37,15 @@ import (
     "go.beyondstorage.io/v5/types"
 
     // Add fs support
-    _ "github.com/beyondstorage/go-service-fs/v3"
+    _ "go.beyondstorage.io/services/fs/v4"
     // Add s3 support
-    _ "github.com/beyondstorage/go-service-s3/v2"
+    _ "go.beyondstorage.io/services/s3/v3"
     // Add gcs support
-    _ "github.com/beyondstorage/go-service-gcs/v2"
+    _ "go.beyondstorage.io/services/gcs/v3"
     // Add azblob support
-    _ "github.com/beyondstorage/go-service-azblob/v2"
+    _ "go.beyondstorage.io/services/azblob/v3"
     // More support could be found under BeyondStorage.
-    _ "github.com/beyondstorage/go-service-xxx" 
+    _ "go.beyondstorage.io/services/xxx" 
 )
 
 func main() {

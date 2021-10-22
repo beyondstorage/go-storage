@@ -31,15 +31,15 @@ import (
     "go.beyondstorage.io/v5/types"
 
     // 添加 fs 支持
-    _ "github.com/beyondstorage/go-service-fs/v3"
+    _ "go.beyondstorage.io/services/fs/v4"
     // 添加 s3 支持
-    _ "github.com/beyondstorage/go-service-s3/v2"
+    _ "go.beyondstorage.io/services/s3/v3"
     // 添加 gcs 支持
-    _ "github.com/beyondstorage/go-service-gcs/v2"
+    _ "go.beyondstorage.io/services/gcs/v3"
     // 添加 azblob 支持
-    _ "github.com/beyondstorage/go-service-azblob/v2"
+    _ "go.beyondstorage.io/services/azblob/v3"
     // 更多支持，可在 BeyondStorage 下获取
-    _ "github.com/beyondstorage/go-service-xxx" 
+    _ "go.beyondstorage.io/services/xxx" 
 )
 
 func main() {
