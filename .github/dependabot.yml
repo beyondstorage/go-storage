@@ -116,3 +116,7 @@ updates:
     directory: "/services/fs"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/ocios"
+    schedule:
+      interval: daily
