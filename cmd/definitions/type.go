@@ -12,7 +12,7 @@ import (
 	"github.com/pelletier/go-toml"
 	log "github.com/sirupsen/logrus"
 
-	"go.beyondstorage.io/v5/cmd/definitions/bindata"
+	"go.beyondstorage.io/v5/definitions"
 )
 
 // Data is the biggest container for all definitions.
@@ -79,7 +79,7 @@ func (d *Data) ObjectMeta() []*Info {
 }
 
 func (d *Data) LoadFeatures() {
-	err := parseTOML(bindata.MustAsset(featurePath), &d.FeaturesMap)
+	err := parseTOML(loadBindata(featurePath), &d.FeaturesMap)
 	if err != nil {
 		log.Fatalf("parse feature: %v", err)
 	}
@@ -90,7 +90,7 @@ func (d *Data) LoadFeatures() {
 
 // LoadPairs will formatGlobal PairsMap for pair spec
 func (d *Data) LoadPairs() {
-	err := parseTOML(bindata.MustAsset(pairPath), &d.PairsMap)
+	err := parseTOML(loadBindata(pairPath), &d.PairsMap)
 	if err != nil {
 		log.Fatalf("parse pair: %v", err)
 	}
@@ -135,14 +135,14 @@ func (d *Data) LoadInfos() {
 	}
 
 	omm := make(map[string]*Info)
-	err := parseTOML(bindata.MustAsset(infoObjectMeta), &omm)
+	err := parseTOML(loadBindata(infoObjectMeta), &omm)
 	if err != nil {
 		log.Fatalf("parse pair: %v", err)
 	}
 	d.InfosMap["object"]["meta"] = omm
 
 	smm := make(map[string]*Info)
-	err = parseTOML(bindata.MustAsset(infoStorageMeta), &smm)
+	err = parseTOML(loadBindata(infoStorageMeta), &smm)
 	if err != nil {
 		log.Fatalf("parse pair: %v", err)
 	}
@@ -162,7 +162,7 @@ func (d *Data) LoadInfos() {
 }
 
 func (d *Data) LoadFields() {
-	err := parseTOML(bindata.MustAsset(fieldPath), &d.FieldsMap)
+	err := parseTOML(loadBindata(fieldPath), &d.FieldsMap)
 	if err != nil {
 		log.Fatalf("parse field: %v", err)
 	}
@@ -172,7 +172,7 @@ func (d *Data) LoadFields() {
 }
 
 func (d *Data) LoadOperations() {
-	err := parseTOML(bindata.MustAsset(operationPath), &d.InterfacesMap)
+	err := parseTOML(loadBindata(operationPath), &d.InterfacesMap)
 	if err != nil {
 		log.Fatalf("parse operations: %v", err)
 	}
@@ -712,6 +712,14 @@ type Field struct {
 
 func parseTOML(src []byte, in interface{}) (err error) {
 	return toml.Unmarshal(src, in)
+}
+
+func loadBindata(filepath string) (bs []byte) {
+	bs, err := definitions.Bindata.ReadFile(filepath)
+	if err != nil {
+		panic(fmt.Errorf("read file %s: %v", filepath, err))
+	}
+	return bs
 }
 
 func compareInfo(x, y *Info) bool {
