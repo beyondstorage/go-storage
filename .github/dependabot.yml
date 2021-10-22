@@ -104,3 +104,7 @@ updates:
     directory: "/services/azfile"
     schedule:
       interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/cephfs"
+    schedule:
+      interval: daily
