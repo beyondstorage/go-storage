@@ -1,0 +1,40 @@
+name: "Services Test Oss"
+
+on:
+   push:
+     paths:
+       - 'services/oss/**'
+   pull_request:
+     paths:
+       - 'services/oss/**'
+
+jobs:
+  services_test_oss:
+    name: "Services Test Oss"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.16", "1.17" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_OSS_CREDENTIAL: op://Engineering/Oss/testing/credential
+          STORAGE_OSS_NAME: op://Engineering/Oss/testing/name
+          STORAGE_OSS_ENDPOINT: op://Engineering/Oss/testing/endpoint
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_OSS_INTEGRATION_TEST: on
+        working-directory: services/oss
+        run: make integration_test

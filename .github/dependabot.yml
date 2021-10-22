@@ -53,6 +53,58 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
-      directory: "/services/memory"
-      schedule:
-        interval: daily
+    directory: "/services/memory"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/minio"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/obs"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/onedrive"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/oss"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/qingstor"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/storj"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/tar"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/us3"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/uss"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/webdav"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/zip"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/azfile"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/services/cephfs"
+    schedule:
+      interval: daily

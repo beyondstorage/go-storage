@@ -3,7 +3,6 @@ package tests
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"testing"
@@ -84,7 +83,7 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 			}()
 
 			size := rand.Int63n(4 * 1024 * 1024)
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -98,7 +97,7 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 				So(req.URL, ShouldNotBeNil)
 			})
 
-			req.Body = ioutil.NopCloser(bytes.NewReader(content))
+			req.Body = io.NopCloser(bytes.NewReader(content))
 
 			client := http.Client{}
 			resp, err := client.Do(req)

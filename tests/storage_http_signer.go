@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"testing"
@@ -27,7 +26,7 @@ func TestStorageHTTPSignerRead(t *testing.T, store types.Storager) {
 
 		Convey("When Read via QuerySignHTTPRead", func() {
 			size := rand.Int63n(4 * 1024 * 1024)
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -62,7 +61,7 @@ func TestStorageHTTPSignerRead(t *testing.T, store types.Storager) {
 
 			defer resp.Body.Close()
 
-			buf, err := ioutil.ReadAll(resp.Body)
+			buf, err := io.ReadAll(resp.Body)
 			Convey("The content should be match", func() {
 				So(err, ShouldBeNil)
 				So(buf, ShouldNotBeNil)
@@ -81,7 +80,7 @@ func TestStorageHTTPSignerWrite(t *testing.T, store types.Storager) {
 
 		Convey("When Write via QuerySignHTTPWrite", func() {
 			size := rand.Int63n(4 * 1024 * 1024)
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -95,7 +94,7 @@ func TestStorageHTTPSignerWrite(t *testing.T, store types.Storager) {
 				So(req.URL, ShouldNotBeNil)
 			})
 
-			req.Body = ioutil.NopCloser(bytes.NewReader(content))
+			req.Body = io.NopCloser(bytes.NewReader(content))
 
 			client := http.Client{}
 			_, err = client.Do(req)

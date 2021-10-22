@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	gs "cloud.google.com/go/storage"
@@ -101,7 +101,7 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	}
 	switch cp.Protocol() {
 	case credential.ProtocolFile:
-		credJSON, err := ioutil.ReadFile(cp.File())
+		credJSON, err := os.ReadFile(cp.File())
 		if err != nil {
 			return nil, err
 		}

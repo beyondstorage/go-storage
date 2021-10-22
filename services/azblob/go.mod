@@ -1,6 +1,6 @@
 module go.beyondstorage.io/services/azblob/v3
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Azure/azure-pipeline-go v0.2.3
