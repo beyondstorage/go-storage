@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v3.0.0 - 2021-10-23
+
+### Added
+
+- feat(services/s3): Add missing option back (#880)
+
+### Changed
+
+- feat(services/s3): Move services s3 back (#853)
+- refactor(services/s3): Cleanup the logic of client init (#876)
+- ci(*): Upgrade minimum version to Go 1.16 (#916)
+
+### Upgraded
+
+- build(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 (#940)
+- build(deps): bump github.com/aws/aws-sdk-go-v2/config in /services/s3 (#941)
+
 ## [v2.5.0] - 2021-10-09
 
 ### Added
