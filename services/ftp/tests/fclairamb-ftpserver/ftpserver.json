@@ -9,7 +9,7 @@
       "pass": "password",
       "fs": "os",
       "params": {
-        "basePath": "./tmp"
+        "basePath": "./data"
       }
     }
   ],
