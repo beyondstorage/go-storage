@@ -1,7 +1,7 @@
 name: "Services Test Memory"
 
 concurrency:
-  group: ${{ github.action }}-${{ github.ref }}-${{ github.event_name }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 on:
