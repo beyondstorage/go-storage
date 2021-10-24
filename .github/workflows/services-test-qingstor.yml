@@ -1,12 +1,16 @@
 name: "Services Test Qingstor"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/qingstor/**'
-   pull_request:
-     paths:
-       - 'services/qingstor/**'
+  push:
+    paths:
+      - 'services/qingstor/**'
+  pull_request:
+    paths:
+      - 'services/qingstor/**'
 
 jobs:
   services_test_qingstor:

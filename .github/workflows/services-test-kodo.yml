@@ -1,12 +1,16 @@
 name: "Services Test Kodo"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/kodo/**'
-   pull_request:
-     paths:
-       - 'services/kodo/**'
+  push:
+    paths:
+      - 'services/kodo/**'
+  pull_request:
+    paths:
+      - 'services/kodo/**'
 
 jobs:
   services_test_kodo:

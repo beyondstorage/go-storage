@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v3.0.0 - 2021-10-23
+
+### Changed
+
+- feat(services/uss): Move services uss back (#932)
+
 ## [v2.2.0] - 2021-07-21
 
 ### Added
@@ -49,4 +55,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 [v2.2.0]: https://github.com/beyondstorage/go-service-uss/compare/v2.1.0...v2.2.0
 [v2.1.0]: https://github.com/beyondstorage/go-service-uss/compare/v2.0.0...v2.1.0
 [v2.0.0]: https://github.com/beyondstorage/go-service-uss/compare/v1.0.0...v2.0.0
- 

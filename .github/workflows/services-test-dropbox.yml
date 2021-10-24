@@ -1,12 +1,16 @@
 name: "Services Test Dropbox"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/dropbox/**'
-   pull_request:
-     paths:
-       - 'services/dropbox/**'
+  push:
+    paths:
+      - 'services/dropbox/**'
+  pull_request:
+    paths:
+      - 'services/dropbox/**'
 
 jobs:
   services_test_dropbox:

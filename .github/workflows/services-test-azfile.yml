@@ -1,12 +1,16 @@
 name: "Services Test Azfile"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/azfile/**'
-   pull_request:
-     paths:
-       - 'services/azfile/**'
+  push:
+    paths:
+      - 'services/azfile/**'
+  pull_request:
+    paths:
+      - 'services/azfile/**'
 
 jobs:
   services_test_azfile:

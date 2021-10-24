@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v3.0.0 - 2021-10-23
+
+### Changed
+
+- feat(services/kodo): Move services kodo back (#911)
+- ci(*): Upgrade minimum version to Go 1.16 (#916)
+
+### Upgraded
+
+- build(deps): bump github.com/qiniu/go-sdk/v7 in /services/kodo (#914)
+
 ## [v2.3.0] - 2021-09-13
 
 ### Changed

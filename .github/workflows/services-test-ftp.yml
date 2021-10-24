@@ -1,5 +1,9 @@
 name: "Services Test Ftp"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:

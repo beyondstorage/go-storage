@@ -1,12 +1,16 @@
 name: "Services Test Oss"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/oss/**'
-   pull_request:
-     paths:
-       - 'services/oss/**'
+  push:
+    paths:
+      - 'services/oss/**'
+  pull_request:
+    paths:
+      - 'services/oss/**'
 
 jobs:
   services_test_oss:
