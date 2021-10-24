@@ -193,7 +193,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 		input.RangeStart = opt.Offset
 	}
 	if opt.HasSize {
-		input.RangeEnd = input.RangeStart + opt.Size
+		input.RangeEnd = input.RangeStart + opt.Size - 1
 	}
 
 	output, err := s.client.GetObject(input)
