@@ -75,7 +75,7 @@ jobs:
           PASV_MIN_PORT: 21000
           PASV_MAX_PORT: 22000
         volumes:
-          - services/ftp/tests/vsftpd/data:/home/vsftpd
+          - vsftpd-data:/home/vsftpd
 
     steps:
       - name: Set up Go 1.x
