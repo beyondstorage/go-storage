@@ -3,7 +3,7 @@ name: "Cross Build"
 on: [ push,pull_request ]
 
 concurrency:
-  group: ${{ github.ref }}-${{ github.event_name }}
+  group: ${{ github.action }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:

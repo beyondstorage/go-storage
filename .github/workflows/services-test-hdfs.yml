@@ -1,7 +1,7 @@
 name: "Services Test Hdfs"
 
 concurrency:
-  group: ${{ github.ref }}-${{ github.event_name }}
+  group: ${{ github.action }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 on:
