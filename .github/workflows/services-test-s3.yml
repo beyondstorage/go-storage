@@ -1,7 +1,7 @@
 name: "Services Test S3"
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 on:

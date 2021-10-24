@@ -1,7 +1,7 @@
 name: "Services Test Kodo"
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 on:
