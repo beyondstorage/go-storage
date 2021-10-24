@@ -1,12 +1,16 @@
 name: "Services Test Fs"
 
-on: 
-   push:
-     paths:
-       - 'services/fs/**'
-   pull_request:
-     paths:
-       - 'services/fs/**'
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths:
+      - 'services/fs/**'
+  pull_request:
+    paths:
+      - 'services/fs/**'
 
 jobs:
   integration_test:
@@ -16,7 +20,7 @@ jobs:
     strategy:
       matrix:
         go: [ "1.16", "1.17" ]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       - name: Set up Go 1.x

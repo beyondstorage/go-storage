@@ -1,12 +1,16 @@
 name: "Services Test Gcs"
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/gcs/**'
-   pull_request:
-     paths:
-       - 'services/gcs/**'
+  push:
+    paths:
+      - 'services/gcs/**'
+  pull_request:
+    paths:
+      - 'services/gcs/**'
 
 jobs:
   services_test_gcs:

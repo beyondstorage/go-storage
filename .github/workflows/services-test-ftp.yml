@@ -1,5 +1,9 @@
 name: "Services Test Ftp"
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:

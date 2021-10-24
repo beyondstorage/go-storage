@@ -1,12 +1,16 @@
 name: "Services Test Minio"
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/minio/**'
-   pull_request:
-     paths:
-       - 'services/minio/**'
+  push:
+    paths:
+      - 'services/minio/**'
+  pull_request:
+    paths:
+      - 'services/minio/**'
 
 jobs:
   integration_test:

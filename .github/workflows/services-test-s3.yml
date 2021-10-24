@@ -1,12 +1,16 @@
 name: "Services Test S3"
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/s3/**'
-   pull_request:
-     paths:
-       - 'services/s3/**'
+  push:
+    paths:
+      - 'services/s3/**'
+  pull_request:
+    paths:
+      - 'services/s3/**'
 
 jobs:
   services_test_s3:

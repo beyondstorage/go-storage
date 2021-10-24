@@ -2,6 +2,10 @@ name: "Unit Test"
 
 on: [ push,pull_request ]
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unit_test:
     name: Unit Test

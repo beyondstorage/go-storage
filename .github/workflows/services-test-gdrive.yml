@@ -1,12 +1,16 @@
 name: "Services Test Gdrive"
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/gdrive/**'
-   pull_request:
-     paths:
-       - 'services/gdrive/**'
+  push:
+    paths:
+      - 'services/gdrive/**'
+  pull_request:
+    paths:
+      - 'services/gdrive/**'
 
 jobs:
   services_test_gdrive:
