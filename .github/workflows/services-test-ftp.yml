@@ -35,7 +35,7 @@ jobs:
           out-file-path: services/ftp/tests/fclairamb-ftpserver
 
       - name: Start ftp server
-        working-directory: services/ftp
+        working-directory: services/ftp/tests/fclairamb-ftpserver
         run: |
           mkdir data
           chmod +x ftpserver-linux-amd64

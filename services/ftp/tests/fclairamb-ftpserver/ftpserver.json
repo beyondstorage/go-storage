@@ -14,7 +14,7 @@
     }
   ],
   "passive_transfer_port_range": {
-    "start": 2122,
-    "end": 10000
+    "start": 21000,
+    "end": 22000
   }
 }
