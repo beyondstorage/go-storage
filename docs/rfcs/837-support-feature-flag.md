@@ -72,7 +72,6 @@ type StorageFeatures struct {
 	listMultipart                  bool
 	createPage                     bool
 	writePage                      bool
-	reach                          bool
 	create                         bool
 	delete                         bool
 	metadata                       bool
@@ -199,7 +198,6 @@ Feature flags solutions:
   - Mover
   - Multiparter
   - Pager
-  - Reacher
   - StorageHTTPSigner
   - MultipartHTTPSigner
 - All API call that use `ServiceFeatures` and `StorageFeatures` could be affected. We could migrate as follows:
