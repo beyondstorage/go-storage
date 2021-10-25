@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'services/kodo/**'
+    tags-ignore:
+      - '**'
   pull_request:
     paths:
       - 'services/kodo/**'

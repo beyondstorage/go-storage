@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'services/memory/**'
+    tags-ignore:
+      - '**'
   pull_request:
     paths:
       - 'services/memory/**'

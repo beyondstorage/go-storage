@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'services/gcs/**'
+    tags-ignore:
+      - '**'
   pull_request:
     paths:
       - 'services/gcs/**'

@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'services/ipfs/**'
+    tags-ignore:
+      - '**'
   pull_request:
     paths:
       - 'services/ipfs/**'
