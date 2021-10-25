@@ -16,6 +16,7 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
+
 	"go.beyondstorage.io/credential"
 	"go.beyondstorage.io/endpoint"
 	ps "go.beyondstorage.io/v5/pairs"
@@ -220,19 +221,23 @@ func formatError(err error) error {
 	}
 
 	e := &smithy.GenericAPIError{}
-	if ok := errors.As(err, &e); !ok {
-		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
+	if errors.As(err, &e) {
+		switch e.Code {
+		// AWS SDK will use status code to generate awserr.Error, so "NotFound" should also be supported.
+		case "NoSuchKey", "NotFound":
+			return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
+		case "AccessDenied":
+			return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
+		}
 	}
 
-	switch e.Code {
-	// AWS SDK will use status code to generate awserr.Error, so "NotFound" should also be supported.
-	case "NoSuchKey", "NotFound":
+	noSuchKey := &s3types.NoSuchKey{}
+	notFound := &s3types.NotFound{}
+	if errors.As(err, &noSuchKey) || errors.As(err, &notFound) {
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, err)
-	case "AccessDenied":
-		return fmt.Errorf("%w: %v", services.ErrPermissionDenied, err)
-	default:
-		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 	}
+
+	return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 }
 
 // newStorage will create a new client.
@@ -281,6 +286,9 @@ func (s *Service) formatError(op string, err error, name string) error {
 
 // getAbsPath will calculate object storage's abs path
 func (s *Storage) getAbsPath(path string) string {
+	if strings.HasPrefix(path, "/") {
+		return strings.TrimPrefix(path, "/")
+	}
 	prefix := strings.TrimPrefix(s.workDir, "/")
 	return prefix + path
 }

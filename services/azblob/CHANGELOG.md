@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v3.0.0 - 2021-10-23
+
+### Added
+
+- feat: Add support for Write Empty File Behavior (https://github.com/beyondstorage/go-service-azblob/pull/54)
+
+### Changed
+
+- feat(services/azblob): Move services azblob back (#875)
+- ci(*): Upgrade minimum version to Go 1.16 (#916)
+
 ## [v2.3.0] - 2021-09-13
 
 ### Changed

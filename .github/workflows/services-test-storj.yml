@@ -1,12 +1,18 @@
 name: "Services Test Storj"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/storj/**'
-   pull_request:
-     paths:
-       - 'services/storj/**'
+  push:
+    paths:
+      - 'services/storj/**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - 'services/storj/**'
 
 jobs:
   services_test_storj:

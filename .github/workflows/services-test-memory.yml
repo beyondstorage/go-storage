@@ -1,12 +1,18 @@
 name: "Services Test Memory"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/memory/**'
-   pull_request:
-     paths:
-       - 'services/memory/**'
+  push:
+    paths:
+      - 'services/memory/**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - 'services/memory/**'
 
 jobs:
   unit_test:
@@ -16,7 +22,7 @@ jobs:
     strategy:
       matrix:
         go: [ "1.16", "1.17" ]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       - name: Set up Go 1.x

@@ -1,12 +1,18 @@
 name: "Services Test Ipfs"
 
-on: 
-   push:
-     paths:
-       - 'services/ipfs/**'
-   pull_request:
-     paths:
-       - 'services/ipfs/**'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths:
+      - 'services/ipfs/**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - 'services/ipfs/**'
 
 jobs:
   integration_test:
@@ -16,7 +22,7 @@ jobs:
     strategy:
       matrix:
         go: [ "1.16", "1.17" ]
-        ipfs: ["0.8", "0.9"]
+        ipfs: [ "0.8", "0.9" ]
 
     steps:
       - name: Set up Go 1.x

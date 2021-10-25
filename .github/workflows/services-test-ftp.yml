@@ -1,26 +1,27 @@
 name: "Services Test Ftp"
 
-on: 
-   push:
-     paths:
-       - 'services/ftp/**'
-   pull_request:
-     paths:
-       - 'services/ftp/**'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths:
+      - 'services/ftp/**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - 'services/ftp/**'
 
 jobs:
   integration_test_1:
-    name: Integration Test (fclairamb/ftpserver)
-    runs-on: ${{ matrix.os }}
-    env:
-      STORAGE_FTP_INTEGRATION_TEST: on
-      STORAGE_FTP_CREDENTIAL: basic:user:password
-      STORAGE_FTP_ENDPOINT: tcp:127.0.0.1:2121
+    name: Service Test on fclairamb/ftpserver
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        go: ["1.16", "1.17"]
-        os: [ubuntu-latest]
+        go: [ "1.16", "1.17" ]
 
     steps:
       - name: Set up Go 1.x
@@ -32,43 +33,55 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download ftpserver release
-        uses: robinraju/release-downloader@v1.1
+        uses: robinraju/release-downloader@v1.2
         with:
           repository: fclairamb/ftpserver
           tag: v0.10.0
           fileName: ftpserver-linux-amd64
-
-      - name: Prepare config file
-        run: mv services/ftp/tests/ftpserver.json ./ftpserver.json
-
-      - name: Create test dir
-        run: mkdir tmp
+          out-file-path: services/ftp/tests/fclairamb-ftpserver
 
       - name: Start ftp server
+        working-directory: services/ftp/tests/fclairamb-ftpserver
         run: |
-          chmod 777 ftpserver-linux-amd64
+          mkdir data
+          chmod +x ftpserver-linux-amd64
           ./ftpserver-linux-amd64 &
 
       - name: Build
+        working-directory: services/ftp
         run: make build
 
       - name: Integration Test
         working-directory: services/ftp
+        env:
+          STORAGE_FTP_INTEGRATION_TEST: on
+          STORAGE_FTP_CREDENTIAL: basic:user:password
+          STORAGE_FTP_ENDPOINT: tcp:127.0.0.1:2121
         run: make integration_test
 
   integration_test_2:
-    name: Integration Test (asf/mina-ftpserver)
-    runs-on: ${{ matrix.os }}
-    env:
-      STORAGE_FTP_INTEGRATION_TEST: on
-      STORAGE_FTP_CREDENTIAL: basic:admin:admin
-      STORAGE_FTP_ENDPOINT: tcp:127.0.0.1:2121
+    name: Service Test on vsftpd
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        go: ["1.16", "1.17"]
-        java: ["8"]
-        os: [ubuntu-latest]
+        go: [ "1.16", "1.17" ]
+        os: [ ubuntu-latest ]
+
+    services:
+      ftp:
+        image: fauria/vsftpd
+        ports:
+          - 2121:21
+          - 21000-22000:21000-22000
+        env:
+          FTP_USER: admin
+          FTP_PASS: admin
+          PASV_ADDRESS: 127.0.0.1
+          PASV_MIN_PORT: 21000
+          PASV_MAX_PORT: 22000
+        volumes:
+          - vsftpd-data:/home/vsftpd
 
     steps:
       - name: Set up Go 1.x
@@ -79,23 +92,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Download apache ftpserver 
-        run: wget https://dlcdn.apache.org/mina/ftpserver/1.1.1/dist/apache-ftpserver-1.1.1.zip
-
-      - name: Unzip file
-        run: unzip apache-ftpserver-1.1.1.zip
-
-      - name: Clean ftp home
-        run: rm apache-ftpserver-1.1.1/res/home/README.txt
-
-      - name: Start ftp server
-        run: |
-          chmod 777 apache-ftpserver-1.1.1/bin/ftpd.sh
-          ./apache-ftpserver-1.1.1/bin/ftpd.sh res/conf/ftpd-typical.xml &
-
       - name: Build
         run: make build
 
       - name: Integration Test
         working-directory: services/ftp
+        env:
+          STORAGE_FTP_INTEGRATION_TEST: on
+          STORAGE_FTP_CREDENTIAL: basic:admin:admin
+          STORAGE_FTP_ENDPOINT: tcp:127.0.0.1:2121
         run: make integration_test

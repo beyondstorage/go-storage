@@ -1,12 +1,18 @@
 name: "Services Test Azblob"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/azblob/**'
-   pull_request:
-     paths:
-       - 'services/azblob/**'
+  push:
+    paths:
+      - 'services/azblob/**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - 'services/azblob/**'
 
 jobs:
   services_test_azblob:

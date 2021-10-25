@@ -1,0 +1,46 @@
+name: "Services Test Obs"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths:
+      - 'services/obs/**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - 'services/obs/**'
+
+jobs:
+  services_test_obs:
+    name: "Services Test Obs"
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        go: [ "1.16", "1.17" ]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_OBS_CREDENTIAL: op://Engineering/Obs/testing/credential
+          STORAGE_OBS_NAME: op://Engineering/Obs/testing/name
+          STORAGE_OBS_ENDPOINT: op://Engineering/Obs/testing/endpoint
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test
+        env:
+          STORAGE_OBS_INTEGRATION_TEST: on
+        working-directory: services/obs
+        run: make integration_test

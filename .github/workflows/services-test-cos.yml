@@ -1,12 +1,18 @@
 name: "Services Test Cos"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
-   push:
-     paths:
-       - 'services/cos/**'
-   pull_request:
-     paths:
-       - 'services/cos/**'
+  push:
+    paths:
+      - 'services/cos/**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - 'services/cos/**'
 
 jobs:
   services_test_cos:
