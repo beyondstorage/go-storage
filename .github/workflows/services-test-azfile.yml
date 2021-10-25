@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'services/azfile/**'
+    tags-ignore:
+      - '**'
   pull_request:
     paths:
       - 'services/azfile/**'

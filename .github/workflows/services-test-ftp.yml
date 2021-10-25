@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'services/ftp/**'
+    tags-ignore:
+      - '**'
   pull_request:
     paths:
       - 'services/ftp/**'

@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'services/qingstor/**'
+    tags-ignore:
+      - '**'
   pull_request:
     paths:
       - 'services/qingstor/**'

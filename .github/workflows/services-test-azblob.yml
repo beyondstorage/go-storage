@@ -5,12 +5,14 @@ concurrency:
   cancel-in-progress: true
 
 on:
-   push:
-     paths:
-       - 'services/azblob/**'
-   pull_request:
-     paths:
-       - 'services/azblob/**'
+  push:
+    paths:
+      - 'services/azblob/**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - 'services/azblob/**'
 
 jobs:
   services_test_azblob:

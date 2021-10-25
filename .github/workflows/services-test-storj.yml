@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'services/storj/**'
+    tags-ignore:
+      - '**'
   pull_request:
     paths:
       - 'services/storj/**'
