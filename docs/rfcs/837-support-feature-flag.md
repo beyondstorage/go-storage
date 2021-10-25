@@ -23,7 +23,7 @@ In [GSP-87: Feature Gates](./87-feature-gates.md), we have the concept of `featu
 - VirtualLink
 - VirtualObjectMetadata
 
-It's obvious that they are only a subset of all features we support. 
+It's obvious that they are only a subset of all features we support.
 
 In fact, we can categorize all features into three kinds:
 
@@ -46,34 +46,65 @@ I propose to support feature flag for operational rampups, and also provide inte
 ### Reimplement Features
 
 - Generate `ServiceFeatures` and `StorageFeatures` structs on go-storage side to represent the features supported by the storage container and storage service, respectively.
-  - `CanXxx()` function is to check if the operation is supported.
-  - `EnableXxx()` function is to enable the feature that no native support but could be virtual.
-  - `ServiceFeatures` and `StorageFeatures` structs in services side will be deprecated, as will the `WithStorageFeatures()`/`WithServiceFeatures()` functions. `enable_virtual_dir` and other pairs will be reserved to enable virtual features for Caller.
+  - `CanXxx()` function is to check if the operation, or the feature that no native support but could be virtual is supported.
+- Declare the supported features on service side.
+  - Reserve the generated enable feature pairs `enable_xxx` and `EnableXxx()` functions for features that are not natively supported but can be supported virtually to enable the feature when init the storage.
+  - `ServiceFeatures` and `StorageFeatures` pairs and structs will be deprecated on service side, as will the `WithStorageFeatures()`/`WithServiceFeatures()` functions.
 
 ```go
 // StorageFeatures indicates features supported by storage.
 type StorageFeatures struct {
-	// native support or can't support
-	Create                bool
-	Delete                bool
-	...
-	Copy                  bool
-	...
+	// native support or can't support 
+	createAppend                   bool
+	writeAppend                    bool
+	commitAppend                   bool
+	createBlock                    bool
+	writeBlock                     bool
+	combineBlock                   bool
+	listBlock                      bool
+	createDir                      bool
+	fetch                          bool
+	createLink                     bool
+	move                           bool
+	createMultipart                bool
+	writeMultipart                 bool
+	completeMultipart              bool
+	listMultipart                  bool
+	createPage                     bool
+	writePage                      bool
+	reach                          bool
+	create                         bool
+	delete                         bool
+	metadata                       bool
+	list                           bool
+	read                           bool
+	stat                           bool
+	write                          bool
+	querySignHTTPDelete            bool
+	querySignHTTPRead              bool
+	querySignHTTPWrite             bool
+	querySignHTTPCreateMultipart   bool
+	querySignHTTPCompleteMultipart bool
+	querySignHTTPWriteMultipart    bool
+	querySignHTTPlistMultipart     bool
+	
 	// no native support but could be virtual
-	LoosePair             bool
-	VirtualDir            bool
-	VirtualLink           bool
-	VirtualObjectMetadata bool
+	loosePair             bool
+	virtualDir            bool
+	virtualLink           bool
+	virtualObjectMetadata bool
 }
 
 // CanCopy returns whether this storage support Copy operation or not.
 func (f StorageFeatures) CanCopy() bool {
-	return f.Copy
+	return f.copy
 }
 
-// EnableVirtualDir will enable virtual_dir feature.
-func (f *StorageFeatures) EnableVirtualDir() {
-	f.VirtualDir = true
+...
+
+// CanVirtualDir returns whether this storage support virtual_dir feature or not.
+func (f *StorageFeatures) CanVirtualDir() {
+	f.virtualDir = true
 }
 
 ...
@@ -82,11 +113,11 @@ func (f *StorageFeatures) EnableVirtualDir() {
 ### Add operations back to Storager
 
 - Add all operations in interfaces for storage service like `Copy`, `Move`, etc back to `Storager`.
-- Support `Feature()` that returns `StorageFeatures` and `ServiceFeatures` in `Storager` and `Servicer` interfaces, respectively.
+- Support `Features()` which returns the supported features in `Storager` and `Servicer` interfaces, respectively.
 
 ```go
 type Storager interface {
-	Feature() StorageFeatures
+	Features() StorageFeatures
 	
 	String() string
 	// Storage
@@ -125,12 +156,13 @@ func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
 ...
 ```
 
-Stub implementations for all non-supported operations will be generated. Service implementor should implement `Feature()` to return the features supported by storage service.
+- Stub implementations for all non-supported operations will be generated.
+- The implementation of `Features()` will be generated according to the declared supported features.
 
-Caller need to check `StorageFeatures` or `ServiceFeatures` before use them.
+Caller need to check the feature support flag before use them.
 
 ```go
-if store.Feature().CanCopy() {
+if store.Features().CanCopy() {
 	err := store.Copy(oldpath, newpath)
 	if err != nil {
 		return err
@@ -159,27 +191,30 @@ Feature flags solutions:
 
 ## Compatibility
 
-Interface type assertion for storage capability will be deprecated: the following interfaces will be deprecated, and the related operations will be added back to `Storager` interface. Caller need to check supported features before use them.
-
-- Appender
-- Blocker
-- Copier
-- Direr
-- Mover
-- Multiparter
-- Pager
-- Reacher
-- StorageHTTPSigner
-- MultipartHTTPSigner
+- Interface type assertion for storage capability will be deprecated: the following interfaces will be deprecated, and the related operations will be added back to `Storager` interface. Caller need to check supported features before use them.
+  - Appender
+  - Blocker
+  - Copier
+  - Direr
+  - Mover
+  - Multiparter
+  - Pager
+  - Reacher
+  - StorageHTTPSigner
+  - MultipartHTTPSigner
+- All API call that use `ServiceFeatures` and `StorageFeatures` could be affected. We could migrate as follows:
+  - Mark `ServiceFeatures` and `StorageFeatures` related as deprecated.
+  - Release a new version for go-storage and all services bump to this version with all references to `ServiceFeatures`, `StorageFeatures` etc updated.
+  - Remove deprecated structs in the next major version.
 
 ## Implementation
 
 - For go-storage
-  - Deprecate the current generated `ServiceFeatures` and `StorageFeatures` for services, and re-generate them on go-storage side.
-  - Deprecate interfaces other than `Servicer` and `Storager`, and add the related operations back to `Storager`.
+  - Deprecate the current generated `ServiceFeatures` and `StorageFeatures` pairs and structs for services, and re-generate them on go-storage side.
+  - Remove interfaces other than `Servicer` and `Storager`, and add the related operations back to `Storager`.
 - For storage services
   - Remove `implement` fields in `service.toml`.
-  - Implement `Feature()` for `Storage` and `Service`.
+  - Generate the implementation of `Features()` for `Storage` and `Service`.
 - For go-integration-test
   - go-integration-test should not use type assertions, but run the test cases according to features.
   
