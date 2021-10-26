@@ -4,7 +4,7 @@ name = "oss"
 
 [namespace.service.new]
 required = ["credential"]
-optional = ["service_features", "default_service_pairs", "endpoint", "http_client_options"]
+optional = ["endpoint", "http_client_options"]
 
 [namespace.storage]
 features = ["virtual_dir"]
@@ -12,7 +12,7 @@ implement = ["appender", "direr", "multiparter", "linker"]
 
 [namespace.storage.new]
 required = ["name"]
-optional = ["storage_features", "default_storage_pairs", "work_dir"]
+optional = ["work_dir"]
 
 [namespace.storage.op.create]
 optional = ["multipart_id", "object_mode"]
@@ -46,22 +46,6 @@ optional = ["content_type", "server_side_encryption", "server_side_encryption_ke
 
 [namespace.storage.op.write_multipart]
 optional = ["content_md5"]
-
-[pairs.service_features]
-type = "ServiceFeatures"
-description = "set service features"
-
-[pairs.default_service_pairs]
-type = "DefaultServicePairs"
-description = "set default pairs for service actions"
-
-[pairs.storage_features]
-type = "StorageFeatures"
-description = "set storage features"
-
-[pairs.default_storage_pairs]
-type = "DefaultStoragePairs"
-description = "set default pairs for storager actions"
 
 [pairs.storage_class]
 type = "string"
