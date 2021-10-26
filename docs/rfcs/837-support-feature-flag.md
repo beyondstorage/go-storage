@@ -1,7 +1,7 @@
 - Author: JinnyYi <github.com/JinnyYi>
 - Start Date: 2021-10-11
 - RFC PR: [beyondstorage/go-storage#837](https://github.com/beyondstorage/go-storage/issues/837)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#966](https://github.com/beyondstorage/go-storage/issues/966)
 
 # GSP-837: Support Feature Flag
 
@@ -107,9 +107,8 @@ func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
 #### Feature Flags API
 
 `ServiceFeatures` and `StorageFeatures` structs will be generated on go-storage side to represent the features supported by the storage container and storage service, respectively. The full feature list include operation features, operation-related features and virtual features.
-- For operation, we will have the function with the same name as it to check if the operation is supported.
-- For operation-related feature, it comes from the `features.toml` with the name `[op][name]` like `write_empty_name`. We will have the function with the name `Can[op][name]` to check if the feature is supported.
-- For virtual feature, it comes from the `features.toml` with a new `virtual` property to distinguish it from operation-related features. We will have the function with the same name as it to check if the virtual feature is supported.
+- For all the features, we will have the functions with the same name as them to check if the feature is supported.
+- Operation-related features will be defined in `features.toml`. We will introduce a new `virtual` property for virtual features to distinguish them from operation-related features.
 
 Take `StorageFeatures` as an example:
 
@@ -166,8 +165,8 @@ func (f StorageFeatures) Copy() bool {
 
 ...
 
-// CanWriteEmptyObject returns whether this storage support write_empty_object or not.
-func (f StorageFeatures) CanWriteEmptyObject() bool {
+// WriteEmptyObject returns whether this storage support write_empty_object or not.
+func (f StorageFeatures) WriteEmptyObject() bool {
 	return f.writeEmptyObject
 }
 
@@ -208,7 +207,7 @@ if store.Features().Copy() {
 	}
 }
 
-if store.Features().Write && store.Features().CanWriteEmptyObject() {
+if store.Features().Write() && store.Features().WriteEmptyObject() {
 	err := store.Write(path, nil, size)
     if err != nil {
     	return err
