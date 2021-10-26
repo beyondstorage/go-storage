@@ -277,8 +277,6 @@ func (d *Data) LoadService(filePath string) {
 	for name, ns := range srv.Namespaces {
 		ns.Name = name
 		ns.srv = srv
-		// Append namespace itself into implement.
-		ns.Implement = append(ns.Implement, ns.Name+"r")
 
 		// When no function is declared under the namespace of the service, we should initialize the map `ns.Op`.
 		if ns.Op == nil {
@@ -355,19 +353,18 @@ func (d *Data) LoadService(filePath string) {
 		}
 
 		// Service could not declare all ops, so we need to fill them instead.
-		for _, implement := range ns.Implement {
-			in := d.InterfacesMap[implement]
+		interfaceName := fmt.Sprintf("%sr", ns.Name)
+		in := d.InterfacesMap[interfaceName]
 
-			for _, op := range in.Op {
-				if _, ok := ns.Op[op.Name]; ok {
-					continue
-				}
-				ns.Op[op.Name] = &Function{
-					srv:         srv,
-					ns:          ns,
-					Name:        op.Name,
-					Implemented: false,
-				}
+		for _, op := range in.Op {
+			if _, ok := ns.Op[op.Name]; ok {
+				continue
+			}
+			ns.Op[op.Name] = &Function{
+				srv:         srv,
+				ns:          ns,
+				Name:        op.Name,
+				Implemented: false,
 			}
 		}
 
@@ -459,10 +456,9 @@ func (s *Service) GetPair(name string) *Pair {
 
 // Namespace contains all info about a namespace
 type Namespace struct {
-	Features  []string             `toml:"features"`
-	Implement []string             `toml:"implement"`
-	New       *Function            `toml:"new"`
-	Op        map[string]*Function `toml:"op"`
+	Features []string             `toml:"features"`
+	New      *Function            `toml:"new"`
+	Op       map[string]*Function `toml:"op"`
 
 	// Runtime generated
 	srv                 *Service
@@ -486,21 +482,14 @@ func (ns *Namespace) ParsedFeatures() []*Feature {
 	return ps
 }
 
-func (ns *Namespace) ParsedInterfaces() []*Interface {
-	var is []*Interface
-	for _, name := range ns.Implement {
-		i, ok := ns.srv.d.InterfacesMap[name]
-		if !ok {
-			log.Fatalf("interface %s is not registered", name)
-		}
-
-		is = append(is, i)
+func (ns *Namespace) ParsedInterface() *Interface {
+	name := fmt.Sprintf("%sr", ns.Name)
+	i, ok := ns.srv.d.InterfacesMap[name]
+	if !ok {
+		log.Fatalf("interface %s is not registered", name)
 	}
 
-	sort.Slice(is, func(i, j int) bool {
-		return is[i].Name < is[j].Name
-	})
-	return is
+	return i
 }
 
 func (ns *Namespace) ParsedFunctions() []*Function {

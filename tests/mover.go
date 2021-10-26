@@ -19,8 +19,6 @@ import (
 
 func TestMover(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		m, ok := store.(types.Mover)
-		So(ok, ShouldBeTrue)
 
 		Convey("When Move a file", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
@@ -40,7 +38,7 @@ func TestMover(t *testing.T, store types.Storager) {
 			}()
 
 			dst := uuid.New().String()
-			err = m.Move(src, dst)
+			err = store.Move(src, dst)
 
 			defer func() {
 				err = store.Delete(dst)
@@ -110,7 +108,7 @@ func TestMover(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			err = m.Move(src, dst)
+			err = store.Move(src, dst)
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
@@ -143,10 +141,6 @@ func TestMover(t *testing.T, store types.Storager) {
 
 func TestMoverWithDir(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		m, ok := store.(types.Mover)
-		So(ok, ShouldBeTrue)
-
-		d := store.(types.Direr)
 
 		Convey("When Move to an existing dir", func() {
 
@@ -167,7 +161,7 @@ func TestMoverWithDir(t *testing.T, store types.Storager) {
 			}()
 
 			dst := uuid.New().String()
-			_, err = d.CreateDir(dst)
+			_, err = store.CreateDir(dst)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -179,7 +173,7 @@ func TestMoverWithDir(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			err = m.Move(src, dst)
+			err = store.Move(src, dst)
 			Convey("The error should be ErrObjectModeInvalid", func() {
 				So(errors.Is(err, services.ErrObjectModeInvalid), ShouldBeTrue)
 			})
@@ -189,10 +183,6 @@ func TestMoverWithDir(t *testing.T, store types.Storager) {
 
 func TestMoverWithVirtualDir(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		m, ok := store.(types.Mover)
-		So(ok, ShouldBeTrue)
-
-		d := store.(types.Direr)
 
 		Convey("When Move to an existing dir", func() {
 
@@ -213,7 +203,7 @@ func TestMoverWithVirtualDir(t *testing.T, store types.Storager) {
 			}()
 
 			dst := uuid.New().String()
-			_, err = d.CreateDir(dst)
+			_, err = store.CreateDir(dst)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -225,7 +215,7 @@ func TestMoverWithVirtualDir(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			err = m.Move(src, dst)
+			err = store.Move(src, dst)
 
 			defer func() {
 				err = store.Delete(dst)

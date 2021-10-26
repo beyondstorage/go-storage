@@ -21,8 +21,6 @@ import (
 
 func TestStorageHTTPSignerRead(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.StorageHTTPSigner)
-		So(ok, ShouldBeTrue)
 
 		Convey("When Read via QuerySignHTTPRead", func() {
 			size := rand.Int63n(4 * 1024 * 1024)
@@ -43,7 +41,7 @@ func TestStorageHTTPSignerRead(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			req, err := signer.QuerySignHTTPRead(path, time.Duration(time.Hour))
+			req, err := store.QuerySignHTTPRead(path, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -75,8 +73,6 @@ func TestStorageHTTPSignerRead(t *testing.T, store types.Storager) {
 
 func TestStorageHTTPSignerWrite(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.StorageHTTPSigner)
-		So(ok, ShouldBeTrue)
 
 		Convey("When Write via QuerySignHTTPWrite", func() {
 			size := rand.Int63n(4 * 1024 * 1024)
@@ -86,7 +82,7 @@ func TestStorageHTTPSignerWrite(t *testing.T, store types.Storager) {
 			}
 
 			path := uuid.New().String()
-			req, err := signer.QuerySignHTTPWrite(path, size, time.Duration(time.Hour))
+			req, err := store.QuerySignHTTPWrite(path, size, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -127,8 +123,6 @@ func TestStorageHTTPSignerWrite(t *testing.T, store types.Storager) {
 
 func TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.StorageHTTPSigner)
-		So(ok, ShouldBeTrue)
 
 		Convey("When Delete via QuerySignHTTPDelete", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
@@ -140,7 +134,7 @@ func TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {
 				t.Error(err)
 			}
 
-			req, err := signer.QuerySignHTTPDelete(path, time.Duration(time.Hour))
+			req, err := store.QuerySignHTTPDelete(path, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -165,16 +159,13 @@ func TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Delete with multipart id via QuerySignHTTPDelete", func() {
-			mu, ok := store.(types.Multiparter)
-			So(ok, ShouldBeTrue)
-
 			path := uuid.New().String()
-			o, err := mu.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
 
-			req, err := signer.QuerySignHTTPDelete(path, time.Duration(time.Hour), pairs.WithMultipartID(o.MustGetMultipartID()))
+			req, err := store.QuerySignHTTPDelete(path, time.Duration(time.Hour), pairs.WithMultipartID(o.MustGetMultipartID()))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)

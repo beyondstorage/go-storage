@@ -1,191 +1,3 @@
-[appender]
-description = "is the interface for Append related operations."
-
-[appender.op.create_append]
-params = ["path"]
-results = ["o"]
-description = """
-will create an append object.
-
-## Behavior
-
-- CreateAppend SHOULD create an appendable object with position 0 and size 0.
-- CreateAppend SHOULD NOT return an error as the object exist.
-  - Service SHOULD check and delete the object if exists.
-"""
-
-[appender.op.write_append]
-description = "will append content to an append object."
-params = ["o", "r", "size"]
-results = ["n"]
-object_mode = "append"
-
-[appender.op.commit_append]
-description = "will commit and finish an append process."
-params = ["o"]
-object_mode = "append"
-
-[blocker]
-description = "is the interface for Block related operations."
-
-[blocker.op.create_block]
-params = ["path"]
-results = ["o"]
-description = """
-will create a new block object.
-
-## Behavior
-- CreateBlock SHOULD NOT return an error as the object exist.
-  - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
-  - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if exists.
-"""
-
-[blocker.op.write_block]
-description = "will write content to a block."
-params = ["o", "r", "size", "bid"]
-results = ["n"]
-object_mode = "block"
-
-[blocker.op.combine_block]
-description = "will combine blocks into an object."
-params = ["o", "bids"]
-object_mode = "block"
-
-[blocker.op.list_block]
-description = "will list blocks belong to this object."
-params = ["o"]
-results = ["bi"]
-object_mode = "block"
-
-[copier]
-description = "is the interface for Copy."
-
-[copier.op.copy]
-params = ["src", "dst"]
-description = """
-will copy an Object or multiple object in the service.
-
-## Behavior
-
-- Copy only copy one and only one object.
-  - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
-  - User NEED to implement copy a non-empty directory and copy recursively by themself.
-  - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
-- Copy SHOULD NOT return an error as dst object exists.
-  - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or not.
-  - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object if exists.
-- A successful copy opration should be complete, which means the dst object's content and metadata should be the same as src object.
-"""
-
-[direr]
-description = "is the interface for Directory."
-
-[direr.op.create_dir]
-description = "will create a new dir object."
-params = ["path"]
-results = ["o"]
-
-[fetcher]
-description = "is the interface for Fetch."
-
-[fetcher.op.fetch]
-params = ["path", "url"]
-description = """
-will fetch from a given url to path.
-
-## Behavior
-
-- Fetch SHOULD NOT return an error as the object exists.
-- A successful fetch operation should be complete, which means the object's content and metadata should be the same as requiring from the url.
-"""
-
-[mover]
-description = "is the interface for Move."
-
-[mover.op.move]
-params = ["src", "dst"]
-description = """
-will move an object in the service.
-
-## Behavior
-
-- Move only move one and only one object.
-  - Service DON'T NEED to support move a non-empty directory.
-  - User NEED to implement move a non-empty directory by themself.
-  - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
-- Move SHOULD NOT return an error as dst object exists.
-  - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or not.
-  - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object if exists.
-- A successful move operation SHOULD be complete, which means the dst object's content and metadata should be the same as src object.
-"""
-
-[multiparter]
-description = "is the interface for Multipart related operations."
-
-[multiparter.op.create_multipart]
-params = ["path"]
-results = ["o"]
-description = """
-will create a new multipart.
-
-## Behavior
-
-- CreateMultipart SHOULD NOT return an error as the object exists.
-"""
-
-[multiparter.op.write_multipart]
-description = "will write content to a multipart."
-params = ["o", "r", "size", "index"]
-results = ["n", "part"]
-object_mode = "part"
-
-[multiparter.op.complete_multipart]
-description = "will complete a multipart upload and construct an Object."
-params = ["o", "parts"]
-object_mode = "part"
-
-[multiparter.op.list_multipart]
-description = "will list parts belong to this multipart."
-params = ["o"]
-results = ["pi"]
-object_mode = "part"
-
-[pager]
-description = "is the interface for Page related operations which support random write."
-
-[pager.op.create_page]
-params = ["path"]
-results = ["o"]
-description = """
-will create a new page object.
-
-## Behavior
-
-- CreatePage SHOULD NOT return an error as the object exists.
-"""
-
-[pager.op.write_page]
-description = "will write content to specific offset."
-params = ["o", "r", "size", "offset"]
-results = ["n"]
-object_mode = "page"
-
-[reacher]
-description = """
-is the interface for Reach.
-
-Deprecated: Use StorageHTTPSigner instead.
-"""
-
-[reacher.op.reach]
-params = ["path"]
-results = ["url"]
-description = """
-will provide a way, which can reach the object.
-
-Deprecated: Use QuerySignHTTPRead instead.
-"""
-
 [servicer]
 description = "can maintain multipart storage services."
 
@@ -209,6 +21,186 @@ results = ["sti"]
 
 [storager]
 description = "is the interface for storage service."
+
+[storager.op.create_append]
+params = ["path"]
+results = ["o"]
+description = """
+will create an append object.
+
+## Behavior
+
+- CreateAppend SHOULD create an appendable object with position 0 and size 0.
+- CreateAppend SHOULD NOT return an error as the object exist.
+  - Service SHOULD check and delete the object if exists.
+"""
+
+[storager.op.write_append]
+description = "will append content to an append object."
+params = ["o", "r", "size"]
+results = ["n"]
+object_mode = "append"
+
+[storager.op.commit_append]
+description = "will commit and finish an append process."
+params = ["o"]
+object_mode = "append"
+
+[storager.op.create_block]
+params = ["path"]
+results = ["o"]
+description = """
+will create a new block object.
+
+## Behavior
+- CreateBlock SHOULD NOT return an error as the object exist.
+  - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
+  - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if exists.
+"""
+
+[storager.op.write_block]
+description = "will write content to a block."
+params = ["o", "r", "size", "bid"]
+results = ["n"]
+object_mode = "block"
+
+[storager.op.combine_block]
+description = "will combine blocks into an object."
+params = ["o", "bids"]
+object_mode = "block"
+
+[storager.op.list_block]
+description = "will list blocks belong to this object."
+params = ["o"]
+results = ["bi"]
+object_mode = "block"
+
+[storager.op.copy]
+params = ["src", "dst"]
+description = """
+will copy an Object or multiple object in the service.
+
+## Behavior
+
+- Copy only copy one and only one object.
+  - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
+  - User NEED to implement copy a non-empty directory and copy recursively by themself.
+  - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
+- Copy SHOULD NOT return an error as dst object exists.
+  - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or not.
+  - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object if exists.
+- A successful copy opration should be complete, which means the dst object's content and metadata should be the same as src object.
+"""
+
+[storager.op.create_dir]
+description = "will create a new dir object."
+params = ["path"]
+results = ["o"]
+
+[storager.op.fetch]
+params = ["path", "url"]
+description = """
+will fetch from a given url to path.
+
+## Behavior
+
+- Fetch SHOULD NOT return an error as the object exists.
+- A successful fetch operation should be complete, which means the object's content and metadata should be the same as requiring from the url.
+"""
+
+[storager.op.create_link]
+params = ["path", "target"]
+results = ["o"]
+description = """
+Will create a link object.
+
+# Behavior
+
+- `path` and `target` COULD be relative or absolute path.
+- If `target` not exists, CreateLink will still create a link object to path.
+- If `path` exists:
+  - If `path` is a symlink object, CreateLink will remove the symlink object and create a new link object to path.
+  - If `path` is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when the service does not support overwrite.
+- A link object COULD be returned in `Stat` or `List`.
+- CreateLink COULD implement virtual_link feature when service without native support.
+  - Users SHOULD enable this feature by themselves.
+"""
+
+[storager.op.move]
+params = ["src", "dst"]
+description = """
+will move an object in the service.
+
+## Behavior
+
+- Move only move one and only one object.
+  - Service DON'T NEED to support move a non-empty directory.
+  - User NEED to implement move a non-empty directory by themself.
+  - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
+- Move SHOULD NOT return an error as dst object exists.
+  - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or not.
+  - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object if exists.
+- A successful move operation SHOULD be complete, which means the dst object's content and metadata should be the same as src object.
+"""
+
+[storager.op.create_multipart]
+params = ["path"]
+results = ["o"]
+description = """
+will create a new multipart.
+
+## Behavior
+
+- CreateMultipart SHOULD NOT return an error as the object exists.
+"""
+
+[storager.op.write_multipart]
+description = "will write content to a multipart."
+params = ["o", "r", "size", "index"]
+results = ["n", "part"]
+object_mode = "part"
+
+[storager.op.complete_multipart]
+description = "will complete a multipart upload and construct an Object."
+params = ["o", "parts"]
+object_mode = "part"
+
+[storager.op.list_multipart]
+description = "will list parts belong to this multipart."
+params = ["o"]
+results = ["pi"]
+object_mode = "part"
+
+[storager.op.create_page]
+params = ["path"]
+results = ["o"]
+description = """
+will create a new page object.
+
+## Behavior
+
+- CreatePage SHOULD NOT return an error as the object exists.
+"""
+
+[storager.op.write_page]
+description = "will write content to specific offset."
+params = ["o", "r", "size", "offset"]
+results = ["n"]
+object_mode = "page"
+
+[storager.op.create]
+params = ["path"]
+results = ["o"]
+pairs = ["object_mode"]
+local = true
+description = """
+will create a new object without any api call.
+
+## Behavior
+
+- Create SHOULD NOT send any API call.
+- Create SHOULD accept ObjectMode pair as object mode.
+"""
 
 [storager.op.delete]
 params = ["path"]
@@ -252,20 +244,6 @@ params = ["path", "w"]
 pairs = ["size", "offset", "io_callback"]
 results = ["n"]
 
-[storager.op.create]
-params = ["path"]
-results = ["o"]
-pairs = ["object_mode"]
-local = true
-description = """
-will create a new object without any api call.
-
-## Behavior
-
-- Create SHOULD NOT send any API call.
-- Create SHOULD accept ObjectMode pair as object mode.
-"""
-
 [storager.op.stat]
 params = ["path"]
 pairs = ["object_mode"]
@@ -298,64 +276,37 @@ will write data into a file.
 - A successful write operation SHOULD be complete, which means the object's content and metadata should be the same as specified in write request.
 """
 
-[storage_http_signer]
-description = "is the interface for Storager related operations which support authentication."
-
-[storage_http_signer.op.query_sign_http_read]
+[storager.op.query_sign_http_read]
 description = "will read data from the file by using query parameters to authenticate requests."
 params = ["path", "expire"]
 results = ["req"]
 
-[storage_http_signer.op.query_sign_http_write]
+[storager.op.query_sign_http_write]
 description = "will write data into a file by using query parameters to authenticate requests."
 params = ["path", "size", "expire"]
 results = ["req"]
 
-[storage_http_signer.op.query_sign_http_delete]
+[storager.op.query_sign_http_delete]
 description = "will delete an object from service by using query parameters to authenticate requests."
 params = ["path", "expire"]
 results = ["req"]
 
-[multipart_http_signer]
-description = "is the interface for Multiparter related operations which support authentication."
-
-[multipart_http_signer.op.query_sign_http_create_multipart]
+[storager.op.query_sign_http_create_multipart]
 description = "will create a new multipart by using query parameters to authenticate requests."
 params = ["path", "expire"]
 results = ["req"]
 
-[multipart_http_signer.op.query_sign_http_write_multipart]
+[storager.op.query_sign_http_write_multipart]
 description = "will write content to a multipart by using query parameters to authenticate requests."
 params = ["o", "size", "index", "expire"]
 results = ["req"]
 
-[multipart_http_signer.op.query_sign_http_list_multipart]
+[storager.op.query_sign_http_list_multipart]
 description = "will list parts belong to this multipart by using query parameters to authenticate requests."
 params = ["o", "expire"]
 results = ["req"]
 
-[multipart_http_signer.op.query_sign_http_complete_multipart]
+[storager.op.query_sign_http_complete_multipart]
 description = "will complete a multipart upload and construct an Object by using query parameters to authenticate requests."
 params = ["o", "parts", "expire"]
 results = ["req"]
-
-[linker]
-description = "is the interface for link"
-
-[linker.op.create_link]
-params = ["path", "target"]
-results = ["o"]
-description = """
-Will create a link object.
-
-# Behavior
-
-- `path` and `target` COULD be relative or absolute path.
-- If `target` not exists, CreateLink will still create a link object to path.
-- If `path` exists:
-  - If `path` is a symlink object, CreateLink will remove the symlink object and create a new link object to path.
-  - If `path` is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when the service does not support overwrite.
-- A link object COULD be returned in `Stat` or `List`.
-- CreateLink COULD implement virtual_link feature when service without native support.
-  - Users SHOULD enable this feature by themselves.
-"""

@@ -8,629 +8,6 @@ import (
 	"time"
 )
 
-// Appender is the interface for Append related operations.
-type Appender interface {
-	// CommitAppend will commit and finish an append process.
-	CommitAppend(o *Object, pairs ...Pair) (err error)
-	// CommitAppendWithContext will commit and finish an append process.
-	CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error)
-
-	// CreateAppend will create an append object.
-	//
-	// ## Behavior
-	//
-	// - CreateAppend SHOULD create an appendable object with position 0 and size 0.
-	// - CreateAppend SHOULD NOT return an error as the object exist.
-	//   - Service SHOULD check and delete the object if exists.
-	CreateAppend(path string, pairs ...Pair) (o *Object, err error)
-	// CreateAppendWithContext will create an append object.
-	//
-	// ## Behavior
-	//
-	// - CreateAppend SHOULD create an appendable object with position 0 and size 0.
-	// - CreateAppend SHOULD NOT return an error as the object exist.
-	//   - Service SHOULD check and delete the object if exists.
-	CreateAppendWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
-
-	// WriteAppend will append content to an append object.
-	WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
-	// WriteAppendWithContext will append content to an append object.
-	WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
-
-	mustEmbedUnimplementedAppender()
-}
-
-// UnimplementedAppender must be embedded to have forward compatible implementations.
-type UnimplementedAppender struct {
-}
-
-func (s UnimplementedAppender) mustEmbedUnimplementedAppender() {
-
-}
-func (s UnimplementedAppender) String() string {
-	return "UnimplementedAppender"
-}
-func (s UnimplementedAppender) CommitAppend(o *Object, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("commit_append")
-	return
-}
-func (s UnimplementedAppender) CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("commit_append")
-	return
-}
-func (s UnimplementedAppender) CreateAppend(path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_append")
-	return
-}
-func (s UnimplementedAppender) CreateAppendWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_append")
-	return
-}
-func (s UnimplementedAppender) WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
-	err = NewOperationNotImplementedError("write_append")
-	return
-}
-func (s UnimplementedAppender) WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
-	err = NewOperationNotImplementedError("write_append")
-	return
-}
-
-// Blocker is the interface for Block related operations.
-type Blocker interface {
-	// CombineBlock will combine blocks into an object.
-	CombineBlock(o *Object, bids []string, pairs ...Pair) (err error)
-	// CombineBlockWithContext will combine blocks into an object.
-	CombineBlockWithContext(ctx context.Context, o *Object, bids []string, pairs ...Pair) (err error)
-
-	// CreateBlock will create a new block object.
-	//
-	// ## Behavior
-	// - CreateBlock SHOULD NOT return an error as the object exist.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
-	// exists.
-	CreateBlock(path string, pairs ...Pair) (o *Object, err error)
-	// CreateBlockWithContext will create a new block object.
-	//
-	// ## Behavior
-	// - CreateBlock SHOULD NOT return an error as the object exist.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
-	// exists.
-	CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
-
-	// ListBlock will list blocks belong to this object.
-	ListBlock(o *Object, pairs ...Pair) (bi *BlockIterator, err error)
-	// ListBlockWithContext will list blocks belong to this object.
-	ListBlockWithContext(ctx context.Context, o *Object, pairs ...Pair) (bi *BlockIterator, err error)
-
-	// WriteBlock will write content to a block.
-	WriteBlock(o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
-	// WriteBlockWithContext will write content to a block.
-	WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
-
-	mustEmbedUnimplementedBlocker()
-}
-
-// UnimplementedBlocker must be embedded to have forward compatible implementations.
-type UnimplementedBlocker struct {
-}
-
-func (s UnimplementedBlocker) mustEmbedUnimplementedBlocker() {
-
-}
-func (s UnimplementedBlocker) String() string {
-	return "UnimplementedBlocker"
-}
-func (s UnimplementedBlocker) CombineBlock(o *Object, bids []string, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("combine_block")
-	return
-}
-func (s UnimplementedBlocker) CombineBlockWithContext(ctx context.Context, o *Object, bids []string, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("combine_block")
-	return
-}
-func (s UnimplementedBlocker) CreateBlock(path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_block")
-	return
-}
-func (s UnimplementedBlocker) CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_block")
-	return
-}
-func (s UnimplementedBlocker) ListBlock(o *Object, pairs ...Pair) (bi *BlockIterator, err error) {
-	err = NewOperationNotImplementedError("list_block")
-	return
-}
-func (s UnimplementedBlocker) ListBlockWithContext(ctx context.Context, o *Object, pairs ...Pair) (bi *BlockIterator, err error) {
-	err = NewOperationNotImplementedError("list_block")
-	return
-}
-func (s UnimplementedBlocker) WriteBlock(o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error) {
-	err = NewOperationNotImplementedError("write_block")
-	return
-}
-func (s UnimplementedBlocker) WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error) {
-	err = NewOperationNotImplementedError("write_block")
-	return
-}
-
-// Copier is the interface for Copy.
-type Copier interface {
-	// Copy will copy an Object or multiple object in the service.
-	//
-	// ## Behavior
-	//
-	// - Copy only copy one and only one object.
-	//   - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
-	//   - User NEED to implement copy a non-empty directory and copy recursively by themself.
-	//   - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
-	// - Copy SHOULD NOT return an error as dst object exists.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
-	// not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
-	// if exists.
-	// - A successful copy opration should be complete, which means the dst object's content and metadata
-	// should be the same as src object.
-	Copy(src string, dst string, pairs ...Pair) (err error)
-	// CopyWithContext will copy an Object or multiple object in the service.
-	//
-	// ## Behavior
-	//
-	// - Copy only copy one and only one object.
-	//   - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
-	//   - User NEED to implement copy a non-empty directory and copy recursively by themself.
-	//   - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
-	// - Copy SHOULD NOT return an error as dst object exists.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
-	// not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
-	// if exists.
-	// - A successful copy opration should be complete, which means the dst object's content and metadata
-	// should be the same as src object.
-	CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
-
-	mustEmbedUnimplementedCopier()
-}
-
-// UnimplementedCopier must be embedded to have forward compatible implementations.
-type UnimplementedCopier struct {
-}
-
-func (s UnimplementedCopier) mustEmbedUnimplementedCopier() {
-
-}
-func (s UnimplementedCopier) String() string {
-	return "UnimplementedCopier"
-}
-func (s UnimplementedCopier) Copy(src string, dst string, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("copy")
-	return
-}
-func (s UnimplementedCopier) CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("copy")
-	return
-}
-
-// Direr is the interface for Directory.
-type Direr interface {
-	// CreateDir will create a new dir object.
-	CreateDir(path string, pairs ...Pair) (o *Object, err error)
-	// CreateDirWithContext will create a new dir object.
-	CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
-
-	mustEmbedUnimplementedDirer()
-}
-
-// UnimplementedDirer must be embedded to have forward compatible implementations.
-type UnimplementedDirer struct {
-}
-
-func (s UnimplementedDirer) mustEmbedUnimplementedDirer() {
-
-}
-func (s UnimplementedDirer) String() string {
-	return "UnimplementedDirer"
-}
-func (s UnimplementedDirer) CreateDir(path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_dir")
-	return
-}
-func (s UnimplementedDirer) CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_dir")
-	return
-}
-
-// Fetcher is the interface for Fetch.
-type Fetcher interface {
-	// Fetch will fetch from a given url to path.
-	//
-	// ## Behavior
-	//
-	// - Fetch SHOULD NOT return an error as the object exists.
-	// - A successful fetch operation should be complete, which means the object's content and metadata
-	// should be the same as requiring from the url.
-	Fetch(path string, url string, pairs ...Pair) (err error)
-	// FetchWithContext will fetch from a given url to path.
-	//
-	// ## Behavior
-	//
-	// - Fetch SHOULD NOT return an error as the object exists.
-	// - A successful fetch operation should be complete, which means the object's content and metadata
-	// should be the same as requiring from the url.
-	FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error)
-
-	mustEmbedUnimplementedFetcher()
-}
-
-// UnimplementedFetcher must be embedded to have forward compatible implementations.
-type UnimplementedFetcher struct {
-}
-
-func (s UnimplementedFetcher) mustEmbedUnimplementedFetcher() {
-
-}
-func (s UnimplementedFetcher) String() string {
-	return "UnimplementedFetcher"
-}
-func (s UnimplementedFetcher) Fetch(path string, url string, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("fetch")
-	return
-}
-func (s UnimplementedFetcher) FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("fetch")
-	return
-}
-
-// Linker is the interface for link
-type Linker interface {
-	// CreateLink Will create a link object.
-	//
-	// # Behavior
-	//
-	// - `path` and `target` COULD be relative or absolute path.
-	// - If `target` not exists, CreateLink will still create a link object to path.
-	// - If `path` exists:
-	//   - If `path` is a symlink object, CreateLink will remove the symlink object and create a new link object
-	// to path.
-	//   - If `path` is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when
-	// the service does not support overwrite.
-	// - A link object COULD be returned in `Stat` or `List`.
-	// - CreateLink COULD implement virtual_link feature when service without native support.
-	//   - Users SHOULD enable this feature by themselves.
-	CreateLink(path string, target string, pairs ...Pair) (o *Object, err error)
-	// CreateLinkWithContext Will create a link object.
-	//
-	// # Behavior
-	//
-	// - `path` and `target` COULD be relative or absolute path.
-	// - If `target` not exists, CreateLink will still create a link object to path.
-	// - If `path` exists:
-	//   - If `path` is a symlink object, CreateLink will remove the symlink object and create a new link object
-	// to path.
-	//   - If `path` is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when
-	// the service does not support overwrite.
-	// - A link object COULD be returned in `Stat` or `List`.
-	// - CreateLink COULD implement virtual_link feature when service without native support.
-	//   - Users SHOULD enable this feature by themselves.
-	CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error)
-
-	mustEmbedUnimplementedLinker()
-}
-
-// UnimplementedLinker must be embedded to have forward compatible implementations.
-type UnimplementedLinker struct {
-}
-
-func (s UnimplementedLinker) mustEmbedUnimplementedLinker() {
-
-}
-func (s UnimplementedLinker) String() string {
-	return "UnimplementedLinker"
-}
-func (s UnimplementedLinker) CreateLink(path string, target string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_link")
-	return
-}
-func (s UnimplementedLinker) CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_link")
-	return
-}
-
-// Mover is the interface for Move.
-type Mover interface {
-	// Move will move an object in the service.
-	//
-	// ## Behavior
-	//
-	// - Move only move one and only one object.
-	//   - Service DON'T NEED to support move a non-empty directory.
-	//   - User NEED to implement move a non-empty directory by themself.
-	//   - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
-	// - Move SHOULD NOT return an error as dst object exists.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
-	// not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
-	// if exists.
-	// - A successful move operation SHOULD be complete, which means the dst object's content and metadata
-	// should be the same as src object.
-	Move(src string, dst string, pairs ...Pair) (err error)
-	// MoveWithContext will move an object in the service.
-	//
-	// ## Behavior
-	//
-	// - Move only move one and only one object.
-	//   - Service DON'T NEED to support move a non-empty directory.
-	//   - User NEED to implement move a non-empty directory by themself.
-	//   - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
-	// - Move SHOULD NOT return an error as dst object exists.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
-	// not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
-	// if exists.
-	// - A successful move operation SHOULD be complete, which means the dst object's content and metadata
-	// should be the same as src object.
-	MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
-
-	mustEmbedUnimplementedMover()
-}
-
-// UnimplementedMover must be embedded to have forward compatible implementations.
-type UnimplementedMover struct {
-}
-
-func (s UnimplementedMover) mustEmbedUnimplementedMover() {
-
-}
-func (s UnimplementedMover) String() string {
-	return "UnimplementedMover"
-}
-func (s UnimplementedMover) Move(src string, dst string, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("move")
-	return
-}
-func (s UnimplementedMover) MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("move")
-	return
-}
-
-// MultipartHTTPSigner is the interface for Multiparter related operations which support authentication.
-type MultipartHTTPSigner interface {
-	// QuerySignHTTPCompleteMultipart will complete a multipart upload and construct an Object by
-	// using query parameters to authenticate requests.
-	QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-	// QuerySignHTTPCompleteMultipartWithContext will complete a multipart upload and construct
-	// an Object by using query parameters to authenticate requests.
-	QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-
-	// QuerySignHTTPCreateMultipart will create a new multipart by using query parameters to authenticate
-	// requests.
-	QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-	// QuerySignHTTPCreateMultipartWithContext will create a new multipart by using query parameters
-	// to authenticate requests.
-	QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-
-	// QuerySignHTTPListMultipart will list parts belong to this multipart by using query parameters
-	// to authenticate requests.
-	QuerySignHTTPListMultipart(o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-	// QuerySignHTTPListMultipartWithContext will list parts belong to this multipart by using query
-	// parameters to authenticate requests.
-	QuerySignHTTPListMultipartWithContext(ctx context.Context, o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-
-	// QuerySignHTTPWriteMultipart will write content to a multipart by using query parameters to authenticate
-	// requests.
-	QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-	// QuerySignHTTPWriteMultipartWithContext will write content to a multipart by using query parameters
-	// to authenticate requests.
-	QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-
-	mustEmbedUnimplementedMultipartHTTPSigner()
-}
-
-// UnimplementedMultipartHTTPSigner must be embedded to have forward compatible implementations.
-type UnimplementedMultipartHTTPSigner struct {
-}
-
-func (s UnimplementedMultipartHTTPSigner) mustEmbedUnimplementedMultipartHTTPSigner() {
-
-}
-func (s UnimplementedMultipartHTTPSigner) String() string {
-	return "UnimplementedMultipartHTTPSigner"
-}
-func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_complete_multipart")
-	return
-}
-func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_complete_multipart")
-	return
-}
-func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_create_multipart")
-	return
-}
-func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_create_multipart")
-	return
-}
-func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPListMultipart(o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_list_multipart")
-	return
-}
-func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPListMultipartWithContext(ctx context.Context, o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_list_multipart")
-	return
-}
-func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_write_multipart")
-	return
-}
-func (s UnimplementedMultipartHTTPSigner) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_write_multipart")
-	return
-}
-
-// Multiparter is the interface for Multipart related operations.
-type Multiparter interface {
-	// CompleteMultipart will complete a multipart upload and construct an Object.
-	CompleteMultipart(o *Object, parts []*Part, pairs ...Pair) (err error)
-	// CompleteMultipartWithContext will complete a multipart upload and construct an Object.
-	CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error)
-
-	// CreateMultipart will create a new multipart.
-	//
-	// ## Behavior
-	//
-	// - CreateMultipart SHOULD NOT return an error as the object exists.
-	CreateMultipart(path string, pairs ...Pair) (o *Object, err error)
-	// CreateMultipartWithContext will create a new multipart.
-	//
-	// ## Behavior
-	//
-	// - CreateMultipart SHOULD NOT return an error as the object exists.
-	CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
-
-	// ListMultipart will list parts belong to this multipart.
-	ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error)
-	// ListMultipartWithContext will list parts belong to this multipart.
-	ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error)
-
-	// WriteMultipart will write content to a multipart.
-	WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error)
-	// WriteMultipartWithContext will write content to a multipart.
-	WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error)
-
-	mustEmbedUnimplementedMultiparter()
-}
-
-// UnimplementedMultiparter must be embedded to have forward compatible implementations.
-type UnimplementedMultiparter struct {
-}
-
-func (s UnimplementedMultiparter) mustEmbedUnimplementedMultiparter() {
-
-}
-func (s UnimplementedMultiparter) String() string {
-	return "UnimplementedMultiparter"
-}
-func (s UnimplementedMultiparter) CompleteMultipart(o *Object, parts []*Part, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("complete_multipart")
-	return
-}
-func (s UnimplementedMultiparter) CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error) {
-	err = NewOperationNotImplementedError("complete_multipart")
-	return
-}
-func (s UnimplementedMultiparter) CreateMultipart(path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_multipart")
-	return
-}
-func (s UnimplementedMultiparter) CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_multipart")
-	return
-}
-func (s UnimplementedMultiparter) ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error) {
-	err = NewOperationNotImplementedError("list_multipart")
-	return
-}
-func (s UnimplementedMultiparter) ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error) {
-	err = NewOperationNotImplementedError("list_multipart")
-	return
-}
-func (s UnimplementedMultiparter) WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error) {
-	err = NewOperationNotImplementedError("write_multipart")
-	return
-}
-func (s UnimplementedMultiparter) WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error) {
-	err = NewOperationNotImplementedError("write_multipart")
-	return
-}
-
-// Pager is the interface for Page related operations which support random write.
-type Pager interface {
-	// CreatePage will create a new page object.
-	//
-	// ## Behavior
-	//
-	// - CreatePage SHOULD NOT return an error as the object exists.
-	CreatePage(path string, pairs ...Pair) (o *Object, err error)
-	// CreatePageWithContext will create a new page object.
-	//
-	// ## Behavior
-	//
-	// - CreatePage SHOULD NOT return an error as the object exists.
-	CreatePageWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
-
-	// WritePage will write content to specific offset.
-	WritePage(o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
-	// WritePageWithContext will write content to specific offset.
-	WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
-
-	mustEmbedUnimplementedPager()
-}
-
-// UnimplementedPager must be embedded to have forward compatible implementations.
-type UnimplementedPager struct {
-}
-
-func (s UnimplementedPager) mustEmbedUnimplementedPager() {
-
-}
-func (s UnimplementedPager) String() string {
-	return "UnimplementedPager"
-}
-func (s UnimplementedPager) CreatePage(path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_page")
-	return
-}
-func (s UnimplementedPager) CreatePageWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
-	err = NewOperationNotImplementedError("create_page")
-	return
-}
-func (s UnimplementedPager) WritePage(o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
-	err = NewOperationNotImplementedError("write_page")
-	return
-}
-func (s UnimplementedPager) WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
-	err = NewOperationNotImplementedError("write_page")
-	return
-}
-
-// Reacher is the interface for Reach.
-//
-// Deprecated: Use StorageHTTPSigner instead.
-type Reacher interface {
-	// Reach will provide a way, which can reach the object.
-	//
-	// Deprecated: Use QuerySignHTTPRead instead.
-	Reach(path string, pairs ...Pair) (url string, err error)
-	// ReachWithContext will provide a way, which can reach the object.
-	//
-	// Deprecated: Use QuerySignHTTPRead instead.
-	ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error)
-
-	mustEmbedUnimplementedReacher()
-}
-
-// UnimplementedReacher must be embedded to have forward compatible implementations.
-type UnimplementedReacher struct {
-}
-
-func (s UnimplementedReacher) mustEmbedUnimplementedReacher() {
-
-}
-func (s UnimplementedReacher) String() string {
-	return "UnimplementedReacher"
-}
-func (s UnimplementedReacher) Reach(path string, pairs ...Pair) (url string, err error) {
-	err = NewOperationNotImplementedError("reach")
-	return
-}
-func (s UnimplementedReacher) ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error) {
-	err = NewOperationNotImplementedError("reach")
-	return
-}
-
 // Servicer can maintain multipart storage services.
 type Servicer interface {
 	String() string
@@ -700,68 +77,57 @@ func (s UnimplementedServicer) ListWithContext(ctx context.Context, pairs ...Pai
 	return
 }
 
-// StorageHTTPSigner is the interface for Storager related operations which support authentication.
-type StorageHTTPSigner interface {
-	// QuerySignHTTPDelete will delete an object from service by using query parameters to authenticate
-	// requests.
-	QuerySignHTTPDelete(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-	// QuerySignHTTPDeleteWithContext will delete an object from service by using query parameters
-	// to authenticate requests.
-	QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-
-	// QuerySignHTTPRead will read data from the file by using query parameters to authenticate requests.
-	QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-	// QuerySignHTTPReadWithContext will read data from the file by using query parameters to authenticate
-	// requests.
-	QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-
-	// QuerySignHTTPWrite will write data into a file by using query parameters to authenticate requests.
-	QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-	// QuerySignHTTPWriteWithContext will write data into a file by using query parameters to authenticate
-	// requests.
-	QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
-
-	mustEmbedUnimplementedStorageHTTPSigner()
-}
-
-// UnimplementedStorageHTTPSigner must be embedded to have forward compatible implementations.
-type UnimplementedStorageHTTPSigner struct {
-}
-
-func (s UnimplementedStorageHTTPSigner) mustEmbedUnimplementedStorageHTTPSigner() {
-
-}
-func (s UnimplementedStorageHTTPSigner) String() string {
-	return "UnimplementedStorageHTTPSigner"
-}
-func (s UnimplementedStorageHTTPSigner) QuerySignHTTPDelete(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_delete")
-	return
-}
-func (s UnimplementedStorageHTTPSigner) QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_delete")
-	return
-}
-func (s UnimplementedStorageHTTPSigner) QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_read")
-	return
-}
-func (s UnimplementedStorageHTTPSigner) QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_read")
-	return
-}
-func (s UnimplementedStorageHTTPSigner) QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_write")
-	return
-}
-func (s UnimplementedStorageHTTPSigner) QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
-	err = NewOperationNotImplementedError("query_sign_http_write")
-	return
-}
-
 // Storager is the interface for storage service.
 type Storager interface {
 	String() string
+	// CombineBlock will combine blocks into an object.
+	CombineBlock(o *Object, bids []string, pairs ...Pair) (err error)
+	// CombineBlockWithContext will combine blocks into an object.
+	CombineBlockWithContext(ctx context.Context, o *Object, bids []string, pairs ...Pair) (err error)
+
+	// CommitAppend will commit and finish an append process.
+	CommitAppend(o *Object, pairs ...Pair) (err error)
+	// CommitAppendWithContext will commit and finish an append process.
+	CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error)
+
+	// CompleteMultipart will complete a multipart upload and construct an Object.
+	CompleteMultipart(o *Object, parts []*Part, pairs ...Pair) (err error)
+	// CompleteMultipartWithContext will complete a multipart upload and construct an Object.
+	CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error)
+
+	// Copy will copy an Object or multiple object in the service.
+	//
+	// ## Behavior
+	//
+	// - Copy only copy one and only one object.
+	//   - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
+	//   - User NEED to implement copy a non-empty directory and copy recursively by themself.
+	//   - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	// - Copy SHOULD NOT return an error as dst object exists.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
+	// not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
+	// if exists.
+	// - A successful copy opration should be complete, which means the dst object's content and metadata
+	// should be the same as src object.
+	Copy(src string, dst string, pairs ...Pair) (err error)
+	// CopyWithContext will copy an Object or multiple object in the service.
+	//
+	// ## Behavior
+	//
+	// - Copy only copy one and only one object.
+	//   - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
+	//   - User NEED to implement copy a non-empty directory and copy recursively by themself.
+	//   - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	// - Copy SHOULD NOT return an error as dst object exists.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
+	// not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
+	// if exists.
+	// - A successful copy opration should be complete, which means the dst object's content and metadata
+	// should be the same as src object.
+	CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
+
 	// Create will create a new object without any api call.
 	//
 	// ## Behavior
@@ -769,6 +135,102 @@ type Storager interface {
 	// - Create SHOULD NOT send any API call.
 	// - Create SHOULD accept ObjectMode pair as object mode.
 	Create(path string, pairs ...Pair) (o *Object)
+
+	// CreateAppend will create an append object.
+	//
+	// ## Behavior
+	//
+	// - CreateAppend SHOULD create an appendable object with position 0 and size 0.
+	// - CreateAppend SHOULD NOT return an error as the object exist.
+	//   - Service SHOULD check and delete the object if exists.
+	CreateAppend(path string, pairs ...Pair) (o *Object, err error)
+	// CreateAppendWithContext will create an append object.
+	//
+	// ## Behavior
+	//
+	// - CreateAppend SHOULD create an appendable object with position 0 and size 0.
+	// - CreateAppend SHOULD NOT return an error as the object exist.
+	//   - Service SHOULD check and delete the object if exists.
+	CreateAppendWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
+
+	// CreateBlock will create a new block object.
+	//
+	// ## Behavior
+	// - CreateBlock SHOULD NOT return an error as the object exist.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
+	// exists.
+	CreateBlock(path string, pairs ...Pair) (o *Object, err error)
+	// CreateBlockWithContext will create a new block object.
+	//
+	// ## Behavior
+	// - CreateBlock SHOULD NOT return an error as the object exist.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
+	// exists.
+	CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
+
+	// CreateDir will create a new dir object.
+	CreateDir(path string, pairs ...Pair) (o *Object, err error)
+	// CreateDirWithContext will create a new dir object.
+	CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
+
+	// CreateLink Will create a link object.
+	//
+	// # Behavior
+	//
+	// - `path` and `target` COULD be relative or absolute path.
+	// - If `target` not exists, CreateLink will still create a link object to path.
+	// - If `path` exists:
+	//   - If `path` is a symlink object, CreateLink will remove the symlink object and create a new link object
+	// to path.
+	//   - If `path` is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when
+	// the service does not support overwrite.
+	// - A link object COULD be returned in `Stat` or `List`.
+	// - CreateLink COULD implement virtual_link feature when service without native support.
+	//   - Users SHOULD enable this feature by themselves.
+	CreateLink(path string, target string, pairs ...Pair) (o *Object, err error)
+	// CreateLinkWithContext Will create a link object.
+	//
+	// # Behavior
+	//
+	// - `path` and `target` COULD be relative or absolute path.
+	// - If `target` not exists, CreateLink will still create a link object to path.
+	// - If `path` exists:
+	//   - If `path` is a symlink object, CreateLink will remove the symlink object and create a new link object
+	// to path.
+	//   - If `path` is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when
+	// the service does not support overwrite.
+	// - A link object COULD be returned in `Stat` or `List`.
+	// - CreateLink COULD implement virtual_link feature when service without native support.
+	//   - Users SHOULD enable this feature by themselves.
+	CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error)
+
+	// CreateMultipart will create a new multipart.
+	//
+	// ## Behavior
+	//
+	// - CreateMultipart SHOULD NOT return an error as the object exists.
+	CreateMultipart(path string, pairs ...Pair) (o *Object, err error)
+	// CreateMultipartWithContext will create a new multipart.
+	//
+	// ## Behavior
+	//
+	// - CreateMultipart SHOULD NOT return an error as the object exists.
+	CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
+
+	// CreatePage will create a new page object.
+	//
+	// ## Behavior
+	//
+	// - CreatePage SHOULD NOT return an error as the object exists.
+	CreatePage(path string, pairs ...Pair) (o *Object, err error)
+	// CreatePageWithContext will create a new page object.
+	//
+	// ## Behavior
+	//
+	// - CreatePage SHOULD NOT return an error as the object exists.
+	CreatePageWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// Delete will delete an object from service.
 	//
@@ -795,6 +257,23 @@ type Storager interface {
 	//   - Delete DON'T NEED to check the object exist or not.
 	DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
 
+	// Fetch will fetch from a given url to path.
+	//
+	// ## Behavior
+	//
+	// - Fetch SHOULD NOT return an error as the object exists.
+	// - A successful fetch operation should be complete, which means the object's content and metadata
+	// should be the same as requiring from the url.
+	Fetch(path string, url string, pairs ...Pair) (err error)
+	// FetchWithContext will fetch from a given url to path.
+	//
+	// ## Behavior
+	//
+	// - Fetch SHOULD NOT return an error as the object exists.
+	// - A successful fetch operation should be complete, which means the object's content and metadata
+	// should be the same as requiring from the url.
+	FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error)
+
 	// List will return list a specific path.
 	//
 	// ## Behavior
@@ -812,8 +291,98 @@ type Storager interface {
 	// - Service DON'T NEED to `Stat` while in `List`.
 	ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error)
 
+	// ListBlock will list blocks belong to this object.
+	ListBlock(o *Object, pairs ...Pair) (bi *BlockIterator, err error)
+	// ListBlockWithContext will list blocks belong to this object.
+	ListBlockWithContext(ctx context.Context, o *Object, pairs ...Pair) (bi *BlockIterator, err error)
+
+	// ListMultipart will list parts belong to this multipart.
+	ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error)
+	// ListMultipartWithContext will list parts belong to this multipart.
+	ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error)
+
 	// Metadata will return current storager metadata.
 	Metadata(pairs ...Pair) (meta *StorageMeta)
+
+	// Move will move an object in the service.
+	//
+	// ## Behavior
+	//
+	// - Move only move one and only one object.
+	//   - Service DON'T NEED to support move a non-empty directory.
+	//   - User NEED to implement move a non-empty directory by themself.
+	//   - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	// - Move SHOULD NOT return an error as dst object exists.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
+	// not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
+	// if exists.
+	// - A successful move operation SHOULD be complete, which means the dst object's content and metadata
+	// should be the same as src object.
+	Move(src string, dst string, pairs ...Pair) (err error)
+	// MoveWithContext will move an object in the service.
+	//
+	// ## Behavior
+	//
+	// - Move only move one and only one object.
+	//   - Service DON'T NEED to support move a non-empty directory.
+	//   - User NEED to implement move a non-empty directory by themself.
+	//   - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	// - Move SHOULD NOT return an error as dst object exists.
+	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
+	// not.
+	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
+	// if exists.
+	// - A successful move operation SHOULD be complete, which means the dst object's content and metadata
+	// should be the same as src object.
+	MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error)
+
+	// QuerySignHTTPCompleteMultipart will complete a multipart upload and construct an Object by
+	// using query parameters to authenticate requests.
+	QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPCompleteMultipartWithContext will complete a multipart upload and construct
+	// an Object by using query parameters to authenticate requests.
+	QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPCreateMultipart will create a new multipart by using query parameters to authenticate
+	// requests.
+	QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPCreateMultipartWithContext will create a new multipart by using query parameters
+	// to authenticate requests.
+	QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPDelete will delete an object from service by using query parameters to authenticate
+	// requests.
+	QuerySignHTTPDelete(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPDeleteWithContext will delete an object from service by using query parameters
+	// to authenticate requests.
+	QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPListMultipart will list parts belong to this multipart by using query parameters
+	// to authenticate requests.
+	QuerySignHTTPListMultipart(o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPListMultipartWithContext will list parts belong to this multipart by using query
+	// parameters to authenticate requests.
+	QuerySignHTTPListMultipartWithContext(ctx context.Context, o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPRead will read data from the file by using query parameters to authenticate requests.
+	QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPReadWithContext will read data from the file by using query parameters to authenticate
+	// requests.
+	QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPWrite will write data into a file by using query parameters to authenticate requests.
+	QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPWriteWithContext will write data into a file by using query parameters to authenticate
+	// requests.
+	QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+
+	// QuerySignHTTPWriteMultipart will write content to a multipart by using query parameters to authenticate
+	// requests.
+	QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
+	// QuerySignHTTPWriteMultipartWithContext will write content to a multipart by using query parameters
+	// to authenticate requests.
+	QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error)
 
 	// Read will read the file's data.
 	Read(path string, w io.Writer, pairs ...Pair) (n int64, err error)
@@ -870,6 +439,26 @@ type Storager interface {
 	// should be the same as specified in write request.
 	WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
 
+	// WriteAppend will append content to an append object.
+	WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
+	// WriteAppendWithContext will append content to an append object.
+	WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
+
+	// WriteBlock will write content to a block.
+	WriteBlock(o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
+	// WriteBlockWithContext will write content to a block.
+	WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error)
+
+	// WriteMultipart will write content to a multipart.
+	WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error)
+	// WriteMultipartWithContext will write content to a multipart.
+	WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error)
+
+	// WritePage will write content to specific offset.
+	WritePage(o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
+	// WritePageWithContext will write content to specific offset.
+	WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error)
+
 	mustEmbedUnimplementedStorager()
 }
 
@@ -883,7 +472,87 @@ func (s UnimplementedStorager) mustEmbedUnimplementedStorager() {
 func (s UnimplementedStorager) String() string {
 	return "UnimplementedStorager"
 }
+func (s UnimplementedStorager) CombineBlock(o *Object, bids []string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("combine_block")
+	return
+}
+func (s UnimplementedStorager) CombineBlockWithContext(ctx context.Context, o *Object, bids []string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("combine_block")
+	return
+}
+func (s UnimplementedStorager) CommitAppend(o *Object, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("commit_append")
+	return
+}
+func (s UnimplementedStorager) CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("commit_append")
+	return
+}
+func (s UnimplementedStorager) CompleteMultipart(o *Object, parts []*Part, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("complete_multipart")
+	return
+}
+func (s UnimplementedStorager) CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("complete_multipart")
+	return
+}
+func (s UnimplementedStorager) Copy(src string, dst string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("copy")
+	return
+}
+func (s UnimplementedStorager) CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("copy")
+	return
+}
 func (s UnimplementedStorager) Create(path string, pairs ...Pair) (o *Object) {
+	return
+}
+func (s UnimplementedStorager) CreateAppend(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_append")
+	return
+}
+func (s UnimplementedStorager) CreateAppendWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_append")
+	return
+}
+func (s UnimplementedStorager) CreateBlock(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_block")
+	return
+}
+func (s UnimplementedStorager) CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_block")
+	return
+}
+func (s UnimplementedStorager) CreateDir(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_dir")
+	return
+}
+func (s UnimplementedStorager) CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_dir")
+	return
+}
+func (s UnimplementedStorager) CreateLink(path string, target string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_link")
+	return
+}
+func (s UnimplementedStorager) CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_link")
+	return
+}
+func (s UnimplementedStorager) CreateMultipart(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_multipart")
+	return
+}
+func (s UnimplementedStorager) CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_multipart")
+	return
+}
+func (s UnimplementedStorager) CreatePage(path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_page")
+	return
+}
+func (s UnimplementedStorager) CreatePageWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+	err = NewOperationNotImplementedError("create_page")
 	return
 }
 func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
@@ -894,6 +563,14 @@ func (s UnimplementedStorager) DeleteWithContext(ctx context.Context, path strin
 	err = NewOperationNotImplementedError("delete")
 	return
 }
+func (s UnimplementedStorager) Fetch(path string, url string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("fetch")
+	return
+}
+func (s UnimplementedStorager) FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("fetch")
+	return
+}
 func (s UnimplementedStorager) List(path string, pairs ...Pair) (oi *ObjectIterator, err error) {
 	err = NewOperationNotImplementedError("list")
 	return
@@ -902,7 +579,87 @@ func (s UnimplementedStorager) ListWithContext(ctx context.Context, path string,
 	err = NewOperationNotImplementedError("list")
 	return
 }
+func (s UnimplementedStorager) ListBlock(o *Object, pairs ...Pair) (bi *BlockIterator, err error) {
+	err = NewOperationNotImplementedError("list_block")
+	return
+}
+func (s UnimplementedStorager) ListBlockWithContext(ctx context.Context, o *Object, pairs ...Pair) (bi *BlockIterator, err error) {
+	err = NewOperationNotImplementedError("list_block")
+	return
+}
+func (s UnimplementedStorager) ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error) {
+	err = NewOperationNotImplementedError("list_multipart")
+	return
+}
+func (s UnimplementedStorager) ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error) {
+	err = NewOperationNotImplementedError("list_multipart")
+	return
+}
 func (s UnimplementedStorager) Metadata(pairs ...Pair) (meta *StorageMeta) {
+	return
+}
+func (s UnimplementedStorager) Move(src string, dst string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("move")
+	return
+}
+func (s UnimplementedStorager) MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error) {
+	err = NewOperationNotImplementedError("move")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_complete_multipart")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_complete_multipart")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_create_multipart")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_create_multipart")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPDelete(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_delete")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_delete")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPListMultipart(o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_list_multipart")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPListMultipartWithContext(ctx context.Context, o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_list_multipart")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_read")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_read")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_write")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_write")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_write_multipart")
+	return
+}
+func (s UnimplementedStorager) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	err = NewOperationNotImplementedError("query_sign_http_write_multipart")
 	return
 }
 func (s UnimplementedStorager) Read(path string, w io.Writer, pairs ...Pair) (n int64, err error) {
@@ -927,5 +684,37 @@ func (s UnimplementedStorager) Write(path string, r io.Reader, size int64, pairs
 }
 func (s UnimplementedStorager) WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
 	err = NewOperationNotImplementedError("write")
+	return
+}
+func (s UnimplementedStorager) WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_append")
+	return
+}
+func (s UnimplementedStorager) WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_append")
+	return
+}
+func (s UnimplementedStorager) WriteBlock(o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_block")
+	return
+}
+func (s UnimplementedStorager) WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_block")
+	return
+}
+func (s UnimplementedStorager) WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error) {
+	err = NewOperationNotImplementedError("write_multipart")
+	return
+}
+func (s UnimplementedStorager) WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error) {
+	err = NewOperationNotImplementedError("write_multipart")
+	return
+}
+func (s UnimplementedStorager) WritePage(o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_page")
+	return
+}
+func (s UnimplementedStorager) WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
+	err = NewOperationNotImplementedError("write_page")
 	return
 }

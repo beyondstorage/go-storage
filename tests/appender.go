@@ -17,12 +17,10 @@ import (
 
 func TestAppender(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		ap, ok := store.(types.Appender)
-		So(ok, ShouldBeTrue)
 
 		Convey("When CreateAppend", func() {
 			path := uuid.NewString()
-			o, err := ap.CreateAppend(path)
+			o, err := store.CreateAppend(path)
 
 			defer func() {
 				err := store.Delete(path)
@@ -43,7 +41,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 
 		Convey("When CreateAppend with an existing object", func() {
 			path := uuid.NewString()
-			o, err := ap.CreateAppend(path)
+			o, err := store.CreateAppend(path)
 
 			defer func() {
 				err := store.Delete(path)
@@ -59,17 +57,17 @@ func TestAppender(t *testing.T, store types.Storager) {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			_, err = ap.WriteAppend(o, r, size)
+			_, err = store.WriteAppend(o, r, size)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = ap.CommitAppend(o)
+			err = store.CommitAppend(o)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			o, err = ap.CreateAppend(path)
+			o, err = store.CreateAppend(path)
 
 			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
@@ -87,7 +85,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 
 		Convey("When Delete", func() {
 			path := uuid.NewString()
-			_, err := ap.CreateAppend(path)
+			_, err := store.CreateAppend(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -105,7 +103,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 
 		Convey("When WriteAppend", func() {
 			path := uuid.NewString()
-			o, err := ap.CreateAppend(path)
+			o, err := store.CreateAppend(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -121,7 +119,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			r := bytes.NewReader(content)
 
-			n, err := ap.WriteAppend(o, r, size)
+			n, err := store.WriteAppend(o, r, size)
 
 			Convey("WriteAppend error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -133,7 +131,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 
 		Convey("When CommitAppend", func() {
 			path := uuid.NewString()
-			o, err := ap.CreateAppend(path)
+			o, err := store.CreateAppend(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -148,17 +146,17 @@ func TestAppender(t *testing.T, store types.Storager) {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 
-			_, err = ap.WriteAppend(o, bytes.NewReader(content), size)
+			_, err = store.WriteAppend(o, bytes.NewReader(content), size)
 			if err != nil {
 				t.Error(err)
 			}
 
-			_, err = ap.WriteAppend(o, bytes.NewReader(content), size)
+			_, err = store.WriteAppend(o, bytes.NewReader(content), size)
 			if err != nil {
 				t.Error(err)
 			}
 
-			err = ap.CommitAppend(o)
+			err = store.CommitAppend(o)
 
 			Convey("CommitAppend error should be nil", func() {
 				So(err, ShouldBeNil)
