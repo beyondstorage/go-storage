@@ -5,6 +5,9 @@
 
 # Proposal: Unify storager behavior
 
+- Updated By:
+  - [GSP-837: Support Feature Flag](./837-support-feature-flag.md): Abandon interface splitting
+
 ## Background
 
 We provide a `Capable` function for developers to check whether underlying storager support action/pair or not. In fact, no one use them. As a `unified storage layer`, it's strange coder still need to take care of the difference of storager services.

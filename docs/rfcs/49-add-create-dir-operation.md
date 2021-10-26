@@ -5,6 +5,9 @@
 
 # AOS-49: Add CreateDir Operation
 
+- Updated By:
+  - [GSP-837: Support Feature Flag](./837-support-feature-flag.md): Move `CreateDir` operation to `Storager`
+
 ## Background
 
 Applications need the ability to create a directory. For now, our support is a bit wired.
