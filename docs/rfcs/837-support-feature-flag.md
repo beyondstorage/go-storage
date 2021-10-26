@@ -41,78 +41,27 @@ Maybe it's time for us to drop the idea that we introduced in [GSP-1: Unify stor
 
 ## Proposal
 
-I propose to support feature flag for operational rampups, and also provide interfaces for users or applications to acquire service capabilities.
+I propose to support feature flag for operational rampups, and also provide public API for users or applications to acquire service capabilities.
 
-### Reimplement Features
+### Features Category
 
-- Generate `ServiceFeatures` and `StorageFeatures` structs on go-storage side to represent the features supported by the storage container and storage service, respectively.
-  - `CanXxx()` function is to check if the operation, or the feature that no native support but could be virtual is supported.
-- Declare the supported features on service side.
-  - Reserve the generated enable feature pairs `enable_xxx` and `EnableXxx()` functions for features that are not natively supported but can be supported virtually to enable the feature when init the storage.
-  - `ServiceFeatures` and `StorageFeatures` pairs and structs will be deprecated on service side, as will the `WithStorageFeatures()`/`WithServiceFeatures()` functions.
+For now, we will classify features as follows, other categories of features should be introduced by new GSPs.
 
-```go
-// StorageFeatures indicates features supported by storage.
-type StorageFeatures struct {
-	// native support or can't support 
-	createAppend                   bool
-	writeAppend                    bool
-	commitAppend                   bool
-	createBlock                    bool
-	writeBlock                     bool
-	combineBlock                   bool
-	listBlock                      bool
-	createDir                      bool
-	fetch                          bool
-	createLink                     bool
-	move                           bool
-	createMultipart                bool
-	writeMultipart                 bool
-	completeMultipart              bool
-	listMultipart                  bool
-	createPage                     bool
-	writePage                      bool
-	create                         bool
-	delete                         bool
-	metadata                       bool
-	list                           bool
-	read                           bool
-	stat                           bool
-	write                          bool
-	querySignHTTPDelete            bool
-	querySignHTTPRead              bool
-	querySignHTTPWrite             bool
-	querySignHTTPCreateMultipart   bool
-	querySignHTTPCompleteMultipart bool
-	querySignHTTPWriteMultipart    bool
-	querySignHTTPlistMultipart     bool
-	
-	// no native support but could be virtual
-	loosePair             bool
-	virtualDir            bool
-	virtualLink           bool
-	virtualObjectMetadata bool
-}
+- Operation features: All operations.
+- Operation-related features: Operation-related specific behavior. Currently, we have the following operation-related features:
+  - WriteEmptyObject
+- Virtual features: No native support but could be virtual. Currently, we have the following virtual features:
+  - LoosePair
+  - VirtualDir
+  - VirtualLink
+  - VirtualObjectMetadata
 
-// CanCopy returns whether this storage support Copy operation or not.
-func (f StorageFeatures) CanCopy() bool {
-	return f.copy
-}
+### Features Reimplementation
 
-...
-
-// CanVirtualDir returns whether this storage support virtual_dir feature or not.
-func (f *StorageFeatures) CanVirtualDir() {
-	f.virtualDir = true
-}
-
-...
-```
-
-### Add operations back to Storager
+#### Add operations back to Storager
 
 - Add all operations in interfaces for storage service like `Copy`, `Move`, etc back to `Storager`.
-- Support `Features()` which returns the supported features in `Storager` and `Servicer` interfaces, respectively.
+- Support `Features()` which returns the supported features in `Storager` interfaces. So is `Servicer` interface.
 
 ```go
 type Storager interface {
@@ -155,17 +104,115 @@ func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
 ...
 ```
 
-- Stub implementations for all non-supported operations will be generated.
-- The implementation of `Features()` will be generated according to the declared supported features.
+#### Feature Flags API
 
-Caller need to check the feature support flag before use them.
+`ServiceFeatures` and `StorageFeatures` structs will be generated on go-storage side to represent the features supported by the storage container and storage service, respectively. The full feature list include operation features, operation-related features and virtual features.
+- For operation, we will have the function with the same name as it to check if the operation is supported.
+- For operation-related feature, it comes from the `features.toml` with the name `[op][name]` like `write_empty_name`. We will have the function with the name `Can[op][name]` to check if the feature is supported.
+- For virtual feature, it comes from the `features.toml` with a new `virtual` property to distinguish it from operation-related features. We will have the function with the same name as it to check if the virtual feature is supported.
+
+Take `StorageFeatures` as an example:
 
 ```go
-if store.Features().CanCopy() {
+// StorageFeatures indicates features supported by storage.
+type StorageFeatures struct {
+	// operation features
+	createAppend                   bool
+	writeAppend                    bool
+	commitAppend                   bool
+	createBlock                    bool
+	writeBlock                     bool
+	combineBlock                   bool
+	listBlock                      bool
+	createDir                      bool
+	fetch                          bool
+	createLink                     bool
+	move                           bool
+	createMultipart                bool
+	writeMultipart                 bool
+	completeMultipart              bool
+	listMultipart                  bool
+	createPage                     bool
+	writePage                      bool
+	create                         bool
+	delete                         bool
+	metadata                       bool
+	list                           bool
+	read                           bool
+	stat                           bool
+	write                          bool
+	querySignHTTPDelete            bool
+	querySignHTTPRead              bool
+	querySignHTTPWrite             bool
+	querySignHTTPCreateMultipart   bool
+	querySignHTTPCompleteMultipart bool
+	querySignHTTPWriteMultipart    bool
+	querySignHTTPlistMultipart     bool
+	
+	// operation features
+	writeEmptyObject bool
+	
+	// virtual features
+	loosePair             bool
+	virtualDir            bool
+	virtualLink           bool
+	virtualObjectMetadata bool
+}
+
+// Copy returns whether this storage support Copy operation or not.
+func (f StorageFeatures) Copy() bool {
+	return f.copy
+}
+
+...
+
+// CanWriteEmptyObject returns whether this storage support write_empty_object or not.
+func (f StorageFeatures) CanWriteEmptyObject() bool {
+	return f.writeEmptyObject
+}
+
+...
+
+// VirtualDir returns whether this storage support virtual_dir or not.
+func (f *StorageFeatures) VirtualDir() bool {
+	return f.virtualDir
+}
+
+...
+```
+
+For service side:
+
+- Services need to declare all the features they support.
+  - Stub implementations for all non-supported operations will be generated.
+  - The implementation of `Features()` will be generated according to the declared supported features.
+- go-storage will generate the struct and functions for virtual features on service side.
+  - Rename the generated `ServiceFeatures`/`StorageFeatures` pairs and structs to `ServiceVirtualFeatures`/`StorageVirtualFeatures`, as will the `WithStorageFeatures()`/`WithServiceFeatures()` functions.
+  - Reserve the generated virtual feature pairs `enable_xxx` and `EnableXxx()` functions for virtual features.
+
+For user side: Users should not access storage features directly:
+
+- Enable virtual features when init the storage.
+- Check the feature support flag via public API.
+
+```go
+store, err := services.NewStoragerFromString("<service>://<name><work_dir>?enable_virtual_dir")
+if err != nil {
+	return err
+}
+
+if store.Features().Copy() {
 	err := store.Copy(oldpath, newpath)
 	if err != nil {
 		return err
 	}
+}
+
+if store.Features().Write && store.Features().CanWriteEmptyObject() {
+	err := store.Write(path, nil, size)
+    if err != nil {
+    	return err
+    }
 }
 ```
 
@@ -208,11 +255,13 @@ Feature flags solutions:
 ## Implementation
 
 - For go-storage
-  - Deprecate the current generated `ServiceFeatures` and `StorageFeatures` pairs and structs for services, and re-generate them on go-storage side.
+  - Rename the current generated `ServiceFeatures` and `StorageFeatures` pairs and structs for services, and re-generate them on go-storage side.
   - Remove interfaces other than `Servicer` and `Storager`, and add the related operations back to `Storager`.
+  - Add `write_empty_object` in `features.toml` and add `virtual` property for virtual features.
+  - Generate codes for services.
 - For storage services
   - Remove `implement` fields in `service.toml`.
-  - Generate the implementation of `Features()` for `Storage` and `Service`.
-- For go-integration-test
-  - go-integration-test should not use type assertions, but run the test cases according to features.
+  - Declare all supported features in `features` field in `service.toml`.
+- For integration test
+  - Integration test should not use type assertions, but run the test cases according to features.
   
