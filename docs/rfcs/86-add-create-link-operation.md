@@ -5,6 +5,9 @@
 
 # GSP-86: Add Create Link Operation
 
+- Updated By:
+  - [GSP-837: Support Feature Flag](./837-support-feature-flag.md): Move `CreateLink` operation to `Storager`
+
 ## Background
 
 We have `ModeLink` for Object which means this Object is a link which targets to another Object. A link object could be returned in `Stat` or `List`. But there is no way to create a link object.

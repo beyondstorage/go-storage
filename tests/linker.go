@@ -15,8 +15,6 @@ import (
 
 func TestLinker(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		l, ok := store.(types.Linker)
-		So(ok, ShouldBeTrue)
 
 		workDir := store.Metadata().WorkDir
 
@@ -38,7 +36,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 			}()
 
 			path := uuid.New().String()
-			o, err := l.CreateLink(path, target)
+			o, err := store.CreateLink(path, target)
 
 			defer func() {
 				err = store.Delete(path)
@@ -90,7 +88,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 			target := uuid.New().String()
 
 			path := uuid.New().String()
-			o, err := l.CreateLink(path, target)
+			o, err := store.CreateLink(path, target)
 
 			defer func() {
 				err = store.Delete(path)
@@ -155,7 +153,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 			}()
 
 			path := uuid.New().String()
-			o, err := l.CreateLink(path, firstTarget)
+			o, err := store.CreateLink(path, firstTarget)
 
 			defer func() {
 				err = store.Delete(path)
@@ -184,7 +182,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			o, err = l.CreateLink(path, secondTarget)
+			o, err = store.CreateLink(path, secondTarget)
 
 			Convey("The second returned error should also be nil", func() {
 				So(err, ShouldBeNil)

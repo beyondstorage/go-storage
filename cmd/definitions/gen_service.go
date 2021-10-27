@@ -173,11 +173,10 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 
 		// Generate interface assert.
 		inters := f.NewVar()
-		for _, inter := range ns.ParsedInterfaces() {
-			interNameP := templateutils.ToPascal(inter.Name)
-			inters.AddTypedField(
-				"_", interNameP, gg.S("&%s{}", nsNameP))
-		}
+		inter := ns.ParsedInterface()
+		interNameP := templateutils.ToPascal(inter.Name)
+		inters.AddTypedField(
+			"_", interNameP, gg.S("&%s{}", nsNameP))
 
 		// Generate feature struct.
 		features := f.NewStruct(nsNameP + "Features")

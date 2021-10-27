@@ -5,6 +5,9 @@
 
 # AOS-44: Add CommitAppend in Appender
 
+- Updated By:
+  - [GSP-837: Support Feature Flag](./837-support-feature-flag.md): Move `CommitAppend` operations to `Storager`
+
 ## Background
 
 `Appender` is designed for `append` operation. We need to use `CreateAppend` to create an appendable object, and `WriteAppend` to write data at the tail of appendable object.

@@ -75,15 +75,11 @@ func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
 }
 
 // WithDefaultServicePairs will apply default_service_pairs value to Options.
-//
-// set default pairs for service actions
 func WithDefaultServicePairs(v DefaultServicePairs) Pair {
 	return Pair{Key: "default_service_pairs", Value: v}
 }
 
 // WithDefaultStoragePairs will apply default_storage_pairs value to Options.
-//
-// set default pairs for storage actions
 func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
 	return Pair{Key: "default_storage_pairs", Value: v}
 }
@@ -104,8 +100,6 @@ func WithEnableVirtualDir() Pair {
 }
 
 // WithServiceFeatures will apply service_features value to Options.
-//
-// set service features
 func WithServiceFeatures(v ServiceFeatures) Pair {
 	return Pair{Key: "service_features", Value: v}
 }
@@ -116,8 +110,6 @@ func WithStorageClass(v string) Pair {
 }
 
 // WithStorageFeatures will apply storage_features value to Options.
-//
-// set storage features
 func WithStorageFeatures(v StorageFeatures) Pair {
 	return Pair{Key: "storage_features", Value: v}
 }

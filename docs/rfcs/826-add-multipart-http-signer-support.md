@@ -5,6 +5,9 @@
 
 # GSP-826: Add Multipart HTTP Signer Support
 
+- Updated By:
+  - [GSP-837: Support Feature Flag](./837-support-feature-flag.md): Move multipart HTTP signer related operations to `Storager`
+
 Previous discussion:
 
 - [Multipart related operations ](https://forum.beyondstorage.io/t/topic/226)

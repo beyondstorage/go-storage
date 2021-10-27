@@ -4,7 +4,7 @@ name = "fs"
 implement = ["copier", "mover", "fetcher", "appender", "direr", "linker"]
 
 [namespace.storage.new]
-optional = ["storage_features", "default_storage_pairs", "work_dir"]
+optional = ["work_dir"]
 
 [namespace.storage.op.create]
 optional = ["object_mode"]
@@ -23,11 +23,3 @@ optional = ["object_mode"]
 
 [namespace.storage.op.write]
 optional = ["content_md5", "content_type", "offset", "io_callback"]
-
-[pairs.storage_features]
-type = "StorageFeatures"
-description = "set storage features"
-
-[pairs.default_storage_pairs]
-type = "DefaultStoragePairs"
-description = "set default pairs for storager actions"

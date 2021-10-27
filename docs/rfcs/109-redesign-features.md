@@ -5,6 +5,9 @@
 
 # GSP-109: Redesign Features
 
+- Updated By:
+    - [GSP-837: Support Feature Flag](./837-support-feature-flag.md): Reimplement `Features`
+
 ## Background
 
 [GSP-87](https://github.com/beyondstorage/specs/pull/87) introduces a new concept `Feature`. However, it's proved to be too complicated that both hard to understand and to implemented.

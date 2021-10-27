@@ -3,6 +3,8 @@ package tests
 import (
 	"context"
 	"io"
+	"net/http"
+	"time"
 
 	. "go.beyondstorage.io/v5/types"
 )
@@ -14,14 +16,11 @@ type Storage struct {
 	objects []*Object
 
 	Pairs []Pair
-
-	UnimplementedCopier
-	UnimplementedFetcher
-	UnimplementedMover
-	UnimplementedMultiparter
-	UnimplementedReacher
-	UnimplementedAppender
 	UnimplementedStorager
+}
+
+func (s *Storage) combineBlock(ctx context.Context, o *Object, bids []string, opt pairStorageCombineBlock) (err error) {
+	panic("not implemented")
 }
 
 func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
@@ -44,7 +43,23 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	panic("not implemented")
 }
 
+func (s *Storage) createBlock(ctx context.Context, path string, opt pairStorageCreateBlock) (o *Object, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *Object, err error) {
+	panic("not implemented")
+}
+
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) createPage(ctx context.Context, path string, opt pairStorageCreatePage) (o *Object, err error) {
 	panic("not implemented")
 }
 
@@ -64,6 +79,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	return NewObjectIterator(ctx, fn, nil), nil
 }
 
+func (s *Storage) listBlock(ctx context.Context, o *Object, opt pairStorageListBlock) (bi *BlockIterator, err error) {
+	panic("not implemented")
+}
+
 func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageListMultipart) (pi *PartIterator, err error) {
 	panic("not implemented")
 }
@@ -76,7 +95,31 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt pairStor
 	panic("not implemented")
 }
 
-func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) (url string, err error) {
+func (s *Storage) querySignHTTPCompleteMultipart(ctx context.Context, o *Object, parts []*Part, expire time.Duration, opt pairStorageQuerySignHTTPCompleteMultipart) (req *http.Request, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) querySignHTTPCreateMultipart(ctx context.Context, path string, expire time.Duration, opt pairStorageQuerySignHTTPCreateMultipart) (req *http.Request, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) querySignHTTPDelete(ctx context.Context, path string, expire time.Duration, opt pairStorageQuerySignHTTPDelete) (req *http.Request, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) querySignHTTPListMultipart(ctx context.Context, o *Object, expire time.Duration, opt pairStorageQuerySignHTTPListMultipart) (req *http.Request, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) querySignHTTPRead(ctx context.Context, path string, expire time.Duration, opt pairStorageQuerySignHTTPRead) (req *http.Request, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) querySignHTTPWrite(ctx context.Context, path string, size int64, expire time.Duration, opt pairStorageQuerySignHTTPWrite) (req *http.Request, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) querySignHTTPWriteMultipart(ctx context.Context, o *Object, size int64, index int, expire time.Duration, opt pairStorageQuerySignHTTPWriteMultipart) (req *http.Request, err error) {
 	panic("not implemented")
 }
 
@@ -96,6 +139,14 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 	panic("not implemented")
 }
 
+func (s *Storage) writeBlock(ctx context.Context, o *Object, r io.Reader, size int64, bid string, opt pairStorageWriteBlock) (n int64, err error) {
+	panic("not implemented")
+}
+
 func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *Part, err error) {
+	panic("not implemented")
+}
+
+func (s *Storage) writePage(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, opt pairStorageWritePage) (n int64, err error) {
 	panic("not implemented")
 }

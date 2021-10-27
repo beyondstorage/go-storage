@@ -15,12 +15,10 @@ import (
 
 func TestMultiparter(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		m, ok := store.(types.Multiparter)
-		So(ok, ShouldBeTrue)
 
 		Convey("When CreateMultipart", func() {
 			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 
 			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -33,7 +31,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 				}
 			}(o.MustGetMultipartID())
 
-			o, err = m.CreateMultipart(path)
+			o, err = store.CreateMultipart(path)
 
 			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
@@ -62,7 +60,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 
 		Convey("When Delete with multipart id", func() {
 			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -80,7 +78,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 
 		Convey("When Stat with multipart id", func() {
 			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -118,7 +116,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 
 		Convey("When Create with multipart id", func() {
 			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -151,7 +149,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 
 		Convey("When WriteMultipart", func() {
 			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -166,7 +164,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			n, part, err := m.WriteMultipart(o, r, size, 0)
+			n, part, err := store.WriteMultipart(o, r, size, 0)
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -183,7 +181,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 
 		Convey("When ListMultiPart", func() {
 			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -199,12 +197,12 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			_, _, err = m.WriteMultipart(o, r, size, partNumber)
+			_, _, err = store.WriteMultipart(o, r, size, partNumber)
 			if err != nil {
 				t.Error(err)
 			}
 
-			it, err := m.ListMultipart(o)
+			it, err := store.ListMultipart(o)
 
 			Convey("ListMultipart error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -224,7 +222,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 
 		Convey("When List with part type", func() {
 			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -240,7 +238,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			_, _, err = m.WriteMultipart(o, r, size, partNumber)
+			_, _, err = store.WriteMultipart(o, r, size, partNumber)
 			if err != nil {
 				t.Error(err)
 			}
@@ -271,7 +269,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 
 		Convey("When CompletePart", func() {
 			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -288,12 +286,12 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			partNumber := 0
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			_, part, err := m.WriteMultipart(o, r, size, partNumber)
+			_, part, err := store.WriteMultipart(o, r, size, partNumber)
 			if err != nil {
 				t.Error(err)
 			}
 
-			err = m.CompleteMultipart(o, []*types.Part{part})
+			err = store.CompleteMultipart(o, []*types.Part{part})
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)

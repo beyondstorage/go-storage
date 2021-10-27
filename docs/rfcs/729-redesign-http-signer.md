@@ -8,6 +8,9 @@
 - Updates:
   - [GSP-706]: Deprecate `HTTPSigner` and `QuerySignHTTP()`.
 
+- Updated By:
+  - [GSP-837: Support Feature Flag](./837-support-feature-flag.md): Move HTTP signer related operations to `Storager`
+
 Previous discussion:
 - [How to pass `partIndex` into `QuerySignHTTP` for `WriteMultipart`?](https://forum.beyondstorage.io/t/how-to-pass-partindex-into-querysignhttp-for-writemultipart/192)
 - [#beyondstorage@gsp-706:matrix.org](https://matrix.to/#/#beyondstorage@gsp-706:matrix.org)

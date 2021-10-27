@@ -60,7 +60,9 @@ func generateOperation(data *Data, path string) {
 		inter.NewFunction("mustEmbedUnimplemented" + in.DisplayName())
 
 		stubName := "Unimplemented" + in.DisplayName()
-		f.AddLineComment("%s must be embedded to have forward compatible implementations.", stubName)
+		f.AddLineComment("%s must be embedded to have forward compatible implementations.", stubName).
+			AddLineComment("").
+			AddLineComment("%s %s", in.DisplayName(), in.Description)
 		f.NewStruct(stubName)
 
 		f.NewFunction("mustEmbedUnimplemented"+in.DisplayName()).
