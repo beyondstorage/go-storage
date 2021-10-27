@@ -19,8 +19,6 @@ import (
 
 func TestCopier(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		c, ok := store.(types.Copier)
-		So(ok, ShouldBeTrue)
 
 		Convey("When Copy a file", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
@@ -40,7 +38,7 @@ func TestCopier(t *testing.T, store types.Storager) {
 			}()
 
 			dst := uuid.New().String()
-			err = c.Copy(src, dst)
+			err = store.Copy(src, dst)
 
 			defer func() {
 				err = store.Delete(dst)
@@ -102,7 +100,7 @@ func TestCopier(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			err = c.Copy(src, dst)
+			err = store.Copy(src, dst)
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
@@ -127,10 +125,6 @@ func TestCopier(t *testing.T, store types.Storager) {
 
 func TestCopierWithDir(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		c, ok := store.(types.Copier)
-		So(ok, ShouldBeTrue)
-
-		d := store.(types.Direr)
 
 		Convey("When Copy to an existing dir", func() {
 			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
@@ -150,7 +144,7 @@ func TestCopierWithDir(t *testing.T, store types.Storager) {
 			}()
 
 			dst := uuid.New().String()
-			_, err = d.CreateDir(dst)
+			_, err = store.CreateDir(dst)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -162,7 +156,7 @@ func TestCopierWithDir(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			err = c.Copy(src, dst)
+			err = store.Copy(src, dst)
 			Convey("The error should be ErrObjectModeInvalid", func() {
 				So(errors.Is(err, services.ErrObjectModeInvalid), ShouldBeTrue)
 			})
@@ -172,10 +166,6 @@ func TestCopierWithDir(t *testing.T, store types.Storager) {
 
 func TestCopierWithVirtualDir(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		c, ok := store.(types.Copier)
-		So(ok, ShouldBeTrue)
-
-		d := store.(types.Direr)
 
 		Convey("When Copy to an existing dir", func() {
 			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
@@ -195,7 +185,7 @@ func TestCopierWithVirtualDir(t *testing.T, store types.Storager) {
 			}()
 
 			dst := uuid.New().String()
-			_, err = d.CreateDir(dst)
+			_, err = store.CreateDir(dst)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -207,7 +197,7 @@ func TestCopierWithVirtualDir(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			err = c.Copy(src, dst)
+			err = store.Copy(src, dst)
 
 			defer func() {
 				err = store.Delete(dst)

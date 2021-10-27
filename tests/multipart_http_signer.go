@@ -18,12 +18,10 @@ import (
 
 func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.MultipartHTTPSigner)
-		So(ok, ShouldBeTrue)
 
 		Convey("When CreateMultipart via QuerySignHTTPCreateMultipart", func() {
 			path := uuid.New().String()
-			req, err := signer.QuerySignHTTPCreateMultipart(path, time.Duration(time.Hour))
+			req, err := store.QuerySignHTTPCreateMultipart(path, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -70,7 +68,7 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 
 		Convey("When WriteMultipart via QuerySignHTTPWriteMultipart", func() {
 			path := uuid.New().String()
-			o, err := store.(types.Multiparter).CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -88,7 +86,7 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 				t.Error(err)
 			}
 
-			req, err := signer.QuerySignHTTPWriteMultipart(o, size, 0, time.Duration(time.Hour))
+			req, err := store.QuerySignHTTPWriteMultipart(o, size, 0, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -113,11 +111,8 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When ListMultiPart via QuerySignHTTPListMultiPart", func() {
-			mu, ok := store.(types.Multiparter)
-			So(ok, ShouldBeTrue)
-
 			path := uuid.New().String()
-			o, err := mu.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -133,12 +128,12 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 			partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			_, _, err = mu.WriteMultipart(o, r, size, partNumber)
+			_, _, err = store.WriteMultipart(o, r, size, partNumber)
 			if err != nil {
 				t.Error(err)
 			}
 
-			req, err := signer.QuerySignHTTPListMultipart(o, time.Duration(time.Hour))
+			req, err := store.QuerySignHTTPListMultipart(o, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -156,11 +151,8 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When CompletePart via QuerySignHTTPCompletePart", func() {
-			mu, ok := store.(types.Multiparter)
-			So(ok, ShouldBeTrue)
-
 			path := uuid.New().String()
-			o, err := mu.CreateMultipart(path)
+			o, err := store.CreateMultipart(path)
 			if err != nil {
 				t.Error(err)
 			}
@@ -177,12 +169,12 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 			partNumber := 0
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			_, part, err := mu.WriteMultipart(o, r, size, partNumber)
+			_, part, err := store.WriteMultipart(o, r, size, partNumber)
 			if err != nil {
 				t.Error(err)
 			}
 
-			req, err := signer.QuerySignHTTPCompleteMultipart(o, []*types.Part{part}, time.Duration(time.Hour))
+			req, err := store.QuerySignHTTPCompleteMultipart(o, []*types.Part{part}, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)

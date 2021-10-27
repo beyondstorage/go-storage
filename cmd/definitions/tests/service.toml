@@ -18,7 +18,6 @@ optional = ["location"]
 
 [namespace.storage]
 features = ["virtual_dir", "loose_pair"]
-implement = ["copier", "fetcher", "mover", "multiparter", "reacher", "appender"]
 
 [namespace.storage.new]
 required = ["name"]
@@ -29,9 +28,6 @@ optional = ["multipart_id", "object_mode"]
 
 [namespace.storage.op.list]
 optional = ["list_mode"]
-
-[namespace.storage.op.reach]
-required = ["expire"]
 
 [namespace.storage.op.read]
 optional = ["io_callback", "size", "offset"]
