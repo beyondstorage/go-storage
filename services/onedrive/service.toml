@@ -4,7 +4,7 @@ name = "onedrive"
 
 [namespace.storage.new]
 required = ["credential"]
-optional = ["work_dir", "storage_features", "default_storage_pairs"]
+optional = ["work_dir"]
 
 [namespace.storage.op.create]
 optional = ["object_mode"]
@@ -27,11 +27,3 @@ optional = ["content_md5", "content_type", "io_callback", "description"]
 [pairs.description]
 type = "string"
 description = "description for target file/dir"
-
-[pairs.storage_features]
-type = "StorageFeatures"
-description = "set storage features"
-
-[pairs.default_storage_pairs]
-type = "DefaultStoragePairs"
-description = "set default pairs for storager actions"

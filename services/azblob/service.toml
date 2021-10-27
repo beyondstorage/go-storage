@@ -4,7 +4,7 @@ name = "azblob"
 
 [namespace.service.new]
 required = ["credential", "endpoint"]
-optional = ["service_features", "default_service_pairs", "http_client_options"]
+optional = ["http_client_options"]
 
 [namespace.storage]
 features = ["virtual_dir"]
@@ -12,7 +12,7 @@ implement = ["appender", "direr"]
 
 [namespace.storage.new]
 required = ["name"]
-optional = ["storage_features", "default_storage_pairs", "work_dir"]
+optional = ["work_dir"]
 
 [namespace.storage.op.create]
 optional = ["object_mode"]
@@ -41,24 +41,8 @@ optional = ["encryption_key", "encryption_scope", "object_mode"]
 [namespace.storage.op.create_dir]
 optional = ["access_tier"]
 
-[pairs.service_features]
-type = "ServiceFeatures"
-description = "set service features"
-
-[pairs.storage_features]
-type = "StorageFeatures"
-description = "set storage features"
-
 [pairs.access_tier]
 type = "string"
-
-[pairs.default_service_pairs]
-type = "DefaultServicePairs"
-description = "set default pairs for service actions"
-
-[pairs.default_storage_pairs]
-type = "DefaultStoragePairs"
-description = "set default pairs for storager actions"
 
 [pairs.encryption_key]
 type = "[]byte"
