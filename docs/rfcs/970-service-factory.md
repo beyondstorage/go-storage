@@ -116,7 +116,59 @@ With this struct, we can unify the initialization logic of service and storage t
 
 ## Rationale
 
-TBD
+### How will service factory support init from a map?
+
+`Factory` will support init from a map via `FromMap` method.
+
+```go
+type Factory interface {
+    FromMap(m map[string]interface{}) (err error)
+}
+```
+
+So our develops can support go-storage by providing the following config:
+
+```go
+type Config struct {
+	...
+    StorageType string `yaml:"storage_type"`
+	StorageOptions map[string]interface{} `yaml:"storage_options"`
+}
+```
+
+They unmarshal yaml into this config and then call `FromMap` method to init the service.
+
+```go
+func (c *Config) Init() error {
+	...
+    sf, err := NewFactoryFromMap(c.StorageType, c.StorageOptions)
+	if err != nil {
+        return err
+    }
+}
+```
+
+### How will service factory support init from a struct?
+
+`Factory` itself is marshalable and unmarshalable, so it's possible for developers to unmarshal into this struct directly to init the service.
+
+For example, we can use `yaml` to unmarshal into this struct:
+
+```go
+func main() {
+	var content = `credential: hmac:access_key:secret_key
+endpoint: https://s3.amazonaws.com`
+
+    sf, err := NewFactory("s3")
+	if err != nil {
+		log.Fatal(err)
+    }
+    err = yaml.Unmarshal(bs, &sf)
+	if err != nil {
+		log.Fatal(err)
+    }
+}
+```
 
 ## Compatibility
 
