@@ -88,25 +88,25 @@ And use the while `factory` field to generate the `Factory` struct:
 
 ```go
 type Factory struct {
-// Service pairs.
-// Service required pairs.
-Credential string
-Endpoint   string
-// Service optional pairs.
-ForcePathStyle bool
-UseAccelerate  bool
-UseArnRegion   bool
-// Storage pairs.
-// Storage required pairs.
-Location string
-Name     string
-// Storage optional pairs.
-WorkDir             string
-DefaultContentType  string
-DefaultIoCallback   func ([]byte)
-DefaultStorageClass string
-EnableVirtualDir    bool
-EnableVirtualLink   bool
+    // Service pairs.
+    // Service required pairs.
+    Credential string
+    Endpoint   string
+    // Service optional pairs.
+    ForcePathStyle bool
+    UseAccelerate  bool
+    UseArnRegion   bool
+    // Storage pairs.
+    // Storage required pairs.
+    Location string
+    Name     string
+    // Storage optional pairs.
+    WorkDir             string
+    DefaultContentType  string
+    DefaultIoCallback   func ([]byte)
+    DefaultStorageClass string
+    EnableVirtualDir    bool
+    EnableVirtualLink   bool
 }
 ```
 
