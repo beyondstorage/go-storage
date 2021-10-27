@@ -206,13 +206,13 @@ func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, er
 
 // All available storage classes are listed here.
 const (
-	StorageClassStandard           = s3types.ObjectStorageClassStandard
-	StorageClassReducedRedundancy  = s3types.ObjectStorageClassReducedRedundancy
-	StorageClassGlacier            = s3types.ObjectStorageClassGlacier
-	StorageClassStandardIa         = s3types.ObjectStorageClassStandardIa
-	StorageClassOnezoneIa          = s3types.ObjectStorageClassOnezoneIa
-	StorageClassIntelligentTiering = s3types.ObjectStorageClassIntelligentTiering
-	StorageClassDeepArchive        = s3types.ObjectStorageClassDeepArchive
+	StorageClassStandard           = string(s3types.ObjectStorageClassStandard)
+	StorageClassReducedRedundancy  = string(s3types.ObjectStorageClassReducedRedundancy)
+	StorageClassGlacier            = string(s3types.ObjectStorageClassGlacier)
+	StorageClassStandardIa         = string(s3types.ObjectStorageClassStandardIa)
+	StorageClassOnezoneIa          = string(s3types.ObjectStorageClassOnezoneIa)
+	StorageClassIntelligentTiering = string(s3types.ObjectStorageClassIntelligentTiering)
+	StorageClassDeepArchive        = string(s3types.ObjectStorageClassDeepArchive)
 )
 
 func formatError(err error) error {
@@ -341,8 +341,8 @@ func (s *Storage) newObject(done bool) *typ.Object {
 
 // All available server side algorithm are listed here.
 const (
-	ServerSideEncryptionAes256 = s3types.ServerSideEncryptionAes256
-	ServerSideEncryptionAwsKms = s3types.ServerSideEncryptionAwsKms
+	ServerSideEncryptionAes256 = string(s3types.ServerSideEncryptionAes256)
+	ServerSideEncryptionAwsKms = string(s3types.ServerSideEncryptionAwsKms)
 )
 
 func calculateEncryptionHeaders(algo string, key []byte) (algorithm, keyBase64, keyMD5Base64 *string, err error) {
