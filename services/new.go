@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"go.beyondstorage.io/v5/pairs"
@@ -21,52 +20,17 @@ type (
 
 var (
 	servicerFnMap map[string]NewServicerFunc
-	servicerLock  sync.Mutex
-
 	storagerFnMap map[string]NewStoragerFunc
-	storagerLock  sync.Mutex
 )
 
 // RegisterServicer will register a servicer.
 func RegisterServicer(ty string, fn NewServicerFunc) {
-	servicerLock.Lock()
-	defer servicerLock.Unlock()
-
 	servicerFnMap[ty] = fn
-}
-
-// NewServicer will initiate a new servicer.
-func NewServicer(ty string, ps ...types.Pair) (types.Servicer, error) {
-	servicerLock.Lock()
-	defer servicerLock.Unlock()
-
-	fn, ok := servicerFnMap[ty]
-	if !ok {
-		return nil, InitError{Op: "new_servicer", Type: ty, Err: ErrServiceNotRegistered, Pairs: ps}
-	}
-
-	return fn(ps...)
 }
 
 // RegisterStorager will register a storager.
 func RegisterStorager(ty string, fn NewStoragerFunc) {
-	storagerLock.Lock()
-	defer storagerLock.Unlock()
-
 	storagerFnMap[ty] = fn
-}
-
-// NewStorager will initiate a new storager.
-func NewStorager(ty string, ps ...types.Pair) (types.Storager, error) {
-	storagerLock.Lock()
-	defer storagerLock.Unlock()
-
-	fn, ok := storagerFnMap[ty]
-	if !ok {
-		return nil, InitError{Op: "new_storager", Type: ty, Err: ErrServiceNotRegistered, Pairs: ps}
-	}
-
-	return fn(ps...)
 }
 
 func init() {
@@ -76,39 +40,13 @@ func init() {
 
 var (
 	servicePairMaps map[string]map[string]string
-	schemaLock      sync.Mutex
 )
 
 // RegisterSchema will register a service's pair map.
 //
 // Users SHOULD NOT call this function.
 func RegisterSchema(ty string, m map[string]string) {
-	schemaLock.Lock()
-	defer schemaLock.Unlock()
-
 	servicePairMaps[ty] = m
-}
-
-// NewServicerFromString will create a new service via connection string.
-func NewServicerFromString(connStr string, ps ...types.Pair) (types.Servicer, error) {
-	ty, psc, err := parseConnectionString(connStr)
-	if err != nil {
-		return nil, InitError{Op: "new_servicer", Type: ty, Err: err, Pairs: ps}
-	}
-	// Append ps after connection string to keep pairs order.
-	psc = append(psc, ps...)
-	return NewServicer(ty, psc...)
-}
-
-// NewStoragerFromString will create a new storager via connection string.
-func NewStoragerFromString(connStr string, ps ...types.Pair) (types.Storager, error) {
-	ty, psc, err := parseConnectionString(connStr)
-	if err != nil {
-		return nil, InitError{Op: "new_storager", Type: ty, Err: err, Pairs: ps}
-	}
-	// Append ps after connection string to keep pairs order.
-	psc = append(psc, ps...)
-	return NewStorager(ty, psc...)
 }
 
 var (
@@ -126,9 +64,7 @@ func parseConnectionString(ConnStr string) (ty string, ps []types.Pair, err erro
 	ty = ConnStr[:colon]
 	rest := ConnStr[colon+1:]
 
-	schemaLock.Lock()
 	m, ok := servicePairMaps[ty]
-	schemaLock.Unlock()
 	if !ok {
 		err = ErrServiceNotRegistered
 		return
