@@ -4,6 +4,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
@@ -34,10 +36,10 @@ func generateOperation(data *Data, path string) {
 			gop := inter.NewFunction(pname)
 
 			for _, p := range op.ParsedParams() {
-				gop.AddParameter(p.Name, p.Type)
+				gop.AddParameter(p.Name, strings.ReplaceAll(p.Type, "types.", ""))
 			}
 			for _, r := range op.ParsedResults() {
-				gop.AddResult(r.Name, r.Type)
+				gop.AddResult(r.Name, strings.ReplaceAll(r.Type, "types.", ""))
 			}
 
 			// We need to generate XxxWithContext functions if not local.
@@ -48,10 +50,10 @@ func generateOperation(data *Data, path string) {
 				// Insert context param.
 				gop.AddParameter("ctx", "context.Context")
 				for _, p := range op.ParsedParams() {
-					gop.AddParameter(p.Name, p.Type)
+					gop.AddParameter(p.Name, strings.ReplaceAll(p.Type, "types.", ""))
 				}
 				for _, r := range op.ParsedResults() {
-					gop.AddResult(r.Name, r.Type)
+					gop.AddResult(r.Name, strings.ReplaceAll(r.Type, "types.", ""))
 				}
 			}
 			// Insert an empty for different functions.
@@ -81,10 +83,10 @@ func generateOperation(data *Data, path string) {
 				WithReceiver("s", stubName)
 
 			for _, p := range op.ParsedParams() {
-				gop.AddParameter(p.Name, p.Type)
+				gop.AddParameter(p.Name, strings.ReplaceAll(p.Type, "types.", ""))
 			}
 			for _, r := range op.ParsedResults() {
-				gop.AddResult(r.Name, r.Type)
+				gop.AddResult(r.Name, strings.ReplaceAll(r.Type, "types.", ""))
 			}
 			// If not local, we need to set error
 			if !op.Local {
@@ -100,10 +102,10 @@ func generateOperation(data *Data, path string) {
 				// Insert context param.
 				gop.AddParameter("ctx", "context.Context")
 				for _, p := range op.ParsedParams() {
-					gop.AddParameter(p.Name, p.Type)
+					gop.AddParameter(p.Name, strings.ReplaceAll(p.Type, "types.", ""))
 				}
 				for _, r := range op.ParsedResults() {
-					gop.AddResult(r.Name, r.Type)
+					gop.AddResult(r.Name, strings.ReplaceAll(r.Type, "types.", ""))
 				}
 				gop.AddBody(
 					gg.S(`err = NewOperationNotImplementedError("%s")`, op.Name),

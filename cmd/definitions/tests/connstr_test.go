@@ -7,14 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 func TestFromString(t *testing.T) {
 	cases := []struct {
 		name    string
 		connStr string
-		pairs   []Pair
+		pairs   []types.Pair
 		err     error
 	}{
 		{
@@ -32,7 +32,7 @@ func TestFromString(t *testing.T) {
 		{
 			"only options",
 			"tests://?size=200",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithSize(200),
 			},
 			nil,
@@ -40,7 +40,7 @@ func TestFromString(t *testing.T) {
 		{
 			"only root dir",
 			"tests:///",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithWorkDir("/"),
 			},
 			nil,
@@ -48,7 +48,7 @@ func TestFromString(t *testing.T) {
 		{
 			"end with ?",
 			"tests:///?",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithWorkDir("/"),
 			},
 			nil,
@@ -56,7 +56,7 @@ func TestFromString(t *testing.T) {
 		{
 			"stupid, but valid (ignored)",
 			"tests:///?&&&",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithWorkDir("/"),
 			},
 			nil,
@@ -64,7 +64,7 @@ func TestFromString(t *testing.T) {
 		{
 			"value can contain all characters except &",
 			"tests:///?string_pair=a=b:/c?d&size=200",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithWorkDir("/"),
 				WithStringPair("a=b:/c?d"),
 				pairs.WithSize(200),
@@ -74,7 +74,7 @@ func TestFromString(t *testing.T) {
 		{
 			"full format",
 			"tests://abc/tmp/tmp1?size=200&storage_class=sc",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithName("abc"),
 				pairs.WithWorkDir("/tmp/tmp1"),
 				pairs.WithSize(200),
@@ -85,7 +85,7 @@ func TestFromString(t *testing.T) {
 		{
 			"duplicate key, appear in order (finally, first will be picked)",
 			"tests://abc/tmp/tmp1?size=200&name=def&size=300",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithName("abc"),
 				pairs.WithWorkDir("/tmp/tmp1"),
 				pairs.WithSize(200),
@@ -115,7 +115,7 @@ func TestFromString(t *testing.T) {
 		{
 			"key with features",
 			"tests://abc/tmp?enable_loose_pair",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithName("abc"),
 				pairs.WithWorkDir("/tmp"),
 				WithEnableLoosePair(),
@@ -125,7 +125,7 @@ func TestFromString(t *testing.T) {
 		{
 			"key with default paris",
 			"tests://abc/tmp?default_storage_class=STANDARD",
-			[]Pair{
+			[]types.Pair{
 				pairs.WithName("abc"),
 				pairs.WithWorkDir("/tmp"),
 				WithDefaultStorageClass("STANDARD"),

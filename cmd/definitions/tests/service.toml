@@ -17,7 +17,7 @@ optional = ["location"]
 optional = ["location"]
 
 [namespace.storage]
-features = ["virtual_dir", "loose_pair"]
+features = ["virtual_dir", "loose_pair", "write_empty_object", "create", "delete", "list", "metadata", "read", "stat", "write"]
 
 [namespace.storage.new]
 required = ["name"]

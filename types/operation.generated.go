@@ -757,6 +757,9 @@ type Servicer interface {
 	// DeleteWithContext will delete a storager instance.
 	DeleteWithContext(ctx context.Context, name string, pairs ...Pair) (err error)
 
+	// Features will get the suppoted features in Servicer.
+	Features() (serviceFeatures ServiceFeatures)
+
 	// Get will get a valid storager instance for service.
 	Get(name string, pairs ...Pair) (store Storager, err error)
 	// GetWithContext will get a valid storager instance for service.
@@ -796,6 +799,9 @@ func (s UnimplementedServicer) Delete(name string, pairs ...Pair) (err error) {
 }
 func (s UnimplementedServicer) DeleteWithContext(ctx context.Context, name string, pairs ...Pair) (err error) {
 	err = NewOperationNotImplementedError("delete")
+	return
+}
+func (s UnimplementedServicer) Features() (serviceFeatures ServiceFeatures) {
 	return
 }
 func (s UnimplementedServicer) Get(name string, pairs ...Pair) (store Storager, err error) {
@@ -1071,6 +1077,9 @@ type Storager interface {
 	//   - Delete SHOULD never return `ObjectNotExist`
 	//   - Delete DON'T NEED to check the object exist or not.
 	DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
+
+	// Features will get the suppoted features in Storager.
+	Features() (storageFeatures StorageFeatures)
 
 	// Fetch will fetch from a given url to path.
 	//
@@ -1378,6 +1387,9 @@ func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
 }
 func (s UnimplementedStorager) DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error) {
 	err = NewOperationNotImplementedError("delete")
+	return
+}
+func (s UnimplementedStorager) Features() (storageFeatures StorageFeatures) {
 	return
 }
 func (s UnimplementedStorager) Fetch(path string, url string, pairs ...Pair) (err error) {

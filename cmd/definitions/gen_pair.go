@@ -5,6 +5,7 @@ package main
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
@@ -38,7 +39,7 @@ func generatePair(data *Data, path string) {
 
 %s %s`, pname, v.Name, pname, v.Description)
 		xfn := f.NewFunction("With" + pname)
-		xfn.AddParameter("v", v.Type)
+		xfn.AddParameter("v", strings.ReplaceAll(v.Type, "types.", ""))
 		xfn.AddResult("p", "Pair")
 		xfn.AddBody(
 			gg.Return(

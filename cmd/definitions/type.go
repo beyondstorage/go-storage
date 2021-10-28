@@ -78,6 +78,18 @@ func (d *Data) ObjectMeta() []*Info {
 	return infos
 }
 
+func (d *Data) Features() []*Feature {
+	var feats []*Feature
+	for _, v := range d.FeaturesMap {
+		v := v
+		feats = append(feats, v)
+	}
+	sort.Slice(feats, func(i, j int) bool {
+		return feats[i].Name < feats[j].Name
+	})
+	return feats
+}
+
 func (d *Data) LoadFeatures() {
 	err := parseTOML(loadBindata(featurePath), &d.FeaturesMap)
 	if err != nil {
@@ -188,7 +200,9 @@ func (d *Data) LoadOperations() {
 			op.Name = name
 			op.d = d
 
-			op.Params = append(op.Params, "pairs")
+			if op.Name != "features" {
+				op.Params = append(op.Params, "pairs")
+			}
 			if !op.Local {
 				op.Results = append(op.Results, "err")
 			}
@@ -283,23 +297,36 @@ func (d *Data) LoadService(filePath string) {
 			ns.Op = make(map[string]*Function, 0)
 		}
 
+		interfaceName := fmt.Sprintf("%sr", ns.Name)
+		in := d.InterfacesMap[interfaceName]
+
 		// Handle features.
 		for _, featureName := range ns.Features {
 			f, ok := d.FeaturesMap[featureName]
 			if !ok {
-				log.Fatalf("feature not registered: %s", featureName)
+				for _, op := range in.Op {
+					if op.Name == featureName {
+						ok = true
+						break
+					}
+				}
+				if !ok {
+					log.Fatalf("feature not registered: %s", featureName)
+				}
 			}
 
 			if featureName == "loose_pair" {
 				ns.HasFeatureLoosePair = true
 			}
 
-			// Generate enable feature pairs.
-			pairName := fmt.Sprintf("enable_%s", featureName)
-			srv.Pairs[pairName] = &Pair{
-				Name:        pairName,
-				Type:        "bool",
-				Description: f.Description,
+			// Generate enable virtual feature pairs.
+			if f != nil && f.Virtual {
+				pairName := fmt.Sprintf("enable_%s", featureName)
+				srv.Pairs[pairName] = &Pair{
+					Name:        pairName,
+					Type:        "bool",
+					Description: f.Description,
+				}
 			}
 		}
 
@@ -314,17 +341,18 @@ func (d *Data) LoadService(filePath string) {
 		for _, v := range ns.ParsedDefaultable() {
 			ns.New.Optional = append(ns.New.Optional, "default_"+v.Pair.Name)
 		}
-		// add default_*_pairs and *_features
+		// add default_*_pairs and *_virtual_features
 		hasDefaultNsPairs := false
 		hasNsFeatures := false
 		defaultNsPairsName := fmt.Sprintf("default_%s_pairs", ns.Name)
 		nsFeaturesName := fmt.Sprintf("%s_features", ns.Name)
+		nsVirtualFeaturesName := fmt.Sprintf("%s_virtual_features", ns.Name)
 		for _, v := range ns.New.Optional {
 			if v == defaultNsPairsName {
 				log.Warnf("Please remove %s pair as it will be automatically generated.", defaultNsPairsName)
 				hasDefaultNsPairs = true
 			}
-			if v == nsFeaturesName {
+			if v == nsFeaturesName || v == nsVirtualFeaturesName {
 				log.Warnf("Please remove %s pair as it will be automatically generated.", nsFeaturesName)
 				hasNsFeatures = true
 			}
@@ -339,8 +367,15 @@ func (d *Data) LoadService(filePath string) {
 		if !hasNsFeatures {
 			ns.New.Optional = append(ns.New.Optional, nsFeaturesName)
 			srv.Pairs[nsFeaturesName] = &Pair{
-				Name: nsFeaturesName,
-				Type: templateutils.ToPascal(nsFeaturesName),
+				Name:        nsFeaturesName,
+				Type:        templateutils.ToPascal(nsFeaturesName),
+				Description: fmt.Sprintf("Deprecated: Use %s instead.", nsVirtualFeaturesName),
+			}
+
+			ns.New.Optional = append(ns.New.Optional, nsVirtualFeaturesName)
+			srv.Pairs[nsVirtualFeaturesName] = &Pair{
+				Name: nsVirtualFeaturesName,
+				Type: templateutils.ToPascal(nsVirtualFeaturesName),
 			}
 		}
 
@@ -353,8 +388,6 @@ func (d *Data) LoadService(filePath string) {
 		}
 
 		// Service could not declare all ops, so we need to fill them instead.
-		interfaceName := fmt.Sprintf("%sr", ns.Name)
-		in := d.InterfacesMap[interfaceName]
 
 		for _, op := range in.Op {
 			if _, ok := ns.Op[op.Name]; ok {
@@ -469,12 +502,23 @@ type Namespace struct {
 func (ns *Namespace) ParsedFeatures() []*Feature {
 	var ps []*Feature
 
+	fs := ns.ParsedFunctions()
 	for _, v := range ns.Features {
 		f, ok := ns.srv.d.FeaturesMap[v]
 		if !ok {
-			log.Fatalf("feature not registered: %s", v)
+			for _, f := range fs {
+				if f.Name == v {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				log.Fatalf("feature not registered: %s", v)
+			}
 		}
-		ps = append(ps, f)
+		if f != nil {
+			ps = append(ps, f)
+		}
 	}
 	sort.Slice(ps, func(i, j int) bool {
 		return ps[i].Name < ps[j].Name
@@ -548,6 +592,7 @@ func (ns *Namespace) ParsedDefaultable() []*pairFunc {
 // Feature will be defined in features.toml.
 type Feature struct {
 	Description string `toml:"description"`
+	Virtual     bool   `toml:"virtual"`
 
 	// Runtime generated.
 	Name string

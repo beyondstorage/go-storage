@@ -259,6 +259,11 @@ Deprecated: Moved to Storager.
 [servicer]
 description = "can maintain multipart storage services."
 
+[servicer.op.features]
+description = "will get the suppoted features in Servicer."
+results = ["serviceFeatures"]
+local = true
+
 [servicer.op.create]
 description = "will create a new storager instance."
 params = ["name"]
@@ -279,6 +284,11 @@ results = ["sti"]
 
 [storager]
 description = "is the interface for storage service."
+
+[storager.op.features]
+description = "will get the suppoted features in Storager."
+results = ["storageFeatures"]
+local = true
 
 [storager.op.create_append]
 params = ["path"]

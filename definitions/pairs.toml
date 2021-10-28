@@ -32,7 +32,7 @@ Deprecated: Use `QuerySignHTTPRead` instead of `Reach` and `expire` is the decla
 type = "Interceptor"
 
 [list_mode]
-type = "ListMode"
+type = "types.ListMode"
 
 [location]
 type = "string"
@@ -43,7 +43,7 @@ type = "string"
 description = "specify the storage name"
 
 [object_mode]
-type = "ObjectMode"
+type = "types.ObjectMode"
 description = "ObjectMode hint"
 
 [offset]
