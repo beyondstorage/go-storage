@@ -41,7 +41,7 @@ NOTES:
 		if v.Description != "" {
 			ob.AddLineComment(v.Description)
 		}
-		ob.AddField(v.TypeName(), v.Type)
+		ob.AddField(v.TypeName(), CompleteType("types", v.Package, v.Type))
 	}
 
 	ob.AddLineComment("client is the client in which Object is alive.")
@@ -58,11 +58,11 @@ NOTES:
 		if v.Export {
 			f.NewFunction("Get"+v.DisplayName()).
 				WithReceiver("o", "*Object").
-				AddResult("", v.Type).
+				AddResult("", CompleteType("types", v.Package, v.Type)).
 				AddBody(gg.Return(gg.S("o.%s", v.TypeName())))
 			f.NewFunction("Set"+v.DisplayName()).
 				WithReceiver("o", "*Object").
-				AddParameter("v", v.Type).
+				AddParameter("v", CompleteType("types", v.Package, v.Type)).
 				AddResult("", "*Object").
 				AddBody(
 					gg.S("o.%s = v", v.TypeName()),
@@ -77,7 +77,7 @@ NOTES:
 `, v.DisplayName(), v.DisplayName(), v.Description)
 		f.NewFunction("Get"+v.DisplayName()).
 			WithReceiver("o", "*Object").
-			AddResult("", v.Type).
+			AddResult("", CompleteType("types", v.Package, v.Type)).
 			AddResult("", "bool").
 			AddBody(
 				gg.S("o.stat()"),
@@ -86,7 +86,7 @@ NOTES:
 					AddBody(
 						gg.Return("o."+v.TypeName(), gg.Lit(true)),
 					),
-				gg.Return(templateutils.ZeroValue(v.Type), gg.Lit(false)),
+				gg.Return(templateutils.ZeroValue(CompleteType("types", v.Package, v.Type)), gg.Lit(false)),
 			)
 
 		f.AddLineComment(`MustGet%s will get %s from Object.
@@ -95,7 +95,7 @@ NOTES:
 `, v.DisplayName(), v.DisplayName(), v.Description)
 		f.NewFunction("MustGet"+v.DisplayName()).
 			WithReceiver("o", "*Object").
-			AddResult("", v.Type).
+			AddResult("", CompleteType("types", v.Package, v.Type)).
 			AddBody(
 				gg.S("o.stat()"),
 				gg.Line(),
@@ -112,7 +112,7 @@ NOTES:
 `, v.DisplayName(), v.DisplayName(), v.Description)
 		f.NewFunction("Set"+v.DisplayName()).
 			WithReceiver("o", "*Object").
-			AddParameter("v", v.Type).
+			AddParameter("v", CompleteType("types", v.Package, v.Type)).
 			AddResult("", "*Object").
 			AddBody(
 				gg.S("o.%s = v", v.TypeName()),

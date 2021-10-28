@@ -29,7 +29,7 @@ func generateFunc(ns *Namespace, path string) {
 				WithReceiver("s", "*"+nsNameP)
 			for _, v := range op.ParsedParams() {
 				// We need to remove pair from generated functions.
-				if v.Type == "...types.Pair" {
+				if v.Type == "...Pair" {
 					continue
 				}
 				gfn.AddParameter(v.Name, v.Type)
@@ -47,7 +47,7 @@ func generateFunc(ns *Namespace, path string) {
 		gfn.AddParameter("ctx", "context.Context")
 		for _, v := range op.ParsedParams() {
 			// We need to remove pair from generated functions.
-			if v.Type == "...types.Pair" {
+			if v.Type == "...Pair" {
 				continue
 			}
 			gfn.AddParameter(v.Name, v.Type)

@@ -601,6 +601,7 @@ type Feature struct {
 // Pair is the pair definition.
 type Pair struct {
 	Name        string
+	Package     string `toml:"package"`
 	Type        string `toml:"type"`
 	Defaultable bool   `toml:"defaultable"`
 	Description string `toml:"description"`
@@ -613,6 +614,7 @@ type Pair struct {
 type Info struct {
 	Export      bool   `toml:"export"`
 	Description string `toml:"description"`
+	Package     string `toml:"package"`
 	Type        string `toml:"type"`
 
 	// Runtime generated.
@@ -738,10 +740,27 @@ func (f *Function) GetOperation() *Operation {
 
 // Field represents a field.
 type Field struct {
-	Type string `toml:"type"`
+	Package string `toml:"package"`
+	Type    string `toml:"type"`
 
 	// Runtime generated.
 	Name string
+}
+
+func CompleteType(dstPackage string, srcPackage string, srcType string) string {
+	if srcPackage == "" || srcPackage == dstPackage {
+		return srcType
+	}
+
+	index := 0
+	for i, r := range srcType {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') {
+			index = i
+			break
+		}
+	}
+	completeType := fmt.Sprintf("%s%s.%s", srcType[:index], srcPackage, srcType[index:])
+	return completeType
 }
 
 func parseTOML(src []byte, in interface{}) (err error) {

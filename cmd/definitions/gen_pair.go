@@ -5,7 +5,6 @@ package main
 
 import (
 	"sort"
-	"strings"
 
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
@@ -18,10 +17,9 @@ func generatePair(data *Data, path string) {
 	f.AddPackage("pairs")
 	f.NewImport().
 		AddPath("context").
-		AddPath("time").
 		AddLine().
 		AddPath("go.beyondstorage.io/v5/pkg/httpclient").
-		AddDot("go.beyondstorage.io/v5/types")
+		AddPath("go.beyondstorage.io/v5/types")
 
 	ps := make([]*Pair, 0, len(data.PairsMap))
 	for _, v := range data.PairsMap {
@@ -39,11 +37,11 @@ func generatePair(data *Data, path string) {
 
 %s %s`, pname, v.Name, pname, v.Description)
 		xfn := f.NewFunction("With" + pname)
-		xfn.AddParameter("v", strings.ReplaceAll(v.Type, "types.", ""))
-		xfn.AddResult("p", "Pair")
+		xfn.AddParameter("v", CompleteType("pairs", v.Package, v.Type))
+		xfn.AddResult("p", "types.Pair")
 		xfn.AddBody(
 			gg.Return(
-				gg.Value("Pair").
+				gg.Value("types.Pair").
 					AddField("Key", gg.Lit(v.Name)).
 					AddField("Value", "v")))
 	}

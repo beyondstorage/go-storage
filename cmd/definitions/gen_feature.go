@@ -26,28 +26,16 @@ func generateFeatures(data *Data, path string) {
 
 		f.AddLineComment("%s indicates features supported by %s.", featureName, in.Name)
 		features := f.NewStruct(featureName)
-		features.AddLineComment("").AddLineComment("operation features")
+		features.AddLineComment("operation features")
 		for _, op := range in.SortedOps() {
 			if op.Name == "features" {
 				continue
 			}
 			features.AddField(templateutils.ToPascal(op.Name), "bool")
-
-			//f.AddLineComment("%s returns whether this %s support %s or not.", templateutils.ToPascal(op.Name), in.Name, op.Name)
-			//xfn := f.NewFunction(templateutils.ToPascal(op.Name)).
-			//	WithReceiver("f", featureName).
-			//	AddResult("", "bool")
-			//xfn.AddBody(gg.S("return f.%s", templateutils.ToCamel(op.Name)))
 		}
 		features.AddLineComment("operation-related features and virtual features")
 		for _, feat := range data.Features() {
 			features.AddField(templateutils.ToPascal(feat.Name), "bool")
-
-			//f.AddLineComment("%s returns whether this %s support %s or not.", templateutils.ToPascal(feat.Name), in.Name, feat.Name)
-			//xfn := f.NewFunction(templateutils.ToPascal(feat.Name)).
-			//	WithReceiver("f", featureName).
-			//	AddResult("", "bool")
-			//xfn.AddBody(gg.S("return f.%s", templateutils.ToCamel(feat.Name)))
 		}
 	}
 

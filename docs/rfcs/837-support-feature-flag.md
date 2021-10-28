@@ -107,7 +107,6 @@ func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
 #### Feature Flags API
 
 `ServiceFeatures` and `StorageFeatures` structs will be generated on go-storage side to represent the features supported by the storage container and storage service, respectively. The full feature list include operation features, operation-related features and virtual features.
-- For all the features, we will have the functions with the same name as them to check if the feature is supported.
 - Operation-related features will be defined in `features.toml`. We will introduce a new `virtual` property for virtual features to distinguish them from operation-related features.
 
 Take `StorageFeatures` as an example:
@@ -116,68 +115,47 @@ Take `StorageFeatures` as an example:
 // StorageFeatures indicates features supported by storage.
 type StorageFeatures struct {
 	// operation features
-	createAppend                   bool
-	writeAppend                    bool
-	commitAppend                   bool
-	createBlock                    bool
-	writeBlock                     bool
-	combineBlock                   bool
-	listBlock                      bool
-	createDir                      bool
-	fetch                          bool
-	createLink                     bool
-	move                           bool
-	createMultipart                bool
-	writeMultipart                 bool
-	completeMultipart              bool
-	listMultipart                  bool
-	createPage                     bool
-	writePage                      bool
-	create                         bool
-	delete                         bool
-	metadata                       bool
-	list                           bool
-	read                           bool
-	stat                           bool
-	write                          bool
-	querySignHTTPDelete            bool
-	querySignHTTPRead              bool
-	querySignHTTPWrite             bool
-	querySignHTTPCreateMultipart   bool
-	querySignHTTPCompleteMultipart bool
-	querySignHTTPWriteMultipart    bool
-	querySignHTTPlistMultipart     bool
+	CreateAppend                   bool
+	WriteAppend                    bool
+	CommitAppend                   bool
+	CreateBlock                    bool
+	WriteBlock                     bool
+	CombineBlock                   bool
+	ListBlock                      bool
+	CreateDir                      bool
+	Fetch                          bool
+	CreateLink                     bool
+	Move                           bool
+	CreateMultipart                bool
+	WriteMultipart                 bool
+	CompleteMultipart              bool
+	ListMultipart                  bool
+	CreatePage                     bool
+	WritePage                      bool
+	Create                         bool
+	Delete                         bool
+	Metadata                       bool
+	List                           bool
+	Read                           bool
+	Stat                           bool
+	Write                          bool
+	QuerySignHTTPDelete            bool
+	QuerySignHTTPRead              bool
+	QuerySignHTTPWrite             bool
+	QuerySignHTTPCreateMultipart   bool
+	QuerySignHTTPCompleteMultipart bool
+	QuerySignHTTPWriteMultipart    bool
+	QuerySignHTTPlistMultipart     bool
 	
-	// operation features
-	writeEmptyObject bool
+	// operation-related features
+	WriteEmptyObject bool
 	
 	// virtual features
-	loosePair             bool
-	virtualDir            bool
-	virtualLink           bool
-	virtualObjectMetadata bool
+	LoosePair             bool
+	VirtualDir            bool
+	VirtualLink           bool
+	VirtualObjectMetadata bool
 }
-
-// Copy returns whether this storage support Copy operation or not.
-func (f StorageFeatures) Copy() bool {
-	return f.copy
-}
-
-...
-
-// WriteEmptyObject returns whether this storage support write_empty_object or not.
-func (f StorageFeatures) WriteEmptyObject() bool {
-	return f.writeEmptyObject
-}
-
-...
-
-// VirtualDir returns whether this storage support virtual_dir or not.
-func (f *StorageFeatures) VirtualDir() bool {
-	return f.virtualDir
-}
-
-...
 ```
 
 For service side:
@@ -200,14 +178,14 @@ if err != nil {
 	return err
 }
 
-if store.Features().Copy() {
+if store.Features().Copy {
 	err := store.Copy(oldpath, newpath)
 	if err != nil {
 		return err
 	}
 }
 
-if store.Features().Write() && store.Features().WriteEmptyObject() {
+if store.Features().Write && store.Features().WriteEmptyObject {
 	err := store.Write(path, nil, size)
     if err != nil {
     	return err
