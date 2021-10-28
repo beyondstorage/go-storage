@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/pelletier/go-toml v1.9.4
 	github.com/sirupsen/logrus v1.8.1
-	github.com/smartystreets/goconvey v1.7.0
+	github.com/smartystreets/goconvey v1.7.2
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 )
