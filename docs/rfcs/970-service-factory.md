@@ -1,7 +1,7 @@
 - Author: Xuanwo <github@xuanwo.io>
 - Start Date: 2021-10-27
 - RFC PR: [beyondstorage/go-storage#970](https://github.com/beyondstorage/go-storage/issues/970)
-- Tracking Issue: [beyondstorage/go-storage#0](https://github.com/beyondstorage/go-storage/issues/0)
+- Tracking Issue: [beyondstorage/go-storage#975](https://github.com/beyondstorage/go-storage/issues/975)
 
 # GSP-970: Service Factory
 
