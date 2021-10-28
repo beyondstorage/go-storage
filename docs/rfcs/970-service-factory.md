@@ -131,7 +131,7 @@ So our develops can support go-storage by providing the following config:
 ```go
 type Config struct {
 	...
-    StorageType string `yaml:"storage_type"`
+	StorageType string `yaml:"storage_type"`
 	StorageOptions map[string]interface{} `yaml:"storage_options"`
 }
 ```
@@ -141,10 +141,10 @@ They unmarshal yaml into this config and then call `FromMap` method to init the 
 ```go
 func (c *Config) Init() error {
 	...
-    sf, err := NewFactoryFromMap(c.StorageType, c.StorageOptions)
+	sf, err := NewFactoryFromMap(c.StorageType, c.StorageOptions)
 	if err != nil {
-        return err
-    }
+		return err
+	}
 }
 ```
 
