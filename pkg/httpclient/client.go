@@ -8,7 +8,7 @@ import (
 // Options is the httpclient supported options.
 type Options struct {
 	// Dialer related options
-	DialerConnectTimeout time.Duration
+	DialConnectTimeout time.Duration
 
 	// Underlying connection related options
 	ConnReadTimeout  time.Duration
@@ -20,6 +20,18 @@ type Options struct {
 // New will create new http client.
 func New(o *Options) *http.Client {
 	dialer := NewDialer()
+
+	if o != nil {
+		if o.DialConnectTimeout > 0 {
+			dialer.WithConnectTimeout(o.DialConnectTimeout)
+		}
+		if o.ConnReadTimeout > 0 {
+			dialer.WithReadTimeout(o.ConnReadTimeout)
+		}
+		if o.ConnWriteTimeout > 0 {
+			dialer.WithWriteTimeout(o.ConnWriteTimeout)
+		}
+	}
 
 	hc := &http.Client{
 		Transport: &http.Transport{
@@ -46,20 +58,6 @@ func New(o *Options) *http.Client {
 		},
 		// We will handle timeout by ourselves, and disable http.Client's timeout.
 		Timeout: 0,
-	}
-
-	if o == nil {
-		return hc
-	}
-
-	if o.DialerConnectTimeout > 0 {
-		dialer.WithConnectTimeout(o.DialerConnectTimeout)
-	}
-	if o.ConnReadTimeout > 0 {
-		dialer.WithReadTimeout(o.ConnReadTimeout)
-	}
-	if o.ConnWriteTimeout > 0 {
-		dialer.WithWriteTimeout(o.ConnWriteTimeout)
 	}
 	return hc
 }

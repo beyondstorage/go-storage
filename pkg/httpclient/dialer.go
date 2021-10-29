@@ -62,6 +62,3 @@ func NewDialer() *Dialer {
 
 	return &Dialer{d, 30 * time.Second, 30 * time.Second}
 }
-
-// DefaultDialer is the default dialer provided by httpclient package.
-var DefaultDialer = NewDialer()
