@@ -210,7 +210,8 @@ func (d *Data) LoadOperations() {
 			op := op
 			if k == "servicer" {
 				d.OperationsMap["service"][op.Name] = op
-			} else {
+			} else if k == "storager" {
+				// All operations for storage have been added back to storager.
 				d.OperationsMap["storage"][op.Name] = op
 			}
 		}
@@ -250,7 +251,6 @@ func (d *Data) LoadService(filePath string) {
 	d.Service = &Service{
 		d: d,
 	}
-	d.Service.Pairs = make(map[string]*Pair)
 	err = parseTOML(bs, d.Service)
 	if err != nil {
 		log.Fatalf("parse service: %v", err)
@@ -259,6 +259,9 @@ func (d *Data) LoadService(filePath string) {
 	srv := d.Service
 
 	// Handle pairs
+	if srv.Pairs == nil {
+		srv.Pairs = make(map[string]*Pair)
+	}
 	var defaultPairs []*Pair
 	for k, v := range srv.Pairs {
 		v.Name = k
@@ -345,6 +348,7 @@ func (d *Data) LoadService(filePath string) {
 		hasDefaultNsPairs := false
 		hasNsFeatures := false
 		defaultNsPairsName := fmt.Sprintf("default_%s_pairs", ns.Name)
+		// Deprecated: Renamed to *_virtual_features
 		nsFeaturesName := fmt.Sprintf("%s_features", ns.Name)
 		nsVirtualFeaturesName := fmt.Sprintf("%s_virtual_features", ns.Name)
 		for _, v := range ns.New.Optional {
@@ -353,7 +357,7 @@ func (d *Data) LoadService(filePath string) {
 				hasDefaultNsPairs = true
 			}
 			if v == nsFeaturesName || v == nsVirtualFeaturesName {
-				log.Warnf("Please remove %s pair as it will be automatically generated.", nsFeaturesName)
+				log.Warnf("Please remove %s pair or %s pair as it will be automatically generated.", nsFeaturesName, nsVirtualFeaturesName)
 				hasNsFeatures = true
 			}
 		}
@@ -388,7 +392,6 @@ func (d *Data) LoadService(filePath string) {
 		}
 
 		// Service could not declare all ops, so we need to fill them instead.
-
 		for _, op := range in.Op {
 			if _, ok := ns.Op[op.Name]; ok {
 				continue
@@ -502,20 +505,8 @@ type Namespace struct {
 func (ns *Namespace) ParsedFeatures() []*Feature {
 	var ps []*Feature
 
-	fs := ns.ParsedFunctions()
 	for _, v := range ns.Features {
-		f, ok := ns.srv.d.FeaturesMap[v]
-		if !ok {
-			for _, f := range fs {
-				if f.Name == v {
-					ok = true
-					break
-				}
-			}
-			if !ok {
-				log.Fatalf("feature not registered: %s", v)
-			}
-		}
+		f, _ := ns.srv.d.FeaturesMap[v]
 		if f != nil {
 			ps = append(ps, f)
 		}

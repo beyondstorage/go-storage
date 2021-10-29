@@ -442,10 +442,8 @@ If user enable this feature, service should ignore not support pair error.`),
 					xfn.AddResult(field.Name, CompleteType(data.Name, field.Package, field.Type))
 				}
 				if fn.Name == "features" {
-					resultName := ""
-					for _, field := range op.ParsedResults() {
-						resultName = field.Name
-					}
+					results := op.ParsedResults()
+					resultName := results[0].Name
 					for _, feat := range ns.Features {
 						xfn.AddBody(
 							gg.S("%s.%s = true", resultName, templateutils.ToPascal(feat)),
