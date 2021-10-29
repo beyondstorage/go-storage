@@ -8,11 +8,7 @@ type ServiceFeatures struct { // operation features
 	Get    bool
 	List   bool
 	// operation-related features and virtual features
-	LoosePair             bool
-	VirtualDir            bool
-	VirtualLink           bool
-	VirtualObjectMetadata bool
-	WriteEmptyObject      bool
+	LoosePair bool
 }
 
 // StorageFeatures indicates features supported by storager.

@@ -4,6 +4,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
@@ -15,17 +17,18 @@ func generateFeatures(data *Data, path string) {
 	f.AddPackage("types")
 
 	for _, in := range data.Interfaces() {
-		featureName := ""
+		nsName := ""
 		if in.Name == "servicer" {
-			featureName = "ServiceFeatures"
+			nsName = "service"
 		} else if in.Name == "storager" {
-			featureName = "StorageFeatures"
+			nsName = "storage"
 		} else {
 			continue
 		}
 
-		f.AddLineComment("%s indicates features supported by %s.", featureName, in.Name)
-		features := f.NewStruct(featureName)
+		featuresName := templateutils.ToPascal(fmt.Sprintf("%sFeatures", nsName))
+		f.AddLineComment("%s indicates features supported by %s.", featuresName, in.Name)
+		features := f.NewStruct(featuresName)
 		features.AddLineComment("operation features")
 		for _, op := range in.SortedOps() {
 			if op.Name == "features" {
@@ -35,7 +38,12 @@ func generateFeatures(data *Data, path string) {
 		}
 		features.AddLineComment("operation-related features and virtual features")
 		for _, feat := range data.Features() {
-			features.AddField(templateutils.ToPascal(feat.Name), "bool")
+			for _, featNs := range feat.Namespaces {
+				if featNs == nsName {
+					features.AddField(templateutils.ToPascal(feat.Name), "bool")
+					break
+				}
+			}
 		}
 	}
 

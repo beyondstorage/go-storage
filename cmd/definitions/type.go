@@ -95,8 +95,18 @@ func (d *Data) LoadFeatures() {
 	if err != nil {
 		log.Fatalf("parse feature: %v", err)
 	}
+
+	defaultNs := []string{"service", "storage"}
 	for k, v := range d.FeaturesMap {
 		v.Name = k
+		for _, ns := range v.Namespaces {
+			if ns != "service" && ns != "storage" {
+				log.Fatalf("invalid namespace %s for feature %s", ns, k)
+			}
+		}
+		if len(v.Namespaces) == 0 {
+			v.Namespaces = append(v.Namespaces, defaultNs...)
+		}
 	}
 }
 
@@ -306,7 +316,19 @@ func (d *Data) LoadService(filePath string) {
 		// Handle features.
 		for _, featureName := range ns.Features {
 			f, ok := d.FeaturesMap[featureName]
-			if !ok {
+			if ok {
+				// check namespace
+				ok = false
+				for _, fns := range f.Namespaces {
+					if fns == ns.Name {
+						ok = true
+						break
+					}
+				}
+				if !ok {
+					log.Fatalf("%s unsupported in %s", featureName, ns.Name)
+				}
+			} else {
 				for _, op := range in.Op {
 					if op.Name == featureName {
 						ok = true
@@ -582,8 +604,9 @@ func (ns *Namespace) ParsedDefaultable() []*pairFunc {
 //
 // Feature will be defined in features.toml.
 type Feature struct {
-	Description string `toml:"description"`
-	Virtual     bool   `toml:"virtual"`
+	Description string   `toml:"description"`
+	Virtual     bool     `toml:"virtual"`
+	Namespaces  []string `toml:"namespaces"`
 
 	// Runtime generated.
 	Name string
