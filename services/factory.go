@@ -38,6 +38,7 @@ type Factory interface {
 	// Service should implement `newService() (*Service, error)`
 	//
 	// It's possible that the factory only support init Storager, but not init Servicer.
+	// For example, services like `fs` only have Storager but no Servicer support.
 	// We will generate an error for it.
 	NewServicer() (srv types.Servicer, err error)
 	// NewStorager will create a new storage via already initialized factory.
@@ -45,6 +46,7 @@ type Factory interface {
 	// Service should implement `newStorage() (*Storage, error)`
 	//
 	// It's possible that the factory is OK to NewServicer but not OK to NewStorager.
+	// For example, services like `s3` will fail to init a storager will user doesn't input a bucket name.
 	// We will generate an error for it.
 	NewStorager() (sto types.Storager, err error)
 }
