@@ -1,4 +1,6 @@
 [loose_pair]
+virtual = true
+namespaces = ["service", "storage"]
 description = """
 loose_pair feature is designed for users who don't want strict pair checks.
 
@@ -8,6 +10,8 @@ This feature was introduced in GSP-109.
 """
 
 [virtual_dir]
+virtual = true
+namespaces = ["storage"]
 description = """
 virtual_dir feature is designed for a service that doesn't have native dir support but wants to provide simulated operations.
 
@@ -18,6 +22,8 @@ This feature was introduced in GSP-109.
 """
 
 [virtual_object_metadata]
+virtual = true
+namespaces = ["storage"]
 description = """
 virtual_object_metadata feature is designed for a service that doesn't have native object metadata support but wants to provide simulated operations.
 
@@ -28,6 +34,8 @@ This feature was introduced in GSP-109.
 """
 
 [virtual_link]
+virtual = true
+namespaces = ["storage"]
 description = """
 virtual_link feature is designed for a service that doesn't have native support for link.
 
@@ -37,3 +45,10 @@ virtual_link feature is designed for a service that doesn't have native support 
 This feature was introduced in GSP-86.
 """
 
+[write_empty_object]
+namespaces = ["storage"]
+description = """
+write_empty_object feature is designed for a service that support write empty object.
+
+This behavior was defined in GSP-751 and classified as an operation-related feature in GSP-837.
+"""

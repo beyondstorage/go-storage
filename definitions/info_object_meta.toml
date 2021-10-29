@@ -27,7 +27,8 @@ ID SHOULD be an absolute path compatible with the target operating system-define
 """
 
 [last-modified]
-type = "time.Time"
+package = "time"
+type = "Time"
 
 [link-target]
 type = "string"

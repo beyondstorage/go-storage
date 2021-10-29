@@ -1,4 +1,5 @@
 [bi]
+package = "types"
 type = "*BlockIterator"
 
 [bid]
@@ -14,12 +15,14 @@ type = "string"
 type = "error"
 
 [expire]
-type = "time.Duration"
+package = "time"
+type = "Duration"
 
 [index]
 type = "int"
 
 [meta]
+package = "types"
 type = "*StorageMeta"
 
 [n]
@@ -29,37 +32,49 @@ type = "int64"
 type = "string"
 
 [o]
+package = "types"
 type = "*Object"
 
 [offset]
 type = "int64"
 
 [oi]
+package = "types"
 type = "*ObjectIterator"
 
 [op]
 type = "string"
 
 [pairs]
+package = "types"
 type = "...Pair"
 
 [part]
+package = "types"
 type = "*Part"
 
 [parts]
+package = "types"
 type = "[]*Part"
 
 [path]
 type = "string"
 
 [pi]
+package = "types"
 type = "*PartIterator"
 
 [r]
-type = "io.Reader"
+package = "io"
+type = "Reader"
 
 [req]
-type = "*http.Request"
+package = "http"
+type = "*Request"
+
+[serviceFeatures]
+package = "types"
+type = "ServiceFeatures"
 
 [size]
 type = "int64"
@@ -68,16 +83,23 @@ type = "int64"
 type = "string"
 
 [sti]
+package = "types"
 type = "*StoragerIterator"
 
+[storageFeatures]
+package = "types"
+type = "StorageFeatures"
+
 [store]
+package = "types"
 type = "Storager"
 
 [url]
 type = "string"
 
 [w]
-type = "io.Writer"
+package = "io"
+type = "Writer"
 
 [target]
 type = "string"

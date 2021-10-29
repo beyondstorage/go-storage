@@ -15,7 +15,7 @@ func generateFunc(ns *Namespace, path string) {
 	nsNameP := templateutils.ToPascal(ns.Name)
 
 	for _, fn := range ns.ParsedFunctions() {
-		if fn.Implemented {
+		if fn.Implemented || fn.Name == "features" {
 			continue
 		}
 

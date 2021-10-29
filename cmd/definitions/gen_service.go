@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
@@ -24,10 +25,10 @@ func generateSrv(data *Service, path string) {
 		AddDot("go.beyondstorage.io/v5/pairs").
 		AddPath("go.beyondstorage.io/v5/pkg/httpclient").
 		AddPath("go.beyondstorage.io/v5/services").
-		AddDot("go.beyondstorage.io/v5/types")
+		AddPath("go.beyondstorage.io/v5/types")
 
 	f.NewVar().
-		AddDecl("_", "Storager").
+		AddDecl("_", "types.Storager").
 		AddDecl("_", "services.ServiceError").
 		AddDecl("_", "httpclient.Options").
 		AddDecl("_", "time.Duration").
@@ -52,7 +53,7 @@ func generateSrv(data *Service, path string) {
 			pname = info.DisplayName()
 		}
 		// FIXME: we will support comment on field later.
-		osm.AddField(pname, info.Type)
+		osm.AddField(pname, CompleteType(data.Name, info.Package, info.Type))
 	}
 
 	f.AddLineComment(`
@@ -63,7 +64,7 @@ GetObjectSystemMetadata will get ObjectSystemMetadata from Object.
 `)
 
 	gosmfn := f.NewFunction("GetObjectSystemMetadata")
-	gosmfn.AddParameter("o", "*Object").
+	gosmfn.AddParameter("o", "*types.Object").
 		AddResult("", "ObjectSystemMetadata")
 	gosmfn.AddBody(
 		gg.S("sm, ok := o.GetSystemMetadata()"),
@@ -79,7 +80,7 @@ setObjectSystemMetadata will set ObjectSystemMetadata into Object.
 `)
 
 	sosmfn := f.NewFunction("setObjectSystemMetadata")
-	sosmfn.AddParameter("o", "*Object").
+	sosmfn.AddParameter("o", "*types.Object").
 		AddParameter("sm", "ObjectSystemMetadata")
 	sosmfn.AddBody(
 		gg.S("o.SetSystemMetadata(sm)"),
@@ -100,7 +101,7 @@ setObjectSystemMetadata will set ObjectSystemMetadata into Object.
 			pname = info.DisplayName()
 		}
 		// FIXME: we will support comment on field later.
-		ssm.AddField(pname, info.Type)
+		ssm.AddField(pname, CompleteType(data.Name, info.Package, info.Type))
 	}
 
 	f.AddLineComment(`
@@ -111,7 +112,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 `)
 
 	gssmfn := f.NewFunction("GetStorageSystemMetadata")
-	gssmfn.AddParameter("s", "*StorageMeta").
+	gssmfn.AddParameter("s", "*types.StorageMeta").
 		AddResult("", "StorageSystemMetadata")
 	gssmfn.AddBody(
 		gg.S("sm, ok := s.GetSystemMetadata()"),
@@ -124,7 +125,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 
 - This function should only be called once, please make sure all data has been written before set.`)
 	sssmfn := f.NewFunction("setStorageSystemMetadata")
-	sssmfn.AddParameter("s", "*StorageMeta").
+	sssmfn.AddParameter("s", "*types.StorageMeta").
 		AddParameter("sm", "StorageSystemMetadata")
 	sssmfn.AddBody(
 		gg.S("s.SetSystemMetadata(sm)"),
@@ -148,12 +149,12 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		value := "true"
 		// bool type pairs don't need input.
 		if pair.Type != "bool" {
-			fn.AddParameter("v", pair.Type)
+			fn.AddParameter("v", CompleteType(data.Name, pair.Package, pair.Type))
 			value = "v"
 		}
-		fn.AddResult("", "Pair")
+		fn.AddResult("", "types.Pair")
 		fn.AddBody(gg.Return(
-			gg.Value("Pair").
+			gg.Value("types.Pair").
 				AddField("Key", gg.Lit(pair.Name)).
 				AddField("Value", value)))
 	}
@@ -162,7 +163,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 	f.NewVar().AddField("pairMap", gg.Embed(func() gg.Node {
 		i := gg.Value("map[string]string")
 		for _, pair := range data.SortedPairs() {
-			i.AddField(gg.Lit(pair.Name), gg.Lit(pair.Type))
+			i.AddField(gg.Lit(pair.Name), gg.Lit(CompleteType(data.Name, pair.Package, pair.Type)))
 		}
 		return i
 	}))
@@ -176,13 +177,20 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		inter := ns.ParsedInterface()
 		interNameP := templateutils.ToPascal(inter.Name)
 		inters.AddTypedField(
-			"_", interNameP, gg.S("&%s{}", nsNameP))
+			"_", gg.S("types.%s", interNameP), gg.S("&%s{}", nsNameP))
 
 		// Generate feature struct.
+		f.AddLineComment("Deprecated: Use %sVirtualFeatures instead.", nsNameP)
 		features := f.NewStruct(nsNameP + "Features")
 		for _, fs := range ns.ParsedFeatures() {
 			features.AddLineComment(fs.Description)
 			features.AddField(templateutils.ToPascal(fs.Name), "bool")
+		}
+
+		virtualFeatures := f.NewStruct(nsNameP + "VirtualFeatures")
+		for _, fs := range ns.ParsedFeatures() {
+			virtualFeatures.AddLineComment(fs.Description)
+			virtualFeatures.AddField(templateutils.ToPascal(fs.Name), "bool")
 		}
 
 		// Generate pair new.
@@ -190,7 +198,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		partStructName := fmt.Sprintf("pair%s%s", nsNameP, fnNewNameP)
 		f.AddLineComment("%s is the parsed struct", partStructName)
 		pairStruct := f.NewStruct(partStructName).
-			AddField("pairs", "[]Pair").
+			AddField("pairs", "[]types.Pair").
 			AddLine()
 
 		// Generate required pairs.
@@ -198,7 +206,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		for _, pair := range ns.New.ParsedRequired() {
 			pairNameP := templateutils.ToPascal(pair.Name)
 			pairStruct.AddField("Has"+pairNameP, "bool")
-			pairStruct.AddField(pairNameP, pair.Type)
+			pairStruct.AddField(pairNameP, CompleteType(data.Name, pair.Package, pair.Type))
 		}
 
 		// Generate optional pairs.
@@ -206,22 +214,24 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		for _, pair := range ns.New.ParsedOptional() {
 			pairNameP := templateutils.ToPascal(pair.Name)
 			pairStruct.AddField("Has"+pairNameP, "bool")
-			pairStruct.AddField(pairNameP, pair.Type)
+			pairStruct.AddField(pairNameP, CompleteType(data.Name, pair.Package, pair.Type))
 		}
 
 		// Generate feature handle logic.
-		pairStruct.AddLineComment("Enable features")
+		pairStruct.AddLineComment("Enable virtual features")
 		for _, feature := range ns.ParsedFeatures() {
-			featureNameP := templateutils.ToPascal(feature.Name)
-			pairStruct.AddField("hasEnable"+featureNameP, "bool")
-			pairStruct.AddField("Enable"+featureNameP, "bool")
+			if feature.Virtual {
+				featureNameP := templateutils.ToPascal(feature.Name)
+				pairStruct.AddField("hasEnable"+featureNameP, "bool")
+				pairStruct.AddField("Enable"+featureNameP, "bool")
+			}
 		}
 
 		// Generate parse newPair.
 		pairParseName := fmt.Sprintf("parsePair%s%s", nsNameP, fnNewNameP)
 		f.AddLineComment("%s will parse Pair slice into *%s", pairParseName, partStructName)
 		pairParse := f.NewFunction(pairParseName).
-			AddParameter("opts", "[]Pair").
+			AddParameter("opts", "[]types.Pair").
 			AddResult("", partStructName).
 			AddResult("", "error")
 		pairParse.AddBody(
@@ -238,7 +248,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 							gg.If(gg.S("result.Has%s", pairNameP)).
 								AddBody(gg.Continue()),
 							gg.S("result.Has%s = true", pairNameP),
-							gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type),
+							gg.S("result.%s = v.Value.(%s)", pairNameP, CompleteType(data.Name, pair.Package, pair.Type)),
 						)
 					}
 					for _, pair := range ns.New.ParsedOptional() {
@@ -247,33 +257,38 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 							gg.If(gg.S("result.Has%s", pairNameP)).
 								AddBody(gg.Continue()),
 							gg.S("result.Has%s = true", pairNameP),
-							gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type),
+							gg.S("result.%s = v.Value.(%s)", pairNameP, CompleteType(data.Name, pair.Package, pair.Type)),
 						)
 					}
 					for _, feature := range ns.ParsedFeatures() {
-						featureNameP := templateutils.ToPascal(feature.Name)
-						is.NewCase(gg.Lit("enable_"+feature.Name)).AddBody(
-							gg.If(gg.S("result.hasEnable%s", featureNameP)).
-								AddBody(gg.Continue()),
-							gg.S("result.hasEnable%s = true", featureNameP),
-							gg.S("result.Enable%s = true", featureNameP),
-						)
+						if feature.Virtual {
+							featureNameP := templateutils.ToPascal(feature.Name)
+							is.NewCase(gg.Lit("enable_"+feature.Name)).AddBody(
+								gg.If(gg.S("result.hasEnable%s", featureNameP)).
+									AddBody(gg.Continue()),
+								gg.S("result.hasEnable%s = true", featureNameP),
+								gg.S("result.Enable%s = true", featureNameP),
+							)
+						}
 					}
 					return is
 				})),
-			gg.LineComment("Enable features"),
+			gg.LineComment("Enable virtual features"),
 			gg.Embed(func() gg.Node {
 				// Generate features enable here.
 				group := gg.NewGroup()
 				for _, feature := range ns.ParsedFeatures() {
-					featureNameP := templateutils.ToPascal(feature.Name)
-
-					group.
-						NewIf(gg.S("result.hasEnable%s", featureNameP)).
-						AddBody(
-							gg.S("result.Has%sFeatures = true", nsNameP),
-							gg.S("result.%sFeatures.%s = true", nsNameP, featureNameP),
-						)
+					if feature.Virtual {
+						featureNameP := templateutils.ToPascal(feature.Name)
+						group.
+							NewIf(gg.S("result.hasEnable%s", featureNameP)).
+							AddBody(
+								gg.S("result.Has%sFeatures = true", nsNameP),
+								gg.S("result.%sFeatures.%s = true", nsNameP, featureNameP),
+								gg.S("result.Has%sVirtualFeatures = true", nsNameP),
+								gg.S("result.%sVirtualFeatures.%s = true", nsNameP, featureNameP),
+							)
+					}
 				}
 				return group
 			}),
@@ -319,24 +334,27 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		dps := f.NewStruct(fmt.Sprintf("Default%sPairs", nsNameP))
 		for _, fn := range ns.ParsedFunctions() {
 			fnNameP := templateutils.ToPascal(fn.Name)
-			dps.AddField(fnNameP, "[]Pair")
+			dps.AddField(fnNameP, "[]types.Pair")
 		}
 
 		// Generate pair.
 		for _, fn := range ns.ParsedFunctions() {
+			if fn.Name == "features" {
+				continue
+			}
 			fnNameP := templateutils.ToPascal(fn.Name)
 			pairStructName := fmt.Sprintf("pair%s%s", nsNameP, fnNameP)
 
 			// Generate pair struct
 			pairStruct := f.NewStruct(pairStructName).
-				AddField("pairs", "[]Pair")
+				AddField("pairs", "[]types.Pair")
 
 			// Generate required pairs.
 			pairStruct.AddLineComment("Required pairs")
 			for _, pair := range fn.ParsedRequired() {
 				pairNameP := templateutils.ToPascal(pair.Name)
 				pairStruct.AddField("Has"+pairNameP, "bool")
-				pairStruct.AddField(pairNameP, pair.Type)
+				pairStruct.AddField(pairNameP, CompleteType(data.Name, pair.Package, pair.Type))
 			}
 
 			// Generate optional pairs.
@@ -344,13 +362,13 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 			for _, pair := range fn.ParsedOptional() {
 				pairNameP := templateutils.ToPascal(pair.Name)
 				pairStruct.AddField("Has"+pairNameP, "bool")
-				pairStruct.AddField(pairNameP, pair.Type)
+				pairStruct.AddField(pairNameP, CompleteType(data.Name, pair.Package, pair.Type))
 			}
 
 			pairParseName := fmt.Sprintf("parsePair%s%s", nsNameP, fnNameP)
 			pairParse := f.NewFunction(pairParseName).
 				WithReceiver("s", "*"+nsNameP).
-				AddParameter("opts", "[]Pair").
+				AddParameter("opts", "[]types.Pair").
 				AddResult("", pairStructName).
 				AddResult("", "error")
 			pairParse.AddBody(
@@ -367,7 +385,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 								gg.If(gg.S("result.Has%s", pairNameP)).
 									AddBody(gg.Continue()),
 								gg.S("result.Has%s = true", pairNameP),
-								gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type),
+								gg.S("result.%s = v.Value.(%s)", pairNameP, CompleteType(data.Name, pair.Package, pair.Type)),
 							)
 						}
 						for _, pair := range fn.ParsedOptional() {
@@ -376,7 +394,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 								gg.If(gg.S("result.Has%s", pairNameP)).
 									AddBody(gg.Continue()),
 								gg.S("result.Has%s = true", pairNameP),
-								gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type),
+								gg.S("result.%s = v.Value.(%s)", pairNameP, CompleteType(data.Name, pair.Package, pair.Type)),
 							)
 						}
 						dcas := is.NewDefault()
@@ -418,10 +436,21 @@ If user enable this feature, service should ignore not support pair error.`),
 				// Generate a local function.
 				xfn := f.NewFunction(fnNameP).WithReceiver("s", "*"+nsNameP)
 				for _, field := range op.ParsedParams() {
-					xfn.AddParameter(field.Name, field.Type)
+					xfn.AddParameter(field.Name, CompleteType(data.Name, field.Package, field.Type))
 				}
 				for _, field := range op.ParsedResults() {
-					xfn.AddResult(field.Name, field.Type)
+					xfn.AddResult(field.Name, CompleteType(data.Name, field.Package, field.Type))
+				}
+				if fn.Name == "features" {
+					results := op.ParsedResults()
+					resultName := results[0].Name
+					for _, feat := range ns.Features {
+						xfn.AddBody(
+							gg.S("%s.%s = true", resultName, templateutils.ToPascal(feat)),
+						)
+					}
+					xfn.AddBody(gg.Return())
+					continue
 				}
 				xfn.AddBody(
 					gg.S("pairs = append(pairs, s.defaultPairs.%s...)", fnNameP),
@@ -450,10 +479,10 @@ If user enable this feature, service should ignore not support pair error.`),
 			xfn := f.NewFunction(fnNameP).
 				WithReceiver("s", "*"+nsNameP)
 			for _, field := range op.ParsedParams() {
-				xfn.AddParameter(field.Name, field.Type)
+				xfn.AddParameter(field.Name, CompleteType(data.Name, field.Package, field.Type))
 			}
 			for _, field := range op.ParsedResults() {
-				xfn.AddResult(field.Name, field.Type)
+				xfn.AddResult(field.Name, CompleteType(data.Name, field.Package, field.Type))
 			}
 			xfn.AddBody(
 				"ctx := context.Background()",
@@ -476,10 +505,10 @@ If user enable this feature, service should ignore not support pair error.`),
 				WithReceiver("s", "*"+nsNameP)
 			xfn.AddParameter("ctx", "context.Context")
 			for _, field := range op.ParsedParams() {
-				xfn.AddParameter(field.Name, field.Type)
+				xfn.AddParameter(field.Name, CompleteType(data.Name, field.Package, field.Type))
 			}
 			for _, field := range op.ParsedResults() {
-				xfn.AddResult(field.Name, field.Type)
+				xfn.AddResult(field.Name, CompleteType(data.Name, field.Package, field.Type))
 			}
 			xfn.AddBody(
 				gg.Defer(gg.Embed(func() gg.Node {
@@ -508,7 +537,7 @@ If user enable this feature, service should ignore not support pair error.`),
 					}
 					mode := templateutils.ToPascal(op.ObjectMode)
 					return gg.If(gg.S("!o.Mode.Is%s()", mode)).AddBody(
-						gg.S("err = services.ObjectModeInvalidError{Expected: Mode%s, Actual: o.Mode}", mode),
+						gg.S("err = services.ObjectModeInvalidError{Expected: types.Mode%s, Actual: o.Mode}", mode),
 						gg.Return(),
 					)
 				}),

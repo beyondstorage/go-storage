@@ -11,11 +11,11 @@ import (
 	. "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 var (
-	_ Storager
+	_ types.Storager
 	_ services.ServiceError
 	_ httpclient.Options
 	_ time.Duration
@@ -35,7 +35,7 @@ type ObjectSystemMetadata struct {
 //
 // - This function should not be called by service implementer.
 // - The returning ObjectServiceMetadata is read only and should not be modified.
-func GetObjectSystemMetadata(o *Object) ObjectSystemMetadata {
+func GetObjectSystemMetadata(o *types.Object) ObjectSystemMetadata {
 	sm, ok := o.GetSystemMetadata()
 	if ok {
 		return sm.(ObjectSystemMetadata)
@@ -46,7 +46,7 @@ func GetObjectSystemMetadata(o *Object) ObjectSystemMetadata {
 // setObjectSystemMetadata will set ObjectSystemMetadata into Object.
 //
 // - This function should only be called once, please make sure all data has been written before set.
-func setObjectSystemMetadata(o *Object, sm ObjectSystemMetadata) {
+func setObjectSystemMetadata(o *types.Object, sm ObjectSystemMetadata) {
 	o.SetSystemMetadata(sm)
 }
 
@@ -59,7 +59,7 @@ type StorageSystemMetadata struct {
 //
 // - This function should not be called by service implementer.
 // - The returning StorageServiceMetadata is read only and should not be modified.
-func GetStorageSystemMetadata(s *StorageMeta) StorageSystemMetadata {
+func GetStorageSystemMetadata(s *types.StorageMeta) StorageSystemMetadata {
 	sm, ok := s.GetSystemMetadata()
 	if ok {
 		return sm.(StorageSystemMetadata)
@@ -70,28 +70,28 @@ func GetStorageSystemMetadata(s *StorageMeta) StorageSystemMetadata {
 // setStorageSystemMetadata will set StorageSystemMetadata into Storage.
 //
 // - This function should only be called once, please make sure all data has been written before set.
-func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
+func setStorageSystemMetadata(s *types.StorageMeta, sm StorageSystemMetadata) {
 	s.SetSystemMetadata(sm)
 }
 
 // WithDefaultServicePairs will apply default_service_pairs value to Options.
-func WithDefaultServicePairs(v DefaultServicePairs) Pair {
-	return Pair{Key: "default_service_pairs", Value: v}
+func WithDefaultServicePairs(v DefaultServicePairs) types.Pair {
+	return types.Pair{Key: "default_service_pairs", Value: v}
 }
 
 // WithDefaultStorageClass will apply default_storage_class value to Options.
-func WithDefaultStorageClass(v string) Pair {
-	return Pair{Key: "default_storage_class", Value: v}
+func WithDefaultStorageClass(v string) types.Pair {
+	return types.Pair{Key: "default_storage_class", Value: v}
 }
 
 // WithDefaultStoragePairs will apply default_storage_pairs value to Options.
-func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
-	return Pair{Key: "default_storage_pairs", Value: v}
+func WithDefaultStoragePairs(v DefaultStoragePairs) types.Pair {
+	return types.Pair{Key: "default_storage_pairs", Value: v}
 }
 
 // WithDisableURICleaning will apply disable_uri_cleaning value to Options.
-func WithDisableURICleaning() Pair {
-	return Pair{Key: "disable_uri_cleaning", Value: true}
+func WithDisableURICleaning() types.Pair {
+	return types.Pair{Key: "disable_uri_cleaning", Value: true}
 }
 
 // WithEnableLoosePair will apply enable_loose_pair value to Options.
@@ -101,8 +101,8 @@ func WithDisableURICleaning() Pair {
 // If this feature is enabled, the service will not return an error for not support pairs.
 //
 // This feature was introduced in GSP-109.
-func WithEnableLoosePair() Pair {
-	return Pair{Key: "enable_loose_pair", Value: true}
+func WithEnableLoosePair() types.Pair {
+	return types.Pair{Key: "enable_loose_pair", Value: true}
 }
 
 // WithEnableVirtualDir will apply enable_virtual_dir value to Options.
@@ -116,59 +116,78 @@ func WithEnableLoosePair() Pair {
 // list, delete, and so on.
 //
 // This feature was introduced in GSP-109.
-func WithEnableVirtualDir() Pair {
-	return Pair{Key: "enable_virtual_dir", Value: true}
+func WithEnableVirtualDir() types.Pair {
+	return types.Pair{Key: "enable_virtual_dir", Value: true}
 }
 
 // WithServiceFeatures will apply service_features value to Options.
-func WithServiceFeatures(v ServiceFeatures) Pair {
-	return Pair{Key: "service_features", Value: v}
+//
+// Deprecated: Use service_virtual_features instead.
+func WithServiceFeatures(v ServiceFeatures) types.Pair {
+	return types.Pair{Key: "service_features", Value: v}
+}
+
+// WithServiceVirtualFeatures will apply service_virtual_features value to Options.
+func WithServiceVirtualFeatures(v ServiceVirtualFeatures) types.Pair {
+	return types.Pair{Key: "service_virtual_features", Value: v}
 }
 
 // WithStorageClass will apply storage_class value to Options.
-func WithStorageClass(v string) Pair {
-	return Pair{Key: "storage_class", Value: v}
+func WithStorageClass(v string) types.Pair {
+	return types.Pair{Key: "storage_class", Value: v}
 }
 
 // WithStorageFeatures will apply storage_features value to Options.
-func WithStorageFeatures(v StorageFeatures) Pair {
-	return Pair{Key: "storage_features", Value: v}
+//
+// Deprecated: Use storage_virtual_features instead.
+func WithStorageFeatures(v StorageFeatures) types.Pair {
+	return types.Pair{Key: "storage_features", Value: v}
+}
+
+// WithStorageVirtualFeatures will apply storage_virtual_features value to Options.
+func WithStorageVirtualFeatures(v StorageVirtualFeatures) types.Pair {
+	return types.Pair{Key: "storage_virtual_features", Value: v}
 }
 
 // WithStringPair will apply string_pair value to Options.
 //
 // tests connection string
-func WithStringPair(v string) Pair {
-	return Pair{Key: "string_pair", Value: v}
+func WithStringPair(v string) types.Pair {
+	return types.Pair{Key: "string_pair", Value: v}
 }
 
-var pairMap = map[string]string{"content_disposition": "string", "content_md5": "string", "content_type": "string", "context": "context.Context", "continuation_token": "string", "credential": "string", "default_content_type": "string", "default_io_callback": "func([]byte)", "default_service_pairs": "DefaultServicePairs", "default_storage_class": "string", "default_storage_pairs": "DefaultStoragePairs", "disable_uri_cleaning": "bool", "enable_loose_pair": "bool", "enable_virtual_dir": "bool", "endpoint": "string", "expire": "time.Duration", "http_client_options": "*httpclient.Options", "interceptor": "Interceptor", "io_callback": "func([]byte)", "list_mode": "ListMode", "location": "string", "multipart_id": "string", "name": "string", "object_mode": "ObjectMode", "offset": "int64", "service_features": "ServiceFeatures", "size": "int64", "storage_class": "string", "storage_features": "StorageFeatures", "string_pair": "string", "work_dir": "string"}
-var _ Servicer = &Service{}
+var pairMap = map[string]string{"content_disposition": "string", "content_md5": "string", "content_type": "string", "context": "context.Context", "continuation_token": "string", "credential": "string", "default_content_type": "string", "default_io_callback": "func([]byte)", "default_service_pairs": "DefaultServicePairs", "default_storage_class": "string", "default_storage_pairs": "DefaultStoragePairs", "disable_uri_cleaning": "bool", "enable_loose_pair": "bool", "enable_virtual_dir": "bool", "endpoint": "string", "http_client_options": "*httpclient.Options", "interceptor": "types.Interceptor", "io_callback": "func([]byte)", "list_mode": "types.ListMode", "location": "string", "multipart_id": "string", "name": "string", "object_mode": "types.ObjectMode", "offset": "int64", "service_features": "ServiceFeatures", "service_virtual_features": "ServiceVirtualFeatures", "size": "int64", "storage_class": "string", "storage_features": "StorageFeatures", "storage_virtual_features": "StorageVirtualFeatures", "string_pair": "string", "work_dir": "string"}
+var _ types.Servicer = &Service{}
 
+// Deprecated: Use ServiceVirtualFeatures instead.
 type ServiceFeatures struct {
+}
+type ServiceVirtualFeatures struct {
 }
 
 // pairServiceNew is the parsed struct
 type pairServiceNew struct {
-	pairs []Pair
+	pairs []types.Pair
 
 	// Required pairs
 	HasCredential bool
 	Credential    string
 	// Optional pairs
-	HasDefaultServicePairs bool
-	DefaultServicePairs    DefaultServicePairs
-	HasEndpoint            bool
-	Endpoint               string
-	HasHTTPClientOptions   bool
-	HTTPClientOptions      *httpclient.Options
-	HasServiceFeatures     bool
-	ServiceFeatures        ServiceFeatures
-	// Enable features
+	HasDefaultServicePairs    bool
+	DefaultServicePairs       DefaultServicePairs
+	HasEndpoint               bool
+	Endpoint                  string
+	HasHTTPClientOptions      bool
+	HTTPClientOptions         *httpclient.Options
+	HasServiceFeatures        bool
+	ServiceFeatures           ServiceFeatures
+	HasServiceVirtualFeatures bool
+	ServiceVirtualFeatures    ServiceVirtualFeatures
+	// Enable virtual features
 }
 
 // parsePairServiceNew will parse Pair slice into *pairServiceNew
-func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
+func parsePairServiceNew(opts []types.Pair) (pairServiceNew, error) {
 	result :=
 		pairServiceNew{pairs: opts}
 
@@ -204,9 +223,15 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasServiceFeatures = true
 			result.ServiceFeatures = v.Value.(ServiceFeatures)
+		case "service_virtual_features":
+			if result.HasServiceVirtualFeatures {
+				continue
+			}
+			result.HasServiceVirtualFeatures = true
+			result.ServiceVirtualFeatures = v.Value.(ServiceVirtualFeatures)
 		}
 	}
-	// Enable features
+	// Enable virtual features
 
 	// Default pairs
 
@@ -218,20 +243,21 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 
 // DefaultServicePairs is default pairs for specific action
 type DefaultServicePairs struct {
-	Create []Pair
-	Delete []Pair
-	Get    []Pair
-	List   []Pair
+	Create   []types.Pair
+	Delete   []types.Pair
+	Features []types.Pair
+	Get      []types.Pair
+	List     []types.Pair
 }
 type pairServiceCreate struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	HasLocation bool
 	Location    string
 	// Optional pairs
 }
 
-func (s *Service) parsePairServiceCreate(opts []Pair) (pairServiceCreate, error) {
+func (s *Service) parsePairServiceCreate(opts []types.Pair) (pairServiceCreate, error) {
 	result :=
 		pairServiceCreate{pairs: opts}
 
@@ -254,14 +280,14 @@ func (s *Service) parsePairServiceCreate(opts []Pair) (pairServiceCreate, error)
 }
 
 type pairServiceDelete struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasLocation bool
 	Location    string
 }
 
-func (s *Service) parsePairServiceDelete(opts []Pair) (pairServiceDelete, error) {
+func (s *Service) parsePairServiceDelete(opts []types.Pair) (pairServiceDelete, error) {
 	result :=
 		pairServiceDelete{pairs: opts}
 
@@ -282,14 +308,14 @@ func (s *Service) parsePairServiceDelete(opts []Pair) (pairServiceDelete, error)
 }
 
 type pairServiceGet struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasLocation bool
 	Location    string
 }
 
-func (s *Service) parsePairServiceGet(opts []Pair) (pairServiceGet, error) {
+func (s *Service) parsePairServiceGet(opts []types.Pair) (pairServiceGet, error) {
 	result :=
 		pairServiceGet{pairs: opts}
 
@@ -310,14 +336,14 @@ func (s *Service) parsePairServiceGet(opts []Pair) (pairServiceGet, error) {
 }
 
 type pairServiceList struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasLocation bool
 	Location    string
 }
 
-func (s *Service) parsePairServiceList(opts []Pair) (pairServiceList, error) {
+func (s *Service) parsePairServiceList(opts []types.Pair) (pairServiceList, error) {
 	result :=
 		pairServiceList{pairs: opts}
 
@@ -336,11 +362,11 @@ func (s *Service) parsePairServiceList(opts []Pair) (pairServiceList, error) {
 
 	return result, nil
 }
-func (s *Service) Create(name string, pairs ...Pair) (store Storager, err error) {
+func (s *Service) Create(name string, pairs ...types.Pair) (store types.Storager, err error) {
 	ctx := context.Background()
 	return s.CreateWithContext(ctx, name, pairs...)
 }
-func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...Pair) (store Storager, err error) {
+func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...types.Pair) (store types.Storager, err error) {
 	defer func() {
 		err =
 			s.formatError("create", err, name)
@@ -355,11 +381,11 @@ func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...P
 	}
 	return s.create(ctx, name, opt)
 }
-func (s *Service) Delete(name string, pairs ...Pair) (err error) {
+func (s *Service) Delete(name string, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, name, pairs...)
 }
-func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...Pair) (err error) {
+func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("delete", err, name)
@@ -374,11 +400,14 @@ func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...P
 	}
 	return s.delete(ctx, name, opt)
 }
-func (s *Service) Get(name string, pairs ...Pair) (store Storager, err error) {
+func (s *Service) Features() (serviceFeatures types.ServiceFeatures) {
+	return
+}
+func (s *Service) Get(name string, pairs ...types.Pair) (store types.Storager, err error) {
 	ctx := context.Background()
 	return s.GetWithContext(ctx, name, pairs...)
 }
-func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...Pair) (store Storager, err error) {
+func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...types.Pair) (store types.Storager, err error) {
 	defer func() {
 		err =
 			s.formatError("get", err, name)
@@ -393,11 +422,11 @@ func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...Pair
 	}
 	return s.get(ctx, name, opt)
 }
-func (s *Service) List(pairs ...Pair) (sti *StoragerIterator, err error) {
+func (s *Service) List(pairs ...types.Pair) (sti *types.StoragerIterator, err error) {
 	ctx := context.Background()
 	return s.ListWithContext(ctx, pairs...)
 }
-func (s *Service) ListWithContext(ctx context.Context, pairs ...Pair) (sti *StoragerIterator, err error) {
+func (s *Service) ListWithContext(ctx context.Context, pairs ...types.Pair) (sti *types.StoragerIterator, err error) {
 	defer func() {
 		err =
 			s.formatError("list", err, "")
@@ -413,8 +442,9 @@ func (s *Service) ListWithContext(ctx context.Context, pairs ...Pair) (sti *Stor
 	return s.list(ctx, opt)
 }
 
-var _ Storager = &Storage{}
+var _ types.Storager = &Storage{}
 
+// Deprecated: Use StorageVirtualFeatures instead.
 type StorageFeatures struct { // loose_pair feature is designed for users who don't want strict pair checks.
 	//
 	// If this feature is enabled, the service will not return an error for not support pairs.
@@ -431,35 +461,62 @@ type StorageFeatures struct { // loose_pair feature is designed for users who do
 	//
 	// This feature was introduced in GSP-109.
 	VirtualDir bool
+	// write_empty_object feature is designed for a service that support write empty object.
+	//
+	// This behavior was defined in GSP-751 and classified as an operation-related feature in GSP-837.
+	WriteEmptyObject bool
+}
+type StorageVirtualFeatures struct { // loose_pair feature is designed for users who don't want strict pair checks.
+	//
+	// If this feature is enabled, the service will not return an error for not support pairs.
+	//
+	// This feature was introduced in GSP-109.
+	LoosePair bool
+	// virtual_dir feature is designed for a service that doesn't have native dir support but wants to
+	// provide simulated operations.
+	//
+	// - If this feature is disabled (the default behavior), the service will behave like it doesn't have
+	// any dir support.
+	// - If this feature is enabled, the service will support simulated dir behavior in create_dir, create,
+	// list, delete, and so on.
+	//
+	// This feature was introduced in GSP-109.
+	VirtualDir bool
+	// write_empty_object feature is designed for a service that support write empty object.
+	//
+	// This behavior was defined in GSP-751 and classified as an operation-related feature in GSP-837.
+	WriteEmptyObject bool
 }
 
 // pairStorageNew is the parsed struct
 type pairStorageNew struct {
-	pairs []Pair
+	pairs []types.Pair
 
 	// Required pairs
 	HasName bool
 	Name    string
 	// Optional pairs
-	HasDefaultContentType  bool
-	DefaultContentType     string
-	HasDefaultIoCallback   bool
-	DefaultIoCallback      func([]byte)
-	HasDefaultStorageClass bool
-	DefaultStorageClass    string
-	HasDefaultStoragePairs bool
-	DefaultStoragePairs    DefaultStoragePairs
-	HasDisableURICleaning  bool
-	DisableURICleaning     bool
-	HasHTTPClientOptions   bool
-	HTTPClientOptions      *httpclient.Options
-	HasLocation            bool
-	Location               string
-	HasStorageFeatures     bool
-	StorageFeatures        StorageFeatures
-	HasWorkDir             bool
-	WorkDir                string
-	// Enable features
+	HasDefaultContentType     bool
+	DefaultContentType        string
+	HasDefaultIoCallback      bool
+	DefaultIoCallback         func([]byte)
+	HasDefaultStorageClass    bool
+	DefaultStorageClass       string
+	HasDefaultStoragePairs    bool
+	DefaultStoragePairs       DefaultStoragePairs
+	HasDisableURICleaning     bool
+	DisableURICleaning        bool
+	HasHTTPClientOptions      bool
+	HTTPClientOptions         *httpclient.Options
+	HasLocation               bool
+	Location                  string
+	HasStorageFeatures        bool
+	StorageFeatures           StorageFeatures
+	HasStorageVirtualFeatures bool
+	StorageVirtualFeatures    StorageVirtualFeatures
+	HasWorkDir                bool
+	WorkDir                   string
+	// Enable virtual features
 	hasEnableLoosePair  bool
 	EnableLoosePair     bool
 	hasEnableVirtualDir bool
@@ -467,7 +524,7 @@ type pairStorageNew struct {
 }
 
 // parsePairStorageNew will parse Pair slice into *pairStorageNew
-func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
+func parsePairStorageNew(opts []types.Pair) (pairStorageNew, error) {
 	result :=
 		pairStorageNew{pairs: opts}
 
@@ -527,6 +584,12 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.HasStorageFeatures = true
 			result.StorageFeatures = v.Value.(StorageFeatures)
+		case "storage_virtual_features":
+			if result.HasStorageVirtualFeatures {
+				continue
+			}
+			result.HasStorageVirtualFeatures = true
+			result.StorageVirtualFeatures = v.Value.(StorageVirtualFeatures)
 		case "work_dir":
 			if result.HasWorkDir {
 				continue
@@ -547,14 +610,18 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			result.EnableVirtualDir = true
 		}
 	}
-	// Enable features
+	// Enable virtual features
 	if result.hasEnableLoosePair {
 		result.HasStorageFeatures = true
 		result.StorageFeatures.LoosePair = true
+		result.HasStorageVirtualFeatures = true
+		result.StorageVirtualFeatures.LoosePair = true
 	}
 	if result.hasEnableVirtualDir {
 		result.HasStorageFeatures = true
 		result.StorageFeatures.VirtualDir = true
+		result.HasStorageVirtualFeatures = true
+		result.StorageVirtualFeatures.VirtualDir = true
 	}
 	// Default pairs
 	if result.HasDefaultContentType {
@@ -578,46 +645,47 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 
 // DefaultStoragePairs is default pairs for specific action
 type DefaultStoragePairs struct {
-	CombineBlock                   []Pair
-	CommitAppend                   []Pair
-	CompleteMultipart              []Pair
-	Copy                           []Pair
-	Create                         []Pair
-	CreateAppend                   []Pair
-	CreateBlock                    []Pair
-	CreateDir                      []Pair
-	CreateLink                     []Pair
-	CreateMultipart                []Pair
-	CreatePage                     []Pair
-	Delete                         []Pair
-	Fetch                          []Pair
-	List                           []Pair
-	ListBlock                      []Pair
-	ListMultipart                  []Pair
-	Metadata                       []Pair
-	Move                           []Pair
-	QuerySignHTTPCompleteMultipart []Pair
-	QuerySignHTTPCreateMultipart   []Pair
-	QuerySignHTTPDelete            []Pair
-	QuerySignHTTPListMultipart     []Pair
-	QuerySignHTTPRead              []Pair
-	QuerySignHTTPWrite             []Pair
-	QuerySignHTTPWriteMultipart    []Pair
-	Read                           []Pair
-	Stat                           []Pair
-	Write                          []Pair
-	WriteAppend                    []Pair
-	WriteBlock                     []Pair
-	WriteMultipart                 []Pair
-	WritePage                      []Pair
+	CombineBlock                   []types.Pair
+	CommitAppend                   []types.Pair
+	CompleteMultipart              []types.Pair
+	Copy                           []types.Pair
+	Create                         []types.Pair
+	CreateAppend                   []types.Pair
+	CreateBlock                    []types.Pair
+	CreateDir                      []types.Pair
+	CreateLink                     []types.Pair
+	CreateMultipart                []types.Pair
+	CreatePage                     []types.Pair
+	Delete                         []types.Pair
+	Features                       []types.Pair
+	Fetch                          []types.Pair
+	List                           []types.Pair
+	ListBlock                      []types.Pair
+	ListMultipart                  []types.Pair
+	Metadata                       []types.Pair
+	Move                           []types.Pair
+	QuerySignHTTPCompleteMultipart []types.Pair
+	QuerySignHTTPCreateMultipart   []types.Pair
+	QuerySignHTTPDelete            []types.Pair
+	QuerySignHTTPListMultipart     []types.Pair
+	QuerySignHTTPRead              []types.Pair
+	QuerySignHTTPWrite             []types.Pair
+	QuerySignHTTPWriteMultipart    []types.Pair
+	Read                           []types.Pair
+	Stat                           []types.Pair
+	Write                          []types.Pair
+	WriteAppend                    []types.Pair
+	WriteBlock                     []types.Pair
+	WriteMultipart                 []types.Pair
+	WritePage                      []types.Pair
 }
 type pairStorageCombineBlock struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCombineBlock(opts []Pair) (pairStorageCombineBlock, error) {
+func (s *Storage) parsePairStorageCombineBlock(opts []types.Pair) (pairStorageCombineBlock, error) {
 	result :=
 		pairStorageCombineBlock{pairs: opts}
 
@@ -637,12 +705,12 @@ func (s *Storage) parsePairStorageCombineBlock(opts []Pair) (pairStorageCombineB
 }
 
 type pairStorageCommitAppend struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCommitAppend(opts []Pair) (pairStorageCommitAppend, error) {
+func (s *Storage) parsePairStorageCommitAppend(opts []types.Pair) (pairStorageCommitAppend, error) {
 	result :=
 		pairStorageCommitAppend{pairs: opts}
 
@@ -662,12 +730,12 @@ func (s *Storage) parsePairStorageCommitAppend(opts []Pair) (pairStorageCommitAp
 }
 
 type pairStorageCompleteMultipart struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCompleteMultipart(opts []Pair) (pairStorageCompleteMultipart, error) {
+func (s *Storage) parsePairStorageCompleteMultipart(opts []types.Pair) (pairStorageCompleteMultipart, error) {
 	result :=
 		pairStorageCompleteMultipart{pairs: opts}
 
@@ -687,12 +755,12 @@ func (s *Storage) parsePairStorageCompleteMultipart(opts []Pair) (pairStorageCom
 }
 
 type pairStorageCopy struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCopy(opts []Pair) (pairStorageCopy, error) {
+func (s *Storage) parsePairStorageCopy(opts []types.Pair) (pairStorageCopy, error) {
 	result :=
 		pairStorageCopy{pairs: opts}
 
@@ -712,14 +780,14 @@ func (s *Storage) parsePairStorageCopy(opts []Pair) (pairStorageCopy, error) {
 }
 
 type pairStorageCreate struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasObjectMode bool
-	ObjectMode    ObjectMode
+	ObjectMode    types.ObjectMode
 }
 
-func (s *Storage) parsePairStorageCreate(opts []Pair) (pairStorageCreate, error) {
+func (s *Storage) parsePairStorageCreate(opts []types.Pair) (pairStorageCreate, error) {
 	result :=
 		pairStorageCreate{pairs: opts}
 
@@ -730,7 +798,7 @@ func (s *Storage) parsePairStorageCreate(opts []Pair) (pairStorageCreate, error)
 				continue
 			}
 			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(ObjectMode)
+			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			// loose_pair feature introduced in GSP-109.
 			// If user enable this feature, service should ignore not support pair error.
@@ -745,12 +813,12 @@ func (s *Storage) parsePairStorageCreate(opts []Pair) (pairStorageCreate, error)
 }
 
 type pairStorageCreateAppend struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCreateAppend(opts []Pair) (pairStorageCreateAppend, error) {
+func (s *Storage) parsePairStorageCreateAppend(opts []types.Pair) (pairStorageCreateAppend, error) {
 	result :=
 		pairStorageCreateAppend{pairs: opts}
 
@@ -770,12 +838,12 @@ func (s *Storage) parsePairStorageCreateAppend(opts []Pair) (pairStorageCreateAp
 }
 
 type pairStorageCreateBlock struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCreateBlock(opts []Pair) (pairStorageCreateBlock, error) {
+func (s *Storage) parsePairStorageCreateBlock(opts []types.Pair) (pairStorageCreateBlock, error) {
 	result :=
 		pairStorageCreateBlock{pairs: opts}
 
@@ -795,12 +863,12 @@ func (s *Storage) parsePairStorageCreateBlock(opts []Pair) (pairStorageCreateBlo
 }
 
 type pairStorageCreateDir struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCreateDir(opts []Pair) (pairStorageCreateDir, error) {
+func (s *Storage) parsePairStorageCreateDir(opts []types.Pair) (pairStorageCreateDir, error) {
 	result :=
 		pairStorageCreateDir{pairs: opts}
 
@@ -820,12 +888,12 @@ func (s *Storage) parsePairStorageCreateDir(opts []Pair) (pairStorageCreateDir, 
 }
 
 type pairStorageCreateLink struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCreateLink(opts []Pair) (pairStorageCreateLink, error) {
+func (s *Storage) parsePairStorageCreateLink(opts []types.Pair) (pairStorageCreateLink, error) {
 	result :=
 		pairStorageCreateLink{pairs: opts}
 
@@ -845,12 +913,12 @@ func (s *Storage) parsePairStorageCreateLink(opts []Pair) (pairStorageCreateLink
 }
 
 type pairStorageCreateMultipart struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCreateMultipart(opts []Pair) (pairStorageCreateMultipart, error) {
+func (s *Storage) parsePairStorageCreateMultipart(opts []types.Pair) (pairStorageCreateMultipart, error) {
 	result :=
 		pairStorageCreateMultipart{pairs: opts}
 
@@ -870,12 +938,12 @@ func (s *Storage) parsePairStorageCreateMultipart(opts []Pair) (pairStorageCreat
 }
 
 type pairStorageCreatePage struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageCreatePage(opts []Pair) (pairStorageCreatePage, error) {
+func (s *Storage) parsePairStorageCreatePage(opts []types.Pair) (pairStorageCreatePage, error) {
 	result :=
 		pairStorageCreatePage{pairs: opts}
 
@@ -895,16 +963,16 @@ func (s *Storage) parsePairStorageCreatePage(opts []Pair) (pairStorageCreatePage
 }
 
 type pairStorageDelete struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasMultipartID bool
 	MultipartID    string
 	HasObjectMode  bool
-	ObjectMode     ObjectMode
+	ObjectMode     types.ObjectMode
 }
 
-func (s *Storage) parsePairStorageDelete(opts []Pair) (pairStorageDelete, error) {
+func (s *Storage) parsePairStorageDelete(opts []types.Pair) (pairStorageDelete, error) {
 	result :=
 		pairStorageDelete{pairs: opts}
 
@@ -921,7 +989,7 @@ func (s *Storage) parsePairStorageDelete(opts []Pair) (pairStorageDelete, error)
 				continue
 			}
 			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(ObjectMode)
+			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			// loose_pair feature introduced in GSP-109.
 			// If user enable this feature, service should ignore not support pair error.
@@ -936,12 +1004,12 @@ func (s *Storage) parsePairStorageDelete(opts []Pair) (pairStorageDelete, error)
 }
 
 type pairStorageFetch struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageFetch(opts []Pair) (pairStorageFetch, error) {
+func (s *Storage) parsePairStorageFetch(opts []types.Pair) (pairStorageFetch, error) {
 	result :=
 		pairStorageFetch{pairs: opts}
 
@@ -961,14 +1029,14 @@ func (s *Storage) parsePairStorageFetch(opts []Pair) (pairStorageFetch, error) {
 }
 
 type pairStorageList struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasListMode bool
-	ListMode    ListMode
+	ListMode    types.ListMode
 }
 
-func (s *Storage) parsePairStorageList(opts []Pair) (pairStorageList, error) {
+func (s *Storage) parsePairStorageList(opts []types.Pair) (pairStorageList, error) {
 	result :=
 		pairStorageList{pairs: opts}
 
@@ -979,7 +1047,7 @@ func (s *Storage) parsePairStorageList(opts []Pair) (pairStorageList, error) {
 				continue
 			}
 			result.HasListMode = true
-			result.ListMode = v.Value.(ListMode)
+			result.ListMode = v.Value.(types.ListMode)
 		default:
 			// loose_pair feature introduced in GSP-109.
 			// If user enable this feature, service should ignore not support pair error.
@@ -994,12 +1062,12 @@ func (s *Storage) parsePairStorageList(opts []Pair) (pairStorageList, error) {
 }
 
 type pairStorageListBlock struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageListBlock(opts []Pair) (pairStorageListBlock, error) {
+func (s *Storage) parsePairStorageListBlock(opts []types.Pair) (pairStorageListBlock, error) {
 	result :=
 		pairStorageListBlock{pairs: opts}
 
@@ -1019,12 +1087,12 @@ func (s *Storage) parsePairStorageListBlock(opts []Pair) (pairStorageListBlock, 
 }
 
 type pairStorageListMultipart struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageListMultipart(opts []Pair) (pairStorageListMultipart, error) {
+func (s *Storage) parsePairStorageListMultipart(opts []types.Pair) (pairStorageListMultipart, error) {
 	result :=
 		pairStorageListMultipart{pairs: opts}
 
@@ -1044,12 +1112,12 @@ func (s *Storage) parsePairStorageListMultipart(opts []Pair) (pairStorageListMul
 }
 
 type pairStorageMetadata struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageMetadata(opts []Pair) (pairStorageMetadata, error) {
+func (s *Storage) parsePairStorageMetadata(opts []types.Pair) (pairStorageMetadata, error) {
 	result :=
 		pairStorageMetadata{pairs: opts}
 
@@ -1069,12 +1137,12 @@ func (s *Storage) parsePairStorageMetadata(opts []Pair) (pairStorageMetadata, er
 }
 
 type pairStorageMove struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageMove(opts []Pair) (pairStorageMove, error) {
+func (s *Storage) parsePairStorageMove(opts []types.Pair) (pairStorageMove, error) {
 	result :=
 		pairStorageMove{pairs: opts}
 
@@ -1094,12 +1162,12 @@ func (s *Storage) parsePairStorageMove(opts []Pair) (pairStorageMove, error) {
 }
 
 type pairStorageQuerySignHTTPCompleteMultipart struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageQuerySignHTTPCompleteMultipart(opts []Pair) (pairStorageQuerySignHTTPCompleteMultipart, error) {
+func (s *Storage) parsePairStorageQuerySignHTTPCompleteMultipart(opts []types.Pair) (pairStorageQuerySignHTTPCompleteMultipart, error) {
 	result :=
 		pairStorageQuerySignHTTPCompleteMultipart{pairs: opts}
 
@@ -1119,12 +1187,12 @@ func (s *Storage) parsePairStorageQuerySignHTTPCompleteMultipart(opts []Pair) (p
 }
 
 type pairStorageQuerySignHTTPCreateMultipart struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageQuerySignHTTPCreateMultipart(opts []Pair) (pairStorageQuerySignHTTPCreateMultipart, error) {
+func (s *Storage) parsePairStorageQuerySignHTTPCreateMultipart(opts []types.Pair) (pairStorageQuerySignHTTPCreateMultipart, error) {
 	result :=
 		pairStorageQuerySignHTTPCreateMultipart{pairs: opts}
 
@@ -1144,12 +1212,12 @@ func (s *Storage) parsePairStorageQuerySignHTTPCreateMultipart(opts []Pair) (pai
 }
 
 type pairStorageQuerySignHTTPDelete struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageQuerySignHTTPDelete(opts []Pair) (pairStorageQuerySignHTTPDelete, error) {
+func (s *Storage) parsePairStorageQuerySignHTTPDelete(opts []types.Pair) (pairStorageQuerySignHTTPDelete, error) {
 	result :=
 		pairStorageQuerySignHTTPDelete{pairs: opts}
 
@@ -1169,12 +1237,12 @@ func (s *Storage) parsePairStorageQuerySignHTTPDelete(opts []Pair) (pairStorageQ
 }
 
 type pairStorageQuerySignHTTPListMultipart struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageQuerySignHTTPListMultipart(opts []Pair) (pairStorageQuerySignHTTPListMultipart, error) {
+func (s *Storage) parsePairStorageQuerySignHTTPListMultipart(opts []types.Pair) (pairStorageQuerySignHTTPListMultipart, error) {
 	result :=
 		pairStorageQuerySignHTTPListMultipart{pairs: opts}
 
@@ -1194,12 +1262,12 @@ func (s *Storage) parsePairStorageQuerySignHTTPListMultipart(opts []Pair) (pairS
 }
 
 type pairStorageQuerySignHTTPRead struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageQuerySignHTTPRead(opts []Pair) (pairStorageQuerySignHTTPRead, error) {
+func (s *Storage) parsePairStorageQuerySignHTTPRead(opts []types.Pair) (pairStorageQuerySignHTTPRead, error) {
 	result :=
 		pairStorageQuerySignHTTPRead{pairs: opts}
 
@@ -1219,12 +1287,12 @@ func (s *Storage) parsePairStorageQuerySignHTTPRead(opts []Pair) (pairStorageQue
 }
 
 type pairStorageQuerySignHTTPWrite struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageQuerySignHTTPWrite(opts []Pair) (pairStorageQuerySignHTTPWrite, error) {
+func (s *Storage) parsePairStorageQuerySignHTTPWrite(opts []types.Pair) (pairStorageQuerySignHTTPWrite, error) {
 	result :=
 		pairStorageQuerySignHTTPWrite{pairs: opts}
 
@@ -1244,12 +1312,12 @@ func (s *Storage) parsePairStorageQuerySignHTTPWrite(opts []Pair) (pairStorageQu
 }
 
 type pairStorageQuerySignHTTPWriteMultipart struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageQuerySignHTTPWriteMultipart(opts []Pair) (pairStorageQuerySignHTTPWriteMultipart, error) {
+func (s *Storage) parsePairStorageQuerySignHTTPWriteMultipart(opts []types.Pair) (pairStorageQuerySignHTTPWriteMultipart, error) {
 	result :=
 		pairStorageQuerySignHTTPWriteMultipart{pairs: opts}
 
@@ -1269,7 +1337,7 @@ func (s *Storage) parsePairStorageQuerySignHTTPWriteMultipart(opts []Pair) (pair
 }
 
 type pairStorageRead struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasIoCallback bool
@@ -1280,7 +1348,7 @@ type pairStorageRead struct {
 	Size          int64
 }
 
-func (s *Storage) parsePairStorageRead(opts []Pair) (pairStorageRead, error) {
+func (s *Storage) parsePairStorageRead(opts []types.Pair) (pairStorageRead, error) {
 	result :=
 		pairStorageRead{pairs: opts}
 
@@ -1318,14 +1386,14 @@ func (s *Storage) parsePairStorageRead(opts []Pair) (pairStorageRead, error) {
 }
 
 type pairStorageStat struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasObjectMode bool
-	ObjectMode    ObjectMode
+	ObjectMode    types.ObjectMode
 }
 
-func (s *Storage) parsePairStorageStat(opts []Pair) (pairStorageStat, error) {
+func (s *Storage) parsePairStorageStat(opts []types.Pair) (pairStorageStat, error) {
 	result :=
 		pairStorageStat{pairs: opts}
 
@@ -1336,7 +1404,7 @@ func (s *Storage) parsePairStorageStat(opts []Pair) (pairStorageStat, error) {
 				continue
 			}
 			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(ObjectMode)
+			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			// loose_pair feature introduced in GSP-109.
 			// If user enable this feature, service should ignore not support pair error.
@@ -1351,7 +1419,7 @@ func (s *Storage) parsePairStorageStat(opts []Pair) (pairStorageStat, error) {
 }
 
 type pairStorageWrite struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 	HasContentMd5   bool
@@ -1364,7 +1432,7 @@ type pairStorageWrite struct {
 	StorageClass    string
 }
 
-func (s *Storage) parsePairStorageWrite(opts []Pair) (pairStorageWrite, error) {
+func (s *Storage) parsePairStorageWrite(opts []types.Pair) (pairStorageWrite, error) {
 	result :=
 		pairStorageWrite{pairs: opts}
 
@@ -1408,12 +1476,12 @@ func (s *Storage) parsePairStorageWrite(opts []Pair) (pairStorageWrite, error) {
 }
 
 type pairStorageWriteAppend struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageWriteAppend(opts []Pair) (pairStorageWriteAppend, error) {
+func (s *Storage) parsePairStorageWriteAppend(opts []types.Pair) (pairStorageWriteAppend, error) {
 	result :=
 		pairStorageWriteAppend{pairs: opts}
 
@@ -1433,12 +1501,12 @@ func (s *Storage) parsePairStorageWriteAppend(opts []Pair) (pairStorageWriteAppe
 }
 
 type pairStorageWriteBlock struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageWriteBlock(opts []Pair) (pairStorageWriteBlock, error) {
+func (s *Storage) parsePairStorageWriteBlock(opts []types.Pair) (pairStorageWriteBlock, error) {
 	result :=
 		pairStorageWriteBlock{pairs: opts}
 
@@ -1458,12 +1526,12 @@ func (s *Storage) parsePairStorageWriteBlock(opts []Pair) (pairStorageWriteBlock
 }
 
 type pairStorageWriteMultipart struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageWriteMultipart(opts []Pair) (pairStorageWriteMultipart, error) {
+func (s *Storage) parsePairStorageWriteMultipart(opts []types.Pair) (pairStorageWriteMultipart, error) {
 	result :=
 		pairStorageWriteMultipart{pairs: opts}
 
@@ -1483,12 +1551,12 @@ func (s *Storage) parsePairStorageWriteMultipart(opts []Pair) (pairStorageWriteM
 }
 
 type pairStorageWritePage struct {
-	pairs []Pair
+	pairs []types.Pair
 	// Required pairs
 	// Optional pairs
 }
 
-func (s *Storage) parsePairStorageWritePage(opts []Pair) (pairStorageWritePage, error) {
+func (s *Storage) parsePairStorageWritePage(opts []types.Pair) (pairStorageWritePage, error) {
 	result :=
 		pairStorageWritePage{pairs: opts}
 
@@ -1506,17 +1574,17 @@ func (s *Storage) parsePairStorageWritePage(opts []Pair) (pairStorageWritePage, 
 
 	return result, nil
 }
-func (s *Storage) CombineBlock(o *Object, bids []string, pairs ...Pair) (err error) {
+func (s *Storage) CombineBlock(o *types.Object, bids []string, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.CombineBlockWithContext(ctx, o, bids, pairs...)
 }
-func (s *Storage) CombineBlockWithContext(ctx context.Context, o *Object, bids []string, pairs ...Pair) (err error) {
+func (s *Storage) CombineBlockWithContext(ctx context.Context, o *types.Object, bids []string, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("combine_block", err)
 	}()
 	if !o.Mode.IsBlock() {
-		err = services.ObjectModeInvalidError{Expected: ModeBlock, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModeBlock, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.CombineBlock...)
@@ -1528,17 +1596,17 @@ func (s *Storage) CombineBlockWithContext(ctx context.Context, o *Object, bids [
 	}
 	return s.combineBlock(ctx, o, bids, opt)
 }
-func (s *Storage) CommitAppend(o *Object, pairs ...Pair) (err error) {
+func (s *Storage) CommitAppend(o *types.Object, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.CommitAppendWithContext(ctx, o, pairs...)
 }
-func (s *Storage) CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error) {
+func (s *Storage) CommitAppendWithContext(ctx context.Context, o *types.Object, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("commit_append", err)
 	}()
 	if !o.Mode.IsAppend() {
-		err = services.ObjectModeInvalidError{Expected: ModeAppend, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModeAppend, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.CommitAppend...)
@@ -1550,17 +1618,17 @@ func (s *Storage) CommitAppendWithContext(ctx context.Context, o *Object, pairs 
 	}
 	return s.commitAppend(ctx, o, opt)
 }
-func (s *Storage) CompleteMultipart(o *Object, parts []*Part, pairs ...Pair) (err error) {
+func (s *Storage) CompleteMultipart(o *types.Object, parts []*types.Part, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.CompleteMultipartWithContext(ctx, o, parts, pairs...)
 }
-func (s *Storage) CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error) {
+func (s *Storage) CompleteMultipartWithContext(ctx context.Context, o *types.Object, parts []*types.Part, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("complete_multipart", err)
 	}()
 	if !o.Mode.IsPart() {
-		err = services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModePart, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.CompleteMultipart...)
@@ -1572,11 +1640,11 @@ func (s *Storage) CompleteMultipartWithContext(ctx context.Context, o *Object, p
 	}
 	return s.completeMultipart(ctx, o, parts, opt)
 }
-func (s *Storage) Copy(src string, dst string, pairs ...Pair) (err error) {
+func (s *Storage) Copy(src string, dst string, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.CopyWithContext(ctx, src, dst, pairs...)
 }
-func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error) {
+func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("copy", err, src, dst)
@@ -1591,7 +1659,7 @@ func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, p
 	}
 	return s.copy(ctx, strings.ReplaceAll(src, "\\", "/"), strings.ReplaceAll(dst, "\\", "/"), opt)
 }
-func (s *Storage) Create(path string, pairs ...Pair) (o *Object) {
+func (s *Storage) Create(path string, pairs ...types.Pair) (o *types.Object) {
 	pairs = append(pairs, s.defaultPairs.Create...)
 	var opt pairStorageCreate
 
@@ -1599,11 +1667,11 @@ func (s *Storage) Create(path string, pairs ...Pair) (o *Object) {
 	opt, _ = s.parsePairStorageCreate(pairs)
 	return s.create(path, opt)
 }
-func (s *Storage) CreateAppend(path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateAppend(path string, pairs ...types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.CreateAppendWithContext(ctx, path, pairs...)
 }
-func (s *Storage) CreateAppendWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateAppendWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err =
 			s.formatError("create_append", err, path)
@@ -1618,11 +1686,11 @@ func (s *Storage) CreateAppendWithContext(ctx context.Context, path string, pair
 	}
 	return s.createAppend(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) CreateBlock(path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateBlock(path string, pairs ...types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.CreateBlockWithContext(ctx, path, pairs...)
 }
-func (s *Storage) CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateBlockWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err =
 			s.formatError("create_block", err, path)
@@ -1637,11 +1705,11 @@ func (s *Storage) CreateBlockWithContext(ctx context.Context, path string, pairs
 	}
 	return s.createBlock(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) CreateDir(path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateDir(path string, pairs ...types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.CreateDirWithContext(ctx, path, pairs...)
 }
-func (s *Storage) CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateDirWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err =
 			s.formatError("create_dir", err, path)
@@ -1656,11 +1724,11 @@ func (s *Storage) CreateDirWithContext(ctx context.Context, path string, pairs .
 	}
 	return s.createDir(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) CreateLink(path string, target string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateLink(path string, target string, pairs ...types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.CreateLinkWithContext(ctx, path, target, pairs...)
 }
-func (s *Storage) CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err =
 			s.formatError("create_link", err, path, target)
@@ -1675,11 +1743,11 @@ func (s *Storage) CreateLinkWithContext(ctx context.Context, path string, target
 	}
 	return s.createLink(ctx, strings.ReplaceAll(path, "\\", "/"), strings.ReplaceAll(target, "\\", "/"), opt)
 }
-func (s *Storage) CreateMultipart(path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateMultipart(path string, pairs ...types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.CreateMultipartWithContext(ctx, path, pairs...)
 }
-func (s *Storage) CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateMultipartWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err =
 			s.formatError("create_multipart", err, path)
@@ -1694,11 +1762,11 @@ func (s *Storage) CreateMultipartWithContext(ctx context.Context, path string, p
 	}
 	return s.createMultipart(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) CreatePage(path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreatePage(path string, pairs ...types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.CreatePageWithContext(ctx, path, pairs...)
 }
-func (s *Storage) CreatePageWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreatePageWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err =
 			s.formatError("create_page", err, path)
@@ -1713,11 +1781,11 @@ func (s *Storage) CreatePageWithContext(ctx context.Context, path string, pairs 
 	}
 	return s.createPage(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) Delete(path string, pairs ...Pair) (err error) {
+func (s *Storage) Delete(path string, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, path, pairs...)
 }
-func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error) {
+func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("delete", err, path)
@@ -1732,11 +1800,24 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...P
 	}
 	return s.delete(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) Fetch(path string, url string, pairs ...Pair) (err error) {
+func (s *Storage) Features() (storageFeatures types.StorageFeatures) {
+	storageFeatures.VirtualDir = true
+	storageFeatures.LoosePair = true
+	storageFeatures.WriteEmptyObject = true
+	storageFeatures.Create = true
+	storageFeatures.Delete = true
+	storageFeatures.List = true
+	storageFeatures.Metadata = true
+	storageFeatures.Read = true
+	storageFeatures.Stat = true
+	storageFeatures.Write = true
+	return
+}
+func (s *Storage) Fetch(path string, url string, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.FetchWithContext(ctx, path, url, pairs...)
 }
-func (s *Storage) FetchWithContext(ctx context.Context, path string, url string, pairs ...Pair) (err error) {
+func (s *Storage) FetchWithContext(ctx context.Context, path string, url string, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("fetch", err, path, url)
@@ -1751,11 +1832,11 @@ func (s *Storage) FetchWithContext(ctx context.Context, path string, url string,
 	}
 	return s.fetch(ctx, strings.ReplaceAll(path, "\\", "/"), url, opt)
 }
-func (s *Storage) List(path string, pairs ...Pair) (oi *ObjectIterator, err error) {
+func (s *Storage) List(path string, pairs ...types.Pair) (oi *types.ObjectIterator, err error) {
 	ctx := context.Background()
 	return s.ListWithContext(ctx, path, pairs...)
 }
-func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error) {
+func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...types.Pair) (oi *types.ObjectIterator, err error) {
 	defer func() {
 		err =
 			s.formatError("list", err, path)
@@ -1770,17 +1851,17 @@ func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...Pai
 	}
 	return s.list(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) ListBlock(o *Object, pairs ...Pair) (bi *BlockIterator, err error) {
+func (s *Storage) ListBlock(o *types.Object, pairs ...types.Pair) (bi *types.BlockIterator, err error) {
 	ctx := context.Background()
 	return s.ListBlockWithContext(ctx, o, pairs...)
 }
-func (s *Storage) ListBlockWithContext(ctx context.Context, o *Object, pairs ...Pair) (bi *BlockIterator, err error) {
+func (s *Storage) ListBlockWithContext(ctx context.Context, o *types.Object, pairs ...types.Pair) (bi *types.BlockIterator, err error) {
 	defer func() {
 		err =
 			s.formatError("list_block", err)
 	}()
 	if !o.Mode.IsBlock() {
-		err = services.ObjectModeInvalidError{Expected: ModeBlock, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModeBlock, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.ListBlock...)
@@ -1792,17 +1873,17 @@ func (s *Storage) ListBlockWithContext(ctx context.Context, o *Object, pairs ...
 	}
 	return s.listBlock(ctx, o, opt)
 }
-func (s *Storage) ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error) {
+func (s *Storage) ListMultipart(o *types.Object, pairs ...types.Pair) (pi *types.PartIterator, err error) {
 	ctx := context.Background()
 	return s.ListMultipartWithContext(ctx, o, pairs...)
 }
-func (s *Storage) ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error) {
+func (s *Storage) ListMultipartWithContext(ctx context.Context, o *types.Object, pairs ...types.Pair) (pi *types.PartIterator, err error) {
 	defer func() {
 		err =
 			s.formatError("list_multipart", err)
 	}()
 	if !o.Mode.IsPart() {
-		err = services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModePart, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.ListMultipart...)
@@ -1814,7 +1895,7 @@ func (s *Storage) ListMultipartWithContext(ctx context.Context, o *Object, pairs
 	}
 	return s.listMultipart(ctx, o, opt)
 }
-func (s *Storage) Metadata(pairs ...Pair) (meta *StorageMeta) {
+func (s *Storage) Metadata(pairs ...types.Pair) (meta *types.StorageMeta) {
 	pairs = append(pairs, s.defaultPairs.Metadata...)
 	var opt pairStorageMetadata
 
@@ -1822,11 +1903,11 @@ func (s *Storage) Metadata(pairs ...Pair) (meta *StorageMeta) {
 	opt, _ = s.parsePairStorageMetadata(pairs)
 	return s.metadata(opt)
 }
-func (s *Storage) Move(src string, dst string, pairs ...Pair) (err error) {
+func (s *Storage) Move(src string, dst string, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.MoveWithContext(ctx, src, dst, pairs...)
 }
-func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, pairs ...Pair) (err error) {
+func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("move", err, src, dst)
@@ -1841,11 +1922,11 @@ func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, p
 	}
 	return s.move(ctx, strings.ReplaceAll(src, "\\", "/"), strings.ReplaceAll(dst, "\\", "/"), opt)
 }
-func (s *Storage) QuerySignHTTPCompleteMultipart(o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPCompleteMultipart(o *types.Object, parts []*types.Part, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	ctx := context.Background()
 	return s.QuerySignHTTPCompleteMultipartWithContext(ctx, o, parts, expire, pairs...)
 }
-func (s *Storage) QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *types.Object, parts []*types.Part, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	defer func() {
 		err =
 			s.formatError("query_sign_http_complete_multipart", err)
@@ -1860,11 +1941,11 @@ func (s *Storage) QuerySignHTTPCompleteMultipartWithContext(ctx context.Context,
 	}
 	return s.querySignHTTPCompleteMultipart(ctx, o, parts, expire, opt)
 }
-func (s *Storage) QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	ctx := context.Background()
 	return s.QuerySignHTTPCreateMultipartWithContext(ctx, path, expire, pairs...)
 }
-func (s *Storage) QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	defer func() {
 		err =
 			s.formatError("query_sign_http_create_multipart", err, path)
@@ -1879,11 +1960,11 @@ func (s *Storage) QuerySignHTTPCreateMultipartWithContext(ctx context.Context, p
 	}
 	return s.querySignHTTPCreateMultipart(ctx, strings.ReplaceAll(path, "\\", "/"), expire, opt)
 }
-func (s *Storage) QuerySignHTTPDelete(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPDelete(path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	ctx := context.Background()
 	return s.QuerySignHTTPDeleteWithContext(ctx, path, expire, pairs...)
 }
-func (s *Storage) QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	defer func() {
 		err =
 			s.formatError("query_sign_http_delete", err, path)
@@ -1898,11 +1979,11 @@ func (s *Storage) QuerySignHTTPDeleteWithContext(ctx context.Context, path strin
 	}
 	return s.querySignHTTPDelete(ctx, strings.ReplaceAll(path, "\\", "/"), expire, opt)
 }
-func (s *Storage) QuerySignHTTPListMultipart(o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPListMultipart(o *types.Object, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	ctx := context.Background()
 	return s.QuerySignHTTPListMultipartWithContext(ctx, o, expire, pairs...)
 }
-func (s *Storage) QuerySignHTTPListMultipartWithContext(ctx context.Context, o *Object, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPListMultipartWithContext(ctx context.Context, o *types.Object, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	defer func() {
 		err =
 			s.formatError("query_sign_http_list_multipart", err)
@@ -1917,11 +1998,11 @@ func (s *Storage) QuerySignHTTPListMultipartWithContext(ctx context.Context, o *
 	}
 	return s.querySignHTTPListMultipart(ctx, o, expire, opt)
 }
-func (s *Storage) QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPRead(path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	ctx := context.Background()
 	return s.QuerySignHTTPReadWithContext(ctx, path, expire, pairs...)
 }
-func (s *Storage) QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	defer func() {
 		err =
 			s.formatError("query_sign_http_read", err, path)
@@ -1936,11 +2017,11 @@ func (s *Storage) QuerySignHTTPReadWithContext(ctx context.Context, path string,
 	}
 	return s.querySignHTTPRead(ctx, strings.ReplaceAll(path, "\\", "/"), expire, opt)
 }
-func (s *Storage) QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	ctx := context.Background()
 	return s.QuerySignHTTPWriteWithContext(ctx, path, size, expire, pairs...)
 }
-func (s *Storage) QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	defer func() {
 		err =
 			s.formatError("query_sign_http_write", err, path)
@@ -1955,11 +2036,11 @@ func (s *Storage) QuerySignHTTPWriteWithContext(ctx context.Context, path string
 	}
 	return s.querySignHTTPWrite(ctx, strings.ReplaceAll(path, "\\", "/"), size, expire, opt)
 }
-func (s *Storage) QuerySignHTTPWriteMultipart(o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPWriteMultipart(o *types.Object, size int64, index int, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	ctx := context.Background()
 	return s.QuerySignHTTPWriteMultipartWithContext(ctx, o, size, index, expire, pairs...)
 }
-func (s *Storage) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *Object, size int64, index int, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+func (s *Storage) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *types.Object, size int64, index int, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
 	defer func() {
 		err =
 			s.formatError("query_sign_http_write_multipart", err)
@@ -1974,11 +2055,11 @@ func (s *Storage) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o 
 	}
 	return s.querySignHTTPWriteMultipart(ctx, o, size, index, expire, opt)
 }
-func (s *Storage) Read(path string, w io.Writer, pairs ...Pair) (n int64, err error) {
+func (s *Storage) Read(path string, w io.Writer, pairs ...types.Pair) (n int64, err error) {
 	ctx := context.Background()
 	return s.ReadWithContext(ctx, path, w, pairs...)
 }
-func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...Pair) (n int64, err error) {
+func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...types.Pair) (n int64, err error) {
 	defer func() {
 		err =
 			s.formatError("read", err, path)
@@ -1993,11 +2074,11 @@ func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer,
 	}
 	return s.read(ctx, strings.ReplaceAll(path, "\\", "/"), w, opt)
 }
-func (s *Storage) Stat(path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) Stat(path string, pairs ...types.Pair) (o *types.Object, err error) {
 	ctx := context.Background()
 	return s.StatWithContext(ctx, path, pairs...)
 }
-func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
 	defer func() {
 		err =
 			s.formatError("stat", err, path)
@@ -2012,11 +2093,11 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...Pai
 	}
 	return s.stat(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
 	ctx := context.Background()
 	return s.WriteWithContext(ctx, path, r, size, pairs...)
 }
-func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
 	defer func() {
 		err =
 			s.formatError("write", err, path)
@@ -2031,17 +2112,17 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 	}
 	return s.write(ctx, strings.ReplaceAll(path, "\\", "/"), r, size, opt)
 }
-func (s *Storage) WriteAppend(o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WriteAppend(o *types.Object, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
 	ctx := context.Background()
 	return s.WriteAppendWithContext(ctx, o, r, size, pairs...)
 }
-func (s *Storage) WriteAppendWithContext(ctx context.Context, o *Object, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WriteAppendWithContext(ctx context.Context, o *types.Object, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
 	defer func() {
 		err =
 			s.formatError("write_append", err)
 	}()
 	if !o.Mode.IsAppend() {
-		err = services.ObjectModeInvalidError{Expected: ModeAppend, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModeAppend, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.WriteAppend...)
@@ -2053,17 +2134,17 @@ func (s *Storage) WriteAppendWithContext(ctx context.Context, o *Object, r io.Re
 	}
 	return s.writeAppend(ctx, o, r, size, opt)
 }
-func (s *Storage) WriteBlock(o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WriteBlock(o *types.Object, r io.Reader, size int64, bid string, pairs ...types.Pair) (n int64, err error) {
 	ctx := context.Background()
 	return s.WriteBlockWithContext(ctx, o, r, size, bid, pairs...)
 }
-func (s *Storage) WriteBlockWithContext(ctx context.Context, o *Object, r io.Reader, size int64, bid string, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WriteBlockWithContext(ctx context.Context, o *types.Object, r io.Reader, size int64, bid string, pairs ...types.Pair) (n int64, err error) {
 	defer func() {
 		err =
 			s.formatError("write_block", err, bid)
 	}()
 	if !o.Mode.IsBlock() {
-		err = services.ObjectModeInvalidError{Expected: ModeBlock, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModeBlock, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.WriteBlock...)
@@ -2075,17 +2156,17 @@ func (s *Storage) WriteBlockWithContext(ctx context.Context, o *Object, r io.Rea
 	}
 	return s.writeBlock(ctx, o, r, size, bid, opt)
 }
-func (s *Storage) WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error) {
+func (s *Storage) WriteMultipart(o *types.Object, r io.Reader, size int64, index int, pairs ...types.Pair) (n int64, part *types.Part, err error) {
 	ctx := context.Background()
 	return s.WriteMultipartWithContext(ctx, o, r, size, index, pairs...)
 }
-func (s *Storage) WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, part *Part, err error) {
+func (s *Storage) WriteMultipartWithContext(ctx context.Context, o *types.Object, r io.Reader, size int64, index int, pairs ...types.Pair) (n int64, part *types.Part, err error) {
 	defer func() {
 		err =
 			s.formatError("write_multipart", err)
 	}()
 	if !o.Mode.IsPart() {
-		err = services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModePart, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.WriteMultipart...)
@@ -2097,17 +2178,17 @@ func (s *Storage) WriteMultipartWithContext(ctx context.Context, o *Object, r io
 	}
 	return s.writeMultipart(ctx, o, r, size, index, opt)
 }
-func (s *Storage) WritePage(o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WritePage(o *types.Object, r io.Reader, size int64, offset int64, pairs ...types.Pair) (n int64, err error) {
 	ctx := context.Background()
 	return s.WritePageWithContext(ctx, o, r, size, offset, pairs...)
 }
-func (s *Storage) WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WritePageWithContext(ctx context.Context, o *types.Object, r io.Reader, size int64, offset int64, pairs ...types.Pair) (n int64, err error) {
 	defer func() {
 		err =
 			s.formatError("write_page", err)
 	}()
 	if !o.Mode.IsPage() {
-		err = services.ObjectModeInvalidError{Expected: ModePage, Actual: o.Mode}
+		err = services.ObjectModeInvalidError{Expected: types.ModePage, Actual: o.Mode}
 		return
 	}
 	pairs = append(pairs, s.defaultPairs.WritePage...)
