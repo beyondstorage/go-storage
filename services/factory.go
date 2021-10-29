@@ -70,11 +70,9 @@ func NewFactory(ty string, ps ...types.Pair) (Factory, error) {
 		return nil, InitError{Op: "new_factory", Type: ty, Err: ErrServiceNotRegistered}
 	}
 
-	if len(ps) > 0 {
-		err := f.WithPairs(ps...)
-		if err != nil {
-			return nil, err
-		}
+	err := f.WithPairs(ps...)
+	if err != nil {
+		return nil, err
 	}
 
 	return f, nil
@@ -87,12 +85,34 @@ func NewFactoryFromString(conn string, ps ...types.Pair) (Factory, error) {
 		return nil, InitError{Op: "parse_conn", Type: ty, Err: err, Pairs: ps}
 	}
 
-	f, err := NewFactory(ty)
+	f, ok := factoryRegistry[ty]
+	if !ok {
+		return nil, InitError{Op: "new_factory", Type: ty, Err: ErrServiceNotRegistered}
+	}
+
+	err = f.FromString(value)
 	if err != nil {
 		return nil, err
 	}
 
-	err = f.FromString(value)
+	err = f.WithPairs(ps...)
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
+// NewFactoryFromMap will create a new factory by service type and map.
+//
+// TODO: we will provide NewServicerFromMap and NewStoragerFromMap in the future.
+func NewFactoryFromMap(ty string, m map[string]interface{}, ps ...types.Pair) (Factory, error) {
+	f, ok := factoryRegistry[ty]
+	if !ok {
+		return nil, InitError{Op: "new_factory", Type: ty, Err: ErrServiceNotRegistered}
+	}
+
+	err := f.FromMap(m)
 	if err != nil {
 		return nil, err
 	}
