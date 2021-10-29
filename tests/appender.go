@@ -18,159 +18,162 @@ import (
 func TestAppender(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
 
-		Convey("When CreateAppend", func() {
-			path := uuid.NewString()
-			o, err := store.CreateAppend(path)
+		f := store.Features()
+		if f.CreateAppend && f.WriteAppend && f.CommitAppend && f.Write && f.Read && f.Delete && f.Stat {
+			Convey("When CreateAppend", func() {
+				path := uuid.NewString()
+				o, err := store.CreateAppend(path)
 
-			defer func() {
-				err := store.Delete(path)
+				defer func() {
+					err := store.Delete(path)
+					if err != nil {
+						t.Error(err)
+					}
+				}()
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The Object Mode should be appendable", func() {
+					// Append object's mode must be appendable.
+					So(o.Mode.IsAppend(), ShouldBeTrue)
+				})
+			})
+
+			Convey("When CreateAppend with an existing object", func() {
+				path := uuid.NewString()
+				o, err := store.CreateAppend(path)
+
+				defer func() {
+					err := store.Delete(path)
+					if err != nil {
+						t.Error(err)
+					}
+				}()
+
+				Convey("The first returned error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+				r := io.LimitReader(randbytes.NewRand(), size)
+
+				_, err = store.WriteAppend(o, r, size)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				err = store.CommitAppend(o)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				o, err = store.CreateAppend(path)
+
+				Convey("The second returned error also should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The Object Mode should be appendable", func() {
+					// Append object's mode must be appendable.
+					So(o.Mode.IsAppend(), ShouldBeTrue)
+				})
+
+				Convey("The object append offset should be 0", func() {
+					So(o.MustGetAppendOffset(), ShouldBeZeroValue)
+				})
+			})
+
+			Convey("When Delete", func() {
+				path := uuid.NewString()
+				_, err := store.CreateAppend(path)
 				if err != nil {
 					t.Error(err)
 				}
-			}()
 
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
+				err = store.Delete(path)
+				Convey("The first returned error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				err = store.Delete(path)
+				Convey("The second returned error also should be nil", func() {
+					So(err, ShouldBeNil)
+				})
 			})
 
-			Convey("The Object Mode should be appendable", func() {
-				// Append object's mode must be appendable.
-				So(o.Mode.IsAppend(), ShouldBeTrue)
-			})
-		})
-
-		Convey("When CreateAppend with an existing object", func() {
-			path := uuid.NewString()
-			o, err := store.CreateAppend(path)
-
-			defer func() {
-				err := store.Delete(path)
+			Convey("When WriteAppend", func() {
+				path := uuid.NewString()
+				o, err := store.CreateAppend(path)
 				if err != nil {
 					t.Error(err)
 				}
-			}()
 
-			Convey("The first returned error should be nil", func() {
-				So(err, ShouldBeNil)
+				defer func() {
+					err := store.Delete(path)
+					if err != nil {
+						t.Error(err)
+					}
+				}()
+
+				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+				content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+				r := bytes.NewReader(content)
+
+				n, err := store.WriteAppend(o, r, size)
+
+				Convey("WriteAppend error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+				Convey("WriteAppend size should be equal to n", func() {
+					So(n, ShouldEqual, size)
+				})
 			})
 
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), size)
-
-			_, err = store.WriteAppend(o, r, size)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			err = store.CommitAppend(o)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			o, err = store.CreateAppend(path)
-
-			Convey("The second returned error also should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("The Object Mode should be appendable", func() {
-				// Append object's mode must be appendable.
-				So(o.Mode.IsAppend(), ShouldBeTrue)
-			})
-
-			Convey("The object append offset should be 0", func() {
-				So(o.MustGetAppendOffset(), ShouldBeZeroValue)
-			})
-		})
-
-		Convey("When Delete", func() {
-			path := uuid.NewString()
-			_, err := store.CreateAppend(path)
-			if err != nil {
-				t.Error(err)
-			}
-
-			err = store.Delete(path)
-			Convey("The first returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			err = store.Delete(path)
-			Convey("The second returned error also should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-
-		Convey("When WriteAppend", func() {
-			path := uuid.NewString()
-			o, err := store.CreateAppend(path)
-			if err != nil {
-				t.Error(err)
-			}
-
-			defer func() {
-				err := store.Delete(path)
+			Convey("When CommitAppend", func() {
+				path := uuid.NewString()
+				o, err := store.CreateAppend(path)
 				if err != nil {
 					t.Error(err)
 				}
-			}()
 
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			r := bytes.NewReader(content)
+				defer func() {
+					err := store.Delete(path)
+					if err != nil {
+						t.Error(err)
+					}
+				}()
 
-			n, err := store.WriteAppend(o, r, size)
+				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+				content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 
-			Convey("WriteAppend error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-			Convey("WriteAppend size should be equal to n", func() {
-				So(n, ShouldEqual, size)
-			})
-		})
-
-		Convey("When CommitAppend", func() {
-			path := uuid.NewString()
-			o, err := store.CreateAppend(path)
-			if err != nil {
-				t.Error(err)
-			}
-
-			defer func() {
-				err := store.Delete(path)
+				_, err = store.WriteAppend(o, bytes.NewReader(content), size)
 				if err != nil {
 					t.Error(err)
 				}
-			}()
 
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+				_, err = store.WriteAppend(o, bytes.NewReader(content), size)
+				if err != nil {
+					t.Error(err)
+				}
 
-			_, err = store.WriteAppend(o, bytes.NewReader(content), size)
-			if err != nil {
-				t.Error(err)
-			}
+				err = store.CommitAppend(o)
 
-			_, err = store.WriteAppend(o, bytes.NewReader(content), size)
-			if err != nil {
-				t.Error(err)
-			}
+				Convey("CommitAppend error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
 
-			err = store.CommitAppend(o)
+				var buf bytes.Buffer
+				_, err = store.Read(path, &buf, pairs.WithSize(size*2))
 
-			Convey("CommitAppend error should be nil", func() {
-				So(err, ShouldBeNil)
+				Convey("Read error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+				Convey("The content should be match", func() {
+					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(bytes.Repeat(content, 2)))
+				})
 			})
-
-			var buf bytes.Buffer
-			_, err = store.Read(path, &buf, pairs.WithSize(size*2))
-
-			Convey("Read error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-			Convey("The content should be match", func() {
-				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(bytes.Repeat(content, 2)))
-			})
-		})
+		}
 	})
 }

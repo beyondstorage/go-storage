@@ -21,171 +21,185 @@ import (
 
 func TestStorageHTTPSignerRead(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
+		So(store, ShouldNotBeNil)
 
-		Convey("When Read via QuerySignHTTPRead", func() {
-			size := rand.Int63n(4 * 1024 * 1024)
-			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			if err != nil {
-				t.Error(err)
-			}
-
-			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), size)
-			if err != nil {
-				t.Error(err)
-			}
-			defer func() {
-				err := store.Delete(path)
+		f := store.Features()
+		if f.QuerySignHTTPRead && f.Write && f.Delete {
+			Convey("When Read via QuerySignHTTPRead", func() {
+				size := rand.Int63n(4 * 1024 * 1024)
+				content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 				if err != nil {
 					t.Error(err)
 				}
-			}()
 
-			req, err := store.QuerySignHTTPRead(path, time.Duration(time.Hour))
+				path := uuid.New().String()
+				_, err = store.Write(path, bytes.NewReader(content), size)
+				if err != nil {
+					t.Error(err)
+				}
+				defer func() {
+					err := store.Delete(path)
+					if err != nil {
+						t.Error(err)
+					}
+				}()
 
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
+				req, err := store.QuerySignHTTPRead(path, time.Duration(time.Hour))
 
-				So(req, ShouldNotBeNil)
-				So(req.URL, ShouldNotBeNil)
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+
+					So(req, ShouldNotBeNil)
+					So(req.URL, ShouldNotBeNil)
+				})
+
+				client := http.Client{}
+				resp, err := client.Do(req)
+				Convey("The request returned error should be nil", func() {
+					So(err, ShouldBeNil)
+					So(resp, ShouldNotBeNil)
+				})
+
+				defer resp.Body.Close()
+
+				buf, err := io.ReadAll(resp.Body)
+				Convey("The content should be match", func() {
+					So(err, ShouldBeNil)
+					So(buf, ShouldNotBeNil)
+
+					So(resp.ContentLength, ShouldEqual, size)
+					So(sha256.Sum256(buf), ShouldResemble, sha256.Sum256(content))
+				})
 			})
-
-			client := http.Client{}
-			resp, err := client.Do(req)
-			Convey("The request returned error should be nil", func() {
-				So(err, ShouldBeNil)
-				So(resp, ShouldNotBeNil)
-			})
-
-			defer resp.Body.Close()
-
-			buf, err := io.ReadAll(resp.Body)
-			Convey("The content should be match", func() {
-				So(err, ShouldBeNil)
-				So(buf, ShouldNotBeNil)
-
-				So(resp.ContentLength, ShouldEqual, size)
-				So(sha256.Sum256(buf), ShouldResemble, sha256.Sum256(content))
-			})
-		})
+		}
 	})
 }
 
 func TestStorageHTTPSignerWrite(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
+		So(store, ShouldNotBeNil)
 
-		Convey("When Write via QuerySignHTTPWrite", func() {
-			size := rand.Int63n(4 * 1024 * 1024)
-			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			if err != nil {
-				t.Error(err)
-			}
-
-			path := uuid.New().String()
-			req, err := store.QuerySignHTTPWrite(path, size, time.Duration(time.Hour))
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-				So(req, ShouldNotBeNil)
-				So(req.URL, ShouldNotBeNil)
-			})
-
-			req.Body = io.NopCloser(bytes.NewReader(content))
-
-			client := http.Client{}
-			_, err = client.Do(req)
-			Convey("The request returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			defer func() {
-				err := store.Delete(path)
+		f := store.Features()
+		if f.QuerySignHTTPWrite && f.Read && f.Delete {
+			Convey("When Write via QuerySignHTTPWrite", func() {
+				size := rand.Int63n(4 * 1024 * 1024)
+				content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 				if err != nil {
 					t.Error(err)
 				}
-			}()
 
-			Convey("Read should get object data without error", func() {
-				var buf bytes.Buffer
-				n, err := store.Read(path, &buf)
+				path := uuid.New().String()
+				req, err := store.QuerySignHTTPWrite(path, size, time.Duration(time.Hour))
 
-				Convey("The content should be match", func() {
+				Convey("The error should be nil", func() {
 					So(err, ShouldBeNil)
-					So(buf, ShouldNotBeNil)
+					So(req, ShouldNotBeNil)
+					So(req.URL, ShouldNotBeNil)
+				})
 
-					So(n, ShouldEqual, size)
-					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
+				req.Body = io.NopCloser(bytes.NewReader(content))
+
+				client := http.Client{}
+				_, err = client.Do(req)
+				Convey("The request returned error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				defer func() {
+					err := store.Delete(path)
+					if err != nil {
+						t.Error(err)
+					}
+				}()
+
+				Convey("Read should get object data without error", func() {
+					var buf bytes.Buffer
+					n, err := store.Read(path, &buf)
+
+					Convey("The content should be match", func() {
+						So(err, ShouldBeNil)
+						So(buf, ShouldNotBeNil)
+
+						So(n, ShouldEqual, size)
+						So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
+					})
 				})
 			})
-		})
+		}
 	})
 }
 
 func TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
 
-		Convey("When Delete via QuerySignHTTPDelete", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), size)
+		f := store.Features()
 
-			path := uuid.New().String()
-			_, err := store.Write(path, r, size)
-			if err != nil {
-				t.Error(err)
-			}
+		if f.QuerySignHTTPDelete && f.Write && f.Stat {
+			Convey("When Delete via QuerySignHTTPDelete", func() {
+				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+				r := io.LimitReader(randbytes.NewRand(), size)
 
-			req, err := store.QuerySignHTTPDelete(path, time.Duration(time.Hour))
+				path := uuid.New().String()
+				_, err := store.Write(path, r, size)
+				if err != nil {
+					t.Error(err)
+				}
 
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
+				req, err := store.QuerySignHTTPDelete(path, time.Duration(time.Hour))
 
-				So(req, ShouldNotBeNil)
-				So(req.URL, ShouldNotBeNil)
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+
+					So(req, ShouldNotBeNil)
+					So(req.URL, ShouldNotBeNil)
+				})
+
+				client := http.Client{}
+				_, err = client.Do(req)
+
+				Convey("The request returned error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("Stat should get nil Object and ObjectNotFound error", func() {
+					o, err := store.Stat(path)
+
+					So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
+					So(o, ShouldBeNil)
+				})
 			})
+		}
 
-			client := http.Client{}
-			_, err = client.Do(req)
+		if f.CreateMultipart && f.QuerySignHTTPDelete {
+			Convey("When Delete with multipart id via QuerySignHTTPDelete", func() {
+				path := uuid.New().String()
+				o, err := store.CreateMultipart(path)
+				if err != nil {
+					t.Error(err)
+				}
 
-			Convey("The request returned error should be nil", func() {
-				So(err, ShouldBeNil)
+				req, err := store.QuerySignHTTPDelete(path, time.Duration(time.Hour), pairs.WithMultipartID(o.MustGetMultipartID()))
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+
+					So(req, ShouldNotBeNil)
+					So(req.URL, ShouldNotBeNil)
+				})
+
+				client := http.Client{}
+				_, err = client.Do(req)
+
+				Convey("The first request returned error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				_, err = client.Do(req)
+
+				Convey("The second request returned error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
 			})
-
-			Convey("Stat should get nil Object and ObjectNotFound error", func() {
-				o, err := store.Stat(path)
-
-				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
-				So(o, ShouldBeNil)
-			})
-		})
-
-		Convey("When Delete with multipart id via QuerySignHTTPDelete", func() {
-			path := uuid.New().String()
-			o, err := store.CreateMultipart(path)
-			if err != nil {
-				t.Error(err)
-			}
-
-			req, err := store.QuerySignHTTPDelete(path, time.Duration(time.Hour), pairs.WithMultipartID(o.MustGetMultipartID()))
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-
-				So(req, ShouldNotBeNil)
-				So(req.URL, ShouldNotBeNil)
-			})
-
-			client := http.Client{}
-			_, err = client.Do(req)
-
-			Convey("The first request returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			_, err = client.Do(req)
-
-			Convey("The second request returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-		})
+		}
 	})
 }
