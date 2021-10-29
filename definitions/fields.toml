@@ -72,7 +72,7 @@ type = "Reader"
 package = "http"
 type = "*Request"
 
-[serviceFeatures]
+[srvf]
 package = "types"
 type = "ServiceFeatures"
 
@@ -86,7 +86,7 @@ type = "string"
 package = "types"
 type = "*StoragerIterator"
 
-[storageFeatures]
+[stof]
 package = "types"
 type = "StorageFeatures"
 

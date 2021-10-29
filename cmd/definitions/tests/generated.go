@@ -400,7 +400,7 @@ func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...t
 	}
 	return s.delete(ctx, name, opt)
 }
-func (s *Service) Features() (serviceFeatures types.ServiceFeatures) {
+func (s *Service) Features() (srvf types.ServiceFeatures) {
 	return
 }
 func (s *Service) Get(name string, pairs ...types.Pair) (store types.Storager, err error) {
@@ -1800,17 +1800,17 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...t
 	}
 	return s.delete(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
-func (s *Storage) Features() (storageFeatures types.StorageFeatures) {
-	storageFeatures.VirtualDir = true
-	storageFeatures.LoosePair = true
-	storageFeatures.WriteEmptyObject = true
-	storageFeatures.Create = true
-	storageFeatures.Delete = true
-	storageFeatures.List = true
-	storageFeatures.Metadata = true
-	storageFeatures.Read = true
-	storageFeatures.Stat = true
-	storageFeatures.Write = true
+func (s *Storage) Features() (stof types.StorageFeatures) {
+	stof.VirtualDir = true
+	stof.LoosePair = true
+	stof.WriteEmptyObject = true
+	stof.Create = true
+	stof.Delete = true
+	stof.List = true
+	stof.Metadata = true
+	stof.Read = true
+	stof.Stat = true
+	stof.Write = true
 	return
 }
 func (s *Storage) Fetch(path string, url string, pairs ...types.Pair) (err error) {
