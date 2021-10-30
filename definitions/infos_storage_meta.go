@@ -109,7 +109,7 @@ var InfoStorageMetaMultipartSizeMinimum = Info{
 var InfoStorageMetaName = Info{
 	Namespace: NamespaceStorage,
 	Category:  CategoryMeta,
-	Name:      "multipart_size_minimum",
+	Name:      "name",
 	Type:      Type{Name: "string"},
 	Export:    true,
 	global:    true,

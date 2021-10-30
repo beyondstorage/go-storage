@@ -19,7 +19,7 @@ func generateGlobal(data *Data) {
 	generateIterator("types/iterator.generated.go")
 
 	// Metas generate
-	generateInfo(data, "types/info.generated.go")
+	generateInfo("types/info.generated.go")
 
 	// Pair generate
 	generatePair(data, "pairs/generated.go")

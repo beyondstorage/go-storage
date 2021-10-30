@@ -1,6 +1,9 @@
 package definitions
 
-import "sort"
+import (
+	"github.com/Xuanwo/templateutils"
+	"sort"
+)
 
 type Info struct {
 	Namespace   string
@@ -16,6 +19,18 @@ type Info struct {
 
 func (i Info) Global() bool {
 	return i.global
+}
+
+func (i Info) NameForStructField() string {
+	if i.Export {
+		return templateutils.ToPascal(i.Name)
+	} else {
+		return templateutils.ToCamel(i.Name)
+	}
+}
+
+func (i Info) NameForFunctionName() string {
+	return templateutils.ToPascal(i.Name)
 }
 
 func SortInfos(is []Info) []Info {
