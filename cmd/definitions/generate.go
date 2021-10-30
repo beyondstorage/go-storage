@@ -22,7 +22,7 @@ func generateGlobal(data *Data) {
 	generateInfo("types/info.generated.go")
 
 	// Pair generate
-	generatePair(data, "pairs/generated.go")
+	generatePair("pairs/generated.go")
 
 	// Operation generate
 	generateOperation(data, "types/operation.generated.go")
