@@ -11,7 +11,7 @@ var InfosObjectMetaArray = []Info{
 	InfoObjectMetaLastModified,
 	InfoObjectMetaLinkTarget,
 	InfoObjectMetaMode,
-	InfoObjectMetaMultipartId,
+	InfoObjectMetaMultipartID,
 	InfoObjectMetaPath,
 	InfoObjectMetaSystemMetadata,
 	InfoObjectMetaUserMetadata,
@@ -102,13 +102,13 @@ var InfoObjectMetaMode = Info{
 	Export:    true,
 	global:    true,
 }
-var InfoObjectMetaMultipartId = Info{
+var InfoObjectMetaMultipartID = Info{
 	Namespace:   NamespaceObject,
 	Category:    CategoryMeta,
 	Name:        "multipart_id",
 	Type:        Type{Name: "string"},
 	global:      true,
-	Description: "MultipartId is the part id of part object.",
+	Description: "MultipartID is the part id of part object.",
 }
 var InfoObjectMetaPath = Info{
 	Namespace: NamespaceObject,

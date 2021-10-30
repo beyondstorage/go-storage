@@ -28,7 +28,7 @@ func generateGlobal(data *Data) {
 	generateOperation(data, "types/operation.generated.go")
 
 	// Object generate
-	generateObject(data, "types/object.generated.go")
+	generateObject("types/object.generated.go")
 
 	// Feature generate
 	generateFeatures("types/feature.generated.go")
