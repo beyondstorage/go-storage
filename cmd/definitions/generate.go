@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func generateGlobal(data *Data) {
+func generateGlobal() {
 	// Iterator generate
 	generateIterator("types/iterator.generated.go")
 
@@ -25,7 +25,7 @@ func generateGlobal(data *Data) {
 	generatePair("pairs/generated.go")
 
 	// Operation generate
-	generateOperation(data, "types/operation.generated.go")
+	generateOperation("types/operation.generated.go")
 
 	// Object generate
 	generateObject("types/object.generated.go")

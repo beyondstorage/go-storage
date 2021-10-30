@@ -1,17 +1,38 @@
 package definitions
 
+import (
+	"fmt"
+	"sync"
+)
+
+var fieldInit = sync.Once{}
+
 type Field struct {
 	Name string
 	Type Type
 }
 
-var FieldMap = make(map[string]Field)
+func getField(name string) Field {
+	fieldInit.Do(func() {
+		for _, v := range fieldArray {
+			v := v
+			fieldMap[v.Name] = v
+		}
+	})
 
-var FieldArray = []Field{
+	f, ok := fieldMap[name]
+	if !ok {
+		panic(fmt.Errorf("field %s is not exist", name))
+	}
+	return f
+}
+
+var fieldMap = make(map[string]Field)
+
+var fieldArray = []Field{
 	{
 		Name: "bi",
-		Type: Type{Expr: "*", Package: "types", Name: "BlockIterator"},
-	},
+		Type: Type{Expr: "*", Package: "types", Name: "BlockIterator"}},
 	{
 		Name: "bid",
 		Type: Type{Name: "string"},
@@ -105,6 +126,10 @@ var FieldArray = []Field{
 		Type: Type{Name: "string"},
 	},
 	{
+		Name: "url",
+		Type: Type{Name: "string"},
+	},
+	{
 		Name: "sti",
 		Type: Type{Expr: "*", Package: "types", Name: "StoragerIterator"},
 	},
@@ -124,10 +149,4 @@ var FieldArray = []Field{
 		Name: "target",
 		Type: Type{Name: "string"},
 	},
-}
-
-func init() {
-	for _, v := range FieldArray {
-		FieldMap[v.Name] = v
-	}
 }

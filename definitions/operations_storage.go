@@ -39,10 +39,10 @@ var OperationStorageCreateAppend = Operation{
 	Name:      "create_append",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Results: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Pairs: []Pair{},
 	Description: `will create an append object.
@@ -58,12 +58,12 @@ var OperationStorageWriteAppend = Operation{
 	Name:      "write_append",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["r"],
-		FieldMap["size"],
+		getField("o"),
+		getField("r"),
+		getField("size"),
 	},
 	Results: []Field{
-		FieldMap["n"],
+		getField("n"),
 	},
 	Description: `will append content to an append object.`,
 }
@@ -72,7 +72,7 @@ var OperationStorageCommitAppend = Operation{
 	Name:      "commit_append",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Description: `will commit and finish an append process.`,
 }
@@ -81,10 +81,10 @@ var OperationStorageCreateBlock = Operation{
 	Name:      "create_block",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Results: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Description: `will create a new block object.
 
@@ -98,13 +98,13 @@ var OperationStorageWriteBlock = Operation{
 	Name:      "write_block",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["r"],
-		FieldMap["size"],
-		FieldMap["bid"],
+		getField("o"),
+		getField("r"),
+		getField("size"),
+		getField("bid"),
 	},
 	Results: []Field{
-		FieldMap["n"],
+		getField("n"),
 	},
 	Description: `will write content to a block.`,
 }
@@ -113,8 +113,8 @@ var OperationStorageCombineBlock = Operation{
 	Name:      "combine_block",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["bids"],
+		getField("o"),
+		getField("bids"),
 	},
 	Description: `will combine blocks into an object.`,
 }
@@ -123,10 +123,10 @@ var OperationStorageListBlock = Operation{
 	Name:      "list_block",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Results: []Field{
-		FieldMap["bi"],
+		getField("bi"),
 	},
 	Description: `will list blocks belong to this object.`,
 }
@@ -135,8 +135,8 @@ var OperationStorageCopy = Operation{
 	Name:      "copy",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["src"],
-		FieldMap["dst"],
+		getField("src"),
+		getField("dst"),
 	},
 	Description: `will copy an Object or multiple object in the service.
 
@@ -156,10 +156,10 @@ var OperationStorageCreateDir = Operation{
 	Name:      "create_dir",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Results: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Description: `will create a new dir object`,
 }
@@ -168,8 +168,8 @@ var OperationStorageFetch = Operation{
 	Name:      "fetch",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
-		FieldMap["url"],
+		getField("path"),
+		getField("url"),
 	},
 	Description: `will fetch from a given url to path.
 
@@ -183,11 +183,11 @@ var OperationStorageCreateLink = Operation{
 	Name:      "create_link",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
-		FieldMap["target"],
+		getField("path"),
+		getField("target"),
 	},
 	Results: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Description: `Will create a link object.
 
@@ -207,8 +207,8 @@ var OperationStorageMove = Operation{
 	Name:      "move",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["src"],
-		FieldMap["dst"],
+		getField("src"),
+		getField("dst"),
 	},
 	Description: `will move an object in the service.
 
@@ -228,10 +228,10 @@ var OperationStorageCreateMultipart = Operation{
 	Name:      "create_multipart",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Results: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Description: `will create a new multipart.
 
@@ -244,14 +244,14 @@ var OperationStorageWriteMultipart = Operation{
 	Name:      "write_multipart",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["r"],
-		FieldMap["size"],
-		FieldMap["index"],
+		getField("o"),
+		getField("r"),
+		getField("size"),
+		getField("index"),
 	},
 	Results: []Field{
-		FieldMap["n"],
-		FieldMap["part"],
+		getField("n"),
+		getField("part"),
 	},
 	Description: `will write content to a multipart.`,
 }
@@ -260,8 +260,8 @@ var OperationStorageCompleteMultipart = Operation{
 	Name:      "complete_multipart",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["parts"],
+		getField("o"),
+		getField("parts"),
 	},
 	Description: `will complete a multipart upload and construct an Object.`,
 }
@@ -270,10 +270,10 @@ var OperationStorageListMultipart = Operation{
 	Name:      "list_multipart",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Results: []Field{
-		FieldMap["pi"],
+		getField("pi"),
 	},
 	Description: `will list parts belong to this multipart.`,
 }
@@ -282,10 +282,10 @@ var OperationStorageCreatePage = Operation{
 	Name:      "create_page",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Results: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Description: `will create a new page object.
 
@@ -298,13 +298,13 @@ var OperationStorageWritePage = Operation{
 	Name:      "write_page",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["r"],
-		FieldMap["size"],
-		FieldMap["offset"],
+		getField("o"),
+		getField("r"),
+		getField("size"),
+		getField("offset"),
 	},
 	Results: []Field{
-		FieldMap["n"],
+		getField("n"),
 	},
 	Description: `will write content to specific offset.`,
 }
@@ -314,10 +314,10 @@ var OperationStorageCreate = Operation{
 	Namespace: NamespaceStorage,
 	Local:     true,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Results: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Pairs: []Pair{
 		PairObjectMode,
@@ -334,7 +334,7 @@ var OperationStorageDelete = Operation{
 	Name:      "delete",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Pairs: []Pair{
 		PairObjectMode,
@@ -357,7 +357,7 @@ var OperationStorageMetadata = Operation{
 	Namespace: NamespaceStorage,
 	Local:     true,
 	Results: []Field{
-		FieldMap["meta"],
+		getField("meta"),
 	},
 	Description: `will return current storager metadata.`,
 }
@@ -365,12 +365,11 @@ var OperationStorageMetadata = Operation{
 var OperationStorageList = Operation{
 	Name:      "list",
 	Namespace: NamespaceStorage,
-	Local:     true,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Results: []Field{
-		FieldMap["oi"],
+		getField("oi"),
 	},
 	Pairs: []Pair{
 		PairListMode,
@@ -388,11 +387,11 @@ var OperationStorageRead = Operation{
 	Name:      "read",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
-		FieldMap["w"],
+		getField("path"),
+		getField("w"),
 	},
 	Results: []Field{
-		FieldMap["n"],
+		getField("n"),
 	},
 	Pairs: []Pair{
 		PairSize,
@@ -406,10 +405,10 @@ var OperationStorageStat = Operation{
 	Name:      "stat",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
+		getField("path"),
 	},
 	Results: []Field{
-		FieldMap["o"],
+		getField("o"),
 	},
 	Pairs: []Pair{
 		PairObjectMode,
@@ -427,18 +426,17 @@ var OperationStorageWrite = Operation{
 	Name:      "write",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
-		FieldMap["r"],
-		FieldMap["size"],
+		getField("path"),
+		getField("r"),
+		getField("size"),
 	},
 	Results: []Field{
-		FieldMap["n"],
+		getField("n"),
 	},
 	Pairs: []Pair{
 		PairIoCallback,
 	},
-	Description: `
-will write data into a file.
+	Description: `will write data into a file.
 
 ## Behavior
 
@@ -455,11 +453,11 @@ var OperationStorageQuerySignHTTPRead = Operation{
 	Name:      "query_sign_http_read",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
-		FieldMap["expire"],
+		getField("path"),
+		getField("expire"),
 	},
 	Results: []Field{
-		FieldMap["req"],
+		getField("req"),
 	},
 	Description: "will read data from the file by using query parameters to authenticate requests.",
 }
@@ -468,12 +466,12 @@ var OperationStorageQuerySignHTTPWrite = Operation{
 	Name:      "query_sign_http_write",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
-		FieldMap["size"],
-		FieldMap["expire"],
+		getField("path"),
+		getField("size"),
+		getField("expire"),
 	},
 	Results: []Field{
-		FieldMap["req"],
+		getField("req"),
 	},
 	Description: "will write data into a file by using query parameters to authenticate requests.",
 }
@@ -482,11 +480,11 @@ var OperationStorageQuerySignHTTPDelete = Operation{
 	Name:      "query_sign_http_delete",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
-		FieldMap["expire"],
+		getField("path"),
+		getField("expire"),
 	},
 	Results: []Field{
-		FieldMap["req"],
+		getField("req"),
 	},
 	Description: "will delete an object from service by using query parameters to authenticate requests.",
 }
@@ -495,11 +493,11 @@ var OperationStorageQuerySignHTTPCreateMultipart = Operation{
 	Name:      "query_sign_http_create_multipart",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["path"],
-		FieldMap["expire"],
+		getField("path"),
+		getField("expire"),
 	},
 	Results: []Field{
-		FieldMap["req"],
+		getField("req"),
 	},
 	Description: "will create a new multipart by using query parameters to authenticate requests.",
 }
@@ -508,13 +506,13 @@ var OperationStorageQuerySignHTTPWriteMultipart = Operation{
 	Name:      "query_sign_http_write_multipart",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["size"],
-		FieldMap["index"],
-		FieldMap["expire"],
+		getField("o"),
+		getField("size"),
+		getField("index"),
+		getField("expire"),
 	},
 	Results: []Field{
-		FieldMap["req"],
+		getField("req"),
 	},
 	Description: "will write content to a multipart by using query parameters to authenticate requests.",
 }
@@ -523,11 +521,11 @@ var OperationStorageQuerySignHTTPListMultipart = Operation{
 	Name:      "query_sign_http_list_multipart",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["expire"],
+		getField("o"),
+		getField("expire"),
 	},
 	Results: []Field{
-		FieldMap["req"],
+		getField("req"),
 	},
 	Description: "will list parts belong to this multipart by using query parameters to authenticate requests.",
 }
@@ -536,12 +534,21 @@ var OperationStorageQuerySignHTTPCompleteMultipart = Operation{
 	Name:      "query_sign_http_complete_multipart",
 	Namespace: NamespaceStorage,
 	Params: []Field{
-		FieldMap["o"],
-		FieldMap["parts"],
-		FieldMap["expire"],
+		getField("o"),
+		getField("parts"),
+		getField("expire"),
 	},
 	Results: []Field{
-		FieldMap["req"],
+		getField("req"),
 	},
 	Description: "will complete a multipart upload and construct an Object by using query parameters to authenticate requests.",
+}
+
+func init() {
+	for k := range OperationsStorage {
+		OperationsStorage[k].Params = append(OperationsStorage[k].Params, getField("pairs"))
+		if !OperationsStorage[k].Local {
+			OperationsStorage[k].Results = append(OperationsStorage[k].Results, getField("err"))
+		}
+	}
 }

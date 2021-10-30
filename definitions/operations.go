@@ -1,6 +1,9 @@
 package definitions
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 type Operation struct {
 	Name        string
@@ -17,4 +20,15 @@ func SortOperations(ops []Operation) []Operation {
 		return ops[i].Name < ops[j].Name
 	})
 	return ops
+}
+
+func GetOperations(ns string) []Operation {
+	switch ns {
+	case NamespaceService:
+		return OperationsService
+	case NamespaceStorage:
+		return OperationsStorage
+	default:
+		panic(fmt.Errorf("invalid namespace: %s", ns))
+	}
 }

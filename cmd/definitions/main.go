@@ -31,7 +31,7 @@ var app = &cli.App{
 		}
 
 		if c.Args().Len() == 0 {
-			generateGlobal(NewData())
+			generateGlobal()
 			return nil
 		}
 
