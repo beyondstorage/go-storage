@@ -31,7 +31,7 @@ func generateGlobal(data *Data) {
 	generateObject(data, "types/object.generated.go")
 
 	// Feature generate
-	generateFeatures(data, "types/feature.generated.go")
+	generateFeatures("types/feature.generated.go")
 }
 
 func generateService(data *Data) {
