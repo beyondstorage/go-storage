@@ -2,17 +2,21 @@
 package types
 
 // ServiceFeatures indicates features supported by servicer.
-type ServiceFeatures struct { // operation features
+type ServiceFeatures struct {
+
+	// operation features
 	Create bool
 	Delete bool
 	Get    bool
 	List   bool
-	// operation-related features and virtual features
+	// operation-related features
 	LoosePair bool
 }
 
-// StorageFeatures indicates features supported by storager.
-type StorageFeatures struct { // operation features
+// StorageFeatures indicates features supported by servicer.
+type StorageFeatures struct {
+
+	// operation features
 	CombineBlock                   bool
 	CommitAppend                   bool
 	CompleteMultipart              bool
@@ -45,7 +49,7 @@ type StorageFeatures struct { // operation features
 	WriteBlock                     bool
 	WriteMultipart                 bool
 	WritePage                      bool
-	// operation-related features and virtual features
+	// operation-related features
 	LoosePair             bool
 	VirtualDir            bool
 	VirtualLink           bool
