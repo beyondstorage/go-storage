@@ -16,61 +16,60 @@ import (
 	"go.beyondstorage.io/v5/types"
 )
 
-func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", t, func() {
+func testMultipartHTTPSigner(t *testing.T, store types.Storager, f types.StorageFeatures) {
+	// createMultipart
+	if f.QuerySignHTTPCreateMultipart && f.Delete && f.List {
+		Convey("When CreateMultipart via QuerySignHTTPCreateMultipart", func() {
+			path := uuid.New().String()
+			req, err := store.QuerySignHTTPCreateMultipart(path, time.Duration(time.Hour))
 
-		f := store.Features()
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
 
-		if f.QuerySignHTTPCreateMultipart && f.Delete && f.List {
-			Convey("When CreateMultipart via QuerySignHTTPCreateMultipart", func() {
-				path := uuid.New().String()
-				req, err := store.QuerySignHTTPCreateMultipart(path, time.Duration(time.Hour))
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-
-					So(req, ShouldNotBeNil)
-					So(req.URL, ShouldNotBeNil)
-				})
-
-				client := http.Client{}
-				_, err = client.Do(req)
-
-				Convey("The request returned error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("List with ModePart should get the object without error", func() {
-					it, err := store.List(path, pairs.WithListMode(types.ListModePart))
-
-					So(err, ShouldBeNil)
-
-					o, err := it.Next()
-					So(err, ShouldBeNil)
-					So(o, ShouldNotBeNil)
-					So(o.Path, ShouldEqual, path)
-				})
-
-				defer func() {
-					it, err := store.List(path, pairs.WithListMode(types.ListModePart))
-					if err != nil {
-						t.Error(err)
-					}
-
-					o, err := it.Next()
-					if err != nil {
-						t.Error(err)
-					}
-
-					err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
-					if err != nil {
-						t.Error(err)
-					}
-				}()
+				So(req, ShouldNotBeNil)
+				So(req.URL, ShouldNotBeNil)
 			})
-		}
 
-		if f.QuerySignHTTPWriteMultipart && f.CreateMultipart && f.Delete {
+			client := http.Client{}
+			_, err = client.Do(req)
+
+			Convey("The request returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("List with ModePart should get the object without error", func() {
+				it, err := store.List(path, pairs.WithListMode(types.ListModePart))
+
+				So(err, ShouldBeNil)
+
+				o, err := it.Next()
+				So(err, ShouldBeNil)
+				So(o, ShouldNotBeNil)
+				So(o.Path, ShouldEqual, path)
+			})
+
+			defer func() {
+				it, err := store.List(path, pairs.WithListMode(types.ListModePart))
+				if err != nil {
+					t.Error(err)
+				}
+
+				o, err := it.Next()
+				if err != nil {
+					t.Error(err)
+				}
+
+				err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+		})
+	}
+
+	if f.CreateMultipart && f.Delete {
+		// writeMultipart
+		if f.QuerySignHTTPWriteMultipart {
 			Convey("When WriteMultipart via QuerySignHTTPWriteMultipart", func() {
 				path := uuid.New().String()
 				o, err := store.CreateMultipart(path)
@@ -116,97 +115,101 @@ func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 			})
 		}
 
-		if f.QuerySignHTTPListMultipart && f.CreateMultipart && f.Delete {
-			Convey("When ListMultiPart via QuerySignHTTPListMultiPart", func() {
-				path := uuid.New().String()
-				o, err := store.CreateMultipart(path)
-				if err != nil {
-					t.Error(err)
-				}
-
-				defer func() {
-					err := store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
+		if f.WriteMultipart {
+			// listMultipart
+			if f.QuerySignHTTPListMultipart {
+				Convey("When ListMultiPart via QuerySignHTTPListMultiPart", func() {
+					path := uuid.New().String()
+					o, err := store.CreateMultipart(path)
 					if err != nil {
 						t.Error(err)
 					}
-				}()
 
-				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-				partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
-				r := io.LimitReader(randbytes.NewRand(), size)
+					defer func() {
+						err := store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
+						if err != nil {
+							t.Error(err)
+						}
+					}()
 
-				_, _, err = store.WriteMultipart(o, r, size, partNumber)
-				if err != nil {
-					t.Error(err)
-				}
+					size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+					partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
+					r := io.LimitReader(randbytes.NewRand(), size)
 
-				req, err := store.QuerySignHTTPListMultipart(o, time.Duration(time.Hour))
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-
-					So(req, ShouldNotBeNil)
-					So(req.URL, ShouldNotBeNil)
-				})
-
-				client := http.Client{}
-				_, err = client.Do(req)
-
-				Convey("The request returned error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-			})
-		}
-
-		if f.QuerySignHTTPCompleteMultipart && f.CreateMultipart && f.Delete && f.Stat {
-			Convey("When CompletePart via QuerySignHTTPCompletePart", func() {
-				path := uuid.New().String()
-				o, err := store.CreateMultipart(path)
-				if err != nil {
-					t.Error(err)
-				}
-
-				defer func() {
-					err := store.Delete(path)
+					_, _, err = store.WriteMultipart(o, r, size, partNumber)
 					if err != nil {
 						t.Error(err)
 					}
-				}()
 
-				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-				// Set 0 to `partNumber` here as the part numbers must be continuous for `CompleteMultipartUpload` in `cos` which is different with other storages.
-				partNumber := 0
-				r := io.LimitReader(randbytes.NewRand(), size)
+					req, err := store.QuerySignHTTPListMultipart(o, time.Duration(time.Hour))
 
-				_, part, err := store.WriteMultipart(o, r, size, partNumber)
-				if err != nil {
-					t.Error(err)
-				}
+					Convey("The error should be nil", func() {
+						So(err, ShouldBeNil)
 
-				req, err := store.QuerySignHTTPCompleteMultipart(o, []*types.Part{part}, time.Duration(time.Hour))
+						So(req, ShouldNotBeNil)
+						So(req.URL, ShouldNotBeNil)
+					})
 
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
+					client := http.Client{}
+					_, err = client.Do(req)
 
-					So(req, ShouldNotBeNil)
-					So(req.URL, ShouldNotBeNil)
+					Convey("The request returned error should be nil", func() {
+						So(err, ShouldBeNil)
+					})
 				})
+			}
 
-				client := http.Client{}
-				_, err = client.Do(req)
+			// completeMultipart
+			if f.QuerySignHTTPCompleteMultipart && f.Stat {
+				Convey("When CompletePart via QuerySignHTTPCompletePart", func() {
+					path := uuid.New().String()
+					o, err := store.CreateMultipart(path)
+					if err != nil {
+						t.Error(err)
+					}
 
-				Convey("The request returned error should be nil", func() {
-					So(err, ShouldBeNil)
+					defer func() {
+						err := store.Delete(path)
+						if err != nil {
+							t.Error(err)
+						}
+					}()
+
+					size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+					// Set 0 to `partNumber` here as the part numbers must be continuous for `CompleteMultipartUpload` in `cos` which is different with other storages.
+					partNumber := 0
+					r := io.LimitReader(randbytes.NewRand(), size)
+
+					_, part, err := store.WriteMultipart(o, r, size, partNumber)
+					if err != nil {
+						t.Error(err)
+					}
+
+					req, err := store.QuerySignHTTPCompleteMultipart(o, []*types.Part{part}, time.Duration(time.Hour))
+
+					Convey("The error should be nil", func() {
+						So(err, ShouldBeNil)
+
+						So(req, ShouldNotBeNil)
+						So(req.URL, ShouldNotBeNil)
+					})
+
+					client := http.Client{}
+					_, err = client.Do(req)
+
+					Convey("The request returned error should be nil", func() {
+						So(err, ShouldBeNil)
+					})
+
+					Convey("The object should be readable after complete", func() {
+						ro, err := store.Stat(path)
+
+						So(err, ShouldBeNil)
+						So(ro.Mode.IsRead(), ShouldBeTrue)
+						So(ro.Mode.IsPart(), ShouldBeFalse)
+					})
 				})
-
-				Convey("The object should be readable after complete", func() {
-					ro, err := store.Stat(path)
-
-					So(err, ShouldBeNil)
-					So(ro.Mode.IsRead(), ShouldBeTrue)
-					So(ro.Mode.IsPart(), ShouldBeFalse)
-				})
-			})
+			}
 		}
-	})
+	}
 }
