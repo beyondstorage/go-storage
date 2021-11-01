@@ -1,5 +1,7 @@
 package definitions
 
+var OperationsServiceMap = make(map[string]Operation)
+
 var OperationsService = []Operation{
 	OperationServiceCreate,
 	OperationServiceDelete,
@@ -55,5 +57,7 @@ func init() {
 		if !OperationsService[k].Local {
 			OperationsService[k].Results = append(OperationsService[k].Results, getField("err"))
 		}
+
+		OperationsServiceMap[OperationsService[k].Name] = OperationsService[k]
 	}
 }

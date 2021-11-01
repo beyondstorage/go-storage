@@ -2,57 +2,56 @@
 package types
 
 // ServiceFeatures indicates features supported by servicer.
-type ServiceFeatures struct {
+type ServiceFeatures struct{
 
-	// operation features
-	Create bool
-	Delete bool
-	Get    bool
-	List   bool
-	// operation-related features
-	LoosePair bool
+// operation features
+Create bool
+Delete bool
+Get bool
+List bool
+// operation-related features
+LoosePair bool
 }
-
 // StorageFeatures indicates features supported by servicer.
-type StorageFeatures struct {
+type StorageFeatures struct{
 
-	// operation features
-	CombineBlock                   bool
-	CommitAppend                   bool
-	CompleteMultipart              bool
-	Copy                           bool
-	Create                         bool
-	CreateAppend                   bool
-	CreateBlock                    bool
-	CreateDir                      bool
-	CreateLink                     bool
-	CreateMultipart                bool
-	CreatePage                     bool
-	Delete                         bool
-	Fetch                          bool
-	List                           bool
-	ListBlock                      bool
-	ListMultipart                  bool
-	Metadata                       bool
-	Move                           bool
-	QuerySignHTTPCompleteMultipart bool
-	QuerySignHTTPCreateMultipart   bool
-	QuerySignHTTPDelete            bool
-	QuerySignHTTPListMultipart     bool
-	QuerySignHTTPRead              bool
-	QuerySignHTTPWrite             bool
-	QuerySignHTTPWriteMultipart    bool
-	Read                           bool
-	Stat                           bool
-	Write                          bool
-	WriteAppend                    bool
-	WriteBlock                     bool
-	WriteMultipart                 bool
-	WritePage                      bool
-	// operation-related features
-	LoosePair             bool
-	VirtualDir            bool
-	VirtualLink           bool
-	VirtualObjectMetadata bool
-	WriteEmptyObject      bool
+// operation features
+CombineBlock bool
+CommitAppend bool
+CompleteMultipart bool
+Copy bool
+Create bool
+CreateAppend bool
+CreateBlock bool
+CreateDir bool
+CreateLink bool
+CreateMultipart bool
+CreatePage bool
+Delete bool
+Fetch bool
+List bool
+ListBlock bool
+ListMultipart bool
+Metadata bool
+Move bool
+QuerySignHTTPCompleteMultipart bool
+QuerySignHTTPCreateMultipart bool
+QuerySignHTTPDelete bool
+QuerySignHTTPListMultipart bool
+QuerySignHTTPRead bool
+QuerySignHTTPWrite bool
+QuerySignHTTPWriteMultipart bool
+Read bool
+Stat bool
+Write bool
+WriteAppend bool
+WriteBlock bool
+WriteMultipart bool
+WritePage bool
+// operation-related features
+LoosePair bool
+VirtualDir bool
+VirtualLink bool
+VirtualObjectMetadata bool
+WriteEmptyObject bool
 }

@@ -1,5 +1,7 @@
 package definitions
 
+var OperationsStorageMap = make(map[string]Operation)
+
 var OperationsStorage = []Operation{
 	OperationStorageCreateAppend,
 	OperationStorageWriteAppend,
@@ -550,5 +552,7 @@ func init() {
 		if !OperationsStorage[k].Local {
 			OperationsStorage[k].Results = append(OperationsStorage[k].Results, getField("err"))
 		}
+
+		OperationsStorageMap[OperationsStorage[k].Name] = OperationsStorage[k]
 	}
 }

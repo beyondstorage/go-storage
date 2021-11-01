@@ -1,7 +1,4 @@
-//go:build tools
-// +build tools
-
-package main
+package definitions
 
 import (
 	"fmt"
@@ -10,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func generateIterator(path string) {
+func GenerateIterator(path string) {
 	data := []string{
 		"Block",
 		"Object",

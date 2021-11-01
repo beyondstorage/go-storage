@@ -130,6 +130,7 @@ var InfoObjectMetaSystemMetadata = Info{
 	global:      true,
 	Description: "SystemMetadata stores system defined metadata.",
 }
+
 var InfoObjectMetaUserMetadata = Info{
 	Namespace:   NamespaceObject,
 	Category:    CategoryMeta,

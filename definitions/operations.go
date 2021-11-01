@@ -32,3 +32,14 @@ func GetOperations(ns string) []Operation {
 		panic(fmt.Errorf("invalid namespace: %s", ns))
 	}
 }
+
+func GetOperation(ns, name string) Operation {
+	switch ns {
+	case NamespaceService:
+		return OperationsServiceMap[name]
+	case NamespaceStorage:
+		return OperationsStorageMap[name]
+	default:
+		panic(fmt.Errorf("invalid namespace: %s", ns))
+	}
+}
