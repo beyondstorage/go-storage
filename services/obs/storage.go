@@ -10,10 +10,10 @@ import (
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
@@ -23,10 +23,10 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 
 		rp += "/"
 		o = s.newObject(true)
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	}
 
 	o.ID = rp
@@ -65,7 +65,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		maxKeys: 200,
 		prefix:  s.getAbsPath(path),
@@ -74,10 +74,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-46](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
-		opt.ListMode = ListModePrefix
+		opt.ListMode = types.ListModePrefix
 	}
 
-	var nextFn NextObjectFunc
+	var nextFn types.NextObjectFunc
 
 	switch {
 	case opt.ListMode.IsDir():
@@ -89,17 +89,17 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 
-	return NewObjectIterator(ctx, nextFn, input), nil
+	return types.NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = s.bucket
 	meta.WorkDir = s.workDir
 	return meta
 }
 
-func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	listInput := &obs.ListObjectsInput{
@@ -119,7 +119,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 		o := s.newObject(true)
 		o.ID = v
 		o.Path = s.getRelPath(v)
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 
 		page.Data = append(page.Data, o)
 	}
@@ -134,10 +134,10 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	}
 
 	if output.NextMarker == "" {
-		return IterateDone
+		return types.IterateDone
 	}
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.marker = output.NextMarker
@@ -145,7 +145,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	return err
 }
 
-func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	listInput := &obs.ListObjectsInput{
@@ -171,10 +171,10 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) 
 	}
 
 	if output.NextMarker == "" {
-		return IterateDone
+		return types.IterateDone
 	}
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.marker = output.NextMarker
@@ -202,7 +202,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
@@ -228,9 +228,9 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o.Path = path
 
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 	} else {
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	}
 
 	o.SetContentLength(output.ContentLength)

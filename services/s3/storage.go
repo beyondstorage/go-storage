@@ -16,28 +16,28 @@ import (
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
+func (s *Storage) completeMultipart(ctx context.Context, o *types.Object, parts []*types.Part, opt pairStorageCompleteMultipart) (err error) {
 	input := s.formatCompleteMultipartUploadInput(o, parts, opt)
 	_, err = s.service.CompleteMultipartUpload(ctx, input)
 	if err != nil {
 		return
 	}
 
-	o.Mode.Del(ModePart)
-	o.Mode.Add(ModeRead)
+	o.Mode.Del(types.ModePart)
+	o.Mode.Add(types.ModeRead)
 	return
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 
 	// Handle create multipart object separately.
 	if opt.HasMultipartID {
 		o = s.newObject(true)
-		o.Mode = ModePart
+		o.Mode = types.ModePart
 		o.SetMultipartID(opt.MultipartID)
 	} else {
 		if opt.HasObjectMode && opt.ObjectMode.IsDir() {
@@ -47,10 +47,10 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 
 			rp += "/"
 			o = s.newObject(true)
-			o.Mode = ModeDir
+			o.Mode = types.ModeDir
 		} else {
 			o = s.newObject(false)
-			o.Mode = ModeRead
+			o.Mode = types.ModeRead
 		}
 	}
 	o.ID = rp
@@ -58,9 +58,9 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	if !s.features.VirtualDir {
-		err = NewOperationNotImplementedError("create_dir")
+		err = types.NewOperationNotImplementedError("create_dir")
 		return
 	}
 
@@ -86,7 +86,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 		return
 	}
 	o = s.newObject(true)
-	o.Mode = ModeDir
+	o.Mode = types.ModeDir
 	o.ID = rp
 	o.Path = path
 	o.SetEtag(aws.ToString(output.ETag))
@@ -114,7 +114,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 // metadataLinkTargetHeader is the name of the user-defined metadata name used to store the link target.
 const metadataLinkTargetHeader = "x-amz-meta-bs-link-target"
 
-func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *Object, err error) {
+func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *types.Object, err error) {
 	rt := s.getAbsPath(target)
 	rp := s.getAbsPath(path)
 
@@ -138,12 +138,12 @@ func (s *Storage) createLink(ctx context.Context, path string, target string, op
 
 	if !s.features.VirtualLink {
 		// The virtual link is not enabled, so we set the object mode to `ModeRead`.
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	} else {
 		// s3 does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
 		// To ensure that the path matches the one the user gets, we should re-add `/` here.
 		o.SetLinkTarget("/" + rt)
-		o.Mode |= ModeLink
+		o.Mode |= types.ModeLink
 	}
 
 	var sm ObjectSystemMetadata
@@ -168,7 +168,7 @@ func (s *Storage) createLink(ctx context.Context, path string, target string, op
 	return
 }
 
-func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
+func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	input, err := s.formatCreateMultipartUploadInput(path, opt)
@@ -183,7 +183,7 @@ func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStor
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModePart
+	o.Mode |= types.ModePart
 	o.SetMultipartID(aws.ToString(output.UploadId))
 	var sm ObjectSystemMetadata
 	//output.ServerSideEncryption's type is s3types.ServerSideEncryption, which is equivalent to string
@@ -243,7 +243,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		maxKeys: 200,
 		prefix:  s.getAbsPath(path),
@@ -256,10 +256,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-46](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
-		opt.ListMode = ListModePrefix
+		opt.ListMode = types.ListModePrefix
 	}
 
-	var nextFn NextObjectFunc
+	var nextFn types.NextObjectFunc
 
 	switch {
 	case opt.ListMode.IsPart():
@@ -273,10 +273,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 
-	return NewObjectIterator(ctx, nextFn, input), nil
+	return types.NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageListMultipart) (pi *PartIterator, err error) {
+func (s *Storage) listMultipart(ctx context.Context, o *types.Object, opt pairStorageListMultipart) (pi *types.PartIterator, err error) {
 	input := &partPageStatus{
 		maxParts: 200,
 		key:      o.ID,
@@ -286,11 +286,11 @@ func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageL
 		input.expectedBucketOwner = opt.ExceptedBucketOwner
 	}
 
-	return NewPartIterator(ctx, s.nextPartPage, input), nil
+	return types.NewPartIterator(ctx, s.nextPartPage, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = s.name
 	meta.WorkDir = s.workDir
 	// set write restriction
@@ -302,7 +302,7 @@ func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
 	return meta
 }
 
-func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	listInput := &s3.ListObjectsV2Input{
@@ -324,7 +324,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 		o := s.newObject(true)
 		o.ID = *v.Prefix
 		o.Path = s.getRelPath(*v.Prefix)
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 
 		page.Data = append(page.Data, o)
 	}
@@ -339,14 +339,14 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	}
 
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.continuationToken = *output.NextContinuationToken
 	return nil
 }
 
-func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	listInput := &s3.ListObjectsV2Input{
@@ -372,13 +372,13 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) 
 		page.Data = append(page.Data, o)
 	}
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 	input.continuationToken = aws.ToString(output.NextContinuationToken)
 	return nil
 }
 
-func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 	listInput := &s3.ListMultipartUploadsInput{
 		Bucket:         &s.name,
@@ -399,20 +399,20 @@ func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPa
 		o := s.newObject(true)
 		o.ID = *v.Key
 		o.Path = s.getRelPath(*v.Key)
-		o.Mode |= ModePart
+		o.Mode |= types.ModePart
 		o.SetMultipartID(*v.UploadId)
 
 		page.Data = append(page.Data, o)
 	}
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 	input.keyMarker = aws.ToString(output.KeyMarker)
 	input.uploadIdMarker = aws.ToString(output.UploadIdMarker)
 	return nil
 }
 
-func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
+func (s *Storage) nextPartPage(ctx context.Context, page *types.PartPage) error {
 	input := page.Status.(*partPageStatus)
 	listInput := &s3.ListPartsInput{
 		Bucket:           &s.name,
@@ -430,7 +430,7 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	}
 
 	for _, v := range output.Parts {
-		p := &Part{
+		p := &types.Part{
 			// The returned `PartNumber` is [1, 10000].
 			// Set Index=*v.PartNumber-1 here to make the `PartNumber` zero-based for user.
 			Index: int(v.PartNumber) - 1,
@@ -441,13 +441,13 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 		page.Data = append(page.Data, p)
 	}
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 	input.partNumberMarker = aws.ToString(output.NextPartNumberMarker)
 	return nil
 }
 
-func (s *Storage) querySignHTTPCompleteMultipart(ctx context.Context, o *Object, parts []*Part, expire time.Duration, opt pairStorageQuerySignHTTPCompleteMultipart) (req *http.Request, err error) {
+func (s *Storage) querySignHTTPCompleteMultipart(ctx context.Context, o *types.Object, parts []*types.Part, expire time.Duration, opt pairStorageQuerySignHTTPCompleteMultipart) (req *http.Request, err error) {
 
 	// Currently presign only support Get/Put/Head object & UploadPart
 	// We don't support  querySignHTTPCompleteMultipart for now
@@ -466,7 +466,7 @@ func (s *Storage) querySignHTTPDelete(ctx context.Context, path string, expire t
 	return nil, services.ErrCapabilityInsufficient
 }
 
-func (s *Storage) querySignHTTPListMultipart(ctx context.Context, o *Object, expire time.Duration, opt pairStorageQuerySignHTTPListMultipart) (req *http.Request, err error) {
+func (s *Storage) querySignHTTPListMultipart(ctx context.Context, o *types.Object, expire time.Duration, opt pairStorageQuerySignHTTPListMultipart) (req *http.Request, err error) {
 	// Currently presign only support Get/Put/Head object & UploadPart
 	// We don't support  querySignHTTPListMultipart for now
 	return nil, services.ErrCapabilityInsufficient
@@ -523,7 +523,7 @@ func (s *Storage) querySignHTTPWrite(ctx context.Context, path string, size int6
 	return
 }
 
-func (s *Storage) querySignHTTPWriteMultipart(ctx context.Context, o *Object, size int64, index int, expire time.Duration, opt pairStorageQuerySignHTTPWriteMultipart) (req *http.Request, err error) {
+func (s *Storage) querySignHTTPWriteMultipart(ctx context.Context, o *types.Object, size int64, index int, expire time.Duration, opt pairStorageQuerySignHTTPWriteMultipart) (req *http.Request, err error) {
 	pairs, err := s.parsePairStorageWriteMultipart(opt.pairs)
 	if err != nil {
 		return nil, err
@@ -569,7 +569,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	if opt.HasMultipartID {
@@ -589,7 +589,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		o = s.newObject(true)
 		o.ID = rp
 		o.Path = path
-		o.Mode.Add(ModePart)
+		o.Mode.Add(types.ModePart)
 		o.SetMultipartID(opt.MultipartID)
 		return o, nil
 	}
@@ -632,9 +632,9 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 			// The path is a symlink object.
 			if !s.features.VirtualLink {
 				// The virtual link is not enabled, so we set the object mode to `ModeRead`.
-				o.Mode |= ModeRead
+				o.Mode |= types.ModeRead
 			} else {
-				o.Mode |= ModeLink
+				o.Mode |= types.ModeLink
 				// s3 does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
 				// To ensure that the path matches the one the user gets, we should re-add `/` here.
 				o.SetLinkTarget("/" + target)
@@ -642,11 +642,11 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		}
 	}
 
-	if o.Mode&ModeLink == 0 && o.Mode&ModeRead == 0 {
+	if o.Mode&types.ModeLink == 0 && o.Mode&types.ModeRead == 0 {
 		if opt.HasObjectMode && opt.ObjectMode.IsDir() {
-			o.Mode |= ModeDir
+			o.Mode |= types.ModeDir
 		} else {
-			o.Mode |= ModeRead
+			o.Mode |= types.ModeRead
 		}
 	}
 	o.SetContentLength(output.ContentLength)
@@ -713,7 +713,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	return size, nil
 }
 
-func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *Part, err error) {
+func (s *Storage) writeMultipart(ctx context.Context, o *types.Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *types.Part, err error) {
 	if size > multipartSizeMaximum {
 		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
 		return
@@ -752,7 +752,7 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		return
 	}
 
-	part = &Part{
+	part = &types.Part{
 		Index: index,
 		Size:  size,
 		ETag:  aws.ToString(output.ETag),

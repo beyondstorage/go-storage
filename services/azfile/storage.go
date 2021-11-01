@@ -12,18 +12,18 @@ import (
 	"github.com/Azure/azure-storage-file-go/azfile"
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		o = s.newObject(true)
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	}
 
 	o.ID = rp
@@ -32,7 +32,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	attribute := azfile.FileAttributeNone
@@ -61,7 +61,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeDir
+	o.Mode |= types.ModeDir
 
 	return
 }
@@ -89,22 +89,22 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		maxResults: 200,
 		prefix:     s.getRelativePath(path),
 	}
 
-	return NewObjectIterator(ctx, s.nextObjectPage, input), nil
+	return types.NewObjectIterator(ctx, s.nextObjectPage, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.WorkDir = s.workDir
 	return meta
 }
 
-func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	options := azfile.ListFilesAndDirectoriesOptions{
@@ -136,7 +136,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
 	}
 
 	if !output.NextMarker.NotDone() {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.marker = output.NextMarker
@@ -174,7 +174,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	var dirOutput *azfile.DirectoryGetPropertiesResponse
@@ -195,7 +195,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o.Path = path
 
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 
 		o.SetLastModified(dirOutput.LastModified())
 
@@ -209,7 +209,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		}
 		o.SetSystemMetadata(sm)
 	} else {
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 
 		o.SetContentLength(fileOutput.ContentLength())
 		o.SetLastModified(fileOutput.LastModified())

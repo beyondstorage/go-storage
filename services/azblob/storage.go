@@ -12,14 +12,14 @@ import (
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
+func (s *Storage) commitAppend(ctx context.Context, o *types.Object, opt pairStorageCommitAppend) (err error) {
 	return
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
@@ -29,10 +29,10 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 
 		rp += "/"
 		o = s.newObject(true)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode = ModeRead
+		o.Mode = types.ModeRead
 	}
 
 	o.ID = rp
@@ -40,7 +40,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
+func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	headers := azblob.BlobHTTPHeaders{}
@@ -63,16 +63,16 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	}
 
 	o = s.newObject(true)
-	o.Mode = ModeRead | ModeAppend
+	o.Mode = types.ModeRead | types.ModeAppend
 	o.ID = rp
 	o.Path = path
 	o.SetAppendOffset(0)
 	return o, nil
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	if !s.features.VirtualDir {
-		err = NewOperationNotImplementedError("create_dir")
+		err = types.NewOperationNotImplementedError("create_dir")
 		return
 	}
 
@@ -98,7 +98,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeDir
+	o.Mode |= types.ModeDir
 	return
 }
 
@@ -128,7 +128,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		maxResults: 200,
 		prefix:     s.getAbsPath(path),
@@ -136,10 +136,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
-		opt.ListMode = ListModePrefix
+		opt.ListMode = types.ListModePrefix
 	}
 
-	var nextFn NextObjectFunc
+	var nextFn types.NextObjectFunc
 
 	switch {
 	case opt.ListMode.IsDir():
@@ -151,11 +151,11 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 
-	return NewObjectIterator(ctx, nextFn, input), nil
+	return types.NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = s.name
 	meta.WorkDir = s.workDir
 	meta.SetWriteSizeMaximum(WriteSizeMaximum)
@@ -165,7 +165,7 @@ func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
 	return meta
 }
 
-func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, err := s.bucket.ListBlobsHierarchySegment(ctx, input.marker, input.delimiter, azblob.ListBlobsSegmentOptions{
@@ -180,7 +180,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 		o := s.newObject(true)
 		o.ID = v.Name
 		o.Path = s.getRelPath(v.Name)
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 
 		page.Data = append(page.Data, o)
 	}
@@ -195,14 +195,14 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	}
 
 	if !output.NextMarker.NotDone() {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.marker = output.NextMarker
 	return nil
 }
 
-func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, err := s.bucket.ListBlobsFlatSegment(ctx, input.marker, azblob.ListBlobsSegmentOptions{
@@ -223,7 +223,7 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) 
 	}
 
 	if !output.NextMarker.NotDone() {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.marker = output.NextMarker
@@ -271,7 +271,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
@@ -301,9 +301,9 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o.Path = path
 
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 	} else {
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	}
 
 	o.SetContentLength(output.ContentLength())
@@ -390,7 +390,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	return size, nil
 }
 
-func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+func (s *Storage) writeAppend(ctx context.Context, o *types.Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
 	if size > AppendSizeMaximum {
 		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
 		return

@@ -11,7 +11,7 @@ import (
 	"go.beyondstorage.io/v5/pkg/headers"
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 const (
@@ -24,13 +24,13 @@ const (
 	iterEnd = "g2gCZAAEbmV4dGQAA2VvZg"
 )
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		o = s.newObject(true)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode = ModeRead
+		o.Mode = types.ModeRead
 	}
 
 	o.ID = s.getAbsPath(path)
@@ -38,7 +38,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	err = s.bucket.Mkdir(rp)
@@ -51,7 +51,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	}
 
 	o = s.newObject(false)
-	o.Mode = ModeDir
+	o.Mode = types.ModeDir
 	o.ID = rp
 	o.Path = path
 	return o, nil
@@ -86,7 +86,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		// 50 is the recommended value in SDK
 		// see more details at: https://github.com/upyun/go-sdk/blob/master/upyun/rest.go#L560
@@ -100,10 +100,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-654](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
-		opt.ListMode = ListModePrefix
+		opt.ListMode = types.ListModePrefix
 	}
 
-	var nextFn NextObjectFunc
+	var nextFn types.NextObjectFunc
 
 	switch {
 	case opt.ListMode.IsDir():
@@ -114,17 +114,17 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 
-	return NewObjectIterator(ctx, nextFn, input), nil
+	return types.NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = s.name
 	meta.WorkDir = s.workDir
 	return meta
 }
 
-func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) (err error) {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPage) (err error) {
 	input := page.Status.(*objectPageStatus)
 
 	header := make(map[string]string)
@@ -155,7 +155,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) (er
 			o := s.newObject(true)
 			o.ID = v.Name
 			o.Path = s.getRelPath(v.Name)
-			o.Mode |= ModeDir
+			o.Mode |= types.ModeDir
 			// v.Meta means all the k-v in header with key which has prefix `x-upyun-meta-`
 			// so we consider it as user's metadata
 			// see more details at: https://github.com/upyun/go-sdk/blob/master/upyun/fileinfo.go#L39
@@ -174,14 +174,14 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) (er
 	}
 
 	if header[headerListIter] == iterEnd {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.iter = header[headerListIter]
 	return nil
 }
 
-func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) (err error) {
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) (err error) {
 	input := page.Status.(*objectPageStatus)
 
 	header := make(map[string]string)
@@ -221,7 +221,7 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) 
 	}
 
 	if header[headerListIter] == iterEnd {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.iter = header[headerListIter]
@@ -249,7 +249,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return f.Size, nil
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	output, err := s.bucket.GetInfo(rp)

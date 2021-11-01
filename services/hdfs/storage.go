@@ -10,17 +10,17 @@ import (
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 	if opt.ObjectMode.IsDir() && opt.HasObjectMode {
 		o = s.newObject(false)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode = ModeRead
+		o.Mode = types.ModeRead
 	}
 
 	o.ID = rp
@@ -28,7 +28,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	//	If dirname is already a directory,
@@ -43,7 +43,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeDir
+	o.Mode |= types.ModeDir
 	return o, err
 }
 
@@ -59,20 +59,20 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return err
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	if !opt.HasListMode || opt.ListMode.IsDir() {
 		input := &listDirInput{
 			rp:                s.getAbsPath(path),
 			continuationToken: opt.ContinuationToken,
 		}
-		return NewObjectIterator(ctx, s.listDirNext, input), nil
+		return types.NewObjectIterator(ctx, s.listDirNext, input), nil
 	} else {
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.WorkDir = s.workDir
 	return meta
 }
@@ -125,7 +125,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	stat, err := s.hdfs.Stat(rp)
@@ -138,12 +138,12 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o.Path = path
 
 	if stat.IsDir() {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 		return
 	}
 
 	if stat.Mode().IsRegular() {
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 		o.SetContentLength(stat.Size())
 		o.SetLastModified(stat.ModTime())
 	}

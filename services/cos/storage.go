@@ -14,10 +14,10 @@ import (
 	"go.beyondstorage.io/v5/pkg/headers"
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
+func (s *Storage) completeMultipart(ctx context.Context, o *types.Object, parts []*types.Part, opt pairStorageCompleteMultipart) (err error) {
 	// Users should make sure the numbers of the uploaded parts are continuous and sorted in ascending order.
 	// ref: https://intl.cloud.tencent.com/document/product/436/7742
 	upload := &cos.CompleteMultipartUploadOptions{}
@@ -35,18 +35,18 @@ func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Par
 		return
 	}
 
-	o.Mode.Del(ModePart)
-	o.Mode.Add(ModeRead)
+	o.Mode.Del(types.ModePart)
+	o.Mode.Add(types.ModeRead)
 	return
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 
 	// Handle create multipart object separately.
 	if opt.HasMultipartID {
 		o = s.newObject(true)
-		o.Mode = ModePart
+		o.Mode = types.ModePart
 		o.SetMultipartID(opt.MultipartID)
 	} else {
 		if opt.HasObjectMode && opt.ObjectMode.IsDir() {
@@ -56,10 +56,10 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 
 			rp += "/"
 			o = s.newObject(true)
-			o.Mode = ModeDir
+			o.Mode = types.ModeDir
 		} else {
 			o = s.newObject(false)
-			o.Mode = ModeRead
+			o.Mode = types.ModeRead
 		}
 	}
 
@@ -68,9 +68,9 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	if !s.features.VirtualDir {
-		err = NewOperationNotImplementedError("create_dir")
+		err = types.NewOperationNotImplementedError("create_dir")
 		return
 	}
 
@@ -97,11 +97,11 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeDir
+	o.Mode |= types.ModeDir
 	return
 }
 
-func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
+func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	input := &cos.InitiateMultipartUploadOptions{}
@@ -141,7 +141,7 @@ func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStor
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModePart
+	o.Mode |= types.ModePart
 	o.SetMultipartID(output.UploadID)
 	return o, nil
 }
@@ -184,7 +184,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		maxKeys: 200,
 		prefix:  s.getAbsPath(path),
@@ -193,10 +193,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-46](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
-		opt.ListMode = ListModePrefix
+		opt.ListMode = types.ListModePrefix
 	}
 
-	var nextFn NextObjectFunc
+	var nextFn types.NextObjectFunc
 
 	switch {
 	case opt.ListMode.IsPart():
@@ -210,21 +210,21 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 
-	return NewObjectIterator(ctx, nextFn, input), nil
+	return types.NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageListMultipart) (pi *PartIterator, err error) {
+func (s *Storage) listMultipart(ctx context.Context, o *types.Object, opt pairStorageListMultipart) (pi *types.PartIterator, err error) {
 	input := &partPageStatus{
 		maxParts: "200",
 		key:      o.ID,
 		uploadId: o.MustGetMultipartID(),
 	}
 
-	return NewPartIterator(ctx, s.nextPartPage, input), nil
+	return types.NewPartIterator(ctx, s.nextPartPage, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = s.name
 	meta.WorkDir = s.workDir
 	// set write restriction
@@ -236,7 +236,7 @@ func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
 	return
 }
 
-func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, _, err := s.bucket.Get(ctx, &cos.BucketGetOptions{
@@ -253,7 +253,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 		o := s.newObject(true)
 		o.ID = v
 		o.Path = s.getRelPath(v)
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 
 		page.Data = append(page.Data, o)
 	}
@@ -268,14 +268,14 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	}
 
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.keyMarker = output.NextMarker
 	return nil
 }
 
-func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, _, err := s.bucket.Get(ctx, &cos.BucketGetOptions{
@@ -297,14 +297,14 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) 
 	}
 
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.keyMarker = output.NextMarker
 	return nil
 }
 
-func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	listInput := &cos.ListMultipartUploadsOptions{
@@ -323,14 +323,14 @@ func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPa
 		o := s.newObject(true)
 		o.ID = v.Key
 		o.Path = s.getRelPath(v.Key)
-		o.Mode |= ModePart
+		o.Mode |= types.ModePart
 		o.SetMultipartID(v.UploadID)
 
 		page.Data = append(page.Data, o)
 	}
 
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.uploadIdMarker = output.NextUploadIDMarker
@@ -338,7 +338,7 @@ func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPa
 	return nil
 }
 
-func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
+func (s *Storage) nextPartPage(ctx context.Context, page *types.PartPage) error {
 	input := page.Status.(*partPageStatus)
 
 	output, _, err := s.object.ListParts(ctx, input.key, input.uploadId, &cos.ObjectListPartsOptions{
@@ -350,7 +350,7 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	}
 
 	for _, v := range output.Parts {
-		p := &Part{
+		p := &types.Part{
 			// The returned `PartNumber` is [1, 10000].
 			// Set Index=*v.PartNumber-1 here to make the `PartNumber` zero-based for user.
 			Index: v.PartNumber - 1,
@@ -362,7 +362,7 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	}
 
 	if !output.IsTruncated {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.partNumberMarker = output.NextPartNumberMarker
@@ -410,7 +410,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	if opt.HasMultipartID {
@@ -422,7 +422,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		o = s.newObject(true)
 		o.ID = rp
 		o.Path = path
-		o.Mode |= ModePart
+		o.Mode |= types.ModePart
 		o.SetMultipartID(opt.MultipartID)
 		return o, nil
 	}
@@ -453,9 +453,9 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o.ID = rp
 	o.Path = path
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 	} else {
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	}
 
 	o.SetContentLength(output.ContentLength)
@@ -563,7 +563,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	return
 }
 
-func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *Part, err error) {
+func (s *Storage) writeMultipart(ctx context.Context, o *types.Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *types.Part, err error) {
 	if size > multipartSizeMaximum {
 		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
 		return
@@ -588,7 +588,7 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		return
 	}
 
-	part = &Part{
+	part = &types.Part{
 		Index: index,
 		Size:  size,
 		ETag:  output.Header.Get("ETag"),
