@@ -13,10 +13,10 @@ import (
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		if !s.features.VirtualDir {
@@ -25,19 +25,19 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 		// Add `/` at the end of path to simulate a directory.
 		rp += "/"
 		o = s.newObject(true)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode = ModeRead
+		o.Mode = types.ModeRead
 	}
 	o.ID = rp
 	o.Path = path
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	if !s.features.VirtualDir {
-		err = NewOperationNotImplementedError("create_dir")
+		err = types.NewOperationNotImplementedError("create_dir")
 		return
 	}
 	rp := s.getAbsPath(path)
@@ -57,7 +57,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeDir
+	o.Mode |= types.ModeDir
 	return
 }
 
@@ -82,16 +82,16 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		prefix: s.getAbsPath(path),
 	}
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-654](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
-		opt.ListMode = ListModePrefix
+		opt.ListMode = types.ListModePrefix
 	}
-	var nextFn NextObjectFunc
+	var nextFn types.NextObjectFunc
 	switch {
 	case opt.ListMode.IsDir():
 		input.delimiter = "/"
@@ -101,17 +101,17 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	default:
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
-	return NewObjectIterator(ctx, nextFn, input), nil
+	return types.NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = s.name
 	meta.WorkDir = s.workDir
 	return
 }
 
-func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 	it := s.bucket.Objects(ctx, &gs.Query{
 		Prefix:    input.prefix,
@@ -121,7 +121,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	for remaining > 0 {
 		object, err := it.Next()
 		if err == iterator.Done {
-			return IterateDone
+			return types.IterateDone
 		}
 		if err != nil {
 			return err
@@ -134,7 +134,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 			o := s.newObject(true)
 			o.ID = object.Prefix
 			o.Path = s.getRelPath(object.Prefix)
-			o.Mode |= ModeDir
+			o.Mode |= types.ModeDir
 			page.Data = append(page.Data, o)
 			remaining -= 1
 			continue
@@ -149,7 +149,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	return nil
 }
 
-func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 	it := s.bucket.Objects(ctx, &gs.Query{
 		Prefix: input.prefix,
@@ -158,7 +158,7 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) 
 	for remaining > 0 {
 		object, err := it.Next()
 		if err == iterator.Done {
-			return IterateDone
+			return types.IterateDone
 		}
 		if err != nil {
 			return err
@@ -204,7 +204,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		if !s.features.VirtualDir {
@@ -223,7 +223,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	}
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		o.Path = path
-		o.Mode.Add(ModeDir)
+		o.Mode.Add(types.ModeDir)
 	}
 	return o, nil
 }

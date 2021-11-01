@@ -64,7 +64,6 @@ type Storage struct {
 	typ.UnimplementedFetcher
 	typ.UnimplementedMover
 	typ.UnimplementedMultiparter
-	typ.UnimplementedReacher
 	typ.UnimplementedAppender
 	typ.UnimplementedDirer
 	typ.UnimplementedLinker

@@ -12,7 +12,7 @@ import (
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 // The src of `ipfs files cp` supports both `IPFS-path` and `MFS-path`
@@ -37,30 +37,30 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	return s.ipfs.FilesCp(ctx, s.getAbsPath(src), dst)
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		path += "/"
-		o = NewObject(s, true)
-		o.Mode = ModeDir
+		o = types.NewObject(s, true)
+		o.Mode = types.ModeDir
 	} else {
-		o = NewObject(s, false)
-		o.Mode = ModeRead
+		o = types.NewObject(s, false)
+		o.Mode = types.ModeRead
 	}
 	o.ID = s.getAbsPath(path)
 	o.Path = path
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	path = s.getAbsPath(path)
 	err = s.ipfs.FilesMkdir(ctx, path, ipfs.FilesMkdir.Parents(true))
 	if err != nil {
 		return nil, err
 	}
-	o = NewObject(s, true)
+	o = types.NewObject(s, true)
 	o.ID = path
 	o.Path = path
-	o.Mode = ModeDir
+	o.Mode = types.ModeDir
 	return
 }
 
@@ -71,38 +71,38 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	rp := s.getAbsPath(path)
 	if !opt.HasListMode || opt.ListMode.IsDir() {
-		nextFn := func(ctx context.Context, page *ObjectPage) error {
+		nextFn := func(ctx context.Context, page *types.ObjectPage) error {
 			dir, err := s.ipfs.FilesLs(ctx, rp, ipfs.FilesLs.Stat(true))
 			if err != nil {
 				return err
 			}
 			for _, f := range dir {
-				o := NewObject(s, true)
+				o := types.NewObject(s, true)
 				o.ID = f.Hash
 				o.Path = f.Name
 				switch f.Type {
 				case ipfs.TFile:
-					o.Mode |= ModeRead
+					o.Mode |= types.ModeRead
 				case ipfs.TDirectory:
-					o.Mode |= ModeDir
+					o.Mode |= types.ModeDir
 				}
 				o.SetContentLength(int64(f.Size))
 				page.Data = append(page.Data, o)
 			}
-			return IterateDone
+			return types.IterateDone
 		}
-		oi = NewObjectIterator(ctx, nextFn, nil)
+		oi = types.NewObjectIterator(ctx, nextFn, nil)
 		return
 	} else {
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.WorkDir = s.workDir
 	return meta
 }
@@ -159,19 +159,19 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, f)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 	stat, err := s.ipfs.FilesStat(ctx, rp, ipfs.FilesStat.WithLocal(true))
 	if err != nil {
 		return nil, err
 	}
-	o = NewObject(s, true)
+	o = types.NewObject(s, true)
 	o.ID = stat.Hash
 	o.Path = path
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 	} else {
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	}
 	o.SetContentType(stat.Type)
 	o.SetContentLength(int64(stat.Size))

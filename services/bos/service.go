@@ -4,10 +4,10 @@ import (
 	"context"
 
 	ps "go.beyondstorage.io/v5/pairs"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store Storager, err error) {
+func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store types.Storager, err error) {
 	pairs := append(opt.pairs, ps.WithName(name))
 
 	st, err := s.newStorage(pairs...)
@@ -32,7 +32,7 @@ func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete
 	return nil
 }
 
-func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store Storager, err error) {
+func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store types.Storager, err error) {
 	pairs := append(opt.pairs, ps.WithName(name))
 
 	st, err := s.newStorage(pairs...)
@@ -43,13 +43,13 @@ func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (sto
 	return st, nil
 }
 
-func (s *Service) list(ctx context.Context, opt pairServiceList) (sti *StoragerIterator, err error) {
+func (s *Service) list(ctx context.Context, opt pairServiceList) (sti *types.StoragerIterator, err error) {
 	input := &storagePageStatus{}
 
-	return NewStoragerIterator(ctx, s.nextStoragePage, input), nil
+	return types.NewStoragerIterator(ctx, s.nextStoragePage, input), nil
 }
 
-func (s *Service) nextStoragePage(ctx context.Context, page *StoragerPage) error {
+func (s *Service) nextStoragePage(ctx context.Context, page *types.StoragerPage) error {
 	output, err := s.service.ListBuckets()
 	if err != nil {
 		return err
@@ -63,5 +63,5 @@ func (s *Service) nextStoragePage(ctx context.Context, page *StoragerPage) error
 		page.Data = append(page.Data, store)
 	}
 
-	return IterateDone
+	return types.IterateDone
 }

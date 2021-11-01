@@ -17,7 +17,7 @@ import (
 	"go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/pkg/randbytes"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 func TestStorage_String(t *testing.T) {
@@ -174,7 +174,7 @@ func TestStorage_ListPrefix(t *testing.T) {
 		bucket: mockBucket,
 	}
 
-	it, err := client.List(path, pairs.WithListMode(ListModePrefix))
+	it, err := client.List(path, pairs.WithListMode(types.ListModePrefix))
 	if err != nil {
 		t.Error(err)
 	}
@@ -321,7 +321,7 @@ func TestStorage_Stat(t *testing.T) {
 		} else {
 			assert.NoError(t, err)
 			assert.NotNil(t, o)
-			assert.Equal(t, ModeRead, o.Mode)
+			assert.Equal(t, types.ModeRead, o.Mode)
 			assert.Equal(t, int64(100), o.MustGetContentLength())
 			contentType, ok := o.GetContentType()
 			assert.True(t, ok)
@@ -540,7 +540,7 @@ func TestStorage_Create(t *testing.T) {
 		}).Times(1)
 
 	for _, tt := range cases {
-		ps := make([]Pair, 0)
+		ps := make([]types.Pair, 0)
 		if tt.multipartID != "" {
 			ps = append(ps, pairs.WithMultipartID(tt.multipartID))
 		}
@@ -550,9 +550,9 @@ func TestStorage_Create(t *testing.T) {
 		assert.Equal(t, tt.path, obj.Path)
 		if tt.multipartID != "" {
 			assert.Equal(t, tt.multipartID, obj.MustGetMultipartID())
-			assert.Equal(t, ModePart, obj.Mode)
+			assert.Equal(t, types.ModePart, obj.Mode)
 		} else {
-			assert.Equal(t, ModeRead, obj.Mode)
+			assert.Equal(t, types.ModeRead, obj.Mode)
 			assert.Panics(t, func() {
 				obj.MustGetMultipartID()
 			})

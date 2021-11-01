@@ -10,10 +10,10 @@ import (
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
+func (s *Storage) commitAppend(ctx context.Context, o *types.Object, opt pairStorageCommitAppend) (err error) {
 	rp := o.GetID()
 
 	offset, _ := o.GetAppendOffset()
@@ -44,21 +44,21 @@ func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCo
 		return
 	}
 
-	o.Mode &= ^ModeAppend
+	o.Mode &= ^types.ModeAppend
 	if fileMetadata != nil && fileMetadata.IsDownloadable {
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	}
 
 	return nil
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		o = s.newObject(true)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode = ModeRead
+		o.Mode = types.ModeRead
 	}
 
 	o.ID = s.getAbsPath(path)
@@ -66,7 +66,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
+func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *types.Object, err error) {
 	startArg := &files.UploadSessionStartArg{
 		Close: false,
 		SessionType: &files.UploadSessionType{
@@ -86,7 +86,7 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	}
 
 	o = s.newObject(true)
-	o.Mode = ModeAppend
+	o.Mode = types.ModeAppend
 	o.ID = s.getAbsPath(path)
 	o.Path = path
 	o.SetAppendOffset(0)
@@ -94,7 +94,7 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	return o, nil
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	res, err := s.client.CreateFolderV2(&files.CreateFolderArg{
@@ -111,13 +111,13 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	if res != nil {
 		// A successful response indicates that the folder is created and the returned `res` is the corresponding `FolderMetadata`.
 		o = s.newObject(true)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 		o.ID = res.Metadata.Id
 		o.Path = path
 	} else {
 		// `res` is nil when the given path is an existing folder.
 		o = s.newObject(false)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 		o.ID = rp
 		o.Path = path
 	}
@@ -147,7 +147,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		limit: 200,
 		path:  s.getAbsPath(path),
@@ -157,11 +157,11 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		input.recursive = true
 	}
 
-	return NewObjectIterator(ctx, s.nextObjectPage, input), nil
+	return types.NewObjectIterator(ctx, s.nextObjectPage, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.WorkDir = s.workDir
 	meta.Name = ""
 	// set write restriction
@@ -171,7 +171,7 @@ func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
 	return
 }
 
-func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	var err error
@@ -191,7 +191,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
 	}
 
 	for _, v := range output.Entries {
-		var o *Object
+		var o *types.Object
 		switch meta := v.(type) {
 		case *files.FolderMetadata:
 			o = s.formatFolderObject(meta.Name, meta)
@@ -203,7 +203,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
 	}
 
 	if !output.HasMore {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.cursor = output.Cursor
@@ -238,7 +238,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	input := &files.GetMetadataArg{
@@ -297,7 +297,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	return size, nil
 }
 
-func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+func (s *Storage) writeAppend(ctx context.Context, o *types.Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
 	sessionId := GetObjectSystemMetadata(o).UploadSessionID
 
 	offset := o.MustGetAppendOffset()

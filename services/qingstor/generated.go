@@ -444,7 +444,6 @@ var (
 	_ Linker            = &Storage{}
 	_ Mover             = &Storage{}
 	_ Multiparter       = &Storage{}
-	_ Reacher           = &Storage{}
 	_ StorageHTTPSigner = &Storage{}
 	_ Storager          = &Storage{}
 )
@@ -622,7 +621,6 @@ type DefaultStoragePairs struct {
 	QuerySignHTTPDelete []Pair
 	QuerySignHTTPRead   []Pair
 	QuerySignHTTPWrite  []Pair
-	Reach               []Pair
 	Read                []Pair
 	Stat                []Pair
 	Write               []Pair
@@ -1150,36 +1148,6 @@ func (s *Storage) parsePairStorageQuerySignHTTPWrite(opts []Pair) (pairStorageQu
 		}
 	}
 
-	return result, nil
-}
-
-type pairStorageReach struct {
-	pairs []Pair
-	// Required pairs
-	HasExpire bool
-	Expire    time.Duration
-	// Optional pairs
-}
-
-func (s *Storage) parsePairStorageReach(opts []Pair) (pairStorageReach, error) {
-	result :=
-		pairStorageReach{pairs: opts}
-
-	for _, v := range opts {
-		switch v.Key {
-		case "expire":
-			if result.HasExpire {
-				continue
-			}
-			result.HasExpire = true
-			result.Expire = v.Value.(time.Duration)
-		default:
-			return pairStorageReach{}, services.PairUnsupportedError{Pair: v}
-		}
-	}
-	if !result.HasExpire {
-		return pairStorageReach{}, services.PairRequiredError{Keys: []string{"expire"}}
-	}
 	return result, nil
 }
 
@@ -1727,25 +1695,6 @@ func (s *Storage) QuerySignHTTPWriteWithContext(ctx context.Context, path string
 		return
 	}
 	return s.querySignHTTPWrite(ctx, strings.ReplaceAll(path, "\\", "/"), size, expire, opt)
-}
-func (s *Storage) Reach(path string, pairs ...Pair) (url string, err error) {
-	ctx := context.Background()
-	return s.ReachWithContext(ctx, path, pairs...)
-}
-func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error) {
-	defer func() {
-		err =
-			s.formatError("reach", err, path)
-	}()
-
-	pairs = append(pairs, s.defaultPairs.Reach...)
-	var opt pairStorageReach
-
-	opt, err = s.parsePairStorageReach(pairs)
-	if err != nil {
-		return
-	}
-	return s.reach(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 func (s *Storage) Read(path string, w io.Writer, pairs ...Pair) (n int64, err error) {
 	ctx := context.Background()
