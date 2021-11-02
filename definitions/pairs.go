@@ -37,7 +37,7 @@ var PairArray = []Pair{
 }
 
 func init() {
-	// Build default pairs.
+	// Normalize default pairs.
 	dps := make([]Pair, 0)
 	for _, v := range PairArray {
 		if !v.Defaultable {

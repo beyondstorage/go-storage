@@ -59,7 +59,7 @@ var fieldArray = []Field{
 	},
 	{
 		Name: "meta",
-		Type: Type{Expr: "*", Name: "StorageMeta"},
+		Type: Type{Expr: "*", Package: "types", Name: "StorageMeta"},
 	},
 	{
 		Name: "n",

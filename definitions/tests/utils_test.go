@@ -1,4 +1,4 @@
-package tests
+package main
 
 import typ "go.beyondstorage.io/v5/types"
 

@@ -15,7 +15,7 @@ type genService struct {
 func GenerateService(data Metadata, path string) {
 	gs := genService{
 		g:    gg.New(),
-		data: data,
+		data: data.Normalize(),
 	}
 
 	gs.generateHeader()
@@ -24,8 +24,8 @@ func GenerateService(data Metadata, path string) {
 	gs.generateSystemPairs()
 	gs.generateFactory()
 
-	for _, nsName := range []string{NamespaceService, NamespaceStorage} {
-		gs.generateNamespace(nsName)
+	for _, ns := range []Namespace{gs.data.Service, gs.data.Storage} {
+		gs.generateNamespace(ns)
 	}
 
 	err := gs.g.WriteFile(path)
@@ -46,22 +46,20 @@ func (gs *genService) generateHeader() {
 		AddPath("strings").
 		AddPath("time").
 		AddLine().
-		AddDot("go.beyondstorage.io/v5/pairs").
-		AddPath("go.beyondstorage.io/v5/pkg/httpclient").
 		AddPath("go.beyondstorage.io/v5/services").
 		AddPath("go.beyondstorage.io/v5/types")
 
 	f.NewVar().
 		AddDecl("_", "types.Storager").
 		AddDecl("_", "services.ServiceError").
-		AddDecl("_", "httpclient.Options").
+		AddDecl("_", "strings.Reader").
 		AddDecl("_", "time.Duration").
-		AddDecl("_", "http.Request").
-		AddDecl("_", "Error")
+		AddDecl("_", "http.Request")
 
 	f.AddLineComment("Type is the type for %s", gs.data.Name)
 	f.NewConst().AddField("Type", gg.Lit(gs.data.Name).String())
 }
+
 func (gs *genService) generateObjectSystemMetadata() {
 	f := gs.g.NewGroup()
 	data := gs.data
@@ -106,6 +104,7 @@ setObjectSystemMetadata will set ObjectSystemMetadata into Object.
 		gg.S("o.SetSystemMetadata(sm)"),
 	)
 }
+
 func (gs *genService) generateStorageSystemMetadata() {
 	f := gs.g.NewGroup()
 	data := gs.data
@@ -148,6 +147,7 @@ GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 		gg.S("s.SetSystemMetadata(sm)"),
 	)
 }
+
 func (gs *genService) generateSystemPairs() {
 	f := gs.g.NewGroup()
 	data := gs.data
@@ -175,12 +175,10 @@ func (gs *genService) generateSystemPairs() {
 	}
 }
 
-func (gs *genService) generateNamespace(nsName string) {
+func (gs *genService) generateNamespace(ns Namespace) {
 	f := gs.g.NewGroup()
-	data := gs.data
 
-	_ = data.Namespaces[nsName]
-	nsNameP := templateutils.ToPascal(nsName)
+	nsNameP := templateutils.ToPascal(ns.Name())
 
 	// Generate interface assert.
 	inters := f.NewVar()
@@ -190,7 +188,7 @@ func (gs *genService) generateNamespace(nsName string) {
 	// Generate feature struct.
 	featureStructName := nsNameP + "Feature"
 	f.AddLineComment("Deprecated: Use types.%s instead.", featureStructName)
-	f.AddTypeAlias(featureStructName, "types."+featureStructName)
+	f.AddTypeAlias(featureStructName, "types."+featureStructName+"s")
 
 	// Generate default pairs.
 	defaultStructName := fmt.Sprintf("Default%sPairs", nsNameP)
@@ -199,25 +197,28 @@ func (gs *genService) generateNamespace(nsName string) {
 
 	// TODO: generate Features() function.
 
-	for _, op := range SortOperations(GetOperations(nsName)) {
+	for _, op := range ns.Operations() {
 		// Generate pair struct.
 
 		// Generate public functions.
-		gs.generateFunction(nsName, op)
+		gs.generateFunction(ns, op)
 	}
 }
 func (gs *genService) generateFactory() {
-	panic("implement me")
+
 }
+
 func (gs *genService) generateFeatures(nsName string) {
-	panic("implement me")
+
 }
-func (gs *genService) generateFunction(nsName string, op Operation) {
-	nsNameP := templateutils.ToPascal(nsName)
+
+func (gs *genService) generateFunction(ns Namespace, op Operation) {
+	nsNameP := templateutils.ToPascal(ns.Name())
 	fnNameP := templateutils.ToPascal(op.Name)
 
 	data := gs.data
 	f := gs.g.NewGroup()
+	implemented := ns.HasFeature(op.Name)
 
 	// Generate a local function.
 	if op.Local {
@@ -228,26 +229,33 @@ func (gs *genService) generateFunction(nsName string, op Operation) {
 		for _, field := range op.Results {
 			xfn.AddResult(field.Name, field.Type.FullName(data.Name))
 		}
-		xfn.AddBody(
-			gg.S("pairs = append(pairs, s.defaultPairs.%s...)", fnNameP),
-			gg.S("var opt pair%s%s", nsNameP, fnNameP),
-			gg.Line(),
-			gg.LineComment("Ignore error while handling local functions."),
-			gg.S("opt, _ = s.parsePair%s%s(pairs)", nsNameP, fnNameP),
-			gg.Return(
-				gg.Embed(func() gg.Node {
-					ic := gg.Call(templateutils.ToCamel(op.Name)).
-						WithOwner("s")
-					for _, v := range op.Params {
-						// We don't need to call pair again.
-						if v.Name == "pairs" {
-							continue
+		if implemented {
+			xfn.AddBody(
+				gg.S("pairs = append(pairs, s.defaultPairs.%s...)", fnNameP),
+				gg.S("var opt pair%s%s", nsNameP, fnNameP),
+				gg.Line(),
+				gg.LineComment("Ignore error while handling local functions."),
+				gg.S("opt, _ = s.parsePair%s%s(pairs)", nsNameP, fnNameP),
+				gg.Return(
+					gg.Embed(func() gg.Node {
+						ic := gg.Call(templateutils.ToCamel(op.Name)).
+							WithOwner("s")
+						for _, v := range op.Params {
+							// We don't need to call pair again.
+							if v.Name == "pairs" {
+								continue
+							}
+							ic.AddParameter(v.Name)
 						}
-						ic.AddParameter(v.Name)
-					}
-					ic.AddParameter("opt")
-					return ic
-				})))
+						ic.AddParameter("opt")
+						return ic
+					})))
+		} else {
+			xfn.AddBody(
+				gg.Return(),
+			)
+		}
+
 		return
 	}
 
@@ -259,22 +267,29 @@ func (gs *genService) generateFunction(nsName string, op Operation) {
 	for _, field := range op.Results {
 		xfn.AddResult(field.Name, field.Type.FullName(data.Name))
 	}
-	xfn.AddBody(
-		"ctx := context.Background()",
-		gg.Return(
-			gg.Embed(func() gg.Node {
-				ic := gg.Call(fnNameP + "WithContext").
-					WithOwner("s")
-				ic.AddParameter("ctx")
-				for _, v := range op.Params {
-					if v.Name == "pairs" {
-						ic.AddParameter("pairs...")
-						continue
+	if implemented {
+		xfn.AddBody(
+			"ctx := context.Background()",
+			gg.Return(
+				gg.Embed(func() gg.Node {
+					ic := gg.Call(fnNameP + "WithContext").
+						WithOwner("s")
+					ic.AddParameter("ctx")
+					for _, v := range op.Params {
+						if v.Name == "pairs" {
+							ic.AddParameter("pairs...")
+							continue
+						}
+						ic.AddParameter(v.Name)
 					}
-					ic.AddParameter(v.Name)
-				}
-				return ic
-			})))
+					return ic
+				})))
+	} else {
+		xfn.AddBody(
+			gg.S(`err = types.NewOperationNotImplementedError("%s")`, op.Name),
+			gg.Return(),
+		)
+	}
 
 	xfn = f.NewFunction(fnNameP+"WithContext").
 		WithReceiver("s", "*"+nsNameP)
@@ -285,49 +300,56 @@ func (gs *genService) generateFunction(nsName string, op Operation) {
 	for _, field := range op.Results {
 		xfn.AddResult(field.Name, field.Type.FullName(data.Name))
 	}
-	xfn.AddBody(
-		gg.Defer(gg.Embed(func() gg.Node {
-			caller := gg.Call("formatError").WithOwner("s")
-			caller.AddParameter(gg.Lit(op.Name)).AddParameter("err")
-			isEmpty := true
-			for _, v := range op.Params {
-				// formatError only accept string as input.
-				if v.Type.Name != "string" {
-					continue
-				}
-				caller.AddParameter(v.Name)
-				isEmpty = false
-			}
-			if isEmpty && nsName == NamespaceService {
-				caller.AddParameter("\"\"")
-			}
-
-			fn := gg.Function("").
-				AddBody(gg.S("err = "), caller).WithCall()
-			return fn
-		})),
-		gg.S("pairs = append(pairs, s.defaultPairs.%s...)", fnNameP),
-		gg.S("var opt pair%s%s", nsNameP, fnNameP),
-		gg.Line(),
-		gg.S("opt, err = s.parsePair%s%s(pairs)", nsNameP, fnNameP),
-		gg.If(gg.S("err != nil")).AddBody(gg.Return()),
-		gg.Return(
-			gg.Embed(func() gg.Node {
-				ic := gg.Call(templateutils.ToCamel(op.Name)).
-					WithOwner("s")
-				ic.AddParameter("ctx")
+	if implemented {
+		xfn.AddBody(
+			gg.Defer(gg.Embed(func() gg.Node {
+				caller := gg.Call("formatError").WithOwner("s")
+				caller.AddParameter(gg.Lit(op.Name)).AddParameter("err")
+				isEmpty := true
 				for _, v := range op.Params {
-					// We don't need to call pair again.
-					if v.Name == "pairs" {
+					// formatError only accept string as input.
+					if v.Type.Name != "string" {
 						continue
 					}
-					if v.Name == "path" || v.Name == "src" || v.Name == "dst" || v.Name == "target" {
-						ic.AddParameter(gg.S(`strings.ReplaceAll(%s, "\\", "/")`, v.Name))
-						continue
-					}
-					ic.AddParameter(v.Name)
+					caller.AddParameter(v.Name)
+					isEmpty = false
 				}
-				ic.AddParameter("opt")
-				return ic
-			})))
+				if isEmpty && ns.Name() == NamespaceService {
+					caller.AddParameter("\"\"")
+				}
+
+				fn := gg.Function("").
+					AddBody(gg.S("err = "), caller).WithCall()
+				return fn
+			})),
+			gg.S("pairs = append(pairs, s.defaultPairs.%s...)", fnNameP),
+			gg.S("var opt pair%s%s", nsNameP, fnNameP),
+			gg.Line(),
+			gg.S("opt, err = s.parsePair%s%s(pairs)", nsNameP, fnNameP),
+			gg.If(gg.S("err != nil")).AddBody(gg.Return()),
+			gg.Return(
+				gg.Embed(func() gg.Node {
+					ic := gg.Call(templateutils.ToCamel(op.Name)).
+						WithOwner("s")
+					ic.AddParameter("ctx")
+					for _, v := range op.Params {
+						// We don't need to call pair again.
+						if v.Name == "pairs" {
+							continue
+						}
+						if v.Name == "path" || v.Name == "src" || v.Name == "dst" || v.Name == "target" {
+							ic.AddParameter(gg.S(`strings.ReplaceAll(%s, "\\", "/")`, v.Name))
+							continue
+						}
+						ic.AddParameter(v.Name)
+					}
+					ic.AddParameter("opt")
+					return ic
+				})))
+	} else {
+		xfn.AddBody(
+			gg.S(`err = types.NewOperationNotImplementedError("%s")`, op.Name),
+			gg.Return(),
+		)
+	}
 }
