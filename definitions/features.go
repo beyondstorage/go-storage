@@ -38,6 +38,14 @@ This feature was introduced in GSP-109.`,
 This feature was introduced in GSP-109.`,
 	},
 	{
+		Name:       "virtual_link",
+		Namespaces: []string{NamespaceStorage},
+		Description: `virtual_link feature is designed for a service that doesn't have native support for link.
+- If this feature is enabled, the service will run compatible mode: create link via native methods, but allow read link from old-style link object.
+- If this feature is not enabled, the service will run in native as other service.
+This feature was introduced in GSP-86.`,
+	},
+	{
 		Name:       "virtual_object_metadata",
 		Namespaces: []string{NamespaceStorage},
 		Description: `virtual_object_metadata feature is designed for a service that doesn't have native object metadata support but wants to provide simulated operations.

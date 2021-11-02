@@ -57,7 +57,7 @@ func (gf *genNamespace) generateNamespace(nsName string, ops []Operation) {
 			for _, op := range ops {
 				s.NewCase(gg.Lit(op.Name)).
 					AddBody(gg.Return(
-						gg.S("s.%s", templateutils.ToPascal(op.Name))))
+						gg.S("SortPairs(s.%s)", templateutils.ToPascal(op.Name))))
 			}
 			s.NewDefault().AddBody(`panic(fmt.Errorf("invalid op: %s", name))`)
 

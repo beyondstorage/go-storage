@@ -19,13 +19,13 @@ type Service struct {
 func (s Service) ListPairs(name string) []Pair {
 	switch name {
 	case "create":
-		return s.Create
+		return SortPairs(s.Create)
 	case "delete":
-		return s.Delete
+		return SortPairs(s.Delete)
 	case "get":
-		return s.Get
+		return SortPairs(s.Get)
 	case "list":
-		return s.List
+		return SortPairs(s.List)
 	default:
 		panic(fmt.Errorf("invalid op: %s", name))
 	}
@@ -71,69 +71,69 @@ type Storage struct {
 func (s Storage) ListPairs(name string) []Pair {
 	switch name {
 	case "combine_block":
-		return s.CombineBlock
+		return SortPairs(s.CombineBlock)
 	case "commit_append":
-		return s.CommitAppend
+		return SortPairs(s.CommitAppend)
 	case "complete_multipart":
-		return s.CompleteMultipart
+		return SortPairs(s.CompleteMultipart)
 	case "copy":
-		return s.Copy
+		return SortPairs(s.Copy)
 	case "create":
-		return s.Create
+		return SortPairs(s.Create)
 	case "create_append":
-		return s.CreateAppend
+		return SortPairs(s.CreateAppend)
 	case "create_block":
-		return s.CreateBlock
+		return SortPairs(s.CreateBlock)
 	case "create_dir":
-		return s.CreateDir
+		return SortPairs(s.CreateDir)
 	case "create_link":
-		return s.CreateLink
+		return SortPairs(s.CreateLink)
 	case "create_multipart":
-		return s.CreateMultipart
+		return SortPairs(s.CreateMultipart)
 	case "create_page":
-		return s.CreatePage
+		return SortPairs(s.CreatePage)
 	case "delete":
-		return s.Delete
+		return SortPairs(s.Delete)
 	case "fetch":
-		return s.Fetch
+		return SortPairs(s.Fetch)
 	case "list":
-		return s.List
+		return SortPairs(s.List)
 	case "list_block":
-		return s.ListBlock
+		return SortPairs(s.ListBlock)
 	case "list_multipart":
-		return s.ListMultipart
+		return SortPairs(s.ListMultipart)
 	case "metadata":
-		return s.Metadata
+		return SortPairs(s.Metadata)
 	case "move":
-		return s.Move
+		return SortPairs(s.Move)
 	case "query_sign_http_complete_multipart":
-		return s.QuerySignHTTPCompleteMultipart
+		return SortPairs(s.QuerySignHTTPCompleteMultipart)
 	case "query_sign_http_create_multipart":
-		return s.QuerySignHTTPCreateMultipart
+		return SortPairs(s.QuerySignHTTPCreateMultipart)
 	case "query_sign_http_delete":
-		return s.QuerySignHTTPDelete
+		return SortPairs(s.QuerySignHTTPDelete)
 	case "query_sign_http_list_multipart":
-		return s.QuerySignHTTPListMultipart
+		return SortPairs(s.QuerySignHTTPListMultipart)
 	case "query_sign_http_read":
-		return s.QuerySignHTTPRead
+		return SortPairs(s.QuerySignHTTPRead)
 	case "query_sign_http_write":
-		return s.QuerySignHTTPWrite
+		return SortPairs(s.QuerySignHTTPWrite)
 	case "query_sign_http_write_multipart":
-		return s.QuerySignHTTPWriteMultipart
+		return SortPairs(s.QuerySignHTTPWriteMultipart)
 	case "read":
-		return s.Read
+		return SortPairs(s.Read)
 	case "stat":
-		return s.Stat
+		return SortPairs(s.Stat)
 	case "write":
-		return s.Write
+		return SortPairs(s.Write)
 	case "write_append":
-		return s.WriteAppend
+		return SortPairs(s.WriteAppend)
 	case "write_block":
-		return s.WriteBlock
+		return SortPairs(s.WriteBlock)
 	case "write_multipart":
-		return s.WriteMultipart
+		return SortPairs(s.WriteMultipart)
 	case "write_page":
-		return s.WritePage
+		return SortPairs(s.WritePage)
 	default:
 		panic(fmt.Errorf("invalid op: %s", name))
 	}

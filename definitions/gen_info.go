@@ -43,7 +43,7 @@ func GenerateInfo(path string) {
 	// Generate Get/Set functions.
 	for _, v := range infos {
 		// If the value is export, we don't need to generate MustGetXxxx
-		if v.Export {
+		if v.export {
 			f.NewFunction("Get"+v.NameForFunctionName()).
 				WithReceiver("m", "*"+serviceNameP).
 				AddResult("", v.Type.Name).
