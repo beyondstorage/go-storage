@@ -13,7 +13,7 @@ import (
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 const defaultListObjectBufferSize = 100
@@ -31,7 +31,7 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	return err
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		if !s.features.VirtualDir {
@@ -39,10 +39,10 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 		}
 		rp += "/"
 		o = s.newObject(true)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode = ModeRead
+		o.Mode = types.ModeRead
 	}
 	o.ID = rp
 	o.Path = path
@@ -62,7 +62,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return err
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	rp := s.getAbsPath(path)
 	options := minio.ListObjectsOptions{}
 	if !opt.HasListMode || opt.ListMode.IsPrefix() {
@@ -79,17 +79,17 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		bufferSize: defaultListObjectBufferSize,
 		options:    options,
 	}
-	return NewObjectIterator(ctx, s.nextObjectPage, input), nil
+	return types.NewObjectIterator(ctx, s.nextObjectPage, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = s.bucket
 	meta.WorkDir = s.workDir
 	return meta
 }
 
-func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 	if input.objChan == nil {
 		input.objChan = s.client.ListObjects(ctx, s.bucket, input.options)
@@ -97,7 +97,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
 	for i := 0; i < input.bufferSize; i++ {
 		v, ok := <-input.objChan
 		if !ok {
-			return IterateDone
+			return types.IterateDone
 		}
 		if v.Err != nil {
 			return v.Err
@@ -153,7 +153,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		if !s.features.VirtualDir {

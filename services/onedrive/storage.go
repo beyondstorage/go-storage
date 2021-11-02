@@ -8,12 +8,12 @@ import (
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	o = s.newObject(false)
-	o.Mode = ModeRead
+	o.Mode = types.ModeRead
 	o.ID = s.getAbsPath(path)
 	o.Path = path
 
@@ -34,7 +34,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		// need to passed by pairs?
 		limit: 200,
@@ -45,24 +45,24 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	}
 
 	if !opt.HasListMode || opt.ListMode.IsDir() {
-		return NewObjectIterator(ctx, s.nextObjectPage, input), nil
+		return types.NewObjectIterator(ctx, s.nextObjectPage, input), nil
 	} else {
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.WorkDir = s.workDir
 
 	return
 }
 
-func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) error {
 	iteratorObj := page.Status.(*objectPageStatus)
 
 	if iteratorObj.done {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	items, continuationToken, err := s.client.List(ctx, iteratorObj.rp, iteratorObj.continuationToken, iteratorObj.limit)
@@ -80,7 +80,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) error {
 
 	// make a new buffer at one time
 	// avoid extra spending(append)
-	page.Data = make([]*Object, len(items))
+	page.Data = make([]*types.Object, len(items))
 	for k, v := range items {
 		page.Data[k] = s.formatObject(v, iteratorObj.dir, iteratorObj.rp)
 	}
@@ -128,7 +128,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, object)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	uniquePath := s.getAbsPath(path)
 	objInfo, err := s.client.GetItem(ctx, uniquePath)
 	if err != nil {
@@ -138,7 +138,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o = s.newObject(true)
 	o.ID = uniquePath
 	o.Path = path
-	o.Mode |= ModeRead
+	o.Mode |= types.ModeRead
 	o.SetEtag(objInfo.Etag)
 	o.SetLastModified(objInfo.LastModifiedDateTime)
 	o.SetContentLength(objInfo.Size)

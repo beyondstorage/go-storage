@@ -7,12 +7,12 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/colinmarc/hdfs/v2"
+
 	"go.beyondstorage.io/endpoint"
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/services"
 	"go.beyondstorage.io/v5/types"
-
-	"github.com/colinmarc/hdfs/v2"
 )
 
 // Storage is the example client.

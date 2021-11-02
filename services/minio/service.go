@@ -6,10 +6,10 @@ import (
 	"github.com/minio/minio-go/v7"
 
 	ps "go.beyondstorage.io/v5/pairs"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store Storager, err error) {
+func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store types.Storager, err error) {
 	st, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete
 	return nil
 }
 
-func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store Storager, err error) {
+func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store types.Storager, err error) {
 	st, err := s.newStorage(ps.WithName(name))
 	if err != nil {
 		return nil, err
@@ -37,12 +37,12 @@ func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (sto
 	return st, nil
 }
 
-func (s *Service) list(ctx context.Context, opt pairServiceList) (sti *StoragerIterator, err error) {
+func (s *Service) list(ctx context.Context, opt pairServiceList) (sti *types.StoragerIterator, err error) {
 	input := &storagePageStatus{}
-	return NewStoragerIterator(ctx, s.nextStoragePage, input), nil
+	return types.NewStoragerIterator(ctx, s.nextStoragePage, input), nil
 }
 
-func (s *Service) nextStoragePage(ctx context.Context, page *StoragerPage) (err error) {
+func (s *Service) nextStoragePage(ctx context.Context, page *types.StoragerPage) (err error) {
 	input := page.Status.(*storagePageStatus)
 	input.buckets, err = s.service.ListBuckets(ctx)
 	if err != nil {
@@ -55,5 +55,5 @@ func (s *Service) nextStoragePage(ctx context.Context, page *StoragerPage) (err 
 		}
 		page.Data = append(page.Data, store)
 	}
-	return IterateDone
+	return types.IterateDone
 }

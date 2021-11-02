@@ -13,7 +13,7 @@ import (
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete) (err error) {
@@ -48,7 +48,7 @@ func (input *listDirInput) ContinuationToken() string {
 	return input.continuationToken
 }
 
-func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
+func (s *Storage) commitAppend(ctx context.Context, o *types.Object, opt pairStorageCommitAppend) (err error) {
 	return
 }
 
@@ -79,13 +79,13 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	return
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		o = s.newObject(false)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode = ModeRead
+		o.Mode = types.ModeRead
 	}
 
 	o.ID = filepath.Join(s.workDir, path)
@@ -93,7 +93,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
+func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	f, needClose, err := s.createFile(rp)
@@ -110,13 +110,13 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode = ModeRead | ModeAppend
+	o.Mode = types.ModeRead | types.ModeAppend
 	o.SetAppendOffset(0)
 
 	return o, nil
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	err = os.MkdirAll(rp, 0755)
@@ -127,11 +127,11 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeDir
+	o.Mode |= types.ModeDir
 	return
 }
 
-func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *Object, err error) {
+func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *types.Object, err error) {
 	rt := s.getAbsPath(target)
 	rp := s.getAbsPath(path)
 
@@ -170,7 +170,7 @@ func (s *Storage) createLink(ctx context.Context, path string, target string, op
 	o.Path = path
 	o.SetLinkTarget(rt)
 
-	o.Mode |= ModeLink
+	o.Mode |= types.ModeLink
 
 	err = os.Symlink(rt, rp)
 	if err != nil {
@@ -210,7 +210,7 @@ func (s *Storage) fetch(ctx context.Context, path string, url string, opt pairSt
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	buf := make([]byte, 8192)
 
 	input := listDirInput{
@@ -227,11 +227,11 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		buf: &buf,
 	}
 
-	return NewObjectIterator(ctx, s.listDirNext, &input), nil
+	return types.NewObjectIterator(ctx, s.listDirNext, &input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.WorkDir = s.workDir
 	return meta
 }
@@ -307,7 +307,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	fi, err := s.statFile(rp)
@@ -320,12 +320,12 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o.Path = path
 
 	if fi.IsDir() {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 		return
 	}
 
 	if fi.Mode().IsRegular() {
-		o.Mode |= ModeRead | ModePage | ModeAppend
+		o.Mode |= types.ModeRead | types.ModePage | types.ModeAppend
 
 		o.SetContentLength(fi.Size())
 		o.SetLastModified(fi.ModTime())
@@ -337,7 +337,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 
 	// Check if this file is a link.
 	if fi.Mode()&os.ModeSymlink != 0 {
-		o.Mode |= ModeLink
+		o.Mode |= types.ModeLink
 
 		target, err := evalSymlinks(rp)
 		if err != nil {
@@ -375,7 +375,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	return io.CopyN(f, r, size)
 }
 
-func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+func (s *Storage) writeAppend(ctx context.Context, o *types.Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
 	f, needClose, err := s.createFileWithFlag(o.ID, os.O_RDWR|os.O_CREATE|os.O_APPEND)
 	if err != nil {
 		return

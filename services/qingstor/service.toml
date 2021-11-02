@@ -18,7 +18,7 @@ optional = ["location"]
 
 [namespace.storage]
 features = ["virtual_dir", "virtual_link"]
-implement = ["appender", "copier", "direr", "fetcher", "linker", "mover", "multiparter", "reacher", "storage_http_signer"]
+implement = ["appender", "copier", "direr", "fetcher", "linker", "mover", "multiparter", "storage_http_signer"]
 
 [namespace.storage.new]
 required = ["name"]
@@ -38,9 +38,6 @@ optional = ["multipart_id", "object_mode"]
 
 [namespace.storage.op.list]
 optional = ["list_mode"]
-
-[namespace.storage.op.reach]
-required = ["expire"]
 
 [namespace.storage.op.read]
 optional = ["offset", "io_callback", "size", "encryption_customer_algorithm", "encryption_customer_key"]

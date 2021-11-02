@@ -9,17 +9,17 @@ import (
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		path += "/"
-		o = NewObject(s, true)
-		o.Mode = ModeDir
+		o = types.NewObject(s, true)
+		o.Mode = types.ModeDir
 	} else {
-		o = NewObject(s, false)
-		o.Mode = ModeRead
+		o = types.NewObject(s, false)
+		o.Mode = types.ModeRead
 	}
 	o.ID = s.getAbsPath(path)
 	o.Path = path
@@ -33,37 +33,37 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return err
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	rp := s.getAbsPath(path)
 	if !opt.HasListMode || opt.ListMode.IsDir() {
-		nextFn := func(ctx context.Context, page *ObjectPage) error {
+		nextFn := func(ctx context.Context, page *types.ObjectPage) error {
 			options := uplink.ListObjectsOptions{Prefix: rp, System: true}
 			dirObject := s.project.ListObjects(ctx, s.name, &options)
 			for dirObject.Next() {
 				if dirObject.Item().Key == rp {
 					continue
 				}
-				o := NewObject(s, true)
+				o := types.NewObject(s, true)
 				o.Path = dirObject.Item().Key[len(rp):]
 				if dirObject.Item().IsPrefix {
-					o.Mode |= ModeDir
+					o.Mode |= types.ModeDir
 				} else {
-					o.Mode |= ModeRead
+					o.Mode |= types.ModeRead
 				}
 				o.SetContentLength(dirObject.Item().System.ContentLength)
 				page.Data = append(page.Data, o)
 			}
-			return IterateDone
+			return types.IterateDone
 		}
-		oi = NewObjectIterator(ctx, nextFn, nil)
+		oi = types.NewObjectIterator(ctx, nextFn, nil)
 		return oi, err
 	} else {
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.WorkDir = s.workDir
 	meta.Name = s.name
 	return meta
@@ -96,18 +96,18 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return n, err
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 	object, err := s.project.StatObject(ctx, s.name, rp)
 	if err != nil {
 		return nil, services.ErrObjectNotExist
 	}
-	o = NewObject(s, true)
+	o = types.NewObject(s, true)
 	o.Path = path
 	if object.IsPrefix {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 	} else {
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	}
 	o.SetContentLength(object.System.ContentLength)
 	o.SetSystemMetadata(object.System)

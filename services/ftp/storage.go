@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/jlaffaye/ftp"
-	mime "github.com/qingstor/go-mime"
-	"go.beyondstorage.io/v5/pkg/iowrap"
-	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
 	"io"
 	"net/textproto"
 	"path/filepath"
+
+	"github.com/jlaffaye/ftp"
+	mime "github.com/qingstor/go-mime"
+
+	"go.beyondstorage.io/v5/pkg/iowrap"
+	"go.beyondstorage.io/v5/services"
+	"go.beyondstorage.io/v5/types"
 )
 
 type listDirInput struct {
@@ -27,13 +29,13 @@ func (input *listDirInput) ContinuationToken() string {
 	return input.continuationToken
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		o = s.newObject(false)
-		o.Mode = ModeDir
+		o.Mode = types.ModeDir
 	} else {
 		o = s.newObject(false)
-		o.Mode = ModeRead
+		o.Mode = types.ModeRead
 	}
 	path = filepath.ToSlash(path)
 	o.ID = filepath.Join(s.workDir, path)
@@ -41,7 +43,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 	err = s.connection.MakeDir(rp)
 	if err != nil {
@@ -50,7 +52,7 @@ func (s *Storage) createDir(ctx context.Context, path string) (o *Object, err er
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeDir
+	o.Mode |= types.ModeDir
 	return
 }
 
@@ -68,7 +70,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	if !opt.HasListMode || opt.ListMode.IsDir() {
 		input := listDirInput{
 			// Always keep service original name as rp.
@@ -81,14 +83,14 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 			continuationToken: opt.ContinuationToken,
 			counter:           0,
 		}
-		return NewObjectIterator(ctx, s.listDirNext, &input), nil
+		return types.NewObjectIterator(ctx, s.listDirNext, &input), nil
 	} else {
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.WorkDir = s.workDir
 	return meta
 }
@@ -122,7 +124,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 	fl, err := s.connection.List(rp)
 	if err != nil {
@@ -149,17 +151,17 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o.Path = path
 	switch fe.Type {
 	case ftp.EntryTypeFolder:
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 		return
 	case ftp.EntryTypeLink:
-		o.Mode |= ModeLink
+		o.Mode |= types.ModeLink
 		target := fe.Target
 		if err != nil {
 			return nil, err
 		}
 		o.SetLinkTarget(target)
 	default:
-		o.Mode |= ModeRead | ModePage | ModeAppend
+		o.Mode |= types.ModeRead | types.ModePage | types.ModeAppend
 		o.SetContentLength(int64(fe.Size))
 		o.SetLastModified(fe.Time)
 		if v := mime.DetectFilePath(path); v != "" {

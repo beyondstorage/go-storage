@@ -14,14 +14,14 @@ import (
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
-func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
+func (s *Storage) commitAppend(ctx context.Context, o *types.Object, opt pairStorageCommitAppend) (err error) {
 	return
 }
 
-func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
+func (s *Storage) completeMultipart(ctx context.Context, o *types.Object, parts []*types.Part, opt pairStorageCompleteMultipart) (err error) {
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
@@ -38,8 +38,8 @@ func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Par
 	if err != nil {
 		return
 	}
-	o.Mode.Del(ModePart)
-	o.Mode.Add(ModeRead)
+	o.Mode.Del(types.ModePart)
+	o.Mode.Add(types.ModeRead)
 	return
 }
 
@@ -71,14 +71,14 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	return nil
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	rp := s.getAbsPath(path)
 
 	// handle create multipart object separately
 	// if opt has multipartID, set object done, because we can't stat multipart object in QingStor
 	if opt.HasMultipartID {
 		o = s.newObject(true)
-		o.Mode = ModePart
+		o.Mode = types.ModePart
 		o.SetMultipartID(opt.MultipartID)
 	} else {
 		if opt.HasObjectMode && opt.ObjectMode.IsDir() {
@@ -88,10 +88,10 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 
 			rp += "/"
 			o = s.newObject(true)
-			o.Mode = ModeDir
+			o.Mode = types.ModeDir
 		} else {
 			o = s.newObject(false)
-			o.Mode = ModeRead
+			o.Mode = types.ModeRead
 		}
 	}
 	o.ID = rp
@@ -99,7 +99,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
-func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
+func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
 
 	// We should set offset to 0 whether the object exists or not.
@@ -138,7 +138,7 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	}
 
 	o = s.newObject(true)
-	o.Mode = ModeRead | ModeAppend
+	o.Mode = types.ModeRead | types.ModeAppend
 	o.ID = rp
 	o.Path = path
 	o.SetAppendOffset(offset)
@@ -153,9 +153,9 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	return o, nil
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	if !s.features.VirtualDir {
-		err = NewOperationNotImplementedError("create_dir")
+		err = types.NewOperationNotImplementedError("create_dir")
 		return
 	}
 
@@ -180,14 +180,14 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	o = s.newObject(true)
 	o.Path = path
 	o.ID = rp
-	o.Mode = ModeDir
+	o.Mode = types.ModeDir
 	return
 }
 
 // metadataLinkTargetHeader is the name of the user-defined metadata name used to store the target.
 const metadataLinkTargetHeader = "x-qs-meta-bs-link-target"
 
-func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *Object, err error) {
+func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *types.Object, err error) {
 	rt := s.getAbsPath(target)
 	rp := s.getAbsPath(path)
 
@@ -210,17 +210,17 @@ func (s *Storage) createLink(ctx context.Context, path string, target string, op
 
 	if !s.features.VirtualLink {
 		// The virtual link is not enabled, so we set the object mode to `ModeRead`.
-		o.Mode |= ModeRead
+		o.Mode |= types.ModeRead
 	} else {
 		// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
 		// To ensure that the path matches the one the user gets, we should re-add `/` here.
 		o.SetLinkTarget("/" + rt)
-		o.Mode |= ModeLink
+		o.Mode |= types.ModeLink
 	}
 	return
 }
 
-func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
+func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *types.Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 	if opt.HasEncryptionCustomerAlgorithm {
 		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
@@ -239,7 +239,7 @@ func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStor
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModePart
+	o.Mode |= types.ModePart
 	o.SetMultipartID(*output.UploadID)
 
 	return o, nil
@@ -290,7 +290,7 @@ func (s *Storage) fetch(ctx context.Context, path string, url string, opt pairSt
 	return err
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		limit:  200,
 		prefix: s.getAbsPath(path),
@@ -299,10 +299,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-654](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
-		opt.ListMode = ListModePrefix
+		opt.ListMode = types.ListModePrefix
 	}
 
-	var nextFn NextObjectFunc
+	var nextFn types.NextObjectFunc
 
 	switch {
 	case opt.ListMode.IsPart():
@@ -316,21 +316,21 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 
-	return NewObjectIterator(ctx, nextFn, input), nil
+	return types.NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageListMultipart) (pi *PartIterator, err error) {
+func (s *Storage) listMultipart(ctx context.Context, o *types.Object, opt pairStorageListMultipart) (pi *types.PartIterator, err error) {
 	input := &partPageStatus{
 		limit:    200,
 		prefix:   o.ID,
 		uploadID: o.MustGetMultipartID(),
 	}
 
-	return NewPartIterator(ctx, s.nextPartPage, input), nil
+	return types.NewPartIterator(ctx, s.nextPartPage, input), nil
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = *s.properties.BucketName
 	meta.WorkDir = s.workDir
 	meta.SetLocation(*s.properties.Zone)
@@ -362,7 +362,7 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt pairStor
 	return nil
 }
 
-func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, err := s.bucket.ListObjectsWithContext(ctx, &service.ListObjectsInput{
@@ -379,7 +379,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 		o := s.newObject(true)
 		o.ID = *v
 		o.Path = s.getRelPath(*v)
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 
 		page.Data = append(page.Data, o)
 	}
@@ -398,20 +398,20 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	}
 
 	if service.StringValue(output.NextMarker) == "" {
-		return IterateDone
+		return types.IterateDone
 	}
 	if !service.BoolValue(output.HasMore) {
-		return IterateDone
+		return types.IterateDone
 	}
 	if len(output.Keys) == 0 {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.marker = *output.NextMarker
 	return nil
 }
 
-func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, err := s.bucket.ListObjectsWithContext(ctx, &service.ListObjectsInput{
@@ -433,20 +433,20 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) 
 	}
 
 	if service.StringValue(output.NextMarker) == "" {
-		return IterateDone
+		return types.IterateDone
 	}
 	if !service.BoolValue(output.HasMore) {
-		return IterateDone
+		return types.IterateDone
 	}
 	if len(output.Keys) == 0 {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.marker = *output.NextMarker
 	return nil
 }
 
-func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, &service.ListMultipartUploadsInput{
@@ -463,7 +463,7 @@ func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPa
 		o := s.newObject(true)
 		o.ID = *v.Key
 		o.Path = s.getRelPath(*v.Key)
-		o.Mode |= ModePart
+		o.Mode |= types.ModePart
 		o.SetMultipartID(*v.UploadID)
 
 		page.Data = append(page.Data, o)
@@ -473,10 +473,10 @@ func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPa
 	nextUploadIDMarker := service.StringValue(output.NextUploadIDMarker)
 
 	if nextKeyMarker == "" && nextUploadIDMarker == "" {
-		return IterateDone
+		return types.IterateDone
 	}
 	if !service.BoolValue(output.HasMore) {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.marker = nextKeyMarker
@@ -484,7 +484,7 @@ func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPa
 	return nil
 }
 
-func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
+func (s *Storage) nextPartPage(ctx context.Context, page *types.PartPage) error {
 	input := page.Status.(*partPageStatus)
 
 	output, err := s.bucket.ListMultipartWithContext(ctx, input.prefix, &service.ListMultipartInput{
@@ -497,7 +497,7 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	}
 
 	for _, v := range output.ObjectParts {
-		p := &Part{
+		p := &types.Part{
 			Index: *v.PartNumber,
 			Size:  *v.Size,
 			ETag:  service.StringValue(v.Etag),
@@ -509,7 +509,7 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	// FIXME: QingStor ListMulitpart API looks like buggy.
 	offset := input.partNumberMarker + len(output.ObjectParts)
 	if offset >= service.IntValue(output.Count) {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	input.partNumberMarker = offset
@@ -580,27 +580,6 @@ func (s *Storage) querySignHTTPWrite(ctx context.Context, path string, size int6
 	return r.HTTPRequest, nil
 }
 
-func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) (url string, err error) {
-	// FIXME: sdk should export GetObjectRequest as interface too?
-	bucket := s.bucket.(*service.Bucket)
-
-	rp := s.getAbsPath(path)
-
-	r, _, err := bucket.GetObjectRequest(rp, nil)
-	if err != nil {
-		return
-	}
-	if err = r.BuildWithContext(ctx); err != nil {
-		return
-	}
-
-	expire := opt.Expire
-	if err = r.SignQuery(int(expire.Seconds())); err != nil {
-		return
-	}
-	return r.HTTPRequest.URL.String(), nil
-}
-
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
 	input, err := s.formatGetObjectInput(opt)
 	if err != nil {
@@ -623,7 +602,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 
 	rp := s.getAbsPath(path)
 
@@ -640,7 +619,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		o = s.newObject(true)
 		o.ID = rp
 		o.Path = path
-		o.Mode |= ModePart
+		o.Mode |= types.ModePart
 		o.SetMultipartID(opt.MultipartID)
 		return o, nil
 	}
@@ -671,21 +650,21 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 			// The path is a symlink object.
 			if !s.features.VirtualLink {
 				// The virtual link is not enabled, so we set the object mode to `ModeRead`.
-				o.Mode |= ModeRead
+				o.Mode |= types.ModeRead
 			} else {
 				// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
 				// To ensure that the path matches the one the user gets, we should re-add `/` here.
 				o.SetLinkTarget("/" + v)
-				o.Mode |= ModeLink
+				o.Mode |= types.ModeLink
 			}
 		}
 	}
 
-	if o.Mode&ModeLink == 0 && o.Mode&ModeRead == 0 {
+	if o.Mode&types.ModeLink == 0 && o.Mode&types.ModeRead == 0 {
 		if opt.HasObjectMode && opt.ObjectMode.IsDir() {
-			o.Mode |= ModeDir
+			o.Mode |= types.ModeDir
 		} else {
-			o.Mode |= ModeRead
+			o.Mode |= types.ModeRead
 		}
 	}
 
@@ -742,7 +721,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	return size, nil
 }
 
-func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+func (s *Storage) writeAppend(ctx context.Context, o *types.Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
 	if size > appendSizeMaximum {
 		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
 		return
@@ -779,7 +758,7 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 	return size, nil
 }
 
-func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *Part, err error) {
+func (s *Storage) writeMultipart(ctx context.Context, o *types.Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *types.Part, err error) {
 	if index < multipartNumberMinimum || index > multipartNumberMaximum {
 		err = ErrPartNumberInvalid
 		return
@@ -811,7 +790,7 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		return
 	}
 
-	part = &Part{
+	part = &types.Part{
 		Index: index,
 		Size:  size,
 		ETag:  service.StringValue(output.ETag),

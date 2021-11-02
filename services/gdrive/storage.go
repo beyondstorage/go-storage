@@ -11,7 +11,7 @@ import (
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 const directoryMimeType = "application/vnd.google-apps.folder"
@@ -48,14 +48,14 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	return nil
 }
 
-func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	o = s.newObject(false)
 	o.ID = s.getAbsPath(path)
 	o.Path = path
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 
 	_, err = s.createDirs(ctx, path)
 
@@ -66,7 +66,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	o = s.newObject(true)
 	o.ID = s.getAbsPath(path)
 	o.Path = path
-	o.Mode = ModeDir
+	o.Mode = types.ModeDir
 
 	return o, nil
 
@@ -111,21 +111,21 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	return nil
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		limit: 200,
 		path:  s.getAbsPath(path),
 	}
 
 	if !opt.HasListMode || opt.ListMode.IsDir() {
-		return NewObjectIterator(ctx, s.nextObjectPage, input), nil
+		return types.NewObjectIterator(ctx, s.nextObjectPage, input), nil
 	} else {
 		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 }
 
-func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
-	meta = NewStorageMeta()
+func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
+	meta = types.NewStorageMeta()
 	meta.Name = s.name
 	meta.WorkDir = s.workDir
 	return meta
@@ -157,7 +157,7 @@ func (s *Storage) mkDir(ctx context.Context, parents string, dirName string) (st
 	return f.Id, nil
 }
 
-func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) (err error) {
+func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (err error) {
 	input := page.Status.(*objectPageStatus)
 
 	var dirId string
@@ -177,7 +177,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) (err err
 	}
 
 	if len(r.Files) == 0 {
-		return IterateDone
+		return types.IterateDone
 	}
 
 	for _, f := range r.Files {
@@ -186,9 +186,9 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *ObjectPage) (err err
 		o.Path = f.Name
 		switch f.MimeType {
 		case directoryMimeType:
-			o.Mode = ModeDir
+			o.Mode = types.ModeDir
 		default:
-			o.Mode = ModeRead
+			o.Mode = types.ModeRead
 		}
 		page.Data = append(page.Data, o)
 	}
@@ -285,7 +285,7 @@ func (s *Storage) searchContentInDir(ctx context.Context, dirId string, contentN
 
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 
 	content, err := s.pathToId(ctx, path)
 
@@ -306,7 +306,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	file, _ := s.service.Files.Get(content).Context(ctx).Fields("*").Do()
 
 	if file.MimeType == directoryMimeType {
-		o.Mode |= ModeDir
+		o.Mode |= types.ModeDir
 	}
 
 	o.SetContentLength(file.Size)
