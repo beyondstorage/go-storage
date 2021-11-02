@@ -829,6 +829,7 @@ type StorageFeatures struct {
 	// operation-related features
 	LoosePair             bool
 	VirtualDir            bool
+	VirtualLink           bool
 	VirtualObjectMetadata bool
 	WriteEmptyObject      bool
 }
@@ -903,6 +904,8 @@ func (s StorageFeatures) Has(name string) bool {
 		return s.LoosePair
 	case "virtual_dir":
 		return s.VirtualDir
+	case "virtual_link":
+		return s.VirtualLink
 	case "virtual_object_metadata":
 		return s.VirtualObjectMetadata
 	case "write_empty_object":

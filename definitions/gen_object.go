@@ -55,7 +55,7 @@ NOTES:
 	for _, v := range om {
 		pname := templateutils.ToPascal(v.Name)
 
-		if v.Export {
+		if v.export {
 			f.NewFunction("Get"+v.NameForFunctionName()).
 				WithReceiver("o", "*Object").
 				AddResult("", v.Type.FullName("types")).

@@ -10,10 +10,10 @@ type Info struct {
 	Category    string
 	Name        string
 	Type        Type
-	Export      bool
 	Description string
 
-	// Only infos that declared inside definitions can set global as true.
+	// Only infos that declared inside definitions can set global or export as true.
+	export bool
 	global bool
 }
 
@@ -22,7 +22,7 @@ func (i Info) Global() bool {
 }
 
 func (i Info) NameForStructField() string {
-	if i.Export {
+	if i.export {
 		return templateutils.ToPascal(i.Name)
 	} else {
 		return templateutils.ToCamel(i.Name)
@@ -77,7 +77,7 @@ var InfosObjectMetaArray = []Info{
 	{
 		Name:   "id",
 		Type:   Type{Name: "string"},
-		Export: true,
+		export: true,
 		Description: `ID is the unique key in storage.
 
 ID SHOULD be an absolute path compatible with the target operating system-defined file paths, or a unique identifier specified by service.`,
@@ -94,7 +94,7 @@ ID SHOULD be an absolute path compatible with the target operating system-define
 	{
 		Name:   "mode",
 		Type:   Type{Package: "types", Name: "ObjectMode"},
-		Export: true,
+		export: true,
 	},
 	{
 		Name:        "multipart_id",
@@ -104,7 +104,7 @@ ID SHOULD be an absolute path compatible with the target operating system-define
 	{
 		Name:   "path",
 		Type:   Type{Name: "string"},
-		Export: true,
+		export: true,
 		Description: `Path is either the absolute path or the relative path towards storage's WorkDir depends on user's input.
 
 Path SHOULD be Unix style.`,
@@ -174,7 +174,7 @@ var InfosStorageMetaArray = []Info{
 	{
 		Name:   "name",
 		Type:   Type{Name: "string"},
-		Export: true,
+		export: true,
 	},
 	{
 		Name:        "system_metadata",
@@ -184,7 +184,7 @@ var InfosStorageMetaArray = []Info{
 	{
 		Name:   "work_dir",
 		Type:   Type{Name: "string"},
-		Export: true,
+		export: true,
 	},
 	{
 		Name:        "write_size_maximum",
