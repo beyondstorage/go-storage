@@ -30,5 +30,4 @@ func (m *Metadata) buildDefaultPairs() {
 	}
 	m.Pairs = append(m.Pairs, dp...)
 	m.Factory = append(m.Factory, dp...)
-	return
 }
