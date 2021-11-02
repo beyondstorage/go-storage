@@ -42,6 +42,10 @@ var fieldArray = []Field{
 		Type: Type{Expr: "[]", Name: "string"},
 	},
 	{
+		Name: "ctx",
+		Type: Type{Package: "context", Name: "Context"},
+	},
+	{
 		Name: "dst",
 		Type: Type{Name: "string"},
 	},

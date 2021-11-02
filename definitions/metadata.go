@@ -1,7 +1,8 @@
 package definitions
 
 type Metadata struct {
-	Name    string
+	Name string
+
 	Pairs   []Pair
 	Infos   []Info
 	Factory []Pair

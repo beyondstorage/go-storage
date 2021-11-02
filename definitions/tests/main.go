@@ -30,7 +30,9 @@ var metadata = def.Metadata{
 		pairDisableUriCleaning,
 	},
 	Service: def.Service{
-		Features: types.ServiceFeatures{},
+		Features: types.ServiceFeatures{
+			Delete: true,
+		},
 		Create: []def.Pair{
 			def.PairLocation,
 		},
@@ -45,7 +47,9 @@ var metadata = def.Metadata{
 		},
 	},
 	Storage: def.Storage{
-		Features: types.StorageFeatures{},
+		Features: types.StorageFeatures{
+			Read: true,
+		},
 
 		Delete: []def.Pair{
 			def.PairMultipartID,

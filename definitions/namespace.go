@@ -4,6 +4,7 @@ type Namespace interface {
 	Name() string
 	Operations() []Operation
 	HasFeature(name string) bool
+	ListPairs(name string) []Pair
 }
 
 func (s Service) Name() string {

@@ -1,22 +1,33 @@
 package definitions
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 type genService struct {
-	g    *gg.Generator
-	data Metadata
+	g           *gg.Generator
+	data        Metadata
+	implemented map[string]map[string]bool
 }
 
 func GenerateService(data Metadata, path string) {
 	gs := genService{
 		g:    gg.New(),
 		data: data.Normalize(),
+		implemented: map[string]map[string]bool{
+			NamespaceService: {},
+			NamespaceStorage: {},
+		},
 	}
+
+	gs.buildImplemented(path)
 
 	gs.generateHeader()
 	gs.generateObjectSystemMetadata()
@@ -24,13 +35,48 @@ func GenerateService(data Metadata, path string) {
 	gs.generateSystemPairs()
 	gs.generateFactory()
 
-	for _, ns := range []Namespace{gs.data.Service, gs.data.Storage} {
-		gs.generateNamespace(ns)
-	}
+	gs.generateNamespace(gs.data.Service)
+	gs.generateNamespace(gs.data.Storage)
 
 	err := gs.g.WriteFile(path)
 	if err != nil {
 		log.Fatalf("generate to %s: %v", path, err)
+	}
+}
+
+func (gs *genService) buildImplemented(path string) {
+	base := filepath.Dir(path)
+
+	fi, err := os.ReadDir(base)
+	if err != nil {
+		// We will ignore all error returned while building implemented.
+		return
+	}
+	for _, v := range fi {
+		if v.IsDir() || !strings.HasSuffix(v.Name(), ".go") {
+			continue
+		}
+
+		content, err := os.ReadFile(v.Name())
+		if err != nil {
+			return
+		}
+
+		source, err := templateutils.ParseContent(path, content)
+		if err != nil {
+			log.Fatalf("read file %s: %v", path, err)
+		}
+		for _, v := range source.Methods {
+			if v.Recv == nil {
+				continue
+			}
+
+			rt := NamespaceStorage
+			if v.Recv.Type == "*Service" {
+				rt = NamespaceService
+			}
+			gs.implemented[rt][v.Name] = true
+		}
 	}
 }
 
@@ -186,30 +232,87 @@ func (gs *genService) generateNamespace(ns Namespace) {
 		"_", gg.S("types.%s", nsNameP+"r"), gg.S("&%s{}", nsNameP))
 
 	// Generate feature struct.
-	featureStructName := nsNameP + "Feature"
+	featureStructName := nsNameP + "Features"
 	f.AddLineComment("Deprecated: Use types.%s instead.", featureStructName)
-	f.AddTypeAlias(featureStructName, "types."+featureStructName+"s")
+	f.AddTypeAlias(featureStructName, "types."+featureStructName)
 
 	// Generate default pairs.
 	defaultStructName := fmt.Sprintf("Default%sPairs", nsNameP)
 	f.AddLineComment("Deprecated: Use types.%s instead.", defaultStructName)
 	f.AddTypeAlias(defaultStructName, "types."+defaultStructName)
 
-	// TODO: generate Features() function.
+	// Generate Features().
+	f.NewFunction("Features").
+		WithReceiver("s", "*"+nsNameP).
+		AddResult("", "types."+featureStructName).
+		AddBody(gg.Return("s.features"))
 
 	for _, op := range ns.Operations() {
-		// Generate pair struct.
-
-		// Generate public functions.
+		gs.generateFunctionPairs(ns, op)
 		gs.generateFunction(ns, op)
 	}
 }
+
 func (gs *genService) generateFactory() {
 
 }
 
-func (gs *genService) generateFeatures(nsName string) {
+func (gs *genService) generateFunctionPairs(ns Namespace, op Operation) {
+	f := gs.g.NewGroup()
 
+	nsNameP := templateutils.ToPascal(ns.Name())
+	fnNameP := templateutils.ToPascal(op.Name)
+
+	// Generate pair struct
+	pairStructName := fmt.Sprintf("pair%s%s", nsNameP, fnNameP)
+	pairStruct := f.NewStruct(pairStructName).
+		AddField("pairs", "[]types.Pair")
+	for _, pair := range ns.ListPairs(op.Name) {
+		pairNameP := templateutils.ToPascal(pair.Name)
+		pairStruct.AddField("Has"+pairNameP, "bool")
+		pairStruct.AddField(pairNameP, pair.Type.FullName(ns.Name()))
+	}
+
+	// Generate parse pair function.
+	pairParseName := fmt.Sprintf("parsePair%s%s", nsNameP, fnNameP)
+	pairParse := f.NewFunction(pairParseName).
+		WithReceiver("s", "*"+nsNameP).
+		AddParameter("opts", "[]types.Pair").
+		AddResult("", pairStructName).
+		AddResult("", "error")
+
+	pairParse.AddBody(
+		gg.S("result :="),
+		gg.Value(pairStructName).AddField("pairs", "opts"),
+		gg.Line(),
+		gg.For(gg.S("_, v := range opts")).
+			AddBody(gg.Embed(func() gg.Node {
+				is := gg.Switch(gg.S("v.Key"))
+
+				for _, pair := range ns.ListPairs(op.Name) {
+					pairNameP := templateutils.ToPascal(pair.Name)
+					is.NewCase(gg.Lit(pair.Name)).AddBody(
+						gg.If(gg.S("result.Has%s", pairNameP)).
+							AddBody(gg.Continue()),
+						gg.S("result.Has%s = true", pairNameP),
+						gg.S("result.%s = v.Value.(%s)", pairNameP, pair.Type.FullName(ns.Name())),
+					)
+				}
+				dcas := is.NewDefault()
+				if ns.HasFeature("loose_pair") {
+					dcas.AddBody(
+						gg.LineComment(`
+loose_pair feature introduced in GSP-109.
+If user enable this feature, service should ignore not support pair error.`),
+						gg.If(gg.S("s.features.LoosePair")).
+							AddBody(gg.Continue()),
+					)
+				}
+				dcas.AddBody(gg.S("return pair%s%s{}, services.PairUnsupportedError{Pair:v}", nsNameP, fnNameP))
+				return is
+			})),
+		gg.Return("result", "nil"),
+	)
 }
 
 func (gs *genService) generateFunction(ns Namespace, op Operation) {
@@ -218,7 +321,41 @@ func (gs *genService) generateFunction(ns Namespace, op Operation) {
 
 	data := gs.data
 	f := gs.g.NewGroup()
-	implemented := ns.HasFeature(op.Name)
+	shouldImplemented := ns.HasFeature(op.Name)
+
+	// Check if user really implement this function.
+	if shouldImplemented && !gs.implemented[ns.Name()][op.Name] {
+		log.Errorf("We should implement operation [%s], but not", op.Name)
+		log.Infof("Please update features or implement them like the following:")
+
+		var buf bytes.Buffer
+		fnNameC := templateutils.ToCamel(op.Name)
+		xg := gg.New()
+		gfn := xg.NewGroup().NewFunction(fnNameC).
+			WithReceiver("s", "*"+nsNameP)
+
+		ctxField := getField("ctx")
+		if !op.Local {
+			gfn.AddParameter(ctxField.Name, ctxField.Type.FullName(ns.Name()))
+		}
+		for _, v := range op.Params {
+			// We need to remove pair from generated functions.
+			if v.Name == "pairs" {
+				continue
+			}
+			gfn.AddParameter(v.Name, v.Type.FullName(ns.Name()))
+		}
+		gfn.AddParameter("opt", "pair"+nsNameP+fnNameP)
+		for _, v := range op.Results {
+			gfn.AddResult(v.Name, v.Type.FullName(ns.Name()))
+		}
+		gfn.AddBody(gg.S(`panic("not implemented")`))
+		xg.Write(&buf)
+
+		println("---")
+		println(buf.String())
+		println("---")
+	}
 
 	// Generate a local function.
 	if op.Local {
@@ -229,7 +366,7 @@ func (gs *genService) generateFunction(ns Namespace, op Operation) {
 		for _, field := range op.Results {
 			xfn.AddResult(field.Name, field.Type.FullName(data.Name))
 		}
-		if implemented {
+		if shouldImplemented {
 			xfn.AddBody(
 				gg.S("pairs = append(pairs, s.defaultPairs.%s...)", fnNameP),
 				gg.S("var opt pair%s%s", nsNameP, fnNameP),
@@ -259,6 +396,8 @@ func (gs *genService) generateFunction(ns Namespace, op Operation) {
 		return
 	}
 
+	// Generate non-local function like `Write`
+	// Write will call `WriteWithContext` internally.
 	xfn := f.NewFunction(fnNameP).
 		WithReceiver("s", "*"+nsNameP)
 	for _, field := range op.Params {
@@ -267,7 +406,7 @@ func (gs *genService) generateFunction(ns Namespace, op Operation) {
 	for _, field := range op.Results {
 		xfn.AddResult(field.Name, field.Type.FullName(data.Name))
 	}
-	if implemented {
+	if shouldImplemented {
 		xfn.AddBody(
 			"ctx := context.Background()",
 			gg.Return(
@@ -291,6 +430,7 @@ func (gs *genService) generateFunction(ns Namespace, op Operation) {
 		)
 	}
 
+	// Generate non-local function like `WriteWithContext`
 	xfn = f.NewFunction(fnNameP+"WithContext").
 		WithReceiver("s", "*"+nsNameP)
 	xfn.AddParameter("ctx", "context.Context")
@@ -300,7 +440,7 @@ func (gs *genService) generateFunction(ns Namespace, op Operation) {
 	for _, field := range op.Results {
 		xfn.AddResult(field.Name, field.Type.FullName(data.Name))
 	}
-	if implemented {
+	if shouldImplemented {
 		xfn.AddBody(
 			gg.Defer(gg.Embed(func() gg.Node {
 				caller := gg.Call("formatError").WithOwner("s")
