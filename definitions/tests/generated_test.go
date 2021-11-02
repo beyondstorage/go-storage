@@ -71,6 +71,13 @@ func setStorageSystemMetadata(s *types.StorageMeta, sm StorageSystemMetadata) {
 	s.SetSystemMetadata(sm)
 }
 
+// WithDefaultStorageClass will apply default_storage_class value to Options.
+//
+// default value for storage_class
+func WithDefaultStorageClass(v string) types.Pair {
+	return types.Pair{Key: "default_storage_class", Value: v}
+}
+
 // WithDisableURICleaning will apply disable_uri_cleaning value to Options.
 func WithDisableURICleaning() types.Pair {
 	return types.Pair{Key: "disable_uri_cleaning", Value: true}

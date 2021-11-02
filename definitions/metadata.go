@@ -16,7 +16,7 @@ func (m Metadata) Normalize() Metadata {
 	return m
 }
 
-func (m Metadata) buildDefaultPairs() {
+func (m *Metadata) buildDefaultPairs() {
 	dp := make([]Pair, 0)
 	for _, v := range m.Pairs {
 		if !v.Defaultable {
@@ -29,4 +29,6 @@ func (m Metadata) buildDefaultPairs() {
 		})
 	}
 	m.Pairs = append(m.Pairs, dp...)
+	m.Factory = append(m.Factory, dp...)
+	return
 }
