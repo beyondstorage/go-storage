@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-// Servicer can maintain multipart storage services.
 type Servicer interface {
 	String() string
+	Features() ServiceFeatures
 	// Create will create a new storager instance.
 	Create(name string, pairs ...Pair) (store Storager, err error)
 	// CreateWithContext will create a new storager instance.
@@ -20,9 +20,6 @@ type Servicer interface {
 	Delete(name string, pairs ...Pair) (err error)
 	// DeleteWithContext will delete a storager instance.
 	DeleteWithContext(ctx context.Context, name string, pairs ...Pair) (err error)
-
-	// Features will get the suppoted features in Servicer.
-	Features() (srvf ServiceFeatures)
 
 	// Get will get a valid storager instance for service.
 	Get(name string, pairs ...Pair) (store Storager, err error)
@@ -38,8 +35,6 @@ type Servicer interface {
 }
 
 // UnimplementedServicer must be embedded to have forward compatible implementations.
-//
-// Servicer can maintain multipart storage services.
 type UnimplementedServicer struct {
 }
 
@@ -48,6 +43,9 @@ func (s UnimplementedServicer) mustEmbedUnimplementedServicer() {
 }
 func (s UnimplementedServicer) String() string {
 	return "UnimplementedServicer"
+}
+func (s UnimplementedServicer) Features() (fe ServiceFeatures) {
+	return
 }
 func (s UnimplementedServicer) Create(name string, pairs ...Pair) (store Storager, err error) {
 	err = NewOperationNotImplementedError("create")
@@ -63,9 +61,6 @@ func (s UnimplementedServicer) Delete(name string, pairs ...Pair) (err error) {
 }
 func (s UnimplementedServicer) DeleteWithContext(ctx context.Context, name string, pairs ...Pair) (err error) {
 	err = NewOperationNotImplementedError("delete")
-	return
-}
-func (s UnimplementedServicer) Features() (srvf ServiceFeatures) {
 	return
 }
 func (s UnimplementedServicer) Get(name string, pairs ...Pair) (store Storager, err error) {
@@ -85,9 +80,46 @@ func (s UnimplementedServicer) ListWithContext(ctx context.Context, pairs ...Pai
 	return
 }
 
-// Storager is the interface for storage service.
+// DefaultServicePairs is the default pairs for Service.
+type DefaultServicePairs struct {
+	Create []Pair
+	Delete []Pair
+	Get    []Pair
+	List   []Pair
+}
+
+// ServiceFeatures indicates features supported by servicer.
+type ServiceFeatures struct {
+
+	// operation features
+	Create bool
+	Delete bool
+	Get    bool
+	List   bool
+	// operation-related features
+	LoosePair bool
+}
+
+func (s ServiceFeatures) Has(name string) bool {
+	switch name {
+	case "create":
+		return s.Create
+	case "delete":
+		return s.Delete
+	case "get":
+		return s.Get
+	case "list":
+		return s.List
+	case "loose_pair":
+		return s.LoosePair
+	default:
+		return false
+	}
+}
+
 type Storager interface {
 	String() string
+	Features() StorageFeatures
 	// CombineBlock will combine blocks into an object.
 	CombineBlock(o *Object, bids []string, pairs ...Pair) (err error)
 	// CombineBlockWithContext will combine blocks into an object.
@@ -110,11 +142,10 @@ type Storager interface {
 	// - Copy only copy one and only one object.
 	//   - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
 	//   - User NEED to implement copy a non-empty directory and copy recursively by themself.
-	//   - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	//   - Copy a file to a directory SHOULD return ErrObjectModeInvalid.
 	// - Copy SHOULD NOT return an error as dst object exists.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
-	// not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
+	//   - Service that has native support for overwrite doesn't NEED to check the dst object exists or not.
+	//   - Service that doesn't have native support for overwrite SHOULD check and delete the dst object
 	// if exists.
 	// - A successful copy opration should be complete, which means the dst object's content and metadata
 	// should be the same as src object.
@@ -126,11 +157,10 @@ type Storager interface {
 	// - Copy only copy one and only one object.
 	//   - Service DON'T NEED to support copy a non-empty directory or copy files recursively.
 	//   - User NEED to implement copy a non-empty directory and copy recursively by themself.
-	//   - Copy a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	//   - Copy a file to a directory SHOULD return ErrObjectModeInvalid.
 	// - Copy SHOULD NOT return an error as dst object exists.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
-	// not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
+	//   - Service that has native support for overwrite doesn't NEED to check the dst object exists or not.
+	//   - Service that doesn't have native support for overwrite SHOULD check and delete the dst object
 	// if exists.
 	// - A successful copy opration should be complete, which means the dst object's content and metadata
 	// should be the same as src object.
@@ -165,36 +195,34 @@ type Storager interface {
 	//
 	// ## Behavior
 	// - CreateBlock SHOULD NOT return an error as the object exist.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
-	// exists.
+	//   - Service that has native support for overwrite doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for overwrite SHOULD check and delete the object if exists.
 	CreateBlock(path string, pairs ...Pair) (o *Object, err error)
 	// CreateBlockWithContext will create a new block object.
 	//
 	// ## Behavior
 	// - CreateBlock SHOULD NOT return an error as the object exist.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
-	// exists.
+	//   - Service that has native support for overwrite doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for overwrite SHOULD check and delete the object if exists.
 	CreateBlockWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
-	// CreateDir will create a new dir object.
+	// CreateDir will create a new dir object
 	CreateDir(path string, pairs ...Pair) (o *Object, err error)
-	// CreateDirWithContext will create a new dir object.
+	// CreateDirWithContext will create a new dir object
 	CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error)
 
 	// CreateLink Will create a link object.
 	//
 	// # Behavior
 	//
-	// - `path` and `target` COULD be relative or absolute path.
-	// - If `target` not exists, CreateLink will still create a link object to path.
-	// - If `path` exists:
-	//   - If `path` is a symlink object, CreateLink will remove the symlink object and create a new link object
+	// - path and target COULD be relative or absolute path.
+	// - If target not exists, CreateLink will still create a link object to path.
+	// - If path exists:
+	//   - If path is a symlink object, CreateLink will remove the symlink object and create a new link object
 	// to path.
-	//   - If `path` is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when
-	// the service does not support overwrite.
-	// - A link object COULD be returned in `Stat` or `List`.
+	//   - If path is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when the
+	// service does not support overwrite.
+	// - A link object COULD be returned in Stat or List.
 	// - CreateLink COULD implement virtual_link feature when service without native support.
 	//   - Users SHOULD enable this feature by themselves.
 	CreateLink(path string, target string, pairs ...Pair) (o *Object, err error)
@@ -202,14 +230,14 @@ type Storager interface {
 	//
 	// # Behavior
 	//
-	// - `path` and `target` COULD be relative or absolute path.
-	// - If `target` not exists, CreateLink will still create a link object to path.
-	// - If `path` exists:
-	//   - If `path` is a symlink object, CreateLink will remove the symlink object and create a new link object
+	// - path and target COULD be relative or absolute path.
+	// - If target not exists, CreateLink will still create a link object to path.
+	// - If path exists:
+	//   - If path is a symlink object, CreateLink will remove the symlink object and create a new link object
 	// to path.
-	//   - If `path` is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when
-	// the service does not support overwrite.
-	// - A link object COULD be returned in `Stat` or `List`.
+	//   - If path is not a symlink object, CreateLink will return an ErrObjectModeInvalid error when the
+	// service does not support overwrite.
+	// - A link object COULD be returned in Stat or List.
 	// - CreateLink COULD implement virtual_link feature when service without native support.
 	//   - Users SHOULD enable this feature by themselves.
 	CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...Pair) (o *Object, err error)
@@ -249,7 +277,7 @@ type Storager interface {
 	//   - User NEED to implement remove_all by themself.
 	// - Delete is idempotent.
 	//   - Successful delete always return nil error.
-	//   - Delete SHOULD never return `ObjectNotExist`
+	//   - Delete SHOULD never return ObjectNotExist
 	//   - Delete DON'T NEED to check the object exist or not.
 	Delete(path string, pairs ...Pair) (err error)
 	// DeleteWithContext will delete an object from service.
@@ -261,12 +289,9 @@ type Storager interface {
 	//   - User NEED to implement remove_all by themself.
 	// - Delete is idempotent.
 	//   - Successful delete always return nil error.
-	//   - Delete SHOULD never return `ObjectNotExist`
+	//   - Delete SHOULD never return ObjectNotExist
 	//   - Delete DON'T NEED to check the object exist or not.
 	DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error)
-
-	// Features will get the suppoted features in Storager.
-	Features() (stof StorageFeatures)
 
 	// Fetch will fetch from a given url to path.
 	//
@@ -289,17 +314,17 @@ type Storager interface {
 	//
 	// ## Behavior
 	//
-	// - Service SHOULD support default `ListMode`.
-	// - Service SHOULD implement `ListModeDir` without the check for `VirtualDir`.
-	// - Service DON'T NEED to `Stat` while in `List`.
+	// - Service SHOULD support default ListMode.
+	// - Service SHOULD implement ListModeDir without the check for VirtualDir.
+	// - Service DON'T NEED to Stat while in List.
 	List(path string, pairs ...Pair) (oi *ObjectIterator, err error)
 	// ListWithContext will return list a specific path.
 	//
 	// ## Behavior
 	//
-	// - Service SHOULD support default `ListMode`.
-	// - Service SHOULD implement `ListModeDir` without the check for `VirtualDir`.
-	// - Service DON'T NEED to `Stat` while in `List`.
+	// - Service SHOULD support default ListMode.
+	// - Service SHOULD implement ListModeDir without the check for VirtualDir.
+	// - Service DON'T NEED to Stat while in List.
 	ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error)
 
 	// ListBlock will list blocks belong to this object.
@@ -322,11 +347,10 @@ type Storager interface {
 	// - Move only move one and only one object.
 	//   - Service DON'T NEED to support move a non-empty directory.
 	//   - User NEED to implement move a non-empty directory by themself.
-	//   - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	//   - Move a file to a directory SHOULD return ErrObjectModeInvalid.
 	// - Move SHOULD NOT return an error as dst object exists.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
-	// not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
+	//   - Service that has native support for overwrite doesn't NEED to check the dst object exists or not.
+	//   - Service that doesn't have native support for overwrite SHOULD check and delete the dst object
 	// if exists.
 	// - A successful move operation SHOULD be complete, which means the dst object's content and metadata
 	// should be the same as src object.
@@ -338,11 +362,10 @@ type Storager interface {
 	// - Move only move one and only one object.
 	//   - Service DON'T NEED to support move a non-empty directory.
 	//   - User NEED to implement move a non-empty directory by themself.
-	//   - Move a file to a directory SHOULD return `ErrObjectModeInvalid`.
+	//   - Move a file to a directory SHOULD return ErrObjectModeInvalid.
 	// - Move SHOULD NOT return an error as dst object exists.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the dst object exists or
-	// not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the dst object
+	//   - Service that has native support for overwrite doesn't NEED to check the dst object exists or not.
+	//   - Service that doesn't have native support for overwrite SHOULD check and delete the dst object
 	// if exists.
 	// - A successful move operation SHOULD be complete, which means the dst object's content and metadata
 	// should be the same as src object.
@@ -421,15 +444,14 @@ type Storager interface {
 	//
 	// ## Behavior
 	//
-	// - Write SHOULD support users pass nil `io.Reader`.
-	//   - Service that has native support for pass nil `io.Reader` doesn't NEED to check the `io.Reader`
-	// is nil or not.
-	//   - Service that doesn't have native support for pass nil `io.Reader` SHOULD check and create an empty
-	// `io.Reader` if it is nil.
+	// - Write SHOULD support users pass nil io.Reader.
+	//   - Service that has native support for pass nil io.Reader doesn't NEED to check the io.Reader is nil
+	// or not.
+	//   - Service that doesn't have native support for pass nil io.Reader SHOULD check and create an empty
+	// io.Reader if it is nil.
 	// - Write SHOULD NOT return an error as the object exist.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
-	// exists.
+	//   - Service that has native support for overwrite doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for overwrite SHOULD check and delete the object if exists.
 	// - A successful write operation SHOULD be complete, which means the object's content and metadata
 	// should be the same as specified in write request.
 	Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
@@ -437,15 +459,14 @@ type Storager interface {
 	//
 	// ## Behavior
 	//
-	// - Write SHOULD support users pass nil `io.Reader`.
-	//   - Service that has native support for pass nil `io.Reader` doesn't NEED to check the `io.Reader`
-	// is nil or not.
-	//   - Service that doesn't have native support for pass nil `io.Reader` SHOULD check and create an empty
-	// `io.Reader` if it is nil.
+	// - Write SHOULD support users pass nil io.Reader.
+	//   - Service that has native support for pass nil io.Reader doesn't NEED to check the io.Reader is nil
+	// or not.
+	//   - Service that doesn't have native support for pass nil io.Reader SHOULD check and create an empty
+	// io.Reader if it is nil.
 	// - Write SHOULD NOT return an error as the object exist.
-	//   - Service that has native support for `overwrite` doesn't NEED to check the object exists or not.
-	//   - Service that doesn't have native support for `overwrite` SHOULD check and delete the object if
-	// exists.
+	//   - Service that has native support for overwrite doesn't NEED to check the object exists or not.
+	//   - Service that doesn't have native support for overwrite SHOULD check and delete the object if exists.
 	// - A successful write operation SHOULD be complete, which means the object's content and metadata
 	// should be the same as specified in write request.
 	WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error)
@@ -474,8 +495,6 @@ type Storager interface {
 }
 
 // UnimplementedStorager must be embedded to have forward compatible implementations.
-//
-// Storager is the interface for storage service.
 type UnimplementedStorager struct {
 }
 
@@ -484,6 +503,9 @@ func (s UnimplementedStorager) mustEmbedUnimplementedStorager() {
 }
 func (s UnimplementedStorager) String() string {
 	return "UnimplementedStorager"
+}
+func (s UnimplementedStorager) Features() (fe StorageFeatures) {
+	return
 }
 func (s UnimplementedStorager) CombineBlock(o *Object, bids []string, pairs ...Pair) (err error) {
 	err = NewOperationNotImplementedError("combine_block")
@@ -574,9 +596,6 @@ func (s UnimplementedStorager) Delete(path string, pairs ...Pair) (err error) {
 }
 func (s UnimplementedStorager) DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error) {
 	err = NewOperationNotImplementedError("delete")
-	return
-}
-func (s UnimplementedStorager) Features() (stof StorageFeatures) {
 	return
 }
 func (s UnimplementedStorager) Fetch(path string, url string, pairs ...Pair) (err error) {
@@ -733,4 +752,162 @@ func (s UnimplementedStorager) WritePage(o *Object, r io.Reader, size int64, off
 func (s UnimplementedStorager) WritePageWithContext(ctx context.Context, o *Object, r io.Reader, size int64, offset int64, pairs ...Pair) (n int64, err error) {
 	err = NewOperationNotImplementedError("write_page")
 	return
+}
+
+// DefaultStoragePairs is the default pairs for Storage.
+type DefaultStoragePairs struct {
+	CombineBlock                   []Pair
+	CommitAppend                   []Pair
+	CompleteMultipart              []Pair
+	Copy                           []Pair
+	Create                         []Pair
+	CreateAppend                   []Pair
+	CreateBlock                    []Pair
+	CreateDir                      []Pair
+	CreateLink                     []Pair
+	CreateMultipart                []Pair
+	CreatePage                     []Pair
+	Delete                         []Pair
+	Fetch                          []Pair
+	List                           []Pair
+	ListBlock                      []Pair
+	ListMultipart                  []Pair
+	Metadata                       []Pair
+	Move                           []Pair
+	QuerySignHTTPCompleteMultipart []Pair
+	QuerySignHTTPCreateMultipart   []Pair
+	QuerySignHTTPDelete            []Pair
+	QuerySignHTTPListMultipart     []Pair
+	QuerySignHTTPRead              []Pair
+	QuerySignHTTPWrite             []Pair
+	QuerySignHTTPWriteMultipart    []Pair
+	Read                           []Pair
+	Stat                           []Pair
+	Write                          []Pair
+	WriteAppend                    []Pair
+	WriteBlock                     []Pair
+	WriteMultipart                 []Pair
+	WritePage                      []Pair
+}
+
+// StorageFeatures indicates features supported by servicer.
+type StorageFeatures struct {
+
+	// operation features
+	CombineBlock                   bool
+	CommitAppend                   bool
+	CompleteMultipart              bool
+	Copy                           bool
+	Create                         bool
+	CreateAppend                   bool
+	CreateBlock                    bool
+	CreateDir                      bool
+	CreateLink                     bool
+	CreateMultipart                bool
+	CreatePage                     bool
+	Delete                         bool
+	Fetch                          bool
+	List                           bool
+	ListBlock                      bool
+	ListMultipart                  bool
+	Metadata                       bool
+	Move                           bool
+	QuerySignHTTPCompleteMultipart bool
+	QuerySignHTTPCreateMultipart   bool
+	QuerySignHTTPDelete            bool
+	QuerySignHTTPListMultipart     bool
+	QuerySignHTTPRead              bool
+	QuerySignHTTPWrite             bool
+	QuerySignHTTPWriteMultipart    bool
+	Read                           bool
+	Stat                           bool
+	Write                          bool
+	WriteAppend                    bool
+	WriteBlock                     bool
+	WriteMultipart                 bool
+	WritePage                      bool
+	// operation-related features
+	LoosePair             bool
+	VirtualDir            bool
+	VirtualObjectMetadata bool
+	WriteEmptyObject      bool
+}
+
+func (s StorageFeatures) Has(name string) bool {
+	switch name {
+	case "combine_block":
+		return s.CombineBlock
+	case "commit_append":
+		return s.CommitAppend
+	case "complete_multipart":
+		return s.CompleteMultipart
+	case "copy":
+		return s.Copy
+	case "create":
+		return s.Create
+	case "create_append":
+		return s.CreateAppend
+	case "create_block":
+		return s.CreateBlock
+	case "create_dir":
+		return s.CreateDir
+	case "create_link":
+		return s.CreateLink
+	case "create_multipart":
+		return s.CreateMultipart
+	case "create_page":
+		return s.CreatePage
+	case "delete":
+		return s.Delete
+	case "fetch":
+		return s.Fetch
+	case "list":
+		return s.List
+	case "list_block":
+		return s.ListBlock
+	case "list_multipart":
+		return s.ListMultipart
+	case "metadata":
+		return s.Metadata
+	case "move":
+		return s.Move
+	case "query_sign_http_complete_multipart":
+		return s.QuerySignHTTPCompleteMultipart
+	case "query_sign_http_create_multipart":
+		return s.QuerySignHTTPCreateMultipart
+	case "query_sign_http_delete":
+		return s.QuerySignHTTPDelete
+	case "query_sign_http_list_multipart":
+		return s.QuerySignHTTPListMultipart
+	case "query_sign_http_read":
+		return s.QuerySignHTTPRead
+	case "query_sign_http_write":
+		return s.QuerySignHTTPWrite
+	case "query_sign_http_write_multipart":
+		return s.QuerySignHTTPWriteMultipart
+	case "read":
+		return s.Read
+	case "stat":
+		return s.Stat
+	case "write":
+		return s.Write
+	case "write_append":
+		return s.WriteAppend
+	case "write_block":
+		return s.WriteBlock
+	case "write_multipart":
+		return s.WriteMultipart
+	case "write_page":
+		return s.WritePage
+	case "loose_pair":
+		return s.LoosePair
+	case "virtual_dir":
+		return s.VirtualDir
+	case "virtual_object_metadata":
+		return s.VirtualObjectMetadata
+	case "write_empty_object":
+		return s.WriteEmptyObject
+	default:
+		return false
+	}
 }

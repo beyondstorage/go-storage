@@ -50,7 +50,7 @@ func (m *StorageMeta) GetAppendNumberMaximum() (int, bool) {
 }
 func (m *StorageMeta) MustGetAppendNumberMaximum() int {
 	if m.bit&storageMetaIndexAppendNumberMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta append-number-maximum is not set"))
+		panic(fmt.Sprintf("storage meta append_number_maximum is not set"))
 	}
 	return m.appendNumberMaximum
 }
@@ -67,7 +67,7 @@ func (m *StorageMeta) GetAppendSizeMaximum() (int64, bool) {
 }
 func (m *StorageMeta) MustGetAppendSizeMaximum() int64 {
 	if m.bit&storageMetaIndexAppendSizeMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta append-size-maximum is not set"))
+		panic(fmt.Sprintf("storage meta append_size_maximum is not set"))
 	}
 	return m.appendSizeMaximum
 }
@@ -84,7 +84,7 @@ func (m *StorageMeta) GetAppendTotalSizeMaximum() (int64, bool) {
 }
 func (m *StorageMeta) MustGetAppendTotalSizeMaximum() int64 {
 	if m.bit&storageMetaIndexAppendTotalSizeMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta append-total-size-maximum is not set"))
+		panic(fmt.Sprintf("storage meta append_total_size_maximum is not set"))
 	}
 	return m.appendTotalSizeMaximum
 }
@@ -101,7 +101,7 @@ func (m *StorageMeta) GetCopySizeMaximum() (int64, bool) {
 }
 func (m *StorageMeta) MustGetCopySizeMaximum() int64 {
 	if m.bit&storageMetaIndexCopySizeMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta copy-size-maximum is not set"))
+		panic(fmt.Sprintf("storage meta copy_size_maximum is not set"))
 	}
 	return m.copySizeMaximum
 }
@@ -118,7 +118,7 @@ func (m *StorageMeta) GetFetchSizeMaximum() (int64, bool) {
 }
 func (m *StorageMeta) MustGetFetchSizeMaximum() int64 {
 	if m.bit&storageMetaIndexFetchSizeMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta fetch-size-maximum is not set"))
+		panic(fmt.Sprintf("storage meta fetch_size_maximum is not set"))
 	}
 	return m.fetchSizeMaximum
 }
@@ -135,7 +135,7 @@ func (m *StorageMeta) GetLocation() (string, bool) {
 }
 func (m *StorageMeta) MustGetLocation() string {
 	if m.bit&storageMetaIndexLocation == 0 {
-		panic(fmt.Sprintf("storage-meta location is not set"))
+		panic(fmt.Sprintf("storage meta location is not set"))
 	}
 	return m.location
 }
@@ -152,7 +152,7 @@ func (m *StorageMeta) GetMoveSizeMaximum() (int64, bool) {
 }
 func (m *StorageMeta) MustGetMoveSizeMaximum() int64 {
 	if m.bit&storageMetaIndexMoveSizeMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta move-size-maximum is not set"))
+		panic(fmt.Sprintf("storage meta move_size_maximum is not set"))
 	}
 	return m.moveSizeMaximum
 }
@@ -169,7 +169,7 @@ func (m *StorageMeta) GetMultipartNumberMaximum() (int, bool) {
 }
 func (m *StorageMeta) MustGetMultipartNumberMaximum() int {
 	if m.bit&storageMetaIndexMultipartNumberMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta multipart-number-maximum is not set"))
+		panic(fmt.Sprintf("storage meta multipart_number_maximum is not set"))
 	}
 	return m.multipartNumberMaximum
 }
@@ -186,7 +186,7 @@ func (m *StorageMeta) GetMultipartSizeMaximum() (int64, bool) {
 }
 func (m *StorageMeta) MustGetMultipartSizeMaximum() int64 {
 	if m.bit&storageMetaIndexMultipartSizeMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta multipart-size-maximum is not set"))
+		panic(fmt.Sprintf("storage meta multipart_size_maximum is not set"))
 	}
 	return m.multipartSizeMaximum
 }
@@ -203,7 +203,7 @@ func (m *StorageMeta) GetMultipartSizeMinimum() (int64, bool) {
 }
 func (m *StorageMeta) MustGetMultipartSizeMinimum() int64 {
 	if m.bit&storageMetaIndexMultipartSizeMinimum == 0 {
-		panic(fmt.Sprintf("storage-meta multipart-size-minimum is not set"))
+		panic(fmt.Sprintf("storage meta multipart_size_minimum is not set"))
 	}
 	return m.multipartSizeMinimum
 }
@@ -227,7 +227,7 @@ func (m *StorageMeta) GetSystemMetadata() (interface{}, bool) {
 }
 func (m *StorageMeta) MustGetSystemMetadata() interface{} {
 	if m.bit&storageMetaIndexSystemMetadata == 0 {
-		panic(fmt.Sprintf("storage-meta system-metadata is not set"))
+		panic(fmt.Sprintf("storage meta system_metadata is not set"))
 	}
 	return m.systemMetadata
 }
@@ -251,7 +251,7 @@ func (m *StorageMeta) GetWriteSizeMaximum() (int64, bool) {
 }
 func (m *StorageMeta) MustGetWriteSizeMaximum() int64 {
 	if m.bit&storageMetaIndexWriteSizeMaximum == 0 {
-		panic(fmt.Sprintf("storage-meta write-size-maximum is not set"))
+		panic(fmt.Sprintf("storage meta write_size_maximum is not set"))
 	}
 	return m.writeSizeMaximum
 }

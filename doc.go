@@ -31,5 +31,3 @@ The most common case to use a Storager service could be following:
 
 */
 package storage
-
-//go:generate go run -tags tools ./cmd/definitions

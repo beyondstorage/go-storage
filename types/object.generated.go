@@ -87,7 +87,7 @@ func (o *Object) MustGetAppendOffset() int64 {
 	o.stat()
 
 	if o.bit&objectIndexAppendOffset == 0 {
-		panic(fmt.Sprintf("object append-offset is not set"))
+		panic(fmt.Sprintf("object append_offset is not set"))
 	}
 	return o.appendOffset
 }
@@ -116,7 +116,7 @@ func (o *Object) MustGetContentDisposition() string {
 	o.stat()
 
 	if o.bit&objectIndexContentDisposition == 0 {
-		panic(fmt.Sprintf("object content-disposition is not set"))
+		panic(fmt.Sprintf("object content_disposition is not set"))
 	}
 	return o.contentDisposition
 }
@@ -143,7 +143,7 @@ func (o *Object) MustGetContentLength() int64 {
 	o.stat()
 
 	if o.bit&objectIndexContentLength == 0 {
-		panic(fmt.Sprintf("object content-length is not set"))
+		panic(fmt.Sprintf("object content_length is not set"))
 	}
 	return o.contentLength
 }
@@ -170,7 +170,7 @@ func (o *Object) MustGetContentMd5() string {
 	o.stat()
 
 	if o.bit&objectIndexContentMd5 == 0 {
-		panic(fmt.Sprintf("object content-md5 is not set"))
+		panic(fmt.Sprintf("object content_md5 is not set"))
 	}
 	return o.contentMd5
 }
@@ -197,7 +197,7 @@ func (o *Object) MustGetContentType() string {
 	o.stat()
 
 	if o.bit&objectIndexContentType == 0 {
-		panic(fmt.Sprintf("object content-type is not set"))
+		panic(fmt.Sprintf("object content_type is not set"))
 	}
 	return o.contentType
 }
@@ -258,7 +258,7 @@ func (o *Object) MustGetLastModified() time.Time {
 	o.stat()
 
 	if o.bit&objectIndexLastModified == 0 {
-		panic(fmt.Sprintf("object last-modified is not set"))
+		panic(fmt.Sprintf("object last_modified is not set"))
 	}
 	return o.lastModified
 }
@@ -289,7 +289,7 @@ func (o *Object) MustGetLinkTarget() string {
 	o.stat()
 
 	if o.bit&objectIndexLinkTarget == 0 {
-		panic(fmt.Sprintf("object link-target is not set"))
+		panic(fmt.Sprintf("object link_target is not set"))
 	}
 	return o.linkTarget
 }
@@ -329,7 +329,7 @@ func (o *Object) MustGetMultipartID() string {
 	o.stat()
 
 	if o.bit&objectIndexMultipartID == 0 {
-		panic(fmt.Sprintf("object multipart-id is not set"))
+		panic(fmt.Sprintf("object multipart_id is not set"))
 	}
 	return o.multipartID
 }
@@ -369,7 +369,7 @@ func (o *Object) MustGetSystemMetadata() interface{} {
 	o.stat()
 
 	if o.bit&objectIndexSystemMetadata == 0 {
-		panic(fmt.Sprintf("object system-metadata is not set"))
+		panic(fmt.Sprintf("object system_metadata is not set"))
 	}
 	return o.systemMetadata
 }
@@ -402,7 +402,7 @@ func (o *Object) MustGetUserMetadata() map[string]string {
 	o.stat()
 
 	if o.bit&objectIndexUserMetadata == 0 {
-		panic(fmt.Sprintf("object user-metadata is not set"))
+		panic(fmt.Sprintf("object user_metadata is not set"))
 	}
 	return o.userMetadata
 }
