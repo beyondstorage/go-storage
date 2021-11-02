@@ -1,7 +1,6 @@
 package definitions
 
 import (
-	"fmt"
 	"github.com/Xuanwo/gg"
 	"github.com/Xuanwo/templateutils"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +37,7 @@ func (gf *genNamespace) generateNamespace(nsName string, ops []Operation) {
 
 	nsNameP := templateutils.ToPascal(nsName)
 
-	structName := fmt.Sprintf("%s", nsNameP)
+	structName := nsNameP
 	sf := f.NewStruct(structName)
 	sf.AddLine()
 	sf.AddField("Features", "types."+nsNameP+"Features")
