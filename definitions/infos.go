@@ -193,7 +193,7 @@ var InfosStorageMetaArray = []Info{
 		Description: "Maximum size for write operation.",
 	},
 	{
-		Name:        "service_name",
+		Name:        "service",
 		Type:        Type{Name: "string"},
 		export:      true,
 		Description: "Name of Services",
