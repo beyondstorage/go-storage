@@ -22,6 +22,7 @@ func GenerateService(data Metadata, path string) {
 		g:    gg.New(),
 		data: data.Normalize(),
 		implemented: map[string]map[string]bool{
+			NamespaceFactory: {},
 			NamespaceService: {},
 			NamespaceStorage: {},
 		},
@@ -35,8 +36,12 @@ func GenerateService(data Metadata, path string) {
 	gs.generateSystemPairs()
 	gs.generateFactory()
 
-	gs.generateNamespace(gs.data.Service)
-	gs.generateNamespace(gs.data.Storage)
+	if gs.data.Service != nil {
+		gs.generateNamespace(gs.data.Service)
+	}
+	if gs.data.Storage != nil {
+		gs.generateNamespace(gs.data.Storage)
+	}
 
 	err := gs.g.WriteFile(path)
 	if err != nil {
@@ -71,9 +76,17 @@ func (gs *genService) buildImplemented(path string) {
 				continue
 			}
 
-			rt := NamespaceStorage
-			if v.Recv.Type == "*Service" {
+			rt := ""
+			switch v.Recv.Type {
+			case "*Service":
 				rt = NamespaceService
+			case "*Storage":
+				rt = NamespaceStorage
+			case "*Factory":
+				rt = NamespaceFactory
+			default:
+				// Ignore other methods.
+				continue
 			}
 			gs.implemented[rt][v.Name] = true
 		}
@@ -91,6 +104,7 @@ func (gs *genService) generateHeader() {
 		AddPath("net/http").
 		AddPath("strings").
 		AddPath("time").
+		AddPath("errors").
 		AddLine().
 		AddPath("go.beyondstorage.io/v5/services").
 		AddPath("go.beyondstorage.io/v5/types")
@@ -254,7 +268,171 @@ func (gs *genService) generateNamespace(ns Namespace) {
 }
 
 func (gs *genService) generateFactory() {
+	f := gs.g.NewGroup()
+	fd := gs.data.Factory
 
+	st := f.NewStruct("Factory")
+	for _, v := range SortPairs(fd) {
+		st.AddField(templateutils.ToPascal(v.Name), v.Type.FullName(gs.data.Name))
+	}
+
+	pm := make(map[string]bool)
+	for _, v := range fd {
+		pm[v.Name] = true
+	}
+
+	fromString := f.NewFunction("FromString").
+		WithReceiver("f", "*Factory").
+		AddParameter("conn", "string").
+		AddResult("err", "error")
+	fromString.AddBody(
+		gg.S(`	slash := strings.IndexByte(conn, '/')
+	question := strings.IndexByte(conn, '?')
+
+	var partService, partStorage, partParams string
+
+	if question != -1 {
+		if len(conn) > question {
+			partParams = conn[question+1:]
+		}
+		conn = conn[:question]
+	}
+
+	if slash != -1 {
+		partService = conn[:slash]
+		partStorage = conn[slash:]
+	} else {
+		partService = conn
+	}
+`))
+	parseService := gg.If(`partService != ""`)
+	if pm["credential"] && pm["endpoint"] {
+		parseService.AddBody(
+			gg.S(`at := strings.IndexByte(partService, '@')
+		if at == -1 {
+			f.Endpoint = partService
+		} else {
+			xs := strings.SplitN(partService, "@", 2)
+			f.Credential, f.Endpoint = xs[0], xs[1]
+		}`))
+	} else if pm["credential"] {
+		parseService.AddBody(gg.S("f.Credential = partService"))
+	} else if pm["endpoint"] {
+		parseService.AddBody(gg.S("f.Endpoint = partService"))
+	}
+	fromString.AddBody(parseService)
+
+	parseStorage := gg.If(`partStorage != ""`)
+	// WorkDir is required.
+	if pm["name"] {
+		parseStorage.AddBody(gg.S(`slash := strings.IndexByte(partStorage[1:], '/')
+		if slash == -1 {
+			f.Name = partStorage[1:]
+		} else {
+			f.Name, f.WorkDir = partStorage[1:slash], partStorage[slash:]
+		}
+`))
+	} else {
+		parseStorage.AddBody(gg.S("f.WorkDir = partStorage"))
+	}
+	fromString.AddBody(parseStorage)
+
+	parseParams := gg.If(`partParams != ""`)
+	parseParams.AddBody(
+		gg.S(`xs := strings.Split(partParams, "&")`),
+		gg.For("_, v := range xs").AddBody(
+			gg.S(`var key, value string
+			vs := strings.SplitN(v, "=", 2)
+			key = vs[0]
+			if len(vs) > 1 {
+				value = vs[1]
+			}`),
+			gg.Embed(func() gg.Node {
+				s := gg.Switch("key")
+
+				for _, v := range SortPairs(fd) {
+					nameP := templateutils.ToPascal(v.Name)
+
+					ca := s.NewCase(gg.Lit(v.Name))
+					switch v.Type.Name {
+					case "bool":
+						ca.AddBody(gg.S("f.%s = true", nameP))
+					case "string":
+						ca.AddBody(gg.S("f.%s = value", nameP))
+					}
+				}
+				return s
+			}),
+		),
+	)
+
+	fromString.AddBody(parseParams)
+
+	fromString.AddBody(gg.Return("nil"))
+
+	withPairs := f.NewFunction("WithPairs").
+		WithReceiver("f", "*Factory").
+		AddParameter("ps", "...types.Pair").
+		AddResult("err", "error")
+	withPairs.AddBody(
+		gg.For("_, v := range ps").AddBody(gg.Embed(func() gg.Node {
+			s := gg.Switch("v.Key")
+
+			for _, v := range SortPairs(fd) {
+				nameP := templateutils.ToPascal(v.Name)
+
+				s.NewCase(gg.Lit(v.Name)).AddBody(
+					gg.S("f.%s = v.Value.(%s)",
+						nameP, v.Type.FullName(gs.data.Name)))
+			}
+
+			return s
+		})),
+		gg.Return("nil"),
+	)
+
+	fromMap := f.NewFunction("FromMap").
+		WithReceiver("f", "*Factory").
+		AddParameter("m", "map[string]interface{}").
+		AddResult("err", "error")
+	fromMap.AddBody(`return errors.New("FromMap not implemented")`)
+
+	// Generate NewServicer
+	newServicer := f.NewFunction("NewServicer").
+		WithReceiver("f", "*Factory").
+		AddResult("srv", "types.Servicer").
+		AddResult("err", "error")
+	if gs.data.Service == nil {
+		newServicer.AddBody(`return nil, errors.New("servicer not implemented")`)
+	} else if !gs.implemented[NamespaceFactory]["newService"] {
+		log.Error("We should implement operation [newService], but not")
+		log.Infof("Please implement them like the following:")
+
+		println("---")
+		println("func (f *Factory) newService() (*Service, error) {}")
+		println("---")
+	} else {
+		newServicer.AddBody("return f.newService()")
+	}
+
+	// Generate NewStorager
+	newStorager := f.NewFunction("NewStorager").
+		WithReceiver("f", "*Factory").
+		AddResult("sto", "types.Storager").
+		AddResult("err", "error").
+		AddBody()
+	if gs.data.Storage == nil {
+		newStorager.AddBody(`return nil, errors.New("storager not implemented")`)
+	} else if !gs.implemented[NamespaceFactory]["newStorage"] {
+		log.Error("We should implement operation [newStorage], but not")
+		log.Infof("Please implement them like the following:")
+
+		println("---")
+		println("func (f *Factory) newStorage() (*Storage, error) {}")
+		println("---")
+	} else {
+		newStorager.AddBody("return f.newStorage()")
+	}
 }
 
 func (gs *genService) generateFunctionPairs(ns Namespace, op Operation) {
@@ -349,7 +527,6 @@ func (gs *genService) generateFunction(ns Namespace, op Operation) {
 		for _, v := range op.Results {
 			gfn.AddResult(v.Name, v.Type.FullName(ns.Name()))
 		}
-		gfn.AddBody(gg.S(`panic("not implemented")`))
 		xg.Write(&buf)
 
 		println("---")

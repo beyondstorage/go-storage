@@ -15,3 +15,6 @@ func (s *Storage) formatError(op string, err error, args ...string) error {
 func (s *Storage) String() string {
 	return ""
 }
+
+func (f *Factory) newService() (*Service, error) { return nil, nil }
+func (f *Factory) newStorage() (*Storage, error) { return nil, nil }
