@@ -62,7 +62,7 @@ func (gs *genService) buildImplemented(path string) {
 			continue
 		}
 
-		content, err := os.ReadFile(v.Name())
+		content, err := os.ReadFile(filepath.Join(base, v.Name()))
 		if err != nil {
 			return
 		}
@@ -88,7 +88,6 @@ func (gs *genService) buildImplemented(path string) {
 				// Ignore other methods.
 				continue
 			}
-			gs.implemented[rt][v.Name] = true
 		}
 	}
 }

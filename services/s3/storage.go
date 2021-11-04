@@ -213,7 +213,10 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 		_, err = s.service.AbortMultipartUpload(ctx, abortInput)
 
 		if err != nil {
-			// AbortMultipartUpload is idempotent in s3, but non-idempotent in minio, we need to omit `NoSuchUpload` error for compatibility.
+			// AbortMultipartUpload is non-idempotent in s3 & minio, we need to omit `NoSuchUpload` error for compatibility.
+			// AWS S3 is inconsistent in its behavior, it returns 204 No Content within 24 hours and returns 404 Not Found after 24hours.
+			// Minio is consistent in its behavior, it always returns 404 Not Found.
+			// ref: https://github.com/minio/minio/discussions/13495
 			// ref: [GSP-46](https://github.com/beyondstorage/specs/blob/master/rfcs/46-idempotent-delete.md)
 			e := &s3types.NoSuchUpload{}
 			if errors.As(err, &e) {
