@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -93,6 +94,114 @@ func WithStorageClass(v string) types.Pair {
 // tests connection string
 func WithStringPair(v string) types.Pair {
 	return types.Pair{Key: "string_pair", Value: v}
+}
+
+type Factory struct {
+	Credential          string
+	DefaultStorageClass string
+	DisableURICleaning  bool
+	Endpoint            string
+	Location            string
+	Name                string
+	WorkDir             string
+}
+
+func (f *Factory) FromString(conn string) (err error) {
+	slash := strings.IndexByte(conn, '/')
+	question := strings.IndexByte(conn, '?')
+
+	var partService, partStorage, partParams string
+
+	if question != -1 {
+		if len(conn) > question {
+			partParams = conn[question+1:]
+		}
+		conn = conn[:question]
+	}
+
+	if slash != -1 {
+		partService = conn[:slash]
+		partStorage = conn[slash:]
+	} else {
+		partService = conn
+	}
+
+	if partService != "" {
+		at := strings.IndexByte(partService, '@')
+		if at == -1 {
+			f.Endpoint = partService
+		} else {
+			xs := strings.SplitN(partService, "@", 2)
+			f.Credential, f.Endpoint = xs[0], xs[1]
+		}
+	}
+	if partStorage != "" {
+		slash := strings.IndexByte(partStorage[1:], '/')
+		if slash == -1 {
+			f.Name = partStorage[1:]
+		} else {
+			f.Name, f.WorkDir = partStorage[1:slash], partStorage[slash:]
+		}
+
+	}
+	if partParams != "" {
+		xs := strings.Split(partParams, "&")
+		for _, v := range xs {
+			var key, value string
+			vs := strings.SplitN(v, "=", 2)
+			key = vs[0]
+			if len(vs) > 1 {
+				value = vs[1]
+			}
+			switch key {
+			case "credential":
+				f.Credential = value
+			case "default_storage_class":
+				f.DefaultStorageClass = value
+			case "disable_uri_cleaning":
+				f.DisableURICleaning = true
+			case "endpoint":
+				f.Endpoint = value
+			case "location":
+				f.Location = value
+			case "name":
+				f.Name = value
+			case "work_dir":
+				f.WorkDir = value
+			}
+		}
+	}
+	return nil
+}
+func (f *Factory) WithPairs(ps ...types.Pair) (err error) {
+	for _, v := range ps {
+		switch v.Key {
+		case "credential":
+			f.Credential = v.Value.(string)
+		case "default_storage_class":
+			f.DefaultStorageClass = v.Value.(string)
+		case "disable_uri_cleaning":
+			f.DisableURICleaning = v.Value.(bool)
+		case "endpoint":
+			f.Endpoint = v.Value.(string)
+		case "location":
+			f.Location = v.Value.(string)
+		case "name":
+			f.Name = v.Value.(string)
+		case "work_dir":
+			f.WorkDir = v.Value.(string)
+		}
+	}
+	return nil
+}
+func (f *Factory) FromMap(m map[string]interface{}) (err error) {
+	return errors.New("FromMap not implemented")
+}
+func (f *Factory) NewServicer() (srv types.Servicer, err error) {
+	return f.newService()
+}
+func (f *Factory) NewStorager() (sto types.Storager, err error) {
+	return f.newStorage()
 }
 
 var _ types.Servicer = &Service{}
