@@ -88,6 +88,7 @@ func (gs *genService) buildImplemented(path string) {
 				// Ignore other methods.
 				continue
 			}
+			gs.implemented[rt][templateutils.ToSnack(v.Name)] = true
 		}
 	}
 }
@@ -403,7 +404,7 @@ func (gs *genService) generateFactory() {
 		AddResult("err", "error")
 	if gs.data.Service == nil {
 		newServicer.AddBody(`return nil, errors.New("servicer not implemented")`)
-	} else if !gs.implemented[NamespaceFactory]["newService"] {
+	} else if !gs.implemented[NamespaceFactory]["new_service"] {
 		log.Error("We should implement operation [newService], but not")
 		log.Infof("Please implement them like the following:")
 
@@ -422,7 +423,7 @@ func (gs *genService) generateFactory() {
 		AddBody()
 	if gs.data.Storage == nil {
 		newStorager.AddBody(`return nil, errors.New("storager not implemented")`)
-	} else if !gs.implemented[NamespaceFactory]["newStorage"] {
+	} else if !gs.implemented[NamespaceFactory]["new_storage"] {
 		log.Error("We should implement operation [newStorage], but not")
 		log.Infof("Please implement them like the following:")
 
