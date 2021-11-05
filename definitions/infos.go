@@ -196,7 +196,7 @@ var InfosStorageMetaArray = []Info{
 		Name:        "service",
 		Type:        Type{Name: "string"},
 		export:      true,
-		Description: "Name of Services",
+		Description: "Service name.",
 	},
 }
 
