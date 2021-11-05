@@ -16,9 +16,10 @@ const (
 	storageMetaIndexMultipartSizeMaximum   = 1 << 8
 	storageMetaIndexMultipartSizeMinimum   = 1 << 9
 	storageMetaIndexName                   = 1 << 10
-	storageMetaIndexSystemMetadata         = 1 << 11
-	storageMetaIndexWorkDir                = 1 << 12
-	storageMetaIndexWriteSizeMaximum       = 1 << 13
+	storageMetaIndexService                = 1 << 11
+	storageMetaIndexSystemMetadata         = 1 << 12
+	storageMetaIndexWorkDir                = 1 << 13
+	storageMetaIndexWriteSizeMaximum       = 1 << 14
 )
 
 type StorageMeta struct {
@@ -33,6 +34,7 @@ type StorageMeta struct {
 	multipartSizeMaximum   int64
 	multipartSizeMinimum   int64
 	Name                   string
+	Service                string
 	systemMetadata         interface{}
 	WorkDir                string
 	writeSizeMaximum       int64
@@ -217,6 +219,13 @@ func (m *StorageMeta) GetName() string {
 }
 func (m *StorageMeta) SetName(v string) *StorageMeta {
 	m.Name = v
+	return m
+}
+func (m *StorageMeta) GetService() string {
+	return m.Service
+}
+func (m *StorageMeta) SetService(v string) *StorageMeta {
+	m.Service = v
 	return m
 }
 func (m *StorageMeta) GetSystemMetadata() (interface{}, bool) {

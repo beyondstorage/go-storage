@@ -1,8 +1,9 @@
 package definitions
 
 import (
-	"github.com/Xuanwo/templateutils"
 	"sort"
+
+	"github.com/Xuanwo/templateutils"
 )
 
 type Info struct {
@@ -191,6 +192,12 @@ var InfosStorageMetaArray = []Info{
 		Type:        Type{Name: "int64"},
 		Description: "Maximum size for write operation.",
 	},
+	{
+		Name:        "service",
+		Type:        Type{Name: "string"},
+		export:      true,
+		Description: "Service name.",
+	},
 }
 
 func init() {
@@ -200,8 +207,8 @@ func init() {
 		InfosObjectMetaArray[k].global = true
 	}
 	for k := range InfosStorageMetaArray {
-		InfosObjectMetaArray[k].Namespace = NamespaceStorage
-		InfosObjectMetaArray[k].Category = CategoryMeta
-		InfosObjectMetaArray[k].global = true
+		InfosStorageMetaArray[k].Namespace = NamespaceStorage
+		InfosStorageMetaArray[k].Category = CategoryMeta
+		InfosStorageMetaArray[k].global = true
 	}
 }
