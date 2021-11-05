@@ -5,8 +5,8 @@ github.com/Xuanwo/go-bufferpool v0.2.0 h1:DXzqJD9lJufXbT/03GrcEvYOs4gXYUj9/g5yi6
 github.com/Xuanwo/go-bufferpool v0.2.0/go.mod h1:Mle++9GGouhOwGj52i9PJLNAPmW2nb8PWBP7JJzNCzk=
 github.com/Xuanwo/templateutils v0.1.0 h1:WpkWOqQtIQ2vAIpJLa727DdN8WtxhUkkbDGa6UhntJY=
 github.com/Xuanwo/templateutils v0.1.0/go.mod h1:OdE0DJ+CJxDBq6psX5DPV+gOZi8bhuHuVUpPCG++Wb8=
-github.com/baidubce/bce-sdk-go v0.9.91 h1:JC0F6v1Tcw3SGDKPb8tpq/3qZiLBdQGd19WqlNBTozg=
-github.com/baidubce/bce-sdk-go v0.9.91/go.mod h1:zbYJMQwE4IZuyrJiFO8tO8NbtYiKTFTbwh4eIsqjVdg=
+github.com/baidubce/bce-sdk-go v0.9.92 h1:huBcw0BmBNtI6Irbiq1Ovwr3wwkviptGhKajV0eWgV4=
+github.com/baidubce/bce-sdk-go v0.9.92/go.mod h1:zbYJMQwE4IZuyrJiFO8tO8NbtYiKTFTbwh4eIsqjVdg=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d h1:U+s90UTSYgptZMwQh2aRr3LuazLJIa+Pg3Kc1ylSYVY=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/dave/dst v0.26.2 h1:lnxLAKI3tx7MgLNVDirFCsDTlTG9nKTk7GcptKcWSwY=
