@@ -10,6 +10,8 @@ on:
       - 'services/bos/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/bos/**'

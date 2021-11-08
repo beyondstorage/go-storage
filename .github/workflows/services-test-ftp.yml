@@ -10,6 +10,8 @@ on:
       - 'services/ftp/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/ftp/**'

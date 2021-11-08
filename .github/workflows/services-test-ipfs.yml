@@ -10,6 +10,8 @@ on:
       - 'services/ipfs/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/ipfs/**'

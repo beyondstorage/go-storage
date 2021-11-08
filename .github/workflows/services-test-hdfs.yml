@@ -10,6 +10,8 @@ on:
       - 'services/hdfs/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/hdfs/**'

@@ -10,6 +10,8 @@ on:
       - 'services/qingstor/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/qingstor/**'

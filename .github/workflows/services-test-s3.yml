@@ -10,6 +10,8 @@ on:
       - 'services/s3/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/s3/**'
