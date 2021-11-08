@@ -52,6 +52,19 @@ func init() {
 	}
 	PairArray = append(PairArray, dps...)
 
+	// Build feature pairs.
+	fps := make([]Pair, 0)
+	for _, f := range FeaturesArray {
+		fps = append(fps, Pair{
+			Name:        "enable_" + f.Name,
+			Type:        Type{Name: "bool"},
+			Description: "Enable feature " + f.Name,
+			global:      true,
+		})
+	}
+	PairArray = append(PairArray, fps...)
+
+	// Setup maps.
 	for _, v := range PairArray {
 		PairMap[v.Name] = v
 	}
