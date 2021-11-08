@@ -10,6 +10,8 @@ on:
       - 'services/gcs/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/gcs/**'

@@ -70,6 +70,8 @@ on:
       - 'services/azblob/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/azblob/**'

@@ -10,6 +10,8 @@ on:
       - 'services/gdrive/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/gdrive/**'
