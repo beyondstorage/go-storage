@@ -189,7 +189,16 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	input.Bucket = s.bucket
 	input.Key = rp
 
-	output, err := s.client.GetObject(input)
+	output := &obs.GetObjectOutput{}
+	if opt.HasOffset && !opt.HasSize {
+		output, err = s.client.GetObject(input, rp, nil, opt.Offset)
+	} else if !opt.HasOffset && opt.HasSize {
+		output, err = s.client.GetObject(input, rp, nil, 0, opt.Size-1)
+	} else if opt.HasSize && opt.HasOffset {
+		output, err = s.client.GetObject(input, rp, nil, opt.Offset, opt.Offset+opt.Size-1)
+	} else {
+		output, err = s.client.GetObject(input, rp, nil)
+	}
 	if err != nil {
 		return 0, err
 	}
