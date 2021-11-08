@@ -23,8 +23,19 @@ func GeneratePair(path string) {
 
 %s %s`, pname, v.Name, pname, v.Description)
 		xfn := f.NewFunction("With" + pname)
-		xfn.AddParameter("v", v.Type.FullName("pairs"))
 		xfn.AddResult("p", "types.Pair")
+
+		// If value type is bool, we don't need to accept parameters.
+		if v.Type.Name == "bool" {
+			xfn.AddBody(
+				gg.Return(
+					gg.Value("types.Pair").
+						AddField("Key", gg.Lit(v.Name)).
+						AddField("Value", "true")))
+			continue
+		}
+
+		xfn.AddParameter("v", v.Type.FullName("pairs"))
 		xfn.AddBody(
 			gg.Return(
 				gg.Value("types.Pair").

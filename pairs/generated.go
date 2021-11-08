@@ -52,6 +52,41 @@ func WithDefaultIoCallback(v func([]byte)) (p types.Pair) {
 	return types.Pair{Key: "default_io_callback", Value: v}
 }
 
+// WithEnableLoosePair will apply enable_loose_pair value to Options.
+//
+// EnableLoosePair Enable feature loose_pair
+func WithEnableLoosePair() (p types.Pair) {
+	return types.Pair{Key: "enable_loose_pair", Value: true}
+}
+
+// WithEnableVirtualDir will apply enable_virtual_dir value to Options.
+//
+// EnableVirtualDir Enable feature virtual_dir
+func WithEnableVirtualDir() (p types.Pair) {
+	return types.Pair{Key: "enable_virtual_dir", Value: true}
+}
+
+// WithEnableVirtualLink will apply enable_virtual_link value to Options.
+//
+// EnableVirtualLink Enable feature virtual_link
+func WithEnableVirtualLink() (p types.Pair) {
+	return types.Pair{Key: "enable_virtual_link", Value: true}
+}
+
+// WithEnableVirtualObjectMetadata will apply enable_virtual_object_metadata value to Options.
+//
+// EnableVirtualObjectMetadata Enable feature virtual_object_metadata
+func WithEnableVirtualObjectMetadata() (p types.Pair) {
+	return types.Pair{Key: "enable_virtual_object_metadata", Value: true}
+}
+
+// WithEnableWriteEmptyObject will apply enable_write_empty_object value to Options.
+//
+// EnableWriteEmptyObject Enable feature write_empty_object
+func WithEnableWriteEmptyObject() (p types.Pair) {
+	return types.Pair{Key: "enable_write_empty_object", Value: true}
+}
+
 // WithEndpoint will apply endpoint value to Options.
 //
 // Endpoint specify how to provide endpoint for service or storage

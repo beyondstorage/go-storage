@@ -13,6 +13,7 @@ type Metadata struct {
 
 func (m Metadata) Normalize() Metadata {
 	m.buildDefaultPairs()
+	m.buildFeaturePairs()
 	return m
 }
 
@@ -30,4 +31,17 @@ func (m *Metadata) buildDefaultPairs() {
 	}
 	m.Pairs = append(m.Pairs, dp...)
 	m.Factory = append(m.Factory, dp...)
+}
+
+func (m *Metadata) buildFeaturePairs() {
+	dp := make(map[string]bool)
+	for _, v := range []Namespace{m.Service, m.Storage} {
+		for _, f := range v.VirtualFeatures() {
+			dp["enable_"+f.Name] = true
+		}
+	}
+
+	for name := range dp {
+		m.Factory = append(m.Factory, PairMap[name])
+	}
 }
