@@ -1,4 +1,4 @@
-package meta
+package main
 
 import (
 	def "go.beyondstorage.io/v5/definitions"
@@ -41,7 +41,13 @@ var Metadata = def.Metadata{
 		pairUseArnRegion,
 	},
 	Service: def.Service{
-		Features: ServiceFeatures,
+		Features: types.ServiceFeatures{
+			Create: true,
+			Delete: true,
+			Get:    true,
+			List:   true,
+		},
+
 		Create: []def.Pair{
 			def.PairLocation,
 		},
@@ -54,7 +60,27 @@ var Metadata = def.Metadata{
 		},
 	},
 	Storage: def.Storage{
-		Features: StorageFeatures,
+		Features: types.StorageFeatures{
+			VirtualDir:  true,
+			VirtualLink: true,
+
+			CompleteMultipart:           true,
+			Create:                      true,
+			CreateDir:                   true,
+			CreateLink:                  true,
+			CreateMultipart:             true,
+			Delete:                      true,
+			List:                        true,
+			ListMultipart:               true,
+			Metadata:                    true,
+			QuerySignHTTPRead:           true,
+			QuerySignHTTPWrite:          true,
+			QuerySignHTTPWriteMultipart: true,
+			Read:                        true,
+			Stat:                        true,
+			Write:                       true,
+			WriteMultipart:              true,
+		},
 
 		Create: []def.Pair{
 			def.PairMultipartID,
@@ -147,31 +173,6 @@ var Metadata = def.Metadata{
 			pairExpectedBucketOwner,
 		},
 	},
-}
-var ServiceFeatures = types.ServiceFeatures{
-	Create: true,
-	Delete: true,
-	Get:    true,
-	List:   true,
-}
-
-var StorageFeatures = types.StorageFeatures{
-	CompleteMultipart:           true,
-	Create:                      true,
-	CreateDir:                   true,
-	CreateLink:                  true,
-	CreateMultipart:             true,
-	Delete:                      true,
-	List:                        true,
-	ListMultipart:               true,
-	Metadata:                    true,
-	QuerySignHTTPRead:           true,
-	QuerySignHTTPWrite:          true,
-	QuerySignHTTPWriteMultipart: true,
-	Read:                        true,
-	Stat:                        true,
-	Write:                       true,
-	WriteMultipart:              true,
 }
 
 var pairForcePathStyle = def.Pair{

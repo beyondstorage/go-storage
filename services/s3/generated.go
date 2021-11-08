@@ -177,8 +177,13 @@ func WithUseArnRegion() types.Pair {
 }
 
 type Factory struct {
+	storageFeatures types.StorageFeatures
+	serviceFeatures types.ServiceFeatures
+
 	Credential          string
 	DefaultStorageClass string
+	EnableVirtualDir    bool
+	EnableVirtualLink   bool
 	Endpoint            string
 	ForcePathStyle      bool
 	Location            string
@@ -240,6 +245,10 @@ func (f *Factory) FromString(conn string) (err error) {
 				f.Credential = value
 			case "default_storage_class":
 				f.DefaultStorageClass = value
+			case "enable_virtual_dir":
+				f.EnableVirtualDir = true
+			case "enable_virtual_link":
+				f.EnableVirtualLink = true
 			case "endpoint":
 				f.Endpoint = value
 			case "force_path_style":
@@ -266,6 +275,10 @@ func (f *Factory) WithPairs(ps ...types.Pair) (err error) {
 			f.Credential = v.Value.(string)
 		case "default_storage_class":
 			f.DefaultStorageClass = v.Value.(string)
+		case "enable_virtual_dir":
+			f.EnableVirtualDir = v.Value.(bool)
+		case "enable_virtual_link":
+			f.EnableVirtualLink = v.Value.(bool)
 		case "endpoint":
 			f.Endpoint = v.Value.(string)
 		case "force_path_style":
@@ -288,9 +301,35 @@ func (f *Factory) FromMap(m map[string]interface{}) (err error) {
 	return errors.New("FromMap not implemented")
 }
 func (f *Factory) NewServicer() (srv types.Servicer, err error) {
+	f.serviceFeatures.Create = true
+	f.serviceFeatures.Delete = true
+	f.serviceFeatures.Get = true
+	f.serviceFeatures.List = true
 	return f.newService()
 }
 func (f *Factory) NewStorager() (sto types.Storager, err error) {
+	f.storageFeatures.CompleteMultipart = true
+	f.storageFeatures.Create = true
+	f.storageFeatures.CreateDir = true
+	f.storageFeatures.CreateLink = true
+	f.storageFeatures.CreateMultipart = true
+	f.storageFeatures.Delete = true
+	f.storageFeatures.List = true
+	f.storageFeatures.ListMultipart = true
+	f.storageFeatures.Metadata = true
+	f.storageFeatures.QuerySignHTTPRead = true
+	f.storageFeatures.QuerySignHTTPWrite = true
+	f.storageFeatures.QuerySignHTTPWriteMultipart = true
+	f.storageFeatures.Read = true
+	f.storageFeatures.Stat = true
+	f.storageFeatures.Write = true
+	f.storageFeatures.WriteMultipart = true
+	if f.EnableVirtualDir {
+		f.storageFeatures.VirtualDir = true
+	}
+	if f.EnableVirtualLink {
+		f.storageFeatures.VirtualLink = true
+	}
 	return f.newStorage()
 }
 
