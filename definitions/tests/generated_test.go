@@ -203,6 +203,14 @@ func (f *Factory) NewServicer() (srv types.Servicer, err error) {
 func (f *Factory) NewStorager() (sto types.Storager, err error) {
 	return f.newStorage()
 }
+func (f *Factory) serviceFeatures() (s types.ServiceFeatures) {
+	s.Delete = true
+	return
+}
+func (f *Factory) storageFeatures() (s types.StorageFeatures) {
+	s.Read = true
+	return
+}
 
 var _ types.Servicer = &Service{}
 
