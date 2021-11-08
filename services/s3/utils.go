@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"go.beyondstorage.io/services/s3/v3/internal/meta"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -20,18 +21,20 @@ import (
 	"go.beyondstorage.io/credential"
 	"go.beyondstorage.io/endpoint"
 	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
 	typ "go.beyondstorage.io/v5/types"
 )
 
 // Service is the s3 service config.
 type Service struct {
-	cfg          aws.Config
-	options      []func(*s3.Options)
-	service      *s3.Client
-	defaultPairs DefaultServicePairs
-	features     ServiceFeatures
+	f Factory
+
+	cfg     aws.Config
+	options []func(*s3.Options)
+	service *s3.Client
+
+	features     typ.ServiceFeatures
+	defaultPairs typ.DefaultServicePairs
 
 	typ.UnimplementedServicer
 }
@@ -43,20 +46,17 @@ func (s *Service) String() string {
 
 // Storage is the s3 object storage service.
 type Storage struct {
+	f Factory
+
 	service *s3.Client
 
 	name    string
 	workDir string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs typ.DefaultStoragePairs
+	features     typ.StorageFeatures
 
 	typ.UnimplementedStorager
-	typ.UnimplementedDirer
-	typ.UnimplementedMultiparter
-	typ.UnimplementedLinker
-	typ.UnimplementedStorageHTTPSigner
-	typ.UnimplementedMultipartHTTPSigner
 }
 
 // String implements Storager.String
@@ -69,46 +69,58 @@ func (s *Storage) String() string {
 
 // New will create both Servicer and Storager.
 func New(pairs ...typ.Pair) (typ.Servicer, typ.Storager, error) {
-	return newServicerAndStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, nil, err
+	}
+	srv, err := f.NewServicer()
+	if err != nil {
+		return nil, nil, err
+	}
+	sto, err := f.NewStorager()
+	if err != nil {
+		return nil, nil, err
+	}
+	return srv, sto, nil
 }
 
 // NewServicer will create Servicer only.
 func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
-	return newServicer(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
 }
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	_, store, err := newServicerAndStorager(pairs...)
-	return store, err
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
-func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
+func (f *Factory) newService() (srv *Service, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err)}
 		}
 	}()
 
-	opt, err := parsePairServiceNew(pairs)
+	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		return nil, err
-	}
-
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithHTTPClient(httpclient.New(opt.HTTPClientOptions)))
-	if err != nil {
-		return nil, err
-	}
-
-	// Set s3 config's http client
-	if opt.HasHTTPClientOptions {
-		cfg.HTTPClient = httpclient.New(opt.HTTPClientOptions)
 	}
 
 	var opts []func(*s3.Options)
 
 	// Handle credential
-	cp, err := credential.Parse(opt.Credential)
+	cp, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
@@ -117,12 +129,12 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		ak, sk := cp.Hmac()
 		cfg.Credentials = aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(ak, sk, ""))
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 
 	// Parse endpoint.
-	if opt.HasEndpoint {
-		ep, err := endpoint.Parse(opt.Endpoint)
+	if f.Endpoint != "" {
+		ep, err := endpoint.Parse(f.Endpoint)
 		if err != nil {
 			return nil, err
 		}
@@ -134,7 +146,7 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		case endpoint.ProtocolHTTPS:
 			url, _, _ = ep.HTTPS()
 		default:
-			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 		}
 		opts = append(opts, s3.WithEndpointResolver(s3.EndpointResolverFromURL(url)))
 	}
@@ -156,17 +168,17 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	})
 	opts = append(opts, apiOptions)
 
-	if opt.ForcePathStyle {
+	if f.ForcePathStyle {
 		opts = append(opts, func(o *s3.Options) {
 			o.UsePathStyle = true
 		})
 	}
-	if opt.UseAccelerate {
+	if f.UseAccelerate {
 		opts = append(opts, func(o *s3.Options) {
 			o.UseAccelerate = true
 		})
 	}
-	if opt.UseArnRegion {
+	if f.UseArnRegion {
 		opts = append(opts, func(o *s3.Options) {
 			o.UseARNRegion = true
 		})
@@ -175,31 +187,11 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	service := s3.NewFromConfig(cfg, opts...)
 
 	srv = &Service{
-		cfg:     cfg,
-		options: opts,
-		service: service,
-	}
-
-	if opt.HasDefaultServicePairs {
-		srv.defaultPairs = opt.DefaultServicePairs
-	}
-	if opt.HasServiceFeatures {
-		srv.features = opt.ServiceFeatures
-	}
-	return
-}
-
-// New will create a new s3 service.
-func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, err error) {
-	srv, err = newServicer(pairs...)
-	if err != nil {
-		return
-	}
-
-	store, err = srv.newStorage(pairs...)
-	if err != nil {
-		err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		return
+		f:        *f,
+		features: meta.ServiceFeatures,
+		cfg:      cfg,
+		options:  opts,
+		service:  service,
 	}
 	return
 }
@@ -241,32 +233,28 @@ func formatError(err error) error {
 }
 
 // newStorage will create a new client.
-func (s *Service) newStorage(pairs ...typ.Pair) (st *Storage, err error) {
-	opt, err := parsePairStorageNew(pairs)
+func (f *Factory) newStorage() (st *Storage, err error) {
+	s, err := f.newService()
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	// Copy config to prevent change the service config.
 	cfg := s.cfg
-	if opt.HasLocation {
-		cfg.Region = opt.Location
+	if f.Location != "" {
+		cfg.Region = f.Location
 	}
 
 	st = &Storage{
-		service: s3.NewFromConfig(cfg, s.options...),
-		name:    opt.Name,
-		workDir: "/",
+		f:        *f,
+		features: meta.StorageFeatures,
+		service:  s3.NewFromConfig(cfg, s.options...),
+		name:     f.Name,
+		workDir:  "/",
 	}
 
-	if opt.HasDefaultStoragePairs {
-		st.defaultPairs = opt.DefaultStoragePairs
-	}
-	if opt.HasStorageFeatures {
-		st.features = opt.StorageFeatures
-	}
-	if opt.HasWorkDir {
-		st.workDir = opt.WorkDir
+	if f.WorkDir != "" {
+		st.workDir = f.WorkDir
 	}
 	return st, nil
 }
@@ -389,8 +377,8 @@ func (s *Storage) formatGetObjectInput(path string, opt pairStorageRead) (input 
 		input.Range = aws.String(fmt.Sprintf("bytes=0-%d", opt.Size-1))
 	}
 
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 	if opt.HasServerSideEncryptionCustomerAlgorithm {
 		input.SSECustomerAlgorithm, input.SSECustomerKey, input.SSECustomerKeyMD5, err = calculateEncryptionHeaders(opt.ServerSideEncryptionCustomerAlgorithm, opt.ServerSideEncryptionCustomerKey)
@@ -417,8 +405,8 @@ func (s *Storage) formatPutObjectInput(path string, size int64, opt pairStorageW
 	if opt.HasStorageClass {
 		input.StorageClass = s3types.StorageClass(opt.StorageClass)
 	}
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 	if opt.HasServerSideEncryptionBucketKeyEnabled {
 		input.BucketKeyEnabled = opt.ServerSideEncryptionBucketKeyEnabled
@@ -452,8 +440,8 @@ func (s *Storage) formatAbortMultipartUploadInput(path string, opt pairStorageDe
 		UploadId: aws.String(opt.MultipartID),
 	}
 
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 
 	return
@@ -476,8 +464,8 @@ func (s *Storage) formatDeleteObjectInput(path string, opt pairStorageDelete) (i
 		Key:    aws.String(rp),
 	}
 
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 
 	return
@@ -494,8 +482,8 @@ func (s *Storage) formatCreateMultipartUploadInput(path string, opt pairStorageC
 	if opt.HasServerSideEncryptionBucketKeyEnabled {
 		input.BucketKeyEnabled = opt.ServerSideEncryptionBucketKeyEnabled
 	}
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 	if opt.HasServerSideEncryptionCustomerAlgorithm {
 		input.SSECustomerAlgorithm, input.SSECustomerKey, input.SSECustomerKeyMD5, err = calculateEncryptionHeaders(opt.ServerSideEncryptionCustomerAlgorithm, opt.ServerSideEncryptionCustomerKey)
@@ -535,8 +523,8 @@ func (s *Storage) formatCompleteMultipartUploadInput(o *typ.Object, parts []*typ
 		UploadId:        aws.String(o.MustGetMultipartID()),
 	}
 
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 
 	return
@@ -553,8 +541,8 @@ func (s *Storage) formatUploadPartInput(o *typ.Object, size int64, index int, op
 		UploadId:      aws.String(o.MustGetMultipartID()),
 		ContentLength: size,
 	}
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 	if opt.HasServerSideEncryptionCustomerAlgorithm {
 		input.SSECustomerAlgorithm, input.SSECustomerKey, input.SSECustomerKeyMD5, err = calculateEncryptionHeaders(opt.ServerSideEncryptionCustomerAlgorithm, opt.ServerSideEncryptionCustomerKey)

@@ -419,8 +419,7 @@ func (gs *genService) generateFactory() {
 	newStorager := f.NewFunction("NewStorager").
 		WithReceiver("f", "*Factory").
 		AddResult("sto", "types.Storager").
-		AddResult("err", "error").
-		AddBody()
+		AddResult("err", "error")
 	if gs.data.Storage == nil {
 		newStorager.AddBody(`return nil, errors.New("storager not implemented")`)
 	} else if !gs.implemented[NamespaceFactory]["new_storage"] {

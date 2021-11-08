@@ -7,13 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 
-	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/types"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store types.Storager, err error) {
-	pairs := append(opt.pairs, ps.WithName(name))
-	st, err := s.newStorage(pairs...)
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +34,8 @@ func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete
 	input := &s3.DeleteBucketInput{
 		Bucket: aws.String(name),
 	}
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 	_, err = s.service.DeleteBucket(ctx, input)
 	if err != nil {
@@ -45,8 +45,9 @@ func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete
 }
 
 func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store types.Storager, err error) {
-	pairs := append(opt.pairs, ps.WithName(name))
-	st, err := s.newStorage(pairs...)
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,9 @@ func (s *Service) nextStoragePage(ctx context.Context, page *types.StoragerPage)
 		return err
 	}
 	for _, v := range output.Buckets {
-		store, err := s.newStorage(ps.WithName(*v.Name))
+		f := s.f
+		f.Name = *v.Name
+		store, err := f.newStorage()
 		if err != nil {
 			return err
 		}

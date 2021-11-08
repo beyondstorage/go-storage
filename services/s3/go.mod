@@ -13,3 +13,5 @@ require (
 	go.beyondstorage.io/endpoint v1.2.0
 	go.beyondstorage.io/v5 v5.0.0
 )
+
+replace go.beyondstorage.io/v5 => ../../
