@@ -199,6 +199,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	} else {
 		output, err = s.client.GetObject(input, rp, nil)
 	}
+
 	if err != nil {
 		return 0, err
 	}
