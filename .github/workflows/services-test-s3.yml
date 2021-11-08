@@ -44,7 +44,7 @@ jobs:
           STORAGE_S3_INTEGRATION_TEST: on
         working-directory: services/s3
         run: make integration_test
-  
+
   service_test_minio:
     name: "Service Test Minio"
     runs-on: ubuntu-latest
@@ -77,5 +77,5 @@ jobs:
           STORAGE_MINIO_CREDENTIAL: "hmac:minioadmin:minioadmin"
           STORAGE_MINIO_NAME: "test-bucket"
           STORAGE_MINIO_ENDPOINT: "http:127.0.0.1:9000"
-        working-directory: services/minio
+        working-directory: services/s3
         run: make integration_test
