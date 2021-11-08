@@ -187,7 +187,7 @@ func (f *Factory) newService() (srv *Service, err error) {
 
 	srv = &Service{
 		f:        *f,
-		features: f.serviceFeatures,
+		features: f.serviceFeatures(),
 		cfg:      cfg,
 		options:  opts,
 		service:  service,
@@ -246,7 +246,7 @@ func (f *Factory) newStorage() (st *Storage, err error) {
 
 	st = &Storage{
 		f:        *f,
-		features: f.storageFeatures,
+		features: f.storageFeatures(),
 		service:  s3.NewFromConfig(cfg, s.options...),
 		name:     f.Name,
 		workDir:  "/",

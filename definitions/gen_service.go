@@ -272,12 +272,6 @@ func (gs *genService) generateFactory() {
 	fd := gs.data.Factory
 
 	st := f.NewStruct("Factory")
-
-	// Add features struct.
-	st.AddField("storageFeatures", "types.StorageFeatures")
-	st.AddField("serviceFeatures", "types.ServiceFeatures")
-	st.AddLine()
-
 	for _, v := range SortPairs(fd) {
 		st.AddField(templateutils.ToPascal(v.Name), v.Type.FullName(gs.data.Name))
 	}
@@ -418,16 +412,6 @@ func (gs *genService) generateFactory() {
 		println("func (f *Factory) newService() (*Service, error) {}")
 		println("---")
 	} else {
-		for _, op := range gs.data.Service.Operations() {
-			if gs.data.Service.HasFeature(op.Name) {
-				newServicer.AddBody(gg.S("f.serviceFeatures.%s = true", templateutils.ToPascal(op.Name)))
-			}
-		}
-		for _, fe := range gs.data.Service.VirtualFeatures() {
-			newServicer.AddBody(
-				gg.If("f." + templateutils.ToPascal("enable_"+fe.Name)).AddBody(
-					gg.S("f.serviceFeatures.%s = true", templateutils.ToPascal(fe.Name))))
-		}
 		newServicer.AddBody("return f.newService()")
 	}
 
@@ -446,18 +430,38 @@ func (gs *genService) generateFactory() {
 		println("func (f *Factory) newStorage() (*Storage, error) {}")
 		println("---")
 	} else {
-		for _, op := range gs.data.Storage.Operations() {
-			if gs.data.Storage.HasFeature(op.Name) {
-				newStorager.AddBody(gg.S("f.storageFeatures.%s = true", templateutils.ToPascal(op.Name)))
-			}
-		}
-		for _, fe := range gs.data.Storage.VirtualFeatures() {
-			newStorager.AddBody(
-				gg.If("f." + templateutils.ToPascal("enable_"+fe.Name)).AddBody(
-					gg.S("f.storageFeatures.%s = true", templateutils.ToPascal(fe.Name))))
-		}
 		newStorager.AddBody("return f.newStorage()")
 	}
+
+	serviceFeatures := f.NewFunction("serviceFeatures").
+		WithReceiver("f", "*Factory").
+		AddResult("s", "types.ServiceFeatures")
+	for _, op := range gs.data.Service.Operations() {
+		if gs.data.Service.HasFeature(op.Name) {
+			serviceFeatures.AddBody(gg.S("s.%s = true", templateutils.ToPascal(op.Name)))
+		}
+	}
+	for _, fe := range gs.data.Service.VirtualFeatures() {
+		serviceFeatures.AddBody(
+			gg.If("f." + templateutils.ToPascal("enable_"+fe.Name)).AddBody(
+				gg.S("s.%s = true", templateutils.ToPascal(fe.Name))))
+	}
+	serviceFeatures.AddBody(gg.Return())
+
+	storageFeatures := f.NewFunction("storageFeatures").
+		WithReceiver("f", "*Factory").
+		AddResult("s", "types.StorageFeatures")
+	for _, op := range gs.data.Storage.Operations() {
+		if gs.data.Storage.HasFeature(op.Name) {
+			storageFeatures.AddBody(gg.S("s.%s = true", templateutils.ToPascal(op.Name)))
+		}
+	}
+	for _, fe := range gs.data.Storage.VirtualFeatures() {
+		storageFeatures.AddBody(
+			gg.If("f." + templateutils.ToPascal("enable_"+fe.Name)).AddBody(
+				gg.S("s.%s = true", templateutils.ToPascal(fe.Name))))
+	}
+	storageFeatures.AddBody(gg.Return())
 }
 
 func (gs *genService) generateFunctionPairs(ns Namespace, op Operation) {
