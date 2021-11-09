@@ -80,13 +80,6 @@ func WithEnableVirtualObjectMetadata() (p types.Pair) {
 	return types.Pair{Key: "enable_virtual_object_metadata", Value: true}
 }
 
-// WithEnableWriteEmptyObject will apply enable_write_empty_object value to Options.
-//
-// EnableWriteEmptyObject Enable feature write_empty_object
-func WithEnableWriteEmptyObject() (p types.Pair) {
-	return types.Pair{Key: "enable_write_empty_object", Value: true}
-}
-
 // WithEndpoint will apply endpoint value to Options.
 //
 // Endpoint specify how to provide endpoint for service or storage

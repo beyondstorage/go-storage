@@ -36,7 +36,7 @@ func (m *Metadata) buildDefaultPairs() {
 func (m *Metadata) buildFeaturePairs() {
 	dp := make(map[string]bool)
 	for _, v := range []Namespace{m.Service, m.Storage} {
-		for _, f := range v.VirtualFeatures() {
+		for _, f := range v.ListFeatures(FeatureTypeVirtual) {
 			dp["enable_"+f.Name] = true
 		}
 	}

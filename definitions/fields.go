@@ -2,10 +2,7 @@ package definitions
 
 import (
 	"fmt"
-	"sync"
 )
-
-var fieldInit = sync.Once{}
 
 type Field struct {
 	Name string
@@ -13,13 +10,6 @@ type Field struct {
 }
 
 func getField(name string) Field {
-	fieldInit.Do(func() {
-		for _, v := range fieldArray {
-			v := v
-			fieldMap[v.Name] = v
-		}
-	})
-
 	f, ok := fieldMap[name]
 	if !ok {
 		panic(fmt.Errorf("field %s is not exist", name))
@@ -27,7 +17,7 @@ func getField(name string) Field {
 	return f
 }
 
-var fieldMap = make(map[string]Field)
+var fieldMap = buildFieldMap()
 
 var fieldArray = []Field{
 	{
@@ -153,4 +143,13 @@ var fieldArray = []Field{
 		Name: "target",
 		Type: Type{Name: "string"},
 	},
+}
+
+func buildFieldMap() map[string]Field {
+	m := make(map[string]Field)
+	for _, v := range fieldArray {
+		v := v
+		m[v.Name] = v
+	}
+	return m
 }
