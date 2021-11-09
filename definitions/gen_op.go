@@ -172,19 +172,19 @@ func (gop *genOperation) generateFeatures(ns Namespace) {
 
 	nsName := ns.Name()
 
+	var fs []Feature
+	if nsName == NamespaceService {
+		fs = FeaturesService
+	} else if nsName == NamespaceStorage {
+		fs = FeaturesStorage
+	}
+
 	structName := templateutils.ToPascal(nsName) + "Features"
 	f.AddLineComment("%s indicates features supported by servicer.", structName)
 	sf := f.NewStruct(structName)
 	sf.AddLine()
-	sf.AddLineComment("operation features")
-	for _, op := range ns.Operations() {
+	for _, op := range fs {
 		sf.AddField(templateutils.ToPascal(op.Name), "bool")
-	}
-	sf.AddLineComment("operation-related features")
-	for _, fe := range SortFeatures(FeaturesArray) {
-		if fe.HasNamespace(nsName) {
-			sf.AddField(templateutils.ToPascal(fe.Name), "bool")
-		}
 	}
 
 	f.NewFunction("Has").
@@ -195,17 +195,10 @@ func (gop *genOperation) generateFeatures(ns Namespace) {
 			g := gg.NewGroup()
 
 			s := g.NewSwitch("name")
-			for _, op := range ns.Operations() {
-				s.NewCase(gg.Lit(op.Name)).
+			for _, fe := range fs {
+				s.NewCase(gg.Lit(fe.Name)).
 					AddBody(gg.Return(
-						gg.S("s.%s", templateutils.ToPascal(op.Name))))
-			}
-			for _, fe := range SortFeatures(FeaturesArray) {
-				if fe.HasNamespace(nsName) {
-					s.NewCase(gg.Lit(fe.Name)).
-						AddBody(gg.Return(
-							gg.S("s.%s", templateutils.ToPascal(fe.Name))))
-				}
+						gg.S("s.%s", templateutils.ToPascal(fe.Name))))
 			}
 			s.NewDefault().AddBody("return false")
 

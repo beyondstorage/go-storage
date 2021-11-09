@@ -1,9 +1,8 @@
 package definitions
 
 import (
-	"sort"
-
 	"github.com/Xuanwo/templateutils"
+	"sort"
 )
 
 type Info struct {

@@ -1,6 +1,8 @@
 package definitions
 
-import "sort"
+import (
+	"sort"
+)
 
 type Pair struct {
 	Name        string
@@ -34,40 +36,6 @@ var PairArray = []Pair{
 	PairMultipartID,
 	PairIoCallback,
 	PairWorkDir,
-}
-
-func init() {
-	// Normalize default pairs.
-	dps := make([]Pair, 0)
-	for _, v := range PairArray {
-		if !v.Defaultable {
-			continue
-		}
-		dps = append(dps, Pair{
-			Name:        "default_" + v.Name,
-			Type:        v.Type,
-			Description: "default value for " + v.Name,
-			global:      true,
-		})
-	}
-	PairArray = append(PairArray, dps...)
-
-	// Build feature pairs.
-	fps := make([]Pair, 0)
-	for _, f := range FeaturesArray {
-		fps = append(fps, Pair{
-			Name:        "enable_" + f.Name,
-			Type:        Type{Name: "bool"},
-			Description: "Enable feature " + f.Name,
-			global:      true,
-		})
-	}
-	PairArray = append(PairArray, fps...)
-
-	// Setup maps.
-	for _, v := range PairArray {
-		PairMap[v.Name] = v
-	}
 }
 
 func SortPairs(ps []Pair) []Pair {
@@ -175,4 +143,48 @@ work_dir SHOULD be an absolute path.
 work_dir will be default to / if not set.
 work_dir SHOULD be Unix style for object storage services.
 For fs storage service on windows platform, the behavior is defined separately.`,
+}
+
+func init() {
+	// Normalize default pairs.
+	dps := make([]Pair, 0)
+	for _, v := range PairArray {
+		if !v.Defaultable {
+			continue
+		}
+		dps = append(dps, Pair{
+			Name:        "default_" + v.Name,
+			Type:        v.Type,
+			Description: "default value for " + v.Name,
+			global:      true,
+		})
+	}
+	PairArray = append(PairArray, dps...)
+
+	// Build feature pairs.
+	fps := make([]Pair, 0)
+	m := make(map[string]bool)
+	for _, fes := range [][]Feature{FeaturesService, FeaturesStorage} {
+		for _, f := range fes {
+			if f.Type != FeatureTypeVirtual {
+				continue
+			}
+			if m[f.Name] {
+				continue
+			}
+			m[f.Name] = true
+			fps = append(fps, Pair{
+				Name:        "enable_" + f.Name,
+				Type:        Type{Name: "bool"},
+				Description: "Enable feature " + f.Name,
+				global:      true,
+			})
+		}
+	}
+	PairArray = append(PairArray, fps...)
+
+	// Setup maps.
+	for _, v := range PairArray {
+		PairMap[v.Name] = v
+	}
 }
