@@ -43,6 +43,8 @@ func GenerateService(data Metadata, path string) {
 		gs.generateNamespace(gs.data.Storage)
 	}
 
+	gs.generateInit()
+
 	err := gs.g.WriteFile(path)
 	if err != nil {
 		log.Fatalf("generate to %s: %v", path, err)
@@ -698,4 +700,9 @@ func (gs *genService) generateFunction(ns Namespace, op Operation) {
 			gg.Return(),
 		)
 	}
+}
+func (gs *genService) generateInit() {
+	f := gs.g.NewGroup()
+
+	f.NewFunction("init").AddBody("services.RegisterFactory(Type, &Factory{})")
 }

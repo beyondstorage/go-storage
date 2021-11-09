@@ -1273,3 +1273,6 @@ func (s *Storage) WritePageWithContext(ctx context.Context, o *types.Object, r i
 	err = types.NewOperationNotImplementedError("write_page")
 	return
 }
+func init() {
+	services.RegisterFactory(Type, &Factory{})
+}
