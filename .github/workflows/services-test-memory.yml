@@ -10,6 +10,8 @@ on:
       - 'services/memory/**'
     tags-ignore:
       - '**'
+    branches:
+      - '**'
   pull_request:
     paths:
       - 'services/memory/**'

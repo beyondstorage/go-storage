@@ -90,18 +90,17 @@ type DefaultServicePairs struct {
 
 // ServiceFeatures indicates features supported by servicer.
 type ServiceFeatures struct {
-
-	// operation features
-	Create bool
-	Delete bool
-	Get    bool
-	List   bool
-	// operation-related features
 	LoosePair bool
+	Create    bool
+	Delete    bool
+	Get       bool
+	List      bool
 }
 
 func (s ServiceFeatures) Has(name string) bool {
 	switch name {
+	case "loose_pair":
+		return s.LoosePair
 	case "create":
 		return s.Create
 	case "delete":
@@ -110,8 +109,6 @@ func (s ServiceFeatures) Has(name string) bool {
 		return s.Get
 	case "list":
 		return s.List
-	case "loose_pair":
-		return s.LoosePair
 	default:
 		return false
 	}
@@ -792,114 +789,47 @@ type DefaultStoragePairs struct {
 
 // StorageFeatures indicates features supported by servicer.
 type StorageFeatures struct {
-
-	// operation features
-	CombineBlock                   bool
-	CommitAppend                   bool
-	CompleteMultipart              bool
-	Copy                           bool
+	LoosePair                      bool
+	VirtualDir                     bool
+	VirtualLink                    bool
+	VirtualObjectMetadata          bool
+	WriteEmptyObject               bool
 	Create                         bool
-	CreateAppend                   bool
-	CreateBlock                    bool
-	CreateDir                      bool
-	CreateLink                     bool
-	CreateMultipart                bool
-	CreatePage                     bool
 	Delete                         bool
-	Fetch                          bool
-	List                           bool
-	ListBlock                      bool
-	ListMultipart                  bool
 	Metadata                       bool
-	Move                           bool
-	QuerySignHTTPCompleteMultipart bool
-	QuerySignHTTPCreateMultipart   bool
-	QuerySignHTTPDelete            bool
-	QuerySignHTTPListMultipart     bool
-	QuerySignHTTPRead              bool
-	QuerySignHTTPWrite             bool
-	QuerySignHTTPWriteMultipart    bool
+	List                           bool
 	Read                           bool
 	Stat                           bool
 	Write                          bool
+	CreateAppend                   bool
 	WriteAppend                    bool
+	CommitAppend                   bool
+	CreateBlock                    bool
 	WriteBlock                     bool
+	CombineBlock                   bool
+	ListBlock                      bool
+	Copy                           bool
+	CreateDir                      bool
+	Fetch                          bool
+	CreateLink                     bool
+	Move                           bool
+	CreateMultipart                bool
 	WriteMultipart                 bool
+	CompleteMultipart              bool
+	ListMultipart                  bool
+	CreatePage                     bool
 	WritePage                      bool
-	// operation-related features
-	LoosePair             bool
-	VirtualDir            bool
-	VirtualLink           bool
-	VirtualObjectMetadata bool
-	WriteEmptyObject      bool
+	QuerySignHTTPRead              bool
+	QuerySignHTTPWrite             bool
+	QuerySignHTTPDelete            bool
+	QuerySignHTTPCreateMultipart   bool
+	QuerySignHTTPWriteMultipart    bool
+	QuerySignHTTPListMultipart     bool
+	QuerySignHTTPCompleteMultipart bool
 }
 
 func (s StorageFeatures) Has(name string) bool {
 	switch name {
-	case "combine_block":
-		return s.CombineBlock
-	case "commit_append":
-		return s.CommitAppend
-	case "complete_multipart":
-		return s.CompleteMultipart
-	case "copy":
-		return s.Copy
-	case "create":
-		return s.Create
-	case "create_append":
-		return s.CreateAppend
-	case "create_block":
-		return s.CreateBlock
-	case "create_dir":
-		return s.CreateDir
-	case "create_link":
-		return s.CreateLink
-	case "create_multipart":
-		return s.CreateMultipart
-	case "create_page":
-		return s.CreatePage
-	case "delete":
-		return s.Delete
-	case "fetch":
-		return s.Fetch
-	case "list":
-		return s.List
-	case "list_block":
-		return s.ListBlock
-	case "list_multipart":
-		return s.ListMultipart
-	case "metadata":
-		return s.Metadata
-	case "move":
-		return s.Move
-	case "query_sign_http_complete_multipart":
-		return s.QuerySignHTTPCompleteMultipart
-	case "query_sign_http_create_multipart":
-		return s.QuerySignHTTPCreateMultipart
-	case "query_sign_http_delete":
-		return s.QuerySignHTTPDelete
-	case "query_sign_http_list_multipart":
-		return s.QuerySignHTTPListMultipart
-	case "query_sign_http_read":
-		return s.QuerySignHTTPRead
-	case "query_sign_http_write":
-		return s.QuerySignHTTPWrite
-	case "query_sign_http_write_multipart":
-		return s.QuerySignHTTPWriteMultipart
-	case "read":
-		return s.Read
-	case "stat":
-		return s.Stat
-	case "write":
-		return s.Write
-	case "write_append":
-		return s.WriteAppend
-	case "write_block":
-		return s.WriteBlock
-	case "write_multipart":
-		return s.WriteMultipart
-	case "write_page":
-		return s.WritePage
 	case "loose_pair":
 		return s.LoosePair
 	case "virtual_dir":
@@ -910,6 +840,70 @@ func (s StorageFeatures) Has(name string) bool {
 		return s.VirtualObjectMetadata
 	case "write_empty_object":
 		return s.WriteEmptyObject
+	case "create":
+		return s.Create
+	case "delete":
+		return s.Delete
+	case "metadata":
+		return s.Metadata
+	case "list":
+		return s.List
+	case "read":
+		return s.Read
+	case "stat":
+		return s.Stat
+	case "write":
+		return s.Write
+	case "create_append":
+		return s.CreateAppend
+	case "write_append":
+		return s.WriteAppend
+	case "commit_append":
+		return s.CommitAppend
+	case "create_block":
+		return s.CreateBlock
+	case "write_block":
+		return s.WriteBlock
+	case "combine_block":
+		return s.CombineBlock
+	case "list_block":
+		return s.ListBlock
+	case "copy":
+		return s.Copy
+	case "create_dir":
+		return s.CreateDir
+	case "fetch":
+		return s.Fetch
+	case "create_link":
+		return s.CreateLink
+	case "move":
+		return s.Move
+	case "create_multipart":
+		return s.CreateMultipart
+	case "write_multipart":
+		return s.WriteMultipart
+	case "complete_multipart":
+		return s.CompleteMultipart
+	case "list_multipart":
+		return s.ListMultipart
+	case "create_page":
+		return s.CreatePage
+	case "write_page":
+		return s.WritePage
+	case "query_sign_http_read":
+		return s.QuerySignHTTPRead
+	case "query_sign_http_write":
+		return s.QuerySignHTTPWrite
+	case "query_sign_http_delete":
+		return s.QuerySignHTTPDelete
+	case "query_sign_http_create_multipart":
+		return s.QuerySignHTTPCreateMultipart
+	case "query_sign_http_write_multipart":
+		return s.QuerySignHTTPWriteMultipart
+	case "query_sign_http_list_multipart":
+		return s.QuerySignHTTPListMultipart
+	case "query_sign_http_complete_multipart":
+		return s.QuerySignHTTPCompleteMultipart
 	default:
 		return false
 	}

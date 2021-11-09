@@ -4,7 +4,7 @@ type Namespace interface {
 	Name() string
 	Operations() []Operation
 	HasFeature(name string) bool
-	VirtualFeatures() []Feature
+	ListFeatures(ty ...string) []Feature
 	ListPairs(name string) []Pair
 }
 
@@ -20,11 +20,16 @@ func (s Service) HasFeature(name string) bool {
 	return s.Features.Has(name)
 }
 
-func (s Service) VirtualFeatures() []Feature {
+func (s Service) ListFeatures(ty ...string) []Feature {
 	fs := make([]Feature, 0)
 
-	for _, f := range FeaturesArray {
-		if f.HasNamespace(NamespaceService) && s.Features.Has(f.Name) {
+	m := make(map[string]bool)
+	for _, v := range ty {
+		m[v] = true
+	}
+
+	for _, f := range FeaturesService {
+		if s.Features.Has(f.Name) && m[f.Type] {
 			fs = append(fs, f)
 		}
 	}
@@ -43,11 +48,16 @@ func (s Storage) HasFeature(name string) bool {
 	return s.Features.Has(name)
 }
 
-func (s Storage) VirtualFeatures() []Feature {
+func (s Storage) ListFeatures(ty ...string) []Feature {
 	fs := make([]Feature, 0)
 
-	for _, f := range FeaturesArray {
-		if f.HasNamespace(NamespaceStorage) && s.Features.Has(f.Name) {
+	m := make(map[string]bool)
+	for _, v := range ty {
+		m[v] = true
+	}
+
+	for _, f := range FeaturesStorage {
+		if s.Features.Has(f.Name) && m[f.Type] {
 			fs = append(fs, f)
 		}
 	}
