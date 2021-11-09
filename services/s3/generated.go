@@ -327,6 +327,7 @@ func (f *Factory) storageFeatures() (s types.StorageFeatures) {
 	s.Stat = true
 	s.Write = true
 	s.WriteMultipart = true
+	s.WriteEmptyObject = true
 	if f.EnableVirtualDir {
 		s.VirtualDir = true
 	}

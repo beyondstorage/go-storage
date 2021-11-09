@@ -61,8 +61,9 @@ var Metadata = def.Metadata{
 	},
 	Storage: def.Storage{
 		Features: types.StorageFeatures{
-			VirtualDir:  true,
-			VirtualLink: true,
+			VirtualDir:       true,
+			VirtualLink:      true,
+			WriteEmptyObject: true,
 
 			CompleteMultipart:           true,
 			Create:                      true,
