@@ -210,5 +210,5 @@ func parseConn(conn string) (ty, value string, err error) {
 			NewErrorCode("connection string is invalid"), conn)
 		return
 	}
-	return conn[:colon], conn[colon+1:], nil
+	return conn[:colon], conn[colon+3:], nil
 }
