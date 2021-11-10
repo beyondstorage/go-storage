@@ -241,7 +241,7 @@ func (s *storageWriteSuite) TestWriteViaNilReader() {
 func (s *storageWriteSuite) TestWriteViaValidReaderAndZeroSize() {
 	n, err := s.p.store.Write(s.path, bytes.NewReader(s.content), 0)
 	s.NoError(err)
-	s.Equal(0, n)
+	s.Equal(int64(0), n)
 }
 
 func (s *storageWriteSuite) TestWriteViaNilReaderAndValidSize() {
@@ -363,7 +363,7 @@ func (s *storageListSuite) TestList() {
 
 		paths = append(paths, o.Path)
 	}
-	s.EqualValues(s.paths, paths)
+	s.ElementsMatch(s.paths, paths)
 }
 
 func (s *storageListSuite) TestListWithoutListMode() {
@@ -381,7 +381,7 @@ func (s *storageListSuite) TestListWithoutListMode() {
 
 		paths = append(paths, o.Path)
 	}
-	s.EqualValues(s.paths, paths)
+	s.ElementsMatch(s.paths, paths)
 }
 
 func (s *storageListSuite) TestListEmptyDir() {
