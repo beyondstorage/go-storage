@@ -32,7 +32,7 @@ func main() {
 ```
 
 - See more examples in [go-storage-example](https://github.com/beyondstorage/go-storage-example).
-- Read [more docs](https://beyondstorage.io/docs/go-storage/services/s3) about go-service-s3. 
+- Read [more docs](https://beyondstorage.io/docs/go-storage/services/s3) about go-service-s3.
 
 ## Compatible Services
 
