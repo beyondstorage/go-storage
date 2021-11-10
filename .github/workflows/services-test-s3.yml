@@ -70,6 +70,11 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      - name: Load secret
+        uses: 1password/load-secrets-action@v1
+        env:
+          STORAGE_S3_LOCATION: op://Engineering/S3/testing/location
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -79,6 +84,5 @@ jobs:
           STORAGE_S3_CREDENTIAL: "hmac:minioadmin:minioadmin"
           STORAGE_S3_NAME: "test-bucket"
           STORAGE_S3_ENDPOINT: "http:127.0.0.1:9000"
-          STORAGE_S3_LOCATION: "local"
         working-directory: services/s3
         run: make integration_test
