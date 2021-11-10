@@ -420,7 +420,7 @@ func (s *storagePathSuite) TearDownTest() {
 func (s *storagePathSuite) TestAbsPath() {
 	m := s.p.store.Metadata()
 
-	path := fmt.Sprintf("%s/%s/%s", m.WorkDir, s.base, s.path)
+	path := fmt.Sprintf("%s%s/%s", m.WorkDir, s.base, s.path)
 
 	size := rand.Int63n(4 * 1024 * 1024)
 	content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
