@@ -243,7 +243,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 				t.Error(err)
 			}
 
-			it, err := store.List("", pairs.WithListMode(types.ListModePart))
+			it, err := store.List(path, pairs.WithListMode(types.ListModePart))
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
