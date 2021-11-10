@@ -48,7 +48,7 @@ jobs:
           AWS_ACCESS_KEY_ID: "minioadmin"
           AWS_SECRET_ACCESS_KEY: "minioadmin"
           AWS_EC2_METADATA_DISABLED: "true"
-        run: aws --endpoint-url http://127.0.0.1:9000/ minio mb minio://test
+        run: aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://test
 
       - name: Test
         env:
