@@ -4,7 +4,7 @@
 
 [MinIO](https://min.io/) is an open source cloud-native high-performance object storage service. 
 This project will use minio's native SDK to implement [go-storage](https://github.com/beyondstorage/go-storage/), 
-enabling users to manipulate data on minio servers through a unified interface.
+enabling users to manipulate data on minio servers through a unified interface. 
 
 ## Install
 
