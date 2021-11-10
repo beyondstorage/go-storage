@@ -19,10 +19,8 @@ func setupTest(t *testing.T) types.Storager {
 		ps.WithName(os.Getenv("STORAGE_S3_NAME")),
 		ps.WithLocation(os.Getenv("STORAGE_S3_LOCATION")),
 		ps.WithWorkDir("/"+uuid.New().String()+"/"),
-		s3.WithStorageFeatures(s3.StorageFeatures{
-			VirtualDir:  true,
-			VirtualLink: true,
-		}),
+		ps.WithEnableVirtualDir(),
+		ps.WithEnableVirtualLink(),
 	)
 	if err != nil {
 		t.Errorf("new storager: %v", err)

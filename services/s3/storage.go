@@ -78,8 +78,8 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	if opt.HasStorageClass {
 		input.StorageClass = s3types.StorageClass(opt.StorageClass)
 	}
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 	output, err := s.service.PutObject(ctx, input)
 	if err != nil {
@@ -252,8 +252,8 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		prefix:  s.getAbsPath(path),
 	}
 
-	if opt.HasExceptedBucketOwner {
-		input.expectedBucketOwner = opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.expectedBucketOwner = opt.ExpectedBucketOwner
 	}
 
 	if !opt.HasListMode {
@@ -285,8 +285,8 @@ func (s *Storage) listMultipart(ctx context.Context, o *types.Object, opt pairSt
 		key:      o.ID,
 		uploadId: o.MustGetMultipartID(),
 	}
-	if opt.HasExceptedBucketOwner {
-		input.expectedBucketOwner = opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.expectedBucketOwner = opt.ExpectedBucketOwner
 	}
 
 	return types.NewPartIterator(ctx, s.nextPartPage, input), nil
@@ -581,8 +581,8 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 			Key:      aws.String(rp),
 			UploadId: aws.String(opt.MultipartID),
 		}
-		if opt.HasExceptedBucketOwner {
-			listInput.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+		if opt.HasExpectedBucketOwner {
+			listInput.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 		}
 		_, err = s.service.ListParts(ctx, listInput)
 		if err != nil {
@@ -610,8 +610,8 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		Bucket: aws.String(s.name),
 		Key:    aws.String(rp),
 	}
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 	if opt.HasServerSideEncryptionCustomerAlgorithm {
 		input.SSECustomerAlgorithm, input.SSECustomerKey, input.SSECustomerKeyMD5, err = calculateEncryptionHeaders(opt.ServerSideEncryptionCustomerAlgorithm, opt.ServerSideEncryptionCustomerKey)
@@ -741,8 +741,8 @@ func (s *Storage) writeMultipart(ctx context.Context, o *types.Object, r io.Read
 		ContentLength: size,
 		Body:          iowrap.SizedReadSeekCloser(r, size),
 	}
-	if opt.HasExceptedBucketOwner {
-		input.ExpectedBucketOwner = &opt.ExceptedBucketOwner
+	if opt.HasExpectedBucketOwner {
+		input.ExpectedBucketOwner = &opt.ExpectedBucketOwner
 	}
 	if opt.HasServerSideEncryptionCustomerAlgorithm {
 		input.SSECustomerAlgorithm, input.SSECustomerKey, input.SSECustomerKeyMD5, err = calculateEncryptionHeaders(opt.ServerSideEncryptionCustomerAlgorithm, opt.ServerSideEncryptionCustomerKey)
