@@ -73,11 +73,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Setup test bucket
+        env:
+          AWS_ACCESS_KEY_ID: "minioadmin"
+          AWS_SECRET_ACCESS_KEY: "minioadmin"
+          AWS_EC2_METADATA_DISABLED: "true"
+        run: aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://test
+
       - name: Test
         env:
           STORAGE_S3_INTEGRATION_TEST: "on"
           STORAGE_S3_CREDENTIAL: "hmac:minioadmin:minioadmin"
-          STORAGE_S3_NAME: "test-bucket"
+          STORAGE_S3_NAME: "test"
           STORAGE_S3_ENDPOINT: "http:127.0.0.1:9000"
           STORAGE_S3_LOCATION: "local"
         working-directory: services/s3
