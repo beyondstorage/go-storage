@@ -331,7 +331,7 @@ func (gs *genService) generateFactory() {
 		if slash == -1 {
 			f.Name = partStorage[1:]
 		} else {
-			f.Name, f.WorkDir = partStorage[1:slash], partStorage[slash:]
+			f.Name, f.WorkDir = partStorage[1:slash+1], partStorage[slash+1:]
 		}
 `))
 	} else {
