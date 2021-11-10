@@ -43,11 +43,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Setup test bucket
+        env:
+          AWS_ACCESS_KEY_ID: "minioadmin"
+          AWS_SECRET_ACCESS_KEY: "minioadmin"
+          AWS_EC2_METADATA_DISABLED: "true"
+        run: aws --endpoint-url http://127.0.0.1:9000/ minio mb minio://test
+
       - name: Test
         env:
           STORAGE_MINIO_INTEGRATION_TEST: "on"
           STORAGE_MINIO_CREDENTIAL: "hmac:minioadmin:minioadmin"
-          STORAGE_MINIO_NAME: "test-bucket"
+          STORAGE_MINIO_NAME: "test"
           STORAGE_MINIO_ENDPOINT: "http:127.0.0.1:9000"
         working-directory: services/minio
         run: make integration_test
