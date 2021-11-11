@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -268,6 +269,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	case opt.ListMode.IsPart():
 		nextFn = s.nextPartObjectPageByPrefix
 	case opt.ListMode.IsDir():
+		// If ListMode is dir, we need to add suffix for it.
+		if !strings.HasSuffix(path, "/") {
+			input.prefix += "/"
+		}
 		input.delimiter = "/"
 		nextFn = s.nextObjectPageByDir
 	case opt.ListMode.IsPrefix():

@@ -1,662 +1,88 @@
 package tests
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"errors"
-	"io"
-	"math/rand"
-	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/google/uuid"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/suite"
 
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/randbytes"
-	"go.beyondstorage.io/v5/services"
 	"go.beyondstorage.io/v5/types"
 )
 
 func TestStorager(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", t, func() {
-		So(store, ShouldNotBeNil)
+	suite.Run(t, &StorageSuite{store: store})
+}
 
-		Convey("When String called", func() {
-			s := store.String()
+type StorageSuite struct {
+	suite.Suite
+	store types.Storager
+}
 
-			Convey("The string should not be empty", func() {
-				So(s, ShouldNotBeEmpty)
-			})
-		})
+func (s *StorageSuite) TestString() {
+	v := s.store.String()
+	s.NotEmpty(v, "String() should not be empty.")
+}
 
-		Convey("When Metadata called", func() {
-			m := store.Metadata()
+func (s *StorageSuite) TestMetadata() {
+	m := s.store.Metadata()
+	s.NotNil(m, "Metadata() should not return nil.")
+}
 
-			Convey("The metadata should not be empty", func() {
-				So(m, ShouldNotBeEmpty)
-			})
-		})
+func (s *StorageSuite) TestRead() {
+	fe := s.store.Features()
 
-		workDir := store.Metadata().WorkDir
+	if !fe.Delete || !fe.Read {
+		s.T().Skipf("store doesn't support Delete and Read, skip TestRead.")
+	}
 
-		Convey("When Read a file", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			if err != nil {
-				t.Error(err)
-			}
+	suite.Run(s.T(), &storageReadSuite{p: s})
+}
 
-			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), size)
-			if err != nil {
-				t.Error(err)
-			}
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
+func (s *StorageSuite) TestWrite() {
+	fe := s.store.Features()
 
-			var buf bytes.Buffer
+	if !fe.Delete || !fe.Write {
+		s.T().Skipf("store doesn't support Delete and Write, skip TestWrite.")
+	}
 
-			n, err := store.Read(path, &buf)
+	suite.Run(s.T(), &storageWriteSuite{p: s})
+}
 
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+func (s *StorageSuite) TestStat() {
+	fe := s.store.Features()
 
-			Convey("The content should be match", func() {
-				So(buf, ShouldNotBeNil)
+	if !fe.Delete || !fe.Write || !fe.Stat {
+		s.T().Skipf("store doesn't support Delete, Write and Stat, skip TestStat.")
+	}
 
-				So(n, ShouldEqual, size)
-				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
-			})
-		})
+	suite.Run(s.T(), &storageStatSuite{p: s})
+}
 
-		Convey("When Read a file with offset or size", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			if err != nil {
-				t.Error(err)
-			}
+func (s *StorageSuite) TestDelete() {
+	fe := s.store.Features()
 
-			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), size)
-			if err != nil {
-				t.Error(err)
-			}
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
+	if !fe.Delete || !fe.Write {
+		s.T().Skipf("store doesn't support Delete, Write, skip TestDelete.")
+	}
 
-			Convey("When Read with offset", func() {
-				offset := rand.Int63n(size)
+	suite.Run(s.T(), &storageDeleteSuite{p: s})
+}
 
-				var buf bytes.Buffer
-				n, err := store.Read(path, &buf, ps.WithOffset(offset))
+func (s *StorageSuite) TestList() {
+	fe := s.store.Features()
 
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
+	if !fe.Delete || !fe.Write || !fe.List {
+		s.T().Skipf("store doesn't support Delete, Write and List, skip TestList.")
+	}
 
-				Convey("The content should be match", func() {
-					So(buf, ShouldNotBeNil)
+	suite.Run(s.T(), &storageListSuite{p: s})
+}
 
-					So(n, ShouldEqual, size-offset)
-					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content[offset:]))
-				})
-			})
+func (s *StorageSuite) TestPath() {
+	fe := s.store.Features()
 
-			Convey("When Read with size", func() {
-				len := rand.Int63n(size)
+	if !fe.Delete || !fe.Write || !fe.Read {
+		s.T().Skipf("store doesn't support Delete, Write and Read, skip TestPath.")
+	}
 
-				var buf bytes.Buffer
-				n, err := store.Read(path, &buf, ps.WithSize(len))
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The content should be match", func() {
-					So(buf, ShouldNotBeNil)
-
-					So(n, ShouldEqual, len)
-					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content[:len]))
-				})
-			})
-
-			Convey("When Read with offset and size", func() {
-				offset := rand.Int63n(size)
-				len := rand.Int63n(size - offset)
-
-				var buf bytes.Buffer
-				n, err := store.Read(path, &buf, ps.WithOffset(offset), ps.WithSize(len))
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The content should be match", func() {
-					So(buf, ShouldNotBeNil)
-
-					So(n, ShouldEqual, len)
-					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content[offset:offset+len]))
-				})
-			})
-		})
-
-		Convey("When Write a file", func() {
-			firstSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), firstSize)
-			path := uuid.New().String()
-
-			_, err := store.Write(path, r, firstSize)
-
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			Convey("The first returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			secondSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), secondSize))
-
-			_, err = store.Write(path, bytes.NewReader(content), secondSize)
-
-			Convey("The second returned error also should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("Stat should get Object without error", func() {
-				o, err := store.Stat(path)
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The name and size should be match", func() {
-					So(o, ShouldNotBeNil)
-					So(o.Path, ShouldEqual, path)
-
-					osize, ok := o.GetContentLength()
-					So(ok, ShouldBeTrue)
-					So(osize, ShouldEqual, secondSize)
-				})
-			})
-
-			Convey("Read should get Object data without error", func() {
-				var buf bytes.Buffer
-				n, err := store.Read(path, &buf)
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The content should be match", func() {
-					So(buf, ShouldNotBeNil)
-
-					So(n, ShouldEqual, secondSize)
-					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
-				})
-			})
-		})
-
-		Convey("When Write and Read a file with IoCallback", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			if err != nil {
-				t.Error(err)
-			}
-
-			path := uuid.New().String()
-
-			curWrite := int64(0)
-			writeFn := func(bs []byte) {
-				curWrite += int64(len(bs))
-			}
-			_, err = store.Write(path, bytes.NewReader(content), size, ps.WithIoCallback(writeFn))
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			Convey("The error returned by Write should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("The write size should be match", func() {
-				So(curWrite, ShouldEqual, size)
-			})
-
-			curRead := int64(0)
-			readFn := func(bs []byte) {
-				curRead += int64(len(bs))
-			}
-			var buf bytes.Buffer
-			n, err := store.Read(path, &buf, ps.WithIoCallback(readFn))
-
-			Convey("The error returned be Read should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("The read size should be match", func() {
-				So(curRead, ShouldEqual, n)
-			})
-
-			Convey("The content should be match", func() {
-				So(buf, ShouldNotBeNil)
-
-				So(n, ShouldEqual, size)
-				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
-			})
-		})
-
-		Convey("When write a file with a nil io.Reader and 0 size", func() {
-			path := uuid.New().String()
-			var size int64 = 0
-
-			_, err := store.Write(path, nil, size)
-
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("Stat should get Object without error", func() {
-				o, err := store.Stat(path)
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The name and size should be match", func() {
-					So(o, ShouldNotBeNil)
-					So(o.Path, ShouldEqual, path)
-
-					osize, ok := o.GetContentLength()
-					So(ok, ShouldBeTrue)
-					So(osize, ShouldEqual, size)
-				})
-			})
-		})
-
-		Convey("When write a file with a nil io.Reader and valid size", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			path := uuid.New().String()
-
-			_, err := store.Write(path, nil, size)
-
-			Convey("The error should not be nil", func() {
-				So(err, ShouldNotBeNil)
-			})
-
-			Convey("Stat should get nil Object and ObjectNotFound error", func() {
-				o, err := store.Stat(path)
-
-				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
-				So(o, ShouldBeNil)
-			})
-		})
-
-		Convey("When write a file with a valid io.Reader and 0 size", func() {
-			var size int64 = 0
-			n := rand.Int63n(4 * 1024 * 1024)
-			r := io.LimitReader(randbytes.NewRand(), n)
-			path := uuid.New().String()
-
-			_, err := store.Write(path, r, size)
-
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("Stat should get Object without error", func() {
-				o, err := store.Stat(path)
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The name and size should be match", func() {
-					So(o, ShouldNotBeNil)
-					So(o.Path, ShouldEqual, path)
-
-					osize, ok := o.GetContentLength()
-					So(ok, ShouldBeTrue)
-					So(osize, ShouldEqual, size)
-				})
-			})
-		})
-
-		Convey("When write a file with a valid io.Reader and length greater than size", func() {
-			n := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			size := rand.Int63n(n)
-			r, _ := io.ReadAll(io.LimitReader(randbytes.NewRand(), n))
-			path := uuid.New().String()
-
-			_, err := store.Write(path, bytes.NewReader(r), size)
-
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("Stat should get Object without error", func() {
-				o, err := store.Stat(path)
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The name and size should be match", func() {
-					So(o, ShouldNotBeNil)
-					So(o.Path, ShouldEqual, path)
-
-					osize, ok := o.GetContentLength()
-					So(ok, ShouldBeTrue)
-					So(osize, ShouldEqual, size)
-				})
-			})
-
-			Convey("Read should get Object without error", func() {
-				content, _ := io.ReadAll(io.LimitReader(bytes.NewReader(r), size))
-				var buf bytes.Buffer
-				n, err := store.Read(path, &buf)
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The content should match the size limit of the content", func() {
-					So(buf, ShouldNotBeNil)
-
-					So(n, ShouldEqual, size)
-					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
-				})
-			})
-		})
-
-		Convey("When Stat a file", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			if err != nil {
-				t.Error(err)
-			}
-
-			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), size)
-			if err != nil {
-				t.Error(err)
-			}
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			o, err := store.Stat(path)
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("The Object name and size should be match", func() {
-				So(o, ShouldNotBeNil)
-				So(o.Path, ShouldEqual, path)
-
-				osize, ok := o.GetContentLength()
-				So(ok, ShouldBeTrue)
-				So(osize, ShouldEqual, size)
-			})
-		})
-
-		Convey("When Delete a file", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			if err != nil {
-				t.Error(err)
-			}
-
-			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), size)
-			if err != nil {
-				t.Error(err)
-			}
-
-			err = store.Delete(path)
-
-			Convey("The first returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			err = store.Delete(path)
-
-			Convey("The second returned error also should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("Stat should get nil Object and ObjectNotFound error", func() {
-				o, err := store.Stat(path)
-
-				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
-				So(o, ShouldBeNil)
-			})
-		})
-
-		Convey("When List an empty dir", func() {
-			it, err := store.List("", ps.WithListMode(types.ListModeDir))
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-			Convey("The iterator should not be nil", func() {
-				So(it, ShouldNotBeNil)
-			})
-
-			o, err := it.Next()
-
-			Convey("The next should be done", func() {
-				So(err, ShouldBeError, types.IterateDone)
-			})
-			Convey("The object should be nil", func() {
-				So(o, ShouldBeNil)
-			})
-		})
-
-		Convey("When List a dir within files", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), size)
-			path := uuid.New().String()
-			_, err := store.Write(path, r, size)
-			if err != nil {
-				t.Error(err)
-			}
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			it, err := store.List("", ps.WithListMode(types.ListModeDir))
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-			Convey("The iterator should not be nil", func() {
-				So(it, ShouldNotBeNil)
-			})
-
-			o, err := it.Next()
-			Convey("The name and size should be match", func() {
-				So(o, ShouldNotBeNil)
-				So(o.Path, ShouldEqual, path)
-
-				osize, ok := o.GetContentLength()
-				So(ok, ShouldBeTrue)
-				So(osize, ShouldEqual, size)
-			})
-		})
-
-		Convey("When List without ListMode", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), size)
-			path := uuid.New().String()
-			_, err := store.Write(path, r, size)
-			if err != nil {
-				t.Error(err)
-			}
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			it, err := store.List("")
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-			Convey("The iterator should not be nil", func() {
-				So(it, ShouldNotBeNil)
-			})
-
-			o, err := it.Next()
-			Convey("The name and size should be match", func() {
-				So(o, ShouldNotBeNil)
-				So(o.Path, ShouldEqual, path)
-
-				osize, ok := o.GetContentLength()
-				So(ok, ShouldBeTrue)
-				So(osize, ShouldEqual, size)
-			})
-		})
-
-		Convey("When testing GSP-749 unify path behavior", func() {
-			Convey("When using absolute path", func() {
-				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-				content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-				if err != nil {
-					t.Error(err)
-				}
-
-				path := uuid.New().String()
-				absPath := filepath.Join(workDir, path)
-				_, err = store.Write(absPath, bytes.NewReader(content), size)
-				if err != nil {
-					t.Error(err)
-				}
-				defer func() {
-					err := store.Delete(absPath)
-					if err != nil {
-						t.Error(err)
-					}
-				}()
-
-				Convey("Stat should get Object without error", func() {
-					o, err := store.Stat(absPath)
-
-					Convey("The error should be nil", func() {
-						So(err, ShouldBeNil)
-						So(o, ShouldNotBeNil)
-						So(o.Path, ShouldEqual, strings.ReplaceAll(absPath, "\\", "/"))
-					})
-				})
-
-				Convey("Read should get Object content without error", func() {
-					var buf bytes.Buffer
-					n, err := store.Read(absPath, &buf)
-
-					Convey("The error should be nil", func() {
-						So(err, ShouldBeNil)
-					})
-
-					Convey("The content should be match", func() {
-						So(buf, ShouldNotBeNil)
-
-						So(n, ShouldEqual, size)
-						So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
-					})
-				})
-			})
-
-			Convey("When using backslash in path", func() {
-				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-				content, err := io.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-				if err != nil {
-					t.Error(err)
-				}
-
-				path := uuid.New().String() + "\\" + uuid.New().String()
-				_, err = store.Write(path, bytes.NewReader(content), size)
-				if err != nil {
-					t.Error(err)
-				}
-				defer func() {
-					err := store.Delete(path)
-					if err != nil {
-						t.Error(err)
-					}
-				}()
-
-				Convey("Stat should get Object without error", func() {
-					o, err := store.Stat(path)
-
-					Convey("The error should be nil", func() {
-						So(err, ShouldBeNil)
-						So(o, ShouldNotBeNil)
-						So(o.Path, ShouldEqual, strings.ReplaceAll(path, "\\", "/"))
-					})
-				})
-
-				Convey("Read should get Object content without error", func() {
-					var buf bytes.Buffer
-					n, err := store.Read(path, &buf)
-
-					Convey("The error should be nil", func() {
-						So(err, ShouldBeNil)
-					})
-
-					Convey("The content should be match", func() {
-						So(buf, ShouldNotBeNil)
-
-						So(n, ShouldEqual, size)
-						So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
-					})
-				})
-			})
-		})
-	})
+	suite.Run(s.T(), &storagePathSuite{p: s})
 }
