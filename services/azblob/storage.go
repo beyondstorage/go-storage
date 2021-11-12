@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 
@@ -129,6 +130,12 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
+	if opt.ListMode.IsDir() {
+		if !strings.HasSuffix(path, "/") {
+			path += "/"
+		}
+	}
+
 	input := &objectPageStatus{
 		maxResults: 200,
 		prefix:     s.getAbsPath(path),

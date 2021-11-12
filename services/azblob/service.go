@@ -5,12 +5,13 @@ import (
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 
-	ps "go.beyondstorage.io/v5/pairs"
 	typ "go.beyondstorage.io/v5/types"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store typ.Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name))
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +32,9 @@ func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete
 }
 
 func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store typ.Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name))
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +61,9 @@ func (s *Service) nextStoragePage(ctx context.Context, page *typ.StoragerPage) e
 	}
 
 	for _, v := range output.ContainerItems {
-		store, err := s.newStorage(ps.WithName(v.Name))
+		f := s.f
+		f.Name = v.Name
+		store, err := f.newStorage()
 		if err != nil {
 			return err
 		}

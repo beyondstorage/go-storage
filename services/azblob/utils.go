@@ -1,7 +1,6 @@
 package azblob
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
@@ -10,19 +9,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-pipeline-go/pipeline"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 
 	"go.beyondstorage.io/credential"
 	"go.beyondstorage.io/endpoint"
 	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
 	typ "go.beyondstorage.io/v5/types"
 )
 
 // Service is the azblob config.
 type Service struct {
+	f Factory
+
 	service azblob.ServiceURL
 
 	defaultPairs DefaultServicePairs
@@ -38,17 +37,16 @@ func (s *Service) String() string {
 
 // Storage is the azblob service client.
 type Storage struct {
+	f      Factory
 	bucket azblob.ContainerURL
 
 	name    string
 	workDir string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs typ.DefaultStoragePairs
+	features     typ.StorageFeatures
 
 	typ.UnimplementedStorager
-	typ.UnimplementedAppender
-	typ.UnimplementedDirer
 }
 
 // String implements Storager.String
@@ -61,18 +59,41 @@ func (s *Storage) String() string {
 
 // New will create both Servicer and Storager.
 func New(pairs ...typ.Pair) (typ.Servicer, typ.Storager, error) {
-	return newServicerAndStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, nil, err
+	}
+	srv, err := f.NewServicer()
+	if err != nil {
+		return nil, nil, err
+	}
+	sto, err := f.NewStorager()
+	if err != nil {
+		return nil, nil, err
+	}
+	return srv, sto, nil
+
 }
 
 // NewServicer will create Servicer only.
 func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
-	return newServicer(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
 }
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	_, store, err := newServicerAndStorager(pairs...)
-	return store, err
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
 // newServicer will create a azure blob servicer
@@ -86,21 +107,16 @@ func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
 //      - BlobURL's       methods perform operations on a container's blob regardless of the blob's type.
 //
 // Our Service will store a ServiceURL for operation.
-func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
+func (f *Factory) newService() (srv *Service, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err)}
 		}
 	}()
 
 	srv = &Service{}
 
-	opt, err := parsePairServiceNew(pairs)
-	if err != nil {
-		return nil, err
-	}
-
-	ep, err := endpoint.Parse(opt.Endpoint)
+	ep, err := endpoint.Parse(f.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -112,17 +128,17 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	case endpoint.ProtocolHTTPS:
 		uri, _, _ = ep.HTTPS()
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 	}
 
 	primaryURL, _ := url.Parse(uri)
 
-	cred, err := credential.Parse(opt.Credential)
+	cred, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
 	if cred.Protocol() != credential.ProtocolHmac {
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 
 	credValue, err := azblob.NewSharedKeyCredential(cred.Hmac())
@@ -130,18 +146,7 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		return nil, err
 	}
 
-	httpClient := httpclient.New(opt.HTTPClientOptions)
-
 	p := azblob.NewPipeline(credValue, azblob.PipelineOptions{
-		HTTPSender: pipeline.FactoryFunc(func(next pipeline.Policy, po *pipeline.PolicyOptions) pipeline.PolicyFunc {
-			return func(ctx context.Context, request pipeline.Request) (pipeline.Response, error) {
-				r, err := httpClient.Do(request.WithContext(ctx))
-				if err != nil {
-					err = pipeline.NewError(err, "HTTP request failed")
-				}
-				return pipeline.NewHTTPResponse(r), err
-			}
-		}),
 		// We don't need sdk level retry and we will handle read timeout by ourselves.
 		Retry: azblob.RetryOptions{
 			// Use a fixed back-off retry policy.
@@ -155,27 +160,7 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	})
 	srv.service = azblob.NewServiceURL(*primaryURL, p)
 
-	if opt.HasDefaultServicePairs {
-		srv.defaultPairs = opt.DefaultServicePairs
-	}
-	if opt.HasServiceFeatures {
-		srv.features = opt.ServiceFeatures
-	}
 	return srv, nil
-}
-
-func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, err error) {
-	srv, err = newServicer(pairs...)
-	if err != nil {
-		return
-	}
-
-	store, err = srv.newStorage(pairs...)
-	if err != nil {
-		err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		return
-	}
-	return
 }
 
 // StorageClass is the storage class used in storage lib.
@@ -219,31 +204,24 @@ func formatError(err error) error {
 }
 
 // newStorage will create a new client.
-func (s *Service) newStorage(pairs ...typ.Pair) (st *Storage, err error) {
-	opt, err := parsePairStorageNew(pairs)
+func (f *Factory) newStorage(pairs ...typ.Pair) (st *Storage, err error) {
+	s, err := f.newService()
 	if err != nil {
 		return nil, err
 	}
 
-	bucket := s.service.NewContainerURL(opt.Name)
+	bucket := s.service.NewContainerURL(f.Name)
 
 	st = &Storage{
-		bucket: bucket,
-
-		name:    opt.Name,
-		workDir: "/",
+		f:        *f,
+		features: f.storageFeatures(),
+		bucket:   bucket,
+		name:     f.Name,
+		workDir:  "/",
 	}
 
-	if opt.HasDefaultStoragePairs {
-		st.defaultPairs = opt.DefaultStoragePairs
-	}
-
-	if opt.HasStorageFeatures {
-		st.features = opt.StorageFeatures
-	}
-
-	if opt.HasWorkDir {
-		st.workDir = opt.WorkDir
+	if f.WorkDir != "" {
+		st.workDir = f.WorkDir
 	}
 	return st, nil
 }
