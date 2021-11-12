@@ -202,6 +202,7 @@ func (f *Factory) serviceFeatures() (s types.ServiceFeatures) {
 	return
 }
 func (f *Factory) storageFeatures() (s types.StorageFeatures) {
+	s.CommitAppend = true
 	s.Create = true
 	s.CreateAppend = true
 	s.CreateDir = true
@@ -425,12 +426,22 @@ func (s *Storage) parsePairStorageCommitAppend(opts []types.Pair) (pairStorageCo
 	return result, nil
 }
 func (s *Storage) CommitAppend(o *types.Object, pairs ...types.Pair) (err error) {
-	err = types.NewOperationNotImplementedError("commit_append")
-	return
+	ctx := context.Background()
+	return s.CommitAppendWithContext(ctx, o, pairs...)
 }
 func (s *Storage) CommitAppendWithContext(ctx context.Context, o *types.Object, pairs ...types.Pair) (err error) {
-	err = types.NewOperationNotImplementedError("commit_append")
-	return
+	defer func() {
+		err =
+			s.formatError("commit_append", err)
+	}()
+	pairs = append(pairs, s.defaultPairs.CommitAppend...)
+	var opt pairStorageCommitAppend
+
+	opt, err = s.parsePairStorageCommitAppend(pairs)
+	if err != nil {
+		return
+	}
+	return s.commitAppend(ctx, o, opt)
 }
 
 type pairStorageCompleteMultipart struct {
