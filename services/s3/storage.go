@@ -254,7 +254,7 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		opt.ListMode = types.ListModePrefix
 	}
 
-	if opt.ListMode.IsPart() {
+	if opt.ListMode.IsDir() {
 		// If ListMode is dir, we need to add suffix for it.
 		if !strings.HasSuffix(path, "/") {
 			path += "/"
