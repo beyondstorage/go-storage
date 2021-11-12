@@ -197,9 +197,11 @@ func (f *Factory) newStorage(pairs ...types.Pair) (store *Storage, err error) {
 	}
 
 	store = &Storage{
-		client:  s.service,
-		bucket:  f.Name,
-		workDir: "/",
+		f:        *f,
+		features: f.storageFeatures(),
+		client:   s.service,
+		bucket:   f.Name,
+		workDir:  "/",
 	}
 
 	if f.WorkDir != "" {
