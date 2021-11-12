@@ -248,6 +248,19 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
+	if !opt.HasListMode {
+		// Support `ListModePrefix` as the default `ListMode`.
+		// ref: [GSP-46](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
+		opt.ListMode = types.ListModePrefix
+	}
+
+	if opt.ListMode.IsDir() {
+		// If ListMode is dir, we need to add suffix for it.
+		if !strings.HasSuffix(path, "/") {
+			path += "/"
+		}
+	}
+
 	input := &objectPageStatus{
 		maxKeys: 200,
 		prefix:  s.getAbsPath(path),
@@ -257,22 +270,12 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		input.expectedBucketOwner = opt.ExpectedBucketOwner
 	}
 
-	if !opt.HasListMode {
-		// Support `ListModePrefix` as the default `ListMode`.
-		// ref: [GSP-46](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
-		opt.ListMode = types.ListModePrefix
-	}
-
 	var nextFn types.NextObjectFunc
 
 	switch {
 	case opt.ListMode.IsPart():
 		nextFn = s.nextPartObjectPageByPrefix
 	case opt.ListMode.IsDir():
-		// If ListMode is dir, we need to add suffix for it.
-		if !strings.HasSuffix(path, "/") {
-			input.prefix += "/"
-		}
 		input.delimiter = "/"
 		nextFn = s.nextObjectPageByDir
 	case opt.ListMode.IsPrefix():
