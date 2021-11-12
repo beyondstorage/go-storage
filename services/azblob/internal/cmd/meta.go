@@ -47,6 +47,7 @@ var Metadata = def.Metadata{
 			Stat:         true,
 			Write:        true,
 			WriteAppend:  true,
+			CommitAppend: true,
 		},
 
 		Create: []def.Pair{
