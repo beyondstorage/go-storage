@@ -213,10 +213,11 @@ func (f *Factory) newStorage(pairs ...typ.Pair) (st *Storage, err error) {
 	bucket := s.service.NewContainerURL(f.Name)
 
 	st = &Storage{
-		f:       *f,
-		bucket:  bucket,
-		name:    f.Name,
-		workDir: "/",
+		f:        *f,
+		features: f.storageFeatures(),
+		bucket:   bucket,
+		name:     f.Name,
+		workDir:  "/",
 	}
 
 	if f.WorkDir != "" {

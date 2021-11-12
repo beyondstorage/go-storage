@@ -98,12 +98,11 @@ func WithEncryptionScope(v string) types.Pair {
 }
 
 type Factory struct {
-	Credential        string
-	EnableVirtualDir  bool
-	EnableVirtualLink bool
-	Endpoint          string
-	Name              string
-	WorkDir           string
+	Credential       string
+	EnableVirtualDir bool
+	Endpoint         string
+	Name             string
+	WorkDir          string
 }
 
 func (f *Factory) FromString(conn string) (err error) {
@@ -158,8 +157,6 @@ func (f *Factory) FromString(conn string) (err error) {
 				f.Credential = value
 			case "enable_virtual_dir":
 				f.EnableVirtualDir = true
-			case "enable_virtual_link":
-				f.EnableVirtualLink = true
 			case "endpoint":
 				f.Endpoint = value
 			case "name":
@@ -178,8 +175,6 @@ func (f *Factory) WithPairs(ps ...types.Pair) (err error) {
 			f.Credential = v.Value.(string)
 		case "enable_virtual_dir":
 			f.EnableVirtualDir = v.Value.(bool)
-		case "enable_virtual_link":
-			f.EnableVirtualLink = v.Value.(bool)
 		case "endpoint":
 			f.Endpoint = v.Value.(string)
 		case "name":
@@ -220,9 +215,6 @@ func (f *Factory) storageFeatures() (s types.StorageFeatures) {
 	s.WriteEmptyObject = true
 	if f.EnableVirtualDir {
 		s.VirtualDir = true
-	}
-	if f.EnableVirtualLink {
-		s.VirtualLink = true
 	}
 	return
 }
