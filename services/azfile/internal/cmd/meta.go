@@ -24,12 +24,13 @@ var Metadata = def.Metadata{
 		Features: types.StorageFeatures{
 			WriteEmptyObject: true,
 
-			Create: true,
-			Delete: true,
-			List:   true,
-			Read:   true,
-			Stat:   true,
-			Write:  true,
+			Create:    true,
+			CreateDir: true,
+			Delete:    true,
+			List:      true,
+			Read:      true,
+			Stat:      true,
+			Write:     true,
 		},
 
 		Create: []def.Pair{
@@ -54,6 +55,7 @@ var Metadata = def.Metadata{
 		Stat: []def.Pair{
 			def.PairObjectMode,
 		},
+		CreateDir: []def.Pair{},
 	},
 }
 

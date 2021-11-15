@@ -42,7 +42,6 @@ type Storage struct {
 	features     types.StorageFeatures
 
 	types.UnimplementedStorager
-	types.UnimplementedDirer
 }
 
 // String implements Storager.String
