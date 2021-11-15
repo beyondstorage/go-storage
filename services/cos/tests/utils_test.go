@@ -12,7 +12,7 @@ import (
 )
 
 func setupTest(t *testing.T) types.Storager {
-	t.Log("Setup test for oss")
+	t.Log("Setup test for cos")
 
 	store, err := cos.NewStorager(
 		ps.WithCredential(os.Getenv("STORAGE_COS_CREDENTIAL")),
