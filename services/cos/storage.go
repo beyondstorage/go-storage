@@ -565,7 +565,6 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 
 	_, err = s.object.Put(ctx, rp, r, putOptions)
 	if err != nil {
-		fmt.Println("exit here:568")
 		return 0, err
 	}
 
