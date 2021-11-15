@@ -15,14 +15,30 @@ import (
 	"go.beyondstorage.io/v5/types"
 )
 
+// Service is the azfile config.
+type Service struct {
+	f Factory
+
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
+
+	types.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer azblob")
+}
+
 // Storage is the azfile client.
 type Storage struct {
+	f      Factory
 	client azfile.DirectoryURL
 
 	workDir string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs types.DefaultStoragePairs
+	features     types.StorageFeatures
 
 	types.UnimplementedStorager
 	types.UnimplementedDirer
@@ -33,33 +49,48 @@ func (s *Storage) String() string {
 	return fmt.Sprintf("Storager azfile {WorkDir: %s}", s.workDir)
 }
 
-// NewStorager will create Storager only.
-func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	return newStorager(pairs...)
-}
-
-// newStorager will create a storage client.
-func newStorager(pairs ...types.Pair) (store *Storage, err error) {
-	defer func() {
-		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		}
-	}()
-
-	opt, err := parsePairStorageNew(pairs)
+// NewServicer will create Servicer only.
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
 	if err != nil {
 		return nil, err
 	}
+	return f.NewServicer()
+}
+
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{}
+	return
+}
+
+// NewStorager will create Storager only.
+func NewStorager(pairs ...types.Pair) (types.Storager, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
+}
+
+// newStorager will create a storage client.
+func (f *Factory) newStorage() (store *Storage, err error) {
+	defer func() {
+		if err != nil {
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
+		}
+	}()
 
 	store = &Storage{
 		workDir: "/",
 	}
 
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
+	if f.WorkDir == "" {
+		store.workDir = f.WorkDir
 	}
 
-	ep, err := endpoint.Parse(opt.Endpoint)
+	ep, err := endpoint.Parse(f.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -71,17 +102,17 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 	case endpoint.ProtocolHTTPS:
 		uri, _, _ = ep.HTTPS()
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 	}
 
 	primaryURL, _ := url.Parse(uri)
 
-	cred, err := credential.Parse(opt.Credential)
+	cred, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
 	if cred.Protocol() != credential.ProtocolHmac {
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 
 	credValue, err := azfile.NewSharedKeyCredential(cred.Hmac())
@@ -96,20 +127,13 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 	serviceURL := azfile.NewServiceURL(*primaryURL, p)
 
 	ctx := context.Background()
-	shareURL := serviceURL.NewShareURL(opt.Name)
+	shareURL := serviceURL.NewShareURL(f.Name)
 
 	workDir := strings.TrimPrefix(store.workDir, "/")
 	store.client = shareURL.NewDirectoryURL(workDir)
 	_, err = store.client.Create(ctx, azfile.Metadata{}, azfile.SMBProperties{})
 	if err != nil {
 		return nil, err
-	}
-
-	if opt.HasDefaultStoragePairs {
-		store.defaultPairs = opt.DefaultStoragePairs
-	}
-	if opt.HasStorageFeatures {
-		store.features = opt.StorageFeatures
 	}
 
 	return store, nil
