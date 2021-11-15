@@ -565,9 +565,11 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 
 	_, err = s.object.Put(ctx, rp, r, putOptions)
 	if err != nil {
+		fmt.Println("exit here:568")
 		return 0, err
 	}
-	return
+
+	return size, nil
 }
 
 func (s *Storage) writeMultipart(ctx context.Context, o *types.Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *types.Part, err error) {
