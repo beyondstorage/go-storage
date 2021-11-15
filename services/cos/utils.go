@@ -12,7 +12,6 @@ import (
 
 	"go.beyondstorage.io/credential"
 	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
 	typ "go.beyondstorage.io/v5/types"
 )
@@ -105,6 +104,11 @@ func (f *Factory) newService() (srv *Service, err error) {
 		}
 	}()
 
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
+	}
+
 	cp, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
@@ -114,8 +118,7 @@ func (f *Factory) newService() (srv *Service, err error) {
 	}
 	ak, sk := cp.Hmac()
 
-	var opt = &httpclient.Options{}
-	httpClient := httpclient.New(opt)
+	httpClient := &http.Client{}
 	httpClient.Transport = &cos.AuthorizationTransport{
 		Transport: httpClient.Transport,
 		SecretID:  ak,
@@ -124,11 +127,6 @@ func (f *Factory) newService() (srv *Service, err error) {
 
 	srv.client = httpClient
 	srv.service = cos.NewClient(nil, srv.client)
-
-	srv = &Service{
-		f:        *f,
-		features: f.serviceFeatures(),
-	}
 
 	return
 }
