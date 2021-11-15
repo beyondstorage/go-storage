@@ -16,6 +16,7 @@ import (
 )
 
 // Service is the azfile config.
+// It is not usable, only for generate code
 type Service struct {
 	f Factory
 
@@ -49,7 +50,7 @@ func (s *Storage) String() string {
 	return fmt.Sprintf("Storager azfile {WorkDir: %s}", s.workDir)
 }
 
-// NewServicer will create Servicer only.
+// NewServicer is not usable, only for generate code
 func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
 	f := Factory{}
 	err := f.WithPairs(pairs...)
@@ -59,6 +60,7 @@ func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
 	return f.NewServicer()
 }
 
+// newService is not usable, only for generate code
 func (f *Factory) newService() (srv *Service, err error) {
 	srv = &Service{}
 	return
