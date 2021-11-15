@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -185,15 +186,21 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
-	input := &objectPageStatus{
-		maxKeys: 200,
-		prefix:  s.getAbsPath(path),
-	}
-
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-46](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
 		opt.ListMode = types.ListModePrefix
+	}
+
+	if opt.ListMode.IsDir() {
+		if !strings.HasSuffix(path, "/") {
+			path += "/"
+		}
+	}
+
+	input := &objectPageStatus{
+		maxKeys: 200,
+		prefix:  s.getAbsPath(path),
 	}
 
 	var nextFn types.NextObjectFunc
@@ -560,7 +567,8 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	if err != nil {
 		return 0, err
 	}
-	return
+
+	return size, nil
 }
 
 func (s *Storage) writeMultipart(ctx context.Context, o *types.Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *types.Part, err error) {
