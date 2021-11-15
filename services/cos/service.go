@@ -3,7 +3,6 @@ package cos
 import (
 	"context"
 
-	ps "go.beyondstorage.io/v5/pairs"
 	typ "go.beyondstorage.io/v5/types"
 )
 

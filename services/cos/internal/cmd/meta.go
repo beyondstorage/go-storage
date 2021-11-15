@@ -88,6 +88,7 @@ var Metadata = def.Metadata{
 			def.PairContentType,
 			def.PairIoCallback,
 			pairStorageClass,
+			pairServerSideEncryption,
 			pairServerSideEncryptionCustomerAlgorithm,
 			pairServerSideEncryptionCustomerKey,
 			pairServerSideEncryptionCosKmsKeyId,
@@ -97,6 +98,7 @@ var Metadata = def.Metadata{
 			def.PairMultipartID,
 			def.PairObjectMode,
 			pairServerSideEncryptionCustomerAlgorithm,
+			pairServerSideEncryptionCosKmsKeyId,
 			pairServerSideEncryptionCustomerKey,
 		},
 		CreateMultipart: []def.Pair{
@@ -110,6 +112,9 @@ var Metadata = def.Metadata{
 		},
 		WriteMultipart: []def.Pair{
 			def.PairContentMD5,
+		},
+		CreateDir: []def.Pair{
+			pairStorageClass,
 		},
 	},
 }
@@ -130,7 +135,7 @@ var pairServerSideEncryptionCustomerKey = def.Pair{
 	Description: "specifies the customer-provided encryption key to encrypt/decrypt the source object. It must be a 32-byte AES-256 key.",
 }
 var pairServerSideEncryptionCosKmsKeyId = def.Pair{
-	Name:        "server_side_encryption_aws_kms_key_id",
+	Name:        "server_side_encryption_cos_kms_key_id",
 	Type:        def.Type{Name: "string"},
 	Description: "specifies the COS KMS key ID to use for object encryption.",
 }
@@ -166,7 +171,7 @@ var infoObjectMetaServerSideEncryptionCustomerAlgorithm = def.Info{
 var infoObjectMetaServerSideEncryptionCosKmsKeyId = def.Info{
 	Namespace: def.NamespaceObject,
 	Category:  def.CategoryMeta,
-	Name:      "server_side_encryption_aws_kms_key_id",
+	Name:      "server_side_encryption_cos_kms_key_id",
 	Type:      def.Type{Name: "string"},
 }
 var infoObjectMetaServerSideEncryptionCustomerKeyMd5 = def.Info{

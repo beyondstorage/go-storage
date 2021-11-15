@@ -127,7 +127,7 @@ func (f *Factory) newService() (srv *Service, err error) {
 
 	srv = &Service{
 		f:        *f,
-		features: f.ServiceFeatures(),
+		features: f.serviceFeatures(),
 		client:   client,
 		service:  service,
 	}
@@ -176,10 +176,11 @@ func formatError(err error) error {
 
 // newStorage will create a new client.
 func (f *Factory) newStorage() (st *Storage, err error) {
+	s, err := f.newService()
 	st = &Storage{}
 
 	url := cos.NewBucketURL(f.Name, f.Location, true)
-	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, f.client)
+	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, s.client)
 
 	st.bucket = c.Bucket
 	st.object = c.Object
