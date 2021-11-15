@@ -8,7 +8,10 @@ import (
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store typ.Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name), ps.WithLocation(opt.Location))
+	f := s.f
+	f.Name = name
+	f.Location = opt.Location
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -20,11 +23,14 @@ func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate
 }
 
 func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete) (err error) {
-	store, err := s.newStorage(ps.WithName(name), ps.WithLocation(opt.Location))
+	f := s.f
+	f.Name = name
+	f.Location = opt.Location
+	st, err := f.newStorage()
 	if err != nil {
 		return err
 	}
-	_, err = store.bucket.Delete(ctx)
+	_, err = st.bucket.Delete(ctx)
 	if err != nil {
 		return err
 	}
@@ -32,7 +38,10 @@ func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete
 }
 
 func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store typ.Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name), ps.WithLocation(opt.Location))
+	f := s.f
+	f.Name = name
+	f.Location = opt.Location
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +59,10 @@ func (s *Service) nextStoragePage(ctx context.Context, page *typ.StoragerPage) e
 	}
 
 	for _, v := range output.Buckets {
-		store, err := s.newStorage(ps.WithName(v.Name), ps.WithLocation(v.Region))
+		f := s.f
+		f.Name = v.Name
+		f.Location = v.Region
+		store, err := f.newStorage()
 		if err != nil {
 			return err
 		}

@@ -19,9 +19,7 @@ func setupTest(t *testing.T) types.Storager {
 		ps.WithName(os.Getenv("STORAGE_COS_NAME")),
 		ps.WithLocation(os.Getenv("STORAGE_COS_LOCATION")),
 		ps.WithWorkDir("/"+uuid.New().String()+"/"),
-		cos.WithStorageFeatures(cos.StorageFeatures{
-			VirtualDir: true,
-		}),
+		ps.WithEnableVirtualDir(),
 	)
 	if err != nil {
 		t.Errorf("new storager: %v", err)
