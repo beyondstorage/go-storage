@@ -27,6 +27,7 @@ var Metadata = def.Metadata{
 			Create:    true,
 			CreateDir: true,
 			Delete:    true,
+			Metadata:  true,
 			List:      true,
 			Read:      true,
 			Stat:      true,
