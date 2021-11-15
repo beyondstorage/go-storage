@@ -84,7 +84,9 @@ func (f *Factory) newStorage() (store *Storage, err error) {
 	}()
 
 	store = &Storage{
-		workDir: "/",
+		f:        *f,
+		features: f.storageFeatures(),
+		workDir:  "/",
 	}
 
 	if f.WorkDir == "" {
