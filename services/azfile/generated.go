@@ -168,6 +168,7 @@ func (f *Factory) serviceFeatures() (s types.ServiceFeatures) {
 }
 func (f *Factory) storageFeatures() (s types.StorageFeatures) {
 	s.Create = true
+	s.CreateDir = true
 	s.Delete = true
 	s.List = true
 	s.Read = true
@@ -501,12 +502,22 @@ func (s *Storage) parsePairStorageCreateDir(opts []types.Pair) (pairStorageCreat
 	return result, nil
 }
 func (s *Storage) CreateDir(path string, pairs ...types.Pair) (o *types.Object, err error) {
-	err = types.NewOperationNotImplementedError("create_dir")
-	return
+	ctx := context.Background()
+	return s.CreateDirWithContext(ctx, path, pairs...)
 }
 func (s *Storage) CreateDirWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
-	err = types.NewOperationNotImplementedError("create_dir")
-	return
+	defer func() {
+		err =
+			s.formatError("create_dir", err, path)
+	}()
+	pairs = append(pairs, s.defaultPairs.CreateDir...)
+	var opt pairStorageCreateDir
+
+	opt, err = s.parsePairStorageCreateDir(pairs)
+	if err != nil {
+		return
+	}
+	return s.createDir(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 
 type pairStorageCreateLink struct {

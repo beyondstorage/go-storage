@@ -28,7 +28,7 @@ type Service struct {
 
 // String implements Servicer.String
 func (s *Service) String() string {
-	return fmt.Sprintf("Servicer azblob")
+	return fmt.Sprintf("Servicer azfile")
 }
 
 // Storage is the azfile client.
@@ -89,7 +89,7 @@ func (f *Factory) newStorage() (store *Storage, err error) {
 		workDir:  "/",
 	}
 
-	if f.WorkDir == "" {
+	if f.WorkDir != "" {
 		store.workDir = f.WorkDir
 	}
 
