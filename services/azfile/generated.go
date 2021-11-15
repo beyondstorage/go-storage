@@ -171,6 +171,7 @@ func (f *Factory) storageFeatures() (s types.StorageFeatures) {
 	s.CreateDir = true
 	s.Delete = true
 	s.List = true
+	s.Metadata = true
 	s.Read = true
 	s.Stat = true
 	s.Write = true
@@ -773,7 +774,12 @@ func (s *Storage) parsePairStorageMetadata(opts []types.Pair) (pairStorageMetada
 	return result, nil
 }
 func (s *Storage) Metadata(pairs ...types.Pair) (meta *types.StorageMeta) {
-	return
+	pairs = append(pairs, s.defaultPairs.Metadata...)
+	var opt pairStorageMetadata
+
+	// Ignore error while handling local functions.
+	opt, _ = s.parsePairStorageMetadata(pairs)
+	return s.metadata(opt)
 }
 
 type pairStorageMove struct {
