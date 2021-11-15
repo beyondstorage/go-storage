@@ -114,8 +114,8 @@ func (f *Factory) newService() (srv *Service, err error) {
 	}
 	ak, sk := cp.Hmac()
 
-	var opt = httpclient.Options{}
-	httpClient := httpclient.New(&opt)
+	var opt = &httpclient.Options{}
+	httpClient := httpclient.New(opt)
 	httpClient.Transport = &cos.AuthorizationTransport{
 		Transport: httpClient.Transport,
 		SecretID:  ak,
