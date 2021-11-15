@@ -151,7 +151,10 @@ func formatError(err error) error {
 
 // newStorage will create a new client.
 func (f *Factory) newStorage() (st *Storage, err error) {
-	st = &Storage{}
+	st = &Storage{
+		f:        *f,
+		features: f.storageFeatures(),
+	}
 
 	url := cos.NewBucketURL(f.Name, f.Location, true)
 	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, nil)
