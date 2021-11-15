@@ -10,6 +10,9 @@ import (
 
 	"github.com/tencentyun/cos-go-sdk-v5"
 
+	"go.beyondstorage.io/credential"
+	ps "go.beyondstorage.io/v5/pairs"
+	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
 	typ "go.beyondstorage.io/v5/types"
 )
@@ -102,6 +105,26 @@ func (f *Factory) newService() (srv *Service, err error) {
 		}
 	}()
 
+	cp, err := credential.Parse(f.Credential)
+	if err != nil {
+		return nil, err
+	}
+	if cp.Protocol() != credential.ProtocolHmac {
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
+	}
+	ak, sk := cp.Hmac()
+
+	var opt = httpclient.Options{}
+	httpClient := httpclient.New(&opt)
+	httpClient.Transport = &cos.AuthorizationTransport{
+		Transport: httpClient.Transport,
+		SecretID:  ak,
+		SecretKey: sk,
+	}
+
+	srv.client = httpClient
+	srv.service = cos.NewClient(nil, srv.client)
+
 	srv = &Service{
 		f:        *f,
 		features: f.serviceFeatures(),
@@ -151,13 +174,18 @@ func formatError(err error) error {
 
 // newStorage will create a new client.
 func (f *Factory) newStorage() (st *Storage, err error) {
+	s, err := f.newService()
+	if err != nil {
+		return
+	}
+
 	st = &Storage{
 		f:        *f,
 		features: f.storageFeatures(),
 	}
 
 	url := cos.NewBucketURL(f.Name, f.Location, true)
-	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, nil)
+	c := cos.NewClient(&cos.BaseURL{BucketURL: url}, s.client)
 
 	st.bucket = c.Bucket
 	st.object = c.Object
