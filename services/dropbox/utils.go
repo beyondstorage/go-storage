@@ -43,7 +43,10 @@ func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
 
 // newService is not usable, only for generate code
 func (f *Factory) newService() (srv *Service, err error) {
-	srv = &Service{}
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
+	}
 	return
 }
 
@@ -59,8 +62,6 @@ type Storage struct {
 	features     StorageFeatures
 
 	typ.UnimplementedStorager
-	typ.UnimplementedAppender
-	typ.UnimplementedDirer
 }
 
 // String implements Storager.String
