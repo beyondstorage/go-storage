@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox/files"
@@ -148,6 +149,12 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
+	if opt.ListMode.IsDir() {
+		if !strings.HasSuffix(path, "/") {
+			path += "/"
+		}
+	}
+
 	input := &objectPageStatus{
 		limit: 200,
 		path:  s.getAbsPath(path),
