@@ -183,6 +183,12 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 	}
 }
 
+// getRelPath will get object storage's rel path.
+func (s *Storage) getRelPath(path string) string {
+	prefix := s.workDir + "/"
+	return strings.TrimPrefix(path, prefix)
+}
+
 func (s *Storage) newObject(done bool) *typ.Object {
 	return typ.NewObject(s, done)
 }
@@ -190,7 +196,7 @@ func (s *Storage) newObject(done bool) *typ.Object {
 func (s *Storage) formatFolderObject(path string, v *files.FolderMetadata) (o *typ.Object) {
 	o = s.newObject(true)
 	o.ID = v.Id
-	o.Path = path
+	o.Path = s.getRelPath(path)
 	o.Mode |= typ.ModeDir
 
 	return o
@@ -199,7 +205,7 @@ func (s *Storage) formatFolderObject(path string, v *files.FolderMetadata) (o *t
 func (s *Storage) formatFileObject(path string, v *files.FileMetadata) (o *typ.Object) {
 	o = s.newObject(true)
 	o.ID = v.Id
-	o.Path = path
+	o.Path = s.getRelPath(path) + v.Metadata.Name
 	o.Mode |= typ.ModeRead
 
 	o.SetContentLength(int64(v.Size))
