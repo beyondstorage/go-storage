@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"go.beyondstorage.io/v5/services"
-	"go.beyondstorage.io/v5/types"
 	typ "go.beyondstorage.io/v5/types"
 )
 
@@ -31,11 +30,11 @@ type Service struct {
 
 // String implements Servicer.String
 func (s *Service) String() string {
-	return fmt.Sprintf("Servicer cephfs")
+	return fmt.Sprintf("Servicer fs")
 }
 
 // NewServicer is not usable, only for generate code
-func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
 	f := Factory{}
 	err := f.WithPairs(pairs...)
 	if err != nil {
