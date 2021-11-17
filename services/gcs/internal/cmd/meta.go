@@ -23,7 +23,14 @@ var Metadata = def.Metadata{
 		def.PairWorkDir,
 		pairProjectId,
 	},
-	Service: def.Service{},
+	Service: def.Service{
+		Features: types.ServiceFeatures{
+			Create: true,
+			Delete: true,
+			Get:    true,
+			List:   true,
+		},
+	},
 	Storage: def.Storage{
 		Features: types.StorageFeatures{
 			VirtualDir:       true,
