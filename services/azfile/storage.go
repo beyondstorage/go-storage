@@ -108,21 +108,14 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) er
 	input := page.Status.(*objectPageStatus)
 
 	options := azfile.ListFilesAndDirectoriesOptions{
-		MaxResults: input.maxResults,
 		Prefix:     input.prefix,
+		MaxResults: input.maxResults,
 	}
-
-	fmt.Println("option prefix: " + options.Prefix)
 
 	output, err := s.client.ListFilesAndDirectoriesSegment(ctx, input.marker, options)
 	if err != nil {
 		return err
 	}
-	fmt.Print("Len of FileItems:")
-	fmt.Println(len(output.FileItems))
-
-	fmt.Print("Len of DirectoryItems:")
-	fmt.Println(len(output.DirectoryItems))
 
 	for _, v := range output.DirectoryItems {
 		o, err := s.formatDirObject(v)
