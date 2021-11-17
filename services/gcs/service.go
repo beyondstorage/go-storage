@@ -5,12 +5,13 @@ import (
 
 	"google.golang.org/api/iterator"
 
-	ps "go.beyondstorage.io/v5/pairs"
 	typ "go.beyondstorage.io/v5/types"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store typ.Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name))
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -22,11 +23,13 @@ func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate
 }
 
 func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete) (err error) {
-	store, err := s.newStorage(ps.WithName(name))
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return err
 	}
-	err = store.bucket.Delete(ctx)
+	err = st.bucket.Delete(ctx)
 	if err != nil {
 		return err
 	}
@@ -34,7 +37,9 @@ func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete
 }
 
 func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store typ.Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name))
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -55,10 +60,12 @@ func (s *Service) nextStoragePage(ctx context.Context, page *typ.StoragerPage) e
 		if err != nil {
 			return err
 		}
-		store, err := s.newStorage(ps.WithName(bucket.Name))
+		f := s.f
+		f.Name = bucket.Name
+		st, err := f.newStorage()
 		if err != nil {
 			return err
 		}
-		page.Data = append(page.Data, store)
+		page.Data = append(page.Data, st)
 	}
 }
