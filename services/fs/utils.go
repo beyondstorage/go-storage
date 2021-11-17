@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"go.beyondstorage.io/v5/services"
+	"go.beyondstorage.io/v5/types"
 	typ "go.beyondstorage.io/v5/types"
 )
 
@@ -17,21 +18,49 @@ const (
 	Stderr = "/dev/stderr"
 )
 
+// Service is the cephfs config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs typ.DefaultServicePairs
+	features     typ.ServiceFeatures
+
+	typ.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer cephfs")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{}
+	return
+}
+
 // Storage is the fs client.
 type Storage struct {
+	f Factory
+
 	// options for this storager.
 	workDir string // workDir dir for all operation.
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs typ.DefaultStoragePairs
+	features     typ.StorageFeatures
 
 	typ.UnimplementedStorager
-	typ.UnimplementedCopier
-	typ.UnimplementedMover
-	typ.UnimplementedFetcher
-	typ.UnimplementedAppender
-	typ.UnimplementedDirer
-	typ.UnimplementedLinker
 }
 
 // String implements Storager.String
@@ -41,33 +70,30 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	return newStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
 // newStorager will create a fs client.
-func newStorager(pairs ...typ.Pair) (store *Storage, err error) {
+func (f *Factory) newStorage() (store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
 		}
 	}()
-	opt, err := parsePairStorageNew(pairs)
-	if err != nil {
-		return
-	}
 
 	store = &Storage{
-		workDir: "/",
+		f:        *f,
+		features: f.storageFeatures(),
+		workDir:  "/",
 	}
 
-	if opt.HasDefaultStoragePairs {
-		store.defaultPairs = opt.DefaultStoragePairs
-	}
-	if opt.HasStorageFeatures {
-		store.features = opt.StorageFeatures
-	}
-	if opt.HasWorkDir {
-		workDir, err := evalSymlinks(opt.WorkDir)
+	if f.WorkDir != "" {
+		workDir, err := evalSymlinks(f.WorkDir)
 		if err != nil {
 			return nil, err
 		}
