@@ -19,9 +19,7 @@ func setupTest(t *testing.T) types.Storager {
 		ps.WithName(os.Getenv("STORAGE_GCS_NAME")),
 		ps.WithWorkDir("/"+uuid.New().String()+"/"),
 		gcs.WithProjectID(os.Getenv("STORAGE_GCS_PROJECT_ID")),
-		gcs.WithStorageFeatures(gcs.StorageFeatures{
-			VirtualDir: true,
-		}),
+		ps.WithEnableVirtualDir(),
 	)
 	if err != nil {
 		t.Errorf("new storager: %v", err)
