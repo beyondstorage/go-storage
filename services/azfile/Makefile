@@ -1,7 +1,5 @@
 SHELL := /bin/bash
 
--include Makefile.env
-
 .PHONY: all check format lint build test generate tidy
 
 help:
@@ -33,7 +31,6 @@ test:
 
 integration_test:
 	go test -race -count=1 -covermode=atomic -v ./tests
-	export Makefile.env
 
 tidy:
 	go mod tidy
