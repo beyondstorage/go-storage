@@ -92,7 +92,11 @@ func (s *storageListSuite) TestListEmptyDir() {
 
 	_, err := s.p.store.CreateDir(path)
 	s.NoError(err)
-	defer s.p.store.Delete(path, ps.WithObjectMode(types.ModeDir))
+
+	defer func() {
+		err = s.p.store.Delete(path, ps.WithObjectMode(types.ModeDir))
+		s.NoError(err)
+	}()
 
 	it, err := s.p.store.List(path, ps.WithListMode(types.ListModeDir))
 	s.NoError(err)
