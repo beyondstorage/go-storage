@@ -56,7 +56,7 @@ func (s *Service) list(ctx context.Context, opt pairServiceList) (it *typ.Storag
 }
 
 func (s *Service) nextStoragePage(ctx context.Context, page *typ.StoragerPage) error {
-	buckets, err := s.service.Buckets(true)
+	buckets, err := s.service.Buckets(false)
 	if err != nil {
 		return err
 	}
