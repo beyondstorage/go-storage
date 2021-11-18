@@ -165,6 +165,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 	if err != nil {
 		return err
 	}
+
 	q := s.service.Files.List().Q(fmt.Sprintf("parents='%s'", dirId)).Fields("*")
 
 	if input.pageToken != "" {
@@ -183,7 +184,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 	for _, f := range r.Files {
 		o := s.newObject(true)
 		o.SetContentLength(f.Size)
-		o.Path = f.Name
+		o.Path = s.getRelativePath(input.path, f.Name)
 		switch f.MimeType {
 		case directoryMimeType:
 			o.Mode = types.ModeDir
@@ -191,6 +192,10 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 			o.Mode = types.ModeRead
 		}
 		page.Data = append(page.Data, o)
+	}
+
+	if r.IncompleteSearch == false {
+		return types.IterateDone
 	}
 
 	input.pageToken = r.NextPageToken
