@@ -260,7 +260,6 @@ func (s *Storage) newObject(done bool) *types.Object {
 func (s *Storage) formatFileObject(v azfile.FileItem) (o *types.Object, err error) {
 	o = s.newObject(true)
 	o.ID = v.Name
-	o.Path = s.getRelPath(v.Name)
 	o.Mode |= types.ModeRead
 
 	if v.Properties.ContentLength != 0 {
@@ -273,7 +272,6 @@ func (s *Storage) formatFileObject(v azfile.FileItem) (o *types.Object, err erro
 func (s *Storage) formatDirObject(v azfile.DirectoryItem) (o *types.Object, err error) {
 	o = s.newObject(true)
 	o.ID = v.Name
-	o.Path = s.getRelPath(v.Name)
 	o.Mode |= types.ModeDir
 
 	return
