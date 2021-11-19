@@ -3,24 +3,22 @@ package gcs
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 
-	. "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
-	. "go.beyondstorage.io/v5/types"
+	"go.beyondstorage.io/v5/types"
 )
 
 var (
-	_ Storager
+	_ types.Storager
 	_ services.ServiceError
-	_ httpclient.Options
+	_ strings.Reader
 	_ time.Duration
 	_ http.Request
-	_ Error
 )
 
 // Type is the type for gcs
@@ -36,7 +34,7 @@ type ObjectSystemMetadata struct {
 //
 // - This function should not be called by service implementer.
 // - The returning ObjectServiceMetadata is read only and should not be modified.
-func GetObjectSystemMetadata(o *Object) ObjectSystemMetadata {
+func GetObjectSystemMetadata(o *types.Object) ObjectSystemMetadata {
 	sm, ok := o.GetSystemMetadata()
 	if ok {
 		return sm.(ObjectSystemMetadata)
@@ -47,21 +45,19 @@ func GetObjectSystemMetadata(o *Object) ObjectSystemMetadata {
 // setObjectSystemMetadata will set ObjectSystemMetadata into Object.
 //
 // - This function should only be called once, please make sure all data has been written before set.
-func setObjectSystemMetadata(o *Object, sm ObjectSystemMetadata) {
+func setObjectSystemMetadata(o *types.Object, sm ObjectSystemMetadata) {
 	o.SetSystemMetadata(sm)
 }
 
 // StorageSystemMetadata stores system metadata for object.
 type StorageSystemMetadata struct {
-	EncryptionKeySha256 string
-	StorageClass        string
 }
 
 // GetStorageSystemMetadata will get StorageSystemMetadata from Storage.
 //
 // - This function should not be called by service implementer.
 // - The returning StorageServiceMetadata is read only and should not be modified.
-func GetStorageSystemMetadata(s *StorageMeta) StorageSystemMetadata {
+func GetStorageSystemMetadata(s *types.StorageMeta) StorageSystemMetadata {
 	sm, ok := s.GetSystemMetadata()
 	if ok {
 		return sm.(StorageSystemMetadata)
@@ -72,40 +68,22 @@ func GetStorageSystemMetadata(s *StorageMeta) StorageSystemMetadata {
 // setStorageSystemMetadata will set StorageSystemMetadata into Storage.
 //
 // - This function should only be called once, please make sure all data has been written before set.
-func setStorageSystemMetadata(s *StorageMeta, sm StorageSystemMetadata) {
+func setStorageSystemMetadata(s *types.StorageMeta, sm StorageSystemMetadata) {
 	s.SetSystemMetadata(sm)
 }
 
-// WithDefaultServicePairs will apply default_service_pairs value to Options.
-func WithDefaultServicePairs(v DefaultServicePairs) Pair {
-	return Pair{Key: "default_service_pairs", Value: v}
-}
-
-// WithDefaultStoragePairs will apply default_storage_pairs value to Options.
-func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
-	return Pair{Key: "default_storage_pairs", Value: v}
-}
-
-// WithEnableVirtualDir will apply enable_virtual_dir value to Options.
+// WithDefaultStorageClass will apply default_storage_class value to Options.
 //
-// virtual_dir feature is designed for a service that doesn't have native dir support but wants to
-// provide simulated operations.
-//
-// - If this feature is disabled (the default behavior), the service will behave like it doesn't have
-// any dir support.
-// - If this feature is enabled, the service will support simulated dir behavior in create_dir, create,
-// list, delete, and so on.
-//
-// This feature was introduced in GSP-109.
-func WithEnableVirtualDir() Pair {
-	return Pair{Key: "enable_virtual_dir", Value: true}
+// default value for storage_class
+func WithDefaultStorageClass(v string) types.Pair {
+	return types.Pair{Key: "default_storage_class", Value: v}
 }
 
 // WithEncryptionKey will apply encryption_key value to Options.
 //
 // is the customer's 32-byte AES-256 key
-func WithEncryptionKey(v []byte) Pair {
-	return Pair{Key: "encryption_key", Value: v}
+func WithEncryptionKey(v []byte) types.Pair {
+	return types.Pair{Key: "encryption_key", Value: v}
 }
 
 // WithKmsKeyName will apply kms_key_name value to Options.
@@ -114,121 +92,156 @@ func WithEncryptionKey(v []byte) Pair {
 //
 // Refer to https://cloud.google.com/storage/docs/encryption/using-customer-managed-keys#add-object-key
 // for more details.
-func WithKmsKeyName(v string) Pair {
-	return Pair{Key: "kms_key_name", Value: v}
+func WithKmsKeyName(v string) types.Pair {
+	return types.Pair{Key: "kms_key_name", Value: v}
 }
 
 // WithProjectID will apply project_id value to Options.
-func WithProjectID(v string) Pair {
-	return Pair{Key: "project_id", Value: v}
-}
-
-// WithServiceFeatures will apply service_features value to Options.
-func WithServiceFeatures(v ServiceFeatures) Pair {
-	return Pair{Key: "service_features", Value: v}
+func WithProjectID(v string) types.Pair {
+	return types.Pair{Key: "project_id", Value: v}
 }
 
 // WithStorageClass will apply storage_class value to Options.
-func WithStorageClass(v string) Pair {
-	return Pair{Key: "storage_class", Value: v}
+func WithStorageClass(v string) types.Pair {
+	return types.Pair{Key: "storage_class", Value: v}
 }
 
-// WithStorageFeatures will apply storage_features value to Options.
-func WithStorageFeatures(v StorageFeatures) Pair {
-	return Pair{Key: "storage_features", Value: v}
+type Factory struct {
+	Credential          string
+	DefaultStorageClass string
+	EnableVirtualDir    bool
+	Name                string
+	ProjectID           string
+	WorkDir             string
 }
 
-var pairMap = map[string]string{"content_md5": "string", "content_type": "string", "context": "context.Context", "continuation_token": "string", "credential": "string", "default_content_type": "string", "default_io_callback": "func([]byte)", "default_service_pairs": "DefaultServicePairs", "default_storage_pairs": "DefaultStoragePairs", "enable_virtual_dir": "bool", "encryption_key": "[]byte", "endpoint": "string", "expire": "time.Duration", "http_client_options": "*httpclient.Options", "interceptor": "Interceptor", "io_callback": "func([]byte)", "kms_key_name": "string", "list_mode": "ListMode", "location": "string", "multipart_id": "string", "name": "string", "object_mode": "ObjectMode", "offset": "int64", "project_id": "string", "service_features": "ServiceFeatures", "size": "int64", "storage_class": "string", "storage_features": "StorageFeatures", "work_dir": "string"}
-var _ Servicer = &Service{}
+func (f *Factory) FromString(conn string) (err error) {
+	slash := strings.IndexByte(conn, '/')
+	question := strings.IndexByte(conn, '?')
 
-type ServiceFeatures struct {
-}
+	var partService, partStorage, partParams string
 
-// pairServiceNew is the parsed struct
-type pairServiceNew struct {
-	pairs []Pair
+	if question != -1 {
+		if len(conn) > question {
+			partParams = conn[question+1:]
+		}
+		conn = conn[:question]
+	}
 
-	// Required pairs
-	HasCredential bool
-	Credential    string
-	HasProjectID  bool
-	ProjectID     string
-	// Optional pairs
-	HasDefaultServicePairs bool
-	DefaultServicePairs    DefaultServicePairs
-	HasHTTPClientOptions   bool
-	HTTPClientOptions      *httpclient.Options
-	HasServiceFeatures     bool
-	ServiceFeatures        ServiceFeatures
-	// Enable features
-}
+	if slash != -1 {
+		partService = conn[:slash]
+		partStorage = conn[slash:]
+	} else {
+		partService = conn
+	}
 
-// parsePairServiceNew will parse Pair slice into *pairServiceNew
-func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
-	result :=
-		pairServiceNew{pairs: opts}
+	if partService != "" {
+		f.Credential = partService
+	}
+	if partStorage != "" {
+		slash := strings.IndexByte(partStorage[1:], '/')
+		if slash == -1 {
+			f.Name = partStorage[1:]
+		} else {
+			f.Name, f.WorkDir = partStorage[1:slash+1], partStorage[slash+1:]
+		}
 
-	for _, v := range opts {
-		switch v.Key {
-		case "credential":
-			if result.HasCredential {
-				continue
+	}
+	if partParams != "" {
+		xs := strings.Split(partParams, "&")
+		for _, v := range xs {
+			var key, value string
+			vs := strings.SplitN(v, "=", 2)
+			key = vs[0]
+			if len(vs) > 1 {
+				value = vs[1]
 			}
-			result.HasCredential = true
-			result.Credential = v.Value.(string)
-		case "project_id":
-			if result.HasProjectID {
-				continue
+			switch key {
+			case "credential":
+				f.Credential = value
+			case "default_storage_class":
+				f.DefaultStorageClass = value
+			case "enable_virtual_dir":
+				f.EnableVirtualDir = true
+			case "name":
+				f.Name = value
+			case "project_id":
+				f.ProjectID = value
+			case "work_dir":
+				f.WorkDir = value
 			}
-			result.HasProjectID = true
-			result.ProjectID = v.Value.(string)
-		case "default_service_pairs":
-			if result.HasDefaultServicePairs {
-				continue
-			}
-			result.HasDefaultServicePairs = true
-			result.DefaultServicePairs = v.Value.(DefaultServicePairs)
-		case "http_client_options":
-			if result.HasHTTPClientOptions {
-				continue
-			}
-			result.HasHTTPClientOptions = true
-			result.HTTPClientOptions = v.Value.(*httpclient.Options)
-		case "service_features":
-			if result.HasServiceFeatures {
-				continue
-			}
-			result.HasServiceFeatures = true
-			result.ServiceFeatures = v.Value.(ServiceFeatures)
 		}
 	}
-	// Enable features
-
-	// Default pairs
-
-	if !result.HasCredential {
-		return pairServiceNew{}, services.PairRequiredError{Keys: []string{"credential"}}
+	return nil
+}
+func (f *Factory) WithPairs(ps ...types.Pair) (err error) {
+	for _, v := range ps {
+		switch v.Key {
+		case "credential":
+			f.Credential = v.Value.(string)
+		case "default_storage_class":
+			f.DefaultStorageClass = v.Value.(string)
+		case "enable_virtual_dir":
+			f.EnableVirtualDir = v.Value.(bool)
+		case "name":
+			f.Name = v.Value.(string)
+		case "project_id":
+			f.ProjectID = v.Value.(string)
+		case "work_dir":
+			f.WorkDir = v.Value.(string)
+		}
 	}
-	if !result.HasProjectID {
-		return pairServiceNew{}, services.PairRequiredError{Keys: []string{"project_id"}}
+	return nil
+}
+func (f *Factory) FromMap(m map[string]interface{}) (err error) {
+	return errors.New("FromMap not implemented")
+}
+func (f *Factory) NewServicer() (srv types.Servicer, err error) {
+	return f.newService()
+}
+func (f *Factory) NewStorager() (sto types.Storager, err error) {
+	return f.newStorage()
+}
+func (f *Factory) serviceFeatures() (s types.ServiceFeatures) {
+	s.Create = true
+	s.Delete = true
+	s.Get = true
+	s.List = true
+	return
+}
+func (f *Factory) storageFeatures() (s types.StorageFeatures) {
+	s.Create = true
+	s.CreateDir = true
+	s.Delete = true
+	s.List = true
+	s.Metadata = true
+	s.Read = true
+	s.Stat = true
+	s.Write = true
+	s.WriteEmptyObject = true
+	if f.EnableVirtualDir {
+		s.VirtualDir = true
 	}
-	return result, nil
+	return
 }
 
-// DefaultServicePairs is default pairs for specific action
-type DefaultServicePairs struct {
-	Create []Pair
-	Delete []Pair
-	Get    []Pair
-	List   []Pair
+var _ types.Servicer = &Service{}
+
+// Deprecated: Use types.ServiceFeatures instead.
+type ServiceFeatures = types.ServiceFeatures
+
+// Deprecated: Use types.DefaultServicePairs instead.
+type DefaultServicePairs = types.DefaultServicePairs
+
+func (s *Service) Features() types.ServiceFeatures {
+	return s.features
 }
+
 type pairServiceCreate struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs []types.Pair
 }
 
-func (s *Service) parsePairServiceCreate(opts []Pair) (pairServiceCreate, error) {
+func (s *Service) parsePairServiceCreate(opts []types.Pair) (pairServiceCreate, error) {
 	result :=
 		pairServiceCreate{pairs: opts}
 
@@ -238,79 +251,17 @@ func (s *Service) parsePairServiceCreate(opts []Pair) (pairServiceCreate, error)
 			return pairServiceCreate{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
 }
-
-type pairServiceDelete struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
-}
-
-func (s *Service) parsePairServiceDelete(opts []Pair) (pairServiceDelete, error) {
-	result :=
-		pairServiceDelete{pairs: opts}
-
-	for _, v := range opts {
-		switch v.Key {
-		default:
-			return pairServiceDelete{}, services.PairUnsupportedError{Pair: v}
-		}
-	}
-
-	return result, nil
-}
-
-type pairServiceGet struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
-}
-
-func (s *Service) parsePairServiceGet(opts []Pair) (pairServiceGet, error) {
-	result :=
-		pairServiceGet{pairs: opts}
-
-	for _, v := range opts {
-		switch v.Key {
-		default:
-			return pairServiceGet{}, services.PairUnsupportedError{Pair: v}
-		}
-	}
-
-	return result, nil
-}
-
-type pairServiceList struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
-}
-
-func (s *Service) parsePairServiceList(opts []Pair) (pairServiceList, error) {
-	result :=
-		pairServiceList{pairs: opts}
-
-	for _, v := range opts {
-		switch v.Key {
-		default:
-			return pairServiceList{}, services.PairUnsupportedError{Pair: v}
-		}
-	}
-
-	return result, nil
-}
-func (s *Service) Create(name string, pairs ...Pair) (store Storager, err error) {
+func (s *Service) Create(name string, pairs ...types.Pair) (store types.Storager, err error) {
 	ctx := context.Background()
 	return s.CreateWithContext(ctx, name, pairs...)
 }
-func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...Pair) (store Storager, err error) {
+func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...types.Pair) (store types.Storager, err error) {
 	defer func() {
 		err =
 			s.formatError("create", err, name)
 	}()
-
 	pairs = append(pairs, s.defaultPairs.Create...)
 	var opt pairServiceCreate
 
@@ -320,16 +271,32 @@ func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...P
 	}
 	return s.create(ctx, name, opt)
 }
-func (s *Service) Delete(name string, pairs ...Pair) (err error) {
+
+type pairServiceDelete struct {
+	pairs []types.Pair
+}
+
+func (s *Service) parsePairServiceDelete(opts []types.Pair) (pairServiceDelete, error) {
+	result :=
+		pairServiceDelete{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairServiceDelete{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Service) Delete(name string, pairs ...types.Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, name, pairs...)
 }
-func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...Pair) (err error) {
+func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...types.Pair) (err error) {
 	defer func() {
 		err =
 			s.formatError("delete", err, name)
 	}()
-
 	pairs = append(pairs, s.defaultPairs.Delete...)
 	var opt pairServiceDelete
 
@@ -339,16 +306,32 @@ func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...P
 	}
 	return s.delete(ctx, name, opt)
 }
-func (s *Service) Get(name string, pairs ...Pair) (store Storager, err error) {
+
+type pairServiceGet struct {
+	pairs []types.Pair
+}
+
+func (s *Service) parsePairServiceGet(opts []types.Pair) (pairServiceGet, error) {
+	result :=
+		pairServiceGet{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairServiceGet{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Service) Get(name string, pairs ...types.Pair) (store types.Storager, err error) {
 	ctx := context.Background()
 	return s.GetWithContext(ctx, name, pairs...)
 }
-func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...Pair) (store Storager, err error) {
+func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...types.Pair) (store types.Storager, err error) {
 	defer func() {
 		err =
 			s.formatError("get", err, name)
 	}()
-
 	pairs = append(pairs, s.defaultPairs.Get...)
 	var opt pairServiceGet
 
@@ -358,16 +341,32 @@ func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...Pair
 	}
 	return s.get(ctx, name, opt)
 }
-func (s *Service) List(pairs ...Pair) (sti *StoragerIterator, err error) {
+
+type pairServiceList struct {
+	pairs []types.Pair
+}
+
+func (s *Service) parsePairServiceList(opts []types.Pair) (pairServiceList, error) {
+	result :=
+		pairServiceList{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairServiceList{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Service) List(pairs ...types.Pair) (sti *types.StoragerIterator, err error) {
 	ctx := context.Background()
 	return s.ListWithContext(ctx, pairs...)
 }
-func (s *Service) ListWithContext(ctx context.Context, pairs ...Pair) (sti *StoragerIterator, err error) {
+func (s *Service) ListWithContext(ctx context.Context, pairs ...types.Pair) (sti *types.StoragerIterator, err error) {
 	defer func() {
 		err =
 			s.formatError("list", err, "")
 	}()
-
 	pairs = append(pairs, s.defaultPairs.List...)
 	var opt pairServiceList
 
@@ -378,138 +377,125 @@ func (s *Service) ListWithContext(ctx context.Context, pairs ...Pair) (sti *Stor
 	return s.list(ctx, opt)
 }
 
-var (
-	_ Direr    = &Storage{}
-	_ Storager = &Storage{}
-)
+var _ types.Storager = &Storage{}
 
-type StorageFeatures struct { // virtual_dir feature is designed for a service that doesn't have native dir support but wants to
-	// provide simulated operations.
-	//
-	// - If this feature is disabled (the default behavior), the service will behave like it doesn't have
-	// any dir support.
-	// - If this feature is enabled, the service will support simulated dir behavior in create_dir, create,
-	// list, delete, and so on.
-	//
-	// This feature was introduced in GSP-109.
-	VirtualDir bool
+// Deprecated: Use types.StorageFeatures instead.
+type StorageFeatures = types.StorageFeatures
+
+// Deprecated: Use types.DefaultStoragePairs instead.
+type DefaultStoragePairs = types.DefaultStoragePairs
+
+func (s *Storage) Features() types.StorageFeatures {
+	return s.features
 }
 
-// pairStorageNew is the parsed struct
-type pairStorageNew struct {
-	pairs []Pair
-
-	// Required pairs
-	HasName bool
-	Name    string
-	// Optional pairs
-	HasDefaultContentType  bool
-	DefaultContentType     string
-	HasDefaultIoCallback   bool
-	DefaultIoCallback      func([]byte)
-	HasDefaultStoragePairs bool
-	DefaultStoragePairs    DefaultStoragePairs
-	HasStorageFeatures     bool
-	StorageFeatures        StorageFeatures
-	HasWorkDir             bool
-	WorkDir                string
-	// Enable features
-	hasEnableVirtualDir bool
-	EnableVirtualDir    bool
+type pairStorageCombineBlock struct {
+	pairs []types.Pair
 }
 
-// parsePairStorageNew will parse Pair slice into *pairStorageNew
-func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
+func (s *Storage) parsePairStorageCombineBlock(opts []types.Pair) (pairStorageCombineBlock, error) {
 	result :=
-		pairStorageNew{pairs: opts}
+		pairStorageCombineBlock{pairs: opts}
 
 	for _, v := range opts {
 		switch v.Key {
-		case "name":
-			if result.HasName {
-				continue
-			}
-			result.HasName = true
-			result.Name = v.Value.(string)
-		case "default_content_type":
-			if result.HasDefaultContentType {
-				continue
-			}
-			result.HasDefaultContentType = true
-			result.DefaultContentType = v.Value.(string)
-		case "default_io_callback":
-			if result.HasDefaultIoCallback {
-				continue
-			}
-			result.HasDefaultIoCallback = true
-			result.DefaultIoCallback = v.Value.(func([]byte))
-		case "default_storage_pairs":
-			if result.HasDefaultStoragePairs {
-				continue
-			}
-			result.HasDefaultStoragePairs = true
-			result.DefaultStoragePairs = v.Value.(DefaultStoragePairs)
-		case "storage_features":
-			if result.HasStorageFeatures {
-				continue
-			}
-			result.HasStorageFeatures = true
-			result.StorageFeatures = v.Value.(StorageFeatures)
-		case "work_dir":
-			if result.HasWorkDir {
-				continue
-			}
-			result.HasWorkDir = true
-			result.WorkDir = v.Value.(string)
-		case "enable_virtual_dir":
-			if result.hasEnableVirtualDir {
-				continue
-			}
-			result.hasEnableVirtualDir = true
-			result.EnableVirtualDir = true
+		default:
+			return pairStorageCombineBlock{}, services.PairUnsupportedError{Pair: v}
 		}
-	}
-	// Enable features
-	if result.hasEnableVirtualDir {
-		result.HasStorageFeatures = true
-		result.StorageFeatures.VirtualDir = true
-	}
-	// Default pairs
-	if result.HasDefaultContentType {
-		result.HasDefaultStoragePairs = true
-		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithContentType(result.DefaultContentType))
-	}
-	if result.HasDefaultIoCallback {
-		result.HasDefaultStoragePairs = true
-		result.DefaultStoragePairs.Read = append(result.DefaultStoragePairs.Read, WithIoCallback(result.DefaultIoCallback))
-		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithIoCallback(result.DefaultIoCallback))
-	}
-	if !result.HasName {
-		return pairStorageNew{}, services.PairRequiredError{Keys: []string{"name"}}
 	}
 	return result, nil
 }
-
-// DefaultStoragePairs is default pairs for specific action
-type DefaultStoragePairs struct {
-	Create    []Pair
-	CreateDir []Pair
-	Delete    []Pair
-	List      []Pair
-	Metadata  []Pair
-	Read      []Pair
-	Stat      []Pair
-	Write     []Pair
+func (s *Storage) CombineBlock(o *types.Object, bids []string, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("combine_block")
+	return
 }
+func (s *Storage) CombineBlockWithContext(ctx context.Context, o *types.Object, bids []string, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("combine_block")
+	return
+}
+
+type pairStorageCommitAppend struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageCommitAppend(opts []types.Pair) (pairStorageCommitAppend, error) {
+	result :=
+		pairStorageCommitAppend{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageCommitAppend{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) CommitAppend(o *types.Object, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("commit_append")
+	return
+}
+func (s *Storage) CommitAppendWithContext(ctx context.Context, o *types.Object, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("commit_append")
+	return
+}
+
+type pairStorageCompleteMultipart struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageCompleteMultipart(opts []types.Pair) (pairStorageCompleteMultipart, error) {
+	result :=
+		pairStorageCompleteMultipart{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageCompleteMultipart{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) CompleteMultipart(o *types.Object, parts []*types.Part, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("complete_multipart")
+	return
+}
+func (s *Storage) CompleteMultipartWithContext(ctx context.Context, o *types.Object, parts []*types.Part, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("complete_multipart")
+	return
+}
+
+type pairStorageCopy struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageCopy(opts []types.Pair) (pairStorageCopy, error) {
+	result :=
+		pairStorageCopy{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageCopy{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) Copy(src string, dst string, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("copy")
+	return
+}
+func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("copy")
+	return
+}
+
 type pairStorageCreate struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs         []types.Pair
 	HasObjectMode bool
-	ObjectMode    ObjectMode
+	ObjectMode    types.ObjectMode
 }
 
-func (s *Storage) parsePairStorageCreate(opts []Pair) (pairStorageCreate, error) {
+func (s *Storage) parsePairStorageCreate(opts []types.Pair) (pairStorageCreate, error) {
 	result :=
 		pairStorageCreate{pairs: opts}
 
@@ -520,24 +506,79 @@ func (s *Storage) parsePairStorageCreate(opts []Pair) (pairStorageCreate, error)
 				continue
 			}
 			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(ObjectMode)
+			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			return pairStorageCreate{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
+}
+func (s *Storage) Create(path string, pairs ...types.Pair) (o *types.Object) {
+	pairs = append(pairs, s.defaultPairs.Create...)
+	var opt pairStorageCreate
+
+	// Ignore error while handling local functions.
+	opt, _ = s.parsePairStorageCreate(pairs)
+	return s.create(path, opt)
+}
+
+type pairStorageCreateAppend struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageCreateAppend(opts []types.Pair) (pairStorageCreateAppend, error) {
+	result :=
+		pairStorageCreateAppend{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageCreateAppend{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) CreateAppend(path string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_append")
+	return
+}
+func (s *Storage) CreateAppendWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_append")
+	return
+}
+
+type pairStorageCreateBlock struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageCreateBlock(opts []types.Pair) (pairStorageCreateBlock, error) {
+	result :=
+		pairStorageCreateBlock{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageCreateBlock{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) CreateBlock(path string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_block")
+	return
+}
+func (s *Storage) CreateBlockWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_block")
+	return
 }
 
 type pairStorageCreateDir struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs           []types.Pair
 	HasStorageClass bool
 	StorageClass    string
 }
 
-func (s *Storage) parsePairStorageCreateDir(opts []Pair) (pairStorageCreateDir, error) {
+func (s *Storage) parsePairStorageCreateDir(opts []types.Pair) (pairStorageCreateDir, error) {
 	result :=
 		pairStorageCreateDir{pairs: opts}
 
@@ -553,19 +594,109 @@ func (s *Storage) parsePairStorageCreateDir(opts []Pair) (pairStorageCreateDir, 
 			return pairStorageCreateDir{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
+}
+func (s *Storage) CreateDir(path string, pairs ...types.Pair) (o *types.Object, err error) {
+	ctx := context.Background()
+	return s.CreateDirWithContext(ctx, path, pairs...)
+}
+func (s *Storage) CreateDirWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
+	defer func() {
+		err =
+			s.formatError("create_dir", err, path)
+	}()
+	pairs = append(pairs, s.defaultPairs.CreateDir...)
+	var opt pairStorageCreateDir
+
+	opt, err = s.parsePairStorageCreateDir(pairs)
+	if err != nil {
+		return
+	}
+	return s.createDir(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
+}
+
+type pairStorageCreateLink struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageCreateLink(opts []types.Pair) (pairStorageCreateLink, error) {
+	result :=
+		pairStorageCreateLink{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageCreateLink{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) CreateLink(path string, target string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_link")
+	return
+}
+func (s *Storage) CreateLinkWithContext(ctx context.Context, path string, target string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_link")
+	return
+}
+
+type pairStorageCreateMultipart struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageCreateMultipart(opts []types.Pair) (pairStorageCreateMultipart, error) {
+	result :=
+		pairStorageCreateMultipart{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageCreateMultipart{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) CreateMultipart(path string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_multipart")
+	return
+}
+func (s *Storage) CreateMultipartWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_multipart")
+	return
+}
+
+type pairStorageCreatePage struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageCreatePage(opts []types.Pair) (pairStorageCreatePage, error) {
+	result :=
+		pairStorageCreatePage{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageCreatePage{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) CreatePage(path string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_page")
+	return
+}
+func (s *Storage) CreatePageWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
+	err = types.NewOperationNotImplementedError("create_page")
+	return
 }
 
 type pairStorageDelete struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs         []types.Pair
 	HasObjectMode bool
-	ObjectMode    ObjectMode
+	ObjectMode    types.ObjectMode
 }
 
-func (s *Storage) parsePairStorageDelete(opts []Pair) (pairStorageDelete, error) {
+func (s *Storage) parsePairStorageDelete(opts []types.Pair) (pairStorageDelete, error) {
 	result :=
 		pairStorageDelete{pairs: opts}
 
@@ -576,24 +707,64 @@ func (s *Storage) parsePairStorageDelete(opts []Pair) (pairStorageDelete, error)
 				continue
 			}
 			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(ObjectMode)
+			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			return pairStorageDelete{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
+}
+func (s *Storage) Delete(path string, pairs ...types.Pair) (err error) {
+	ctx := context.Background()
+	return s.DeleteWithContext(ctx, path, pairs...)
+}
+func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...types.Pair) (err error) {
+	defer func() {
+		err =
+			s.formatError("delete", err, path)
+	}()
+	pairs = append(pairs, s.defaultPairs.Delete...)
+	var opt pairStorageDelete
+
+	opt, err = s.parsePairStorageDelete(pairs)
+	if err != nil {
+		return
+	}
+	return s.delete(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
+}
+
+type pairStorageFetch struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageFetch(opts []types.Pair) (pairStorageFetch, error) {
+	result :=
+		pairStorageFetch{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageFetch{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) Fetch(path string, url string, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("fetch")
+	return
+}
+func (s *Storage) FetchWithContext(ctx context.Context, path string, url string, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("fetch")
+	return
 }
 
 type pairStorageList struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs       []types.Pair
 	HasListMode bool
-	ListMode    ListMode
+	ListMode    types.ListMode
 }
 
-func (s *Storage) parsePairStorageList(opts []Pair) (pairStorageList, error) {
+func (s *Storage) parsePairStorageList(opts []types.Pair) (pairStorageList, error) {
 	result :=
 		pairStorageList{pairs: opts}
 
@@ -604,22 +775,87 @@ func (s *Storage) parsePairStorageList(opts []Pair) (pairStorageList, error) {
 				continue
 			}
 			result.HasListMode = true
-			result.ListMode = v.Value.(ListMode)
+			result.ListMode = v.Value.(types.ListMode)
 		default:
 			return pairStorageList{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
+}
+func (s *Storage) List(path string, pairs ...types.Pair) (oi *types.ObjectIterator, err error) {
+	ctx := context.Background()
+	return s.ListWithContext(ctx, path, pairs...)
+}
+func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...types.Pair) (oi *types.ObjectIterator, err error) {
+	defer func() {
+		err =
+			s.formatError("list", err, path)
+	}()
+	pairs = append(pairs, s.defaultPairs.List...)
+	var opt pairStorageList
+
+	opt, err = s.parsePairStorageList(pairs)
+	if err != nil {
+		return
+	}
+	return s.list(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
+}
+
+type pairStorageListBlock struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageListBlock(opts []types.Pair) (pairStorageListBlock, error) {
+	result :=
+		pairStorageListBlock{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageListBlock{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) ListBlock(o *types.Object, pairs ...types.Pair) (bi *types.BlockIterator, err error) {
+	err = types.NewOperationNotImplementedError("list_block")
+	return
+}
+func (s *Storage) ListBlockWithContext(ctx context.Context, o *types.Object, pairs ...types.Pair) (bi *types.BlockIterator, err error) {
+	err = types.NewOperationNotImplementedError("list_block")
+	return
+}
+
+type pairStorageListMultipart struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageListMultipart(opts []types.Pair) (pairStorageListMultipart, error) {
+	result :=
+		pairStorageListMultipart{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageListMultipart{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) ListMultipart(o *types.Object, pairs ...types.Pair) (pi *types.PartIterator, err error) {
+	err = types.NewOperationNotImplementedError("list_multipart")
+	return
+}
+func (s *Storage) ListMultipartWithContext(ctx context.Context, o *types.Object, pairs ...types.Pair) (pi *types.PartIterator, err error) {
+	err = types.NewOperationNotImplementedError("list_multipart")
+	return
 }
 
 type pairStorageMetadata struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs []types.Pair
 }
 
-func (s *Storage) parsePairStorageMetadata(opts []Pair) (pairStorageMetadata, error) {
+func (s *Storage) parsePairStorageMetadata(opts []types.Pair) (pairStorageMetadata, error) {
 	result :=
 		pairStorageMetadata{pairs: opts}
 
@@ -629,14 +865,219 @@ func (s *Storage) parsePairStorageMetadata(opts []Pair) (pairStorageMetadata, er
 			return pairStorageMetadata{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
+}
+func (s *Storage) Metadata(pairs ...types.Pair) (meta *types.StorageMeta) {
+	pairs = append(pairs, s.defaultPairs.Metadata...)
+	var opt pairStorageMetadata
+
+	// Ignore error while handling local functions.
+	opt, _ = s.parsePairStorageMetadata(pairs)
+	return s.metadata(opt)
+}
+
+type pairStorageMove struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageMove(opts []types.Pair) (pairStorageMove, error) {
+	result :=
+		pairStorageMove{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageMove{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) Move(src string, dst string, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("move")
+	return
+}
+func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, pairs ...types.Pair) (err error) {
+	err = types.NewOperationNotImplementedError("move")
+	return
+}
+
+type pairStorageQuerySignHTTPCompleteMultipart struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageQuerySignHTTPCompleteMultipart(opts []types.Pair) (pairStorageQuerySignHTTPCompleteMultipart, error) {
+	result :=
+		pairStorageQuerySignHTTPCompleteMultipart{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageQuerySignHTTPCompleteMultipart{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) QuerySignHTTPCompleteMultipart(o *types.Object, parts []*types.Part, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_complete_multipart")
+	return
+}
+func (s *Storage) QuerySignHTTPCompleteMultipartWithContext(ctx context.Context, o *types.Object, parts []*types.Part, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_complete_multipart")
+	return
+}
+
+type pairStorageQuerySignHTTPCreateMultipart struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageQuerySignHTTPCreateMultipart(opts []types.Pair) (pairStorageQuerySignHTTPCreateMultipart, error) {
+	result :=
+		pairStorageQuerySignHTTPCreateMultipart{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageQuerySignHTTPCreateMultipart{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) QuerySignHTTPCreateMultipart(path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_create_multipart")
+	return
+}
+func (s *Storage) QuerySignHTTPCreateMultipartWithContext(ctx context.Context, path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_create_multipart")
+	return
+}
+
+type pairStorageQuerySignHTTPDelete struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageQuerySignHTTPDelete(opts []types.Pair) (pairStorageQuerySignHTTPDelete, error) {
+	result :=
+		pairStorageQuerySignHTTPDelete{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageQuerySignHTTPDelete{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) QuerySignHTTPDelete(path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_delete")
+	return
+}
+func (s *Storage) QuerySignHTTPDeleteWithContext(ctx context.Context, path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_delete")
+	return
+}
+
+type pairStorageQuerySignHTTPListMultipart struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageQuerySignHTTPListMultipart(opts []types.Pair) (pairStorageQuerySignHTTPListMultipart, error) {
+	result :=
+		pairStorageQuerySignHTTPListMultipart{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageQuerySignHTTPListMultipart{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) QuerySignHTTPListMultipart(o *types.Object, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_list_multipart")
+	return
+}
+func (s *Storage) QuerySignHTTPListMultipartWithContext(ctx context.Context, o *types.Object, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_list_multipart")
+	return
+}
+
+type pairStorageQuerySignHTTPRead struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageQuerySignHTTPRead(opts []types.Pair) (pairStorageQuerySignHTTPRead, error) {
+	result :=
+		pairStorageQuerySignHTTPRead{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageQuerySignHTTPRead{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) QuerySignHTTPRead(path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_read")
+	return
+}
+func (s *Storage) QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_read")
+	return
+}
+
+type pairStorageQuerySignHTTPWrite struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageQuerySignHTTPWrite(opts []types.Pair) (pairStorageQuerySignHTTPWrite, error) {
+	result :=
+		pairStorageQuerySignHTTPWrite{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageQuerySignHTTPWrite{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_write")
+	return
+}
+func (s *Storage) QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_write")
+	return
+}
+
+type pairStorageQuerySignHTTPWriteMultipart struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageQuerySignHTTPWriteMultipart(opts []types.Pair) (pairStorageQuerySignHTTPWriteMultipart, error) {
+	result :=
+		pairStorageQuerySignHTTPWriteMultipart{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageQuerySignHTTPWriteMultipart{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) QuerySignHTTPWriteMultipart(o *types.Object, size int64, index int, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_write_multipart")
+	return
+}
+func (s *Storage) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o *types.Object, size int64, index int, expire time.Duration, pairs ...types.Pair) (req *http.Request, err error) {
+	err = types.NewOperationNotImplementedError("query_sign_http_write_multipart")
+	return
 }
 
 type pairStorageRead struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs            []types.Pair
 	HasEncryptionKey bool
 	EncryptionKey    []byte
 	HasIoCallback    bool
@@ -647,7 +1088,7 @@ type pairStorageRead struct {
 	Size             int64
 }
 
-func (s *Storage) parsePairStorageRead(opts []Pair) (pairStorageRead, error) {
+func (s *Storage) parsePairStorageRead(opts []types.Pair) (pairStorageRead, error) {
 	result :=
 		pairStorageRead{pairs: opts}
 
@@ -681,19 +1122,34 @@ func (s *Storage) parsePairStorageRead(opts []Pair) (pairStorageRead, error) {
 			return pairStorageRead{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
+}
+func (s *Storage) Read(path string, w io.Writer, pairs ...types.Pair) (n int64, err error) {
+	ctx := context.Background()
+	return s.ReadWithContext(ctx, path, w, pairs...)
+}
+func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...types.Pair) (n int64, err error) {
+	defer func() {
+		err =
+			s.formatError("read", err, path)
+	}()
+	pairs = append(pairs, s.defaultPairs.Read...)
+	var opt pairStorageRead
+
+	opt, err = s.parsePairStorageRead(pairs)
+	if err != nil {
+		return
+	}
+	return s.read(ctx, strings.ReplaceAll(path, "\\", "/"), w, opt)
 }
 
 type pairStorageStat struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs         []types.Pair
 	HasObjectMode bool
-	ObjectMode    ObjectMode
+	ObjectMode    types.ObjectMode
 }
 
-func (s *Storage) parsePairStorageStat(opts []Pair) (pairStorageStat, error) {
+func (s *Storage) parsePairStorageStat(opts []types.Pair) (pairStorageStat, error) {
 	result :=
 		pairStorageStat{pairs: opts}
 
@@ -704,19 +1160,34 @@ func (s *Storage) parsePairStorageStat(opts []Pair) (pairStorageStat, error) {
 				continue
 			}
 			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(ObjectMode)
+			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			return pairStorageStat{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
+}
+func (s *Storage) Stat(path string, pairs ...types.Pair) (o *types.Object, err error) {
+	ctx := context.Background()
+	return s.StatWithContext(ctx, path, pairs...)
+}
+func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
+	defer func() {
+		err =
+			s.formatError("stat", err, path)
+	}()
+	pairs = append(pairs, s.defaultPairs.Stat...)
+	var opt pairStorageStat
+
+	opt, err = s.parsePairStorageStat(pairs)
+	if err != nil {
+		return
+	}
+	return s.stat(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
 }
 
 type pairStorageWrite struct {
-	pairs []Pair
-	// Required pairs
-	// Optional pairs
+	pairs            []types.Pair
 	HasContentMd5    bool
 	ContentMd5       string
 	HasContentType   bool
@@ -731,7 +1202,7 @@ type pairStorageWrite struct {
 	StorageClass     string
 }
 
-func (s *Storage) parsePairStorageWrite(opts []Pair) (pairStorageWrite, error) {
+func (s *Storage) parsePairStorageWrite(opts []types.Pair) (pairStorageWrite, error) {
 	result :=
 		pairStorageWrite{pairs: opts}
 
@@ -777,130 +1248,17 @@ func (s *Storage) parsePairStorageWrite(opts []Pair) (pairStorageWrite, error) {
 			return pairStorageWrite{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
-
 	return result, nil
 }
-func (s *Storage) Create(path string, pairs ...Pair) (o *Object) {
-	pairs = append(pairs, s.defaultPairs.Create...)
-	var opt pairStorageCreate
-
-	// Ignore error while handling local functions.
-	opt, _ = s.parsePairStorageCreate(pairs)
-	return s.create(path, opt)
-}
-func (s *Storage) CreateDir(path string, pairs ...Pair) (o *Object, err error) {
-	ctx := context.Background()
-	return s.CreateDirWithContext(ctx, path, pairs...)
-}
-func (s *Storage) CreateDirWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
-	defer func() {
-		err =
-			s.formatError("create_dir", err, path)
-	}()
-
-	pairs = append(pairs, s.defaultPairs.CreateDir...)
-	var opt pairStorageCreateDir
-
-	opt, err = s.parsePairStorageCreateDir(pairs)
-	if err != nil {
-		return
-	}
-	return s.createDir(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
-}
-func (s *Storage) Delete(path string, pairs ...Pair) (err error) {
-	ctx := context.Background()
-	return s.DeleteWithContext(ctx, path, pairs...)
-}
-func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...Pair) (err error) {
-	defer func() {
-		err =
-			s.formatError("delete", err, path)
-	}()
-
-	pairs = append(pairs, s.defaultPairs.Delete...)
-	var opt pairStorageDelete
-
-	opt, err = s.parsePairStorageDelete(pairs)
-	if err != nil {
-		return
-	}
-	return s.delete(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
-}
-func (s *Storage) List(path string, pairs ...Pair) (oi *ObjectIterator, err error) {
-	ctx := context.Background()
-	return s.ListWithContext(ctx, path, pairs...)
-}
-func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error) {
-	defer func() {
-		err =
-			s.formatError("list", err, path)
-	}()
-
-	pairs = append(pairs, s.defaultPairs.List...)
-	var opt pairStorageList
-
-	opt, err = s.parsePairStorageList(pairs)
-	if err != nil {
-		return
-	}
-	return s.list(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
-}
-func (s *Storage) Metadata(pairs ...Pair) (meta *StorageMeta) {
-	pairs = append(pairs, s.defaultPairs.Metadata...)
-	var opt pairStorageMetadata
-
-	// Ignore error while handling local functions.
-	opt, _ = s.parsePairStorageMetadata(pairs)
-	return s.metadata(opt)
-}
-func (s *Storage) Read(path string, w io.Writer, pairs ...Pair) (n int64, err error) {
-	ctx := context.Background()
-	return s.ReadWithContext(ctx, path, w, pairs...)
-}
-func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...Pair) (n int64, err error) {
-	defer func() {
-		err =
-			s.formatError("read", err, path)
-	}()
-
-	pairs = append(pairs, s.defaultPairs.Read...)
-	var opt pairStorageRead
-
-	opt, err = s.parsePairStorageRead(pairs)
-	if err != nil {
-		return
-	}
-	return s.read(ctx, strings.ReplaceAll(path, "\\", "/"), w, opt)
-}
-func (s *Storage) Stat(path string, pairs ...Pair) (o *Object, err error) {
-	ctx := context.Background()
-	return s.StatWithContext(ctx, path, pairs...)
-}
-func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
-	defer func() {
-		err =
-			s.formatError("stat", err, path)
-	}()
-
-	pairs = append(pairs, s.defaultPairs.Stat...)
-	var opt pairStorageStat
-
-	opt, err = s.parsePairStorageStat(pairs)
-	if err != nil {
-		return
-	}
-	return s.stat(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
-}
-func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
 	ctx := context.Background()
 	return s.WriteWithContext(ctx, path, r, size, pairs...)
 }
-func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
 	defer func() {
 		err =
 			s.formatError("write", err, path)
 	}()
-
 	pairs = append(pairs, s.defaultPairs.Write...)
 	var opt pairStorageWrite
 
@@ -910,8 +1268,106 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 	}
 	return s.write(ctx, strings.ReplaceAll(path, "\\", "/"), r, size, opt)
 }
+
+type pairStorageWriteAppend struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageWriteAppend(opts []types.Pair) (pairStorageWriteAppend, error) {
+	result :=
+		pairStorageWriteAppend{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageWriteAppend{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) WriteAppend(o *types.Object, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
+	err = types.NewOperationNotImplementedError("write_append")
+	return
+}
+func (s *Storage) WriteAppendWithContext(ctx context.Context, o *types.Object, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
+	err = types.NewOperationNotImplementedError("write_append")
+	return
+}
+
+type pairStorageWriteBlock struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageWriteBlock(opts []types.Pair) (pairStorageWriteBlock, error) {
+	result :=
+		pairStorageWriteBlock{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageWriteBlock{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) WriteBlock(o *types.Object, r io.Reader, size int64, bid string, pairs ...types.Pair) (n int64, err error) {
+	err = types.NewOperationNotImplementedError("write_block")
+	return
+}
+func (s *Storage) WriteBlockWithContext(ctx context.Context, o *types.Object, r io.Reader, size int64, bid string, pairs ...types.Pair) (n int64, err error) {
+	err = types.NewOperationNotImplementedError("write_block")
+	return
+}
+
+type pairStorageWriteMultipart struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageWriteMultipart(opts []types.Pair) (pairStorageWriteMultipart, error) {
+	result :=
+		pairStorageWriteMultipart{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageWriteMultipart{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) WriteMultipart(o *types.Object, r io.Reader, size int64, index int, pairs ...types.Pair) (n int64, part *types.Part, err error) {
+	err = types.NewOperationNotImplementedError("write_multipart")
+	return
+}
+func (s *Storage) WriteMultipartWithContext(ctx context.Context, o *types.Object, r io.Reader, size int64, index int, pairs ...types.Pair) (n int64, part *types.Part, err error) {
+	err = types.NewOperationNotImplementedError("write_multipart")
+	return
+}
+
+type pairStorageWritePage struct {
+	pairs []types.Pair
+}
+
+func (s *Storage) parsePairStorageWritePage(opts []types.Pair) (pairStorageWritePage, error) {
+	result :=
+		pairStorageWritePage{pairs: opts}
+
+	for _, v := range opts {
+		switch v.Key {
+		default:
+			return pairStorageWritePage{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+	return result, nil
+}
+func (s *Storage) WritePage(o *types.Object, r io.Reader, size int64, offset int64, pairs ...types.Pair) (n int64, err error) {
+	err = types.NewOperationNotImplementedError("write_page")
+	return
+}
+func (s *Storage) WritePageWithContext(ctx context.Context, o *types.Object, r io.Reader, size int64, offset int64, pairs ...types.Pair) (n int64, err error) {
+	err = types.NewOperationNotImplementedError("write_page")
+	return
+}
 func init() {
-	services.RegisterServicer(Type, NewServicer)
-	services.RegisterStorager(Type, NewStorager)
-	services.RegisterSchema(Type, pairMap)
+	services.RegisterFactory(Type, &Factory{})
 }
