@@ -11,7 +11,6 @@ import (
 	"go.beyondstorage.io/credential"
 	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/services"
-	"go.beyondstorage.io/v5/types"
 	typ "go.beyondstorage.io/v5/types"
 )
 
@@ -32,7 +31,7 @@ func (s *Service) String() string {
 }
 
 // NewServicer is not usable, only for generate code
-func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
 	f := Factory{}
 	err := f.WithPairs(pairs...)
 	if err != nil {
