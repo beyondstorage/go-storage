@@ -14,8 +14,45 @@ import (
 	typ "go.beyondstorage.io/v5/types"
 )
 
+// Service is the dropbox config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs typ.DefaultServicePairs
+	features     typ.ServiceFeatures
+
+	typ.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer azfile")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
+	}
+	return
+}
+
 // Storage is the dropbox client.
 type Storage struct {
+	f Factory
+
 	client files.Client
 
 	workDir string
@@ -24,8 +61,6 @@ type Storage struct {
 	features     StorageFeatures
 
 	typ.UnimplementedStorager
-	typ.UnimplementedAppender
-	typ.UnimplementedDirer
 }
 
 // String implements Storager.String
@@ -38,27 +73,27 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	return newStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
 // New will create a new client.
-func newStorager(pairs ...typ.Pair) (store *Storage, err error) {
+func (f *Factory) newStorage() (store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
 		}
 	}()
-
-	opt, err := parsePairStorageNew(pairs)
-	if err != nil {
-		return
-	}
 
 	cfg := dropbox.Config{
 		// Client: httpclient.New(opt.HTTPClientOptions),
 	}
 
-	cred, err := credential.Parse(opt.Credential)
+	cred, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
@@ -67,25 +102,19 @@ func newStorager(pairs ...typ.Pair) (store *Storage, err error) {
 	case credential.ProtocolAPIKey:
 		cfg.Token = cred.APIKey()
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 
 	store = &Storage{
-		client: files.New(cfg),
+		f:        *f,
+		features: f.storageFeatures(),
+		client:   files.New(cfg),
 
 		workDir: "/",
 	}
 
-	if opt.HasDefaultStoragePairs {
-		store.defaultPairs = opt.DefaultStoragePairs
-	}
-
-	if opt.HasStorageFeatures {
-		store.features = opt.StorageFeatures
-	}
-
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
+	if f.WorkDir != "" {
+		store.workDir = f.WorkDir
 	}
 	return
 }
@@ -153,6 +182,12 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 	}
 }
 
+// getRelPath will get object storage's rel path.
+func (s *Storage) getRelPath(path string) string {
+	prefix := s.workDir + "/"
+	return strings.TrimPrefix(path, prefix)
+}
+
 func (s *Storage) newObject(done bool) *typ.Object {
 	return typ.NewObject(s, done)
 }
@@ -160,7 +195,7 @@ func (s *Storage) newObject(done bool) *typ.Object {
 func (s *Storage) formatFolderObject(path string, v *files.FolderMetadata) (o *typ.Object) {
 	o = s.newObject(true)
 	o.ID = v.Id
-	o.Path = path
+	o.Path = s.getRelPath(path)
 	o.Mode |= typ.ModeDir
 
 	return o
@@ -169,7 +204,7 @@ func (s *Storage) formatFolderObject(path string, v *files.FolderMetadata) (o *t
 func (s *Storage) formatFileObject(path string, v *files.FileMetadata) (o *typ.Object) {
 	o = s.newObject(true)
 	o.ID = v.Id
-	o.Path = path
+	o.Path = s.getRelPath(path) + v.Metadata.Name
 	o.Mode |= typ.ModeRead
 
 	o.SetContentLength(int64(v.Size))
