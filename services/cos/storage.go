@@ -261,6 +261,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPag
 		o.ID = v
 		o.Path = s.getRelPath(v)
 		o.Mode |= types.ModeDir
+
 		page.Data = append(page.Data, o)
 	}
 
