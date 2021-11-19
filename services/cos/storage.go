@@ -298,8 +298,6 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.Object
 		if err != nil {
 			return err
 		}
-		fmt.Println("workdir:" + s.workDir)
-		fmt.Println("o.path:" + o.Path)
 
 		page.Data = append(page.Data, o)
 	}
