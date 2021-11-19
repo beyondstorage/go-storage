@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/azure-storage-file-go/azfile"
 
 	"go.beyondstorage.io/v5/pkg/iowrap"
+	"go.beyondstorage.io/v5/services"
 	"go.beyondstorage.io/v5/types"
 )
 
@@ -90,12 +91,35 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
+	if !opt.HasListMode {
+		// Support `ListModePrefix` as the default `ListMode`.
+		opt.ListMode = types.ListModePrefix
+	}
+
+	if opt.ListMode.IsDir() {
+		// If ListMode is dir, we need to add suffix for it.
+		if !strings.HasSuffix(path, "/") {
+			path += "/"
+		}
+	}
+
 	input := &objectPageStatus{
 		maxResults: 200,
 		prefix:     s.getRelativePath(path),
 	}
 
-	return types.NewObjectIterator(ctx, s.nextObjectPage, input), nil
+	var nextFn types.NextObjectFunc
+
+	switch {
+	case opt.ListMode.IsDir():
+		nextFn = s.nextObjectPageByDir
+	case opt.ListMode.IsPrefix():
+		nextFn = s.nextObjectPageByPrefix
+	default:
+		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
+	}
+
+	return types.NewObjectIterator(ctx, nextFn, input), nil
 }
 
 func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
@@ -104,15 +128,15 @@ func (s *Storage) metadata(opt pairStorageMetadata) (meta *types.StorageMeta) {
 	return meta
 }
 
-func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) error {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	options := azfile.ListFilesAndDirectoriesOptions{
-		Prefix:     input.prefix,
 		MaxResults: input.maxResults,
 	}
 
-	output, err := s.client.ListFilesAndDirectoriesSegment(ctx, input.marker, options)
+	output, err := s.client.NewDirectoryURL(s.getRelativePath(input.prefix)).ListFilesAndDirectoriesSegment(ctx, input.marker, options)
+
 	if err != nil {
 		return err
 	}
@@ -124,6 +148,37 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) er
 		}
 
 		page.Data = append(page.Data, o)
+	}
+
+	for _, v := range output.FileItems {
+		o, err := s.formatFileObject(v)
+		o.Path = input.prefix + v.Name
+		if err != nil {
+			return err
+		}
+
+		page.Data = append(page.Data, o)
+	}
+
+	if !output.NextMarker.NotDone() {
+		return types.IterateDone
+	}
+
+	input.marker = output.NextMarker
+
+	return nil
+}
+
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
+	input := page.Status.(*objectPageStatus)
+
+	options := azfile.ListFilesAndDirectoriesOptions{
+		MaxResults: input.maxResults,
+	}
+
+	output, err := s.client.ListFilesAndDirectoriesSegment(ctx, input.marker, options)
+	if err != nil {
+		return err
 	}
 
 	for _, v := range output.FileItems {
