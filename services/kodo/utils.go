@@ -2,6 +2,7 @@ package kodo
 
 import (
 	"fmt"
+	"net/http"
 
 	"strings"
 	"time"
@@ -13,17 +14,18 @@ import (
 	"go.beyondstorage.io/credential"
 	"go.beyondstorage.io/endpoint"
 	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
 	typ "go.beyondstorage.io/v5/types"
 )
 
 // Service is the kodo config.
 type Service struct {
+	f Factory
+
 	service *qs.BucketManager
 
-	defaultPairs DefaultServicePairs
-	features     ServiceFeatures
+	defaultPairs typ.DefaultServicePairs
+	features     typ.ServiceFeatures
 
 	typ.UnimplementedServicer
 }
@@ -35,6 +37,8 @@ func (s *Service) String() string {
 
 // Storage is the gcs service client.
 type Storage struct {
+	f Factory
+
 	bucket    *qs.BucketManager
 	domain    string
 	putPolicy qs.PutPolicy // kodo need PutPolicy to generate upload token.
@@ -42,11 +46,10 @@ type Storage struct {
 	name    string
 	workDir string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs typ.DefaultStoragePairs
+	features     typ.StorageFeatures
 
 	typ.UnimplementedStorager
-	typ.UnimplementedDirer
 }
 
 // String implements Storager.String
@@ -59,69 +62,69 @@ func (s *Storage) String() string {
 
 // New will create both Servicer and Storager.
 func New(pairs ...typ.Pair) (typ.Servicer, typ.Storager, error) {
-	return newServicerAndStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, nil, err
+	}
+	srv, err := f.NewServicer()
+	if err != nil {
+		return nil, nil, err
+	}
+	sto, err := f.NewStorager()
+	if err != nil {
+		return nil, nil, err
+	}
+	return srv, sto, nil
 }
 
 // NewServicer will create Servicer only.
 func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
-	return newServicer(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
 }
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	_, store, err := newServicerAndStorager(pairs...)
-	return store, err
-}
-
-func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
-	defer func() {
-		if err != nil {
-			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err), Pairs: pairs}
-		}
-	}()
-
-	srv = &Service{}
-
-	opt, err := parsePairServiceNew(pairs)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
 	if err != nil {
 		return nil, err
 	}
+	return f.newStorage()
+}
 
-	cp, err := credential.Parse(opt.Credential)
+func (f *Factory) newService() (srv *Service, err error) {
+	defer func() {
+		if err != nil {
+			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err)}
+		}
+	}()
+
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
+	}
+
+	cp, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
 	if cp.Protocol() != credential.ProtocolHmac {
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 	ak, sk := cp.Hmac()
 
 	mac := qbox.NewMac(ak, sk)
 	cfg := &qs.Config{}
 	srv.service = qs.NewBucketManager(mac, cfg)
-	srv.service.Client.Client = httpclient.New(opt.HTTPClientOptions)
+	srv.service.Client.Client = &http.Client{}
 
-	if opt.HasDefaultServicePairs {
-		srv.defaultPairs = opt.DefaultServicePairs
-	}
-	if opt.HasServiceFeatures {
-		srv.features = opt.ServiceFeatures
-	}
 	return
-}
-
-func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, err error) {
-	srv, err = newServicer(pairs...)
-	if err != nil {
-		return
-	}
-
-	store, err = srv.newStorage(pairs...)
-	if err != nil {
-		err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		return nil, nil, err
-	}
-	return srv, store, nil
 }
 
 func convertUnixTimestampToTime(v int64) time.Time {
@@ -182,13 +185,13 @@ func checkError(err error, code int) bool {
 }
 
 // newStorage will create a new client.
-func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
-	opt, err := parsePairStorageNew(pairs)
+func (f *Factory) newStorage() (store *Storage, err error) {
+	s, err := f.newService()
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	ep, err := endpoint.Parse(opt.Endpoint)
+	ep, err := endpoint.Parse(f.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -200,28 +203,24 @@ func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
 	case endpoint.ProtocolHTTP:
 		url, _, _ = ep.HTTP()
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 	}
 
 	store = &Storage{
-		bucket: s.service,
-		domain: url,
+		f:        *f,
+		features: f.storageFeatures(),
+		bucket:   s.service,
+		domain:   url,
 		putPolicy: qs.PutPolicy{
-			Scope: opt.Name,
+			Scope: f.Name,
 		},
 
-		name:    opt.Name,
+		name:    f.Name,
 		workDir: "/",
 	}
 
-	if opt.HasDefaultStoragePairs {
-		store.defaultPairs = opt.DefaultStoragePairs
-	}
-	if opt.HasStorageFeatures {
-		store.features = opt.StorageFeatures
-	}
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
+	if f.WorkDir != "" {
+		store.workDir = f.WorkDir
 	}
 	return store, nil
 }

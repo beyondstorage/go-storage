@@ -17,18 +17,18 @@ import (
 
 	"go.beyondstorage.io/credential"
 	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
 	typ "go.beyondstorage.io/v5/types"
 )
 
 // Service is the gcs config.
 type Service struct {
+	f         Factory
 	service   *gs.Client
 	projectID string
 
-	defaultPairs DefaultServicePairs
-	features     ServiceFeatures
+	defaultPairs typ.DefaultServicePairs
+	features     typ.ServiceFeatures
 
 	typ.UnimplementedServicer
 }
@@ -40,16 +40,16 @@ func (s *Service) String() string {
 
 // Storage is the gcs service client.
 type Storage struct {
+	f      Factory
 	bucket *gs.BucketHandle
 
 	name    string
 	workDir string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs typ.DefaultStoragePairs
+	features     typ.StorageFeatures
 
 	typ.UnimplementedStorager
-	typ.UnimplementedDirer
 }
 
 // String implements Storager.String
@@ -62,40 +62,60 @@ func (s *Storage) String() string {
 
 // New will create both Servicer and Storager.
 func New(pairs ...typ.Pair) (typ.Servicer, typ.Storager, error) {
-	return newServicerAndStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, nil, err
+	}
+	srv, err := f.NewServicer()
+	if err != nil {
+		return nil, nil, err
+	}
+	sto, err := f.NewStorager()
+	if err != nil {
+		return nil, nil, err
+	}
+	return srv, sto, nil
 }
 
 // NewServicer will create Servicer only.
 func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
-	return newServicer(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
 }
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	_, store, err := newServicerAndStorager(pairs...)
-	return store, err
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
-func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
+func (f *Factory) newService() (srv *Service, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err)}
 		}
 	}()
 
 	ctx := context.Background()
-	srv = &Service{}
-
-	opt, err := parsePairServiceNew(pairs)
-	if err != nil {
-		return nil, err
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
 	}
 
-	hc := httpclient.New(opt.HTTPClientOptions)
+	hc := &http.Client{}
 
 	var creds *google.Credentials
 
-	cp, err := credential.Parse(opt.Credential)
+	cp, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +151,7 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 			return nil, err
 		}
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 
 	ot := &oauth2.Transport{
@@ -146,30 +166,9 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	}
 
 	srv.service = client
-	srv.projectID = opt.ProjectID
+	srv.projectID = f.ProjectID
 
-	if opt.HasDefaultServicePairs {
-		srv.defaultPairs = opt.DefaultServicePairs
-	}
-	if opt.HasServiceFeatures {
-		srv.features = opt.ServiceFeatures
-	}
 	return
-}
-
-// New will create a new aliyun oss service.
-func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, err error) {
-	srv, err = newServicer(pairs...)
-	if err != nil {
-		return
-	}
-
-	store, err = srv.newStorage(pairs...)
-	if err != nil {
-		err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		return nil, nil, err
-	}
-	return srv, store, nil
 }
 
 // All available storage classes are listed here.
@@ -207,29 +206,25 @@ func formatError(err error) error {
 }
 
 // newStorage will create a new client.
-func (s *Service) newStorage(pairs ...typ.Pair) (st *Storage, err error) {
-	opt, err := parsePairStorageNew(pairs)
+func (f *Factory) newStorage() (st *Storage, err error) {
+	s, err := f.newService()
 	if err != nil {
 		return nil, err
 	}
 
-	bucket := s.service.Bucket(opt.Name)
+	bucket := s.service.Bucket(f.Name)
 
 	store := &Storage{
-		bucket: bucket,
-		name:   opt.Name,
+		f:        *f,
+		features: f.storageFeatures(),
+		bucket:   bucket,
+		name:     f.Name,
 
 		workDir: "/",
 	}
 
-	if opt.HasDefaultStoragePairs {
-		store.defaultPairs = opt.DefaultStoragePairs
-	}
-	if opt.HasStorageFeatures {
-		store.features = opt.StorageFeatures
-	}
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
+	if f.WorkDir != "" {
+		store.workDir = f.WorkDir
 	}
 	return store, nil
 }
