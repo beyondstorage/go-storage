@@ -3,4 +3,4 @@ Package kodo provided support for qiniu kodo object storage (https://www.qiniu.c
 */
 package kodo
 
-//go:generate go run -tags tools go.beyondstorage.io/v5/cmd/definitions service.toml
+//go:generate go run ./internal/cmd
