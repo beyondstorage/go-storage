@@ -153,14 +153,10 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 		path += "/"
 	}
 
-	fmt.Println("list path:" + path)
-
 	input := &objectPageStatus{
 		limit: 200,
 		path:  s.getAbsPath(path),
 	}
-	fmt.Println("workdir: " + s.workDir)
-	fmt.Println("path: " + input.path)
 
 	if opt.ListMode.IsPrefix() {
 		input.recursive = true
