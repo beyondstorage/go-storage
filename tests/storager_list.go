@@ -84,7 +84,19 @@ func (s *storageListSuite) TestListWithoutListMode() {
 }
 
 func (s *storageListSuite) TestListEmptyDir() {
+	if !s.p.store.Features().CreateDir {
+		s.T().Skipf("store doesn't support CreateDir, skip TestListEmptyDir.")
+	}
+
 	path := uuid.New().String()
+
+	_, err := s.p.store.CreateDir(path)
+	s.NoError(err)
+
+	defer func() {
+		err = s.p.store.Delete(path, ps.WithObjectMode(types.ModeDir))
+		s.NoError(err)
+	}()
 
 	it, err := s.p.store.List(path, ps.WithListMode(types.ListModeDir))
 	s.NoError(err)

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	gs "cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
@@ -83,14 +84,22 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
-	input := &objectPageStatus{
-		prefix: s.getAbsPath(path),
-	}
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-654](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
 		opt.ListMode = types.ListModePrefix
 	}
+
+	if opt.ListMode.IsDir() {
+		if !strings.HasSuffix(path, "/") {
+			path += "/"
+		}
+	}
+
+	input := &objectPageStatus{
+		prefix: s.getAbsPath(path),
+	}
+
 	var nextFn types.NextObjectFunc
 	switch {
 	case opt.ListMode.IsDir():
