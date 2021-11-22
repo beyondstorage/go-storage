@@ -211,17 +211,6 @@ func (s *Storage) newObject(done bool) *types.Object {
 	return types.NewObject(s, done)
 }
 
-// getRelativePath will get relative path(fileName or directoryName) based on workDir
-func (s *Storage) getRelativePath(path string, name string) string {
-	relativePath := path
-	prefix := strings.TrimPrefix(s.workDir, "/")
-	if strings.HasPrefix(path, prefix) {
-		relativePath = strings.TrimPrefix(path, prefix)
-	}
-
-	return strings.TrimPrefix(relativePath, "/") + "/" + name
-}
-
 // getAbsPath will calculate object storage's abs path
 func (s *Storage) getAbsPath(path string) string {
 	if strings.HasPrefix(path, s.workDir) {

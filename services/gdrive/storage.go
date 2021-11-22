@@ -185,7 +185,7 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 	for _, f := range r.Files {
 		o := s.newObject(true)
 		o.SetContentLength(f.Size)
-		o.Path = s.getRelativePath(input.path, f.Name)
+		o.Path = s.getRelPath(input.path) + "/" + f.Name
 		switch f.MimeType {
 		case directoryMimeType:
 			o.Mode = types.ModeDir
