@@ -166,6 +166,11 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 		return err
 	}
 
+	// When dirId is empty, the path is an empty dir. We should directly return IterateDone
+	if dirId == "" {
+		return types.IterateDone
+	}
+
 	q := s.service.Files.List().Q(fmt.Sprintf("parents='%s'", dirId)).Fields("*")
 
 	if input.pageToken != "" {
@@ -175,10 +180,6 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 
 	if err != nil {
 		return err
-	}
-
-	if len(r.Files) == 0 {
-		return types.IterateDone
 	}
 
 	for _, f := range r.Files {
