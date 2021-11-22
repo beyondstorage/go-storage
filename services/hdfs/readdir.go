@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"strings"
 
 	"github.com/colinmarc/hdfs/v2"
 	"go.beyondstorage.io/v5/types"
@@ -40,10 +41,12 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 		return types.IterateDone
 	}
 
+	prefix := strings.TrimPrefix(input.rp, s.workDir+"/")
+
 	for _, f := range fileList {
 		o := s.newObject(true)
 		o.ID = input.rp
-		o.Path = input.rp + "/" + f.Name()
+		o.Path = prefix + "/" + f.Name()
 
 		if f.Mode().IsDir() {
 			o.Mode |= types.ModeDir
