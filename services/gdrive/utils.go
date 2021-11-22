@@ -232,11 +232,7 @@ func (s *Storage) getAbsPath(path string) string {
 		return strings.TrimPrefix(s.workDir, "/")
 	} else {
 		prefix := strings.TrimPrefix(s.workDir, "/")
-		if !strings.HasPrefix(path, prefix) {
-			return prefix + "/" + path
-		} else {
-			return strings.TrimPrefix(path, "/")
-		}
+		return prefix + "/" + path
 	}
 }
 

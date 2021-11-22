@@ -114,7 +114,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		limit: 200,
-		path:  s.getAbsPath(path),
+		path:  path,
 	}
 
 	if !opt.HasListMode || opt.ListMode.IsDir() {
