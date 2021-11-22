@@ -41,7 +41,7 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 		return types.IterateDone
 	}
 
-	prefix := strings.TrimPrefix(input.rp, s.workDir+"/")
+	prefix := strings.TrimPrefix(input.rp, s.workDir)
 
 	for _, f := range fileList {
 		o := s.newObject(true)
