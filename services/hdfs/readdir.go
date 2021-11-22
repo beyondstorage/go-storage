@@ -43,7 +43,7 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 	for _, f := range fileList {
 		o := s.newObject(true)
 		o.ID = input.rp
-		o.Path = f.Name()
+		o.Path = input.rp + "/" + f.Name()
 
 		if f.Mode().IsDir() {
 			o.Mode |= types.ModeDir

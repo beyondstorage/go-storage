@@ -156,6 +156,7 @@ func (f *Factory) storageFeatures() (s types.StorageFeatures) {
 	s.Delete = true
 	s.List = true
 	s.Metadata = true
+	s.Move = true
 	s.Read = true
 	s.Stat = true
 	s.Write = true
@@ -791,12 +792,22 @@ func (s *Storage) parsePairStorageMove(opts []types.Pair) (pairStorageMove, erro
 	return result, nil
 }
 func (s *Storage) Move(src string, dst string, pairs ...types.Pair) (err error) {
-	err = types.NewOperationNotImplementedError("move")
-	return
+	ctx := context.Background()
+	return s.MoveWithContext(ctx, src, dst, pairs...)
 }
 func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, pairs ...types.Pair) (err error) {
-	err = types.NewOperationNotImplementedError("move")
-	return
+	defer func() {
+		err =
+			s.formatError("move", err, src, dst)
+	}()
+	pairs = append(pairs, s.defaultPairs.Move...)
+	var opt pairStorageMove
+
+	opt, err = s.parsePairStorageMove(pairs)
+	if err != nil {
+		return
+	}
+	return s.move(ctx, strings.ReplaceAll(src, "\\", "/"), strings.ReplaceAll(dst, "\\", "/"), opt)
 }
 
 type pairStorageQuerySignHTTPCompleteMultipart struct {
