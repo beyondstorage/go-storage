@@ -1,14 +1,47 @@
 package ocios
 
 import (
+	"fmt"
+
 	"go.beyondstorage.io/v5/services"
 	"go.beyondstorage.io/v5/types"
 )
 
+// Service is the example config.
+type Service struct {
+	f Factory
+
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
+
+	types.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer ocios")
+}
+
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{}
+	return
+}
+
 // Storage is the example client.
 type Storage struct {
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	f Factory
+
+	defaultPairs types.DefaultStoragePairs
+	features     types.StorageFeatures
 
 	types.UnimplementedStorager
 }
@@ -20,14 +53,19 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	return newStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
 // newStorager will create a storage client.
-func newStorager(pairs ...types.Pair) (store *Storage, err error) {
+func (f *Factory) newStorage() (store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
 		}
 	}()
 
