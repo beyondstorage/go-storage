@@ -59,7 +59,7 @@ func (s *Storage) listDirNext(ctx context.Context, page *types.ObjectPage) (err 
 		o.SetContentLength(f.Size())
 
 		page.Data = append(page.Data, o)
-		input.continuationToken = o.Path
+		input.continuationToken = f.Name()
 	}
 
 	return
