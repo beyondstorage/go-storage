@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/url"
 	"strings"
-	"time"
 
 	"github.com/minio/minio-go/v7"
 
@@ -110,19 +108,6 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) er
 		input.counter++
 	}
 	return nil
-}
-
-func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) (url_ string, err error) {
-	rp := s.getAbsPath(path)
-	var expire = time.Hour * 1
-	if opt.HasExpire {
-		expire = opt.Expire
-	}
-	URL, err := s.client.PresignedGetObject(ctx, s.bucket, rp, expire, url.Values{})
-	if err != nil {
-		return "", err
-	}
-	return URL.String(), nil
 }
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
