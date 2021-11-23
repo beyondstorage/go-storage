@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -17,7 +18,6 @@ import (
 
 	"go.beyondstorage.io/credential"
 	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
 	"go.beyondstorage.io/v5/types"
 )
@@ -30,18 +30,50 @@ const (
 	expireTime  = 100
 )
 
+// Service is the gdrive config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
+
+	types.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer gdrive")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{}
+	return
+}
+
 // Storage is the example client.
 type Storage struct {
+	f Factory
+
 	name         string
 	workDir      string
 	service      *drive.Service
 	cache        *Cache
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs types.DefaultStoragePairs
+	features     types.StorageFeatures
 
 	types.UnimplementedStorager
-	types.UnimplementedDirer
-	types.UnimplementedCopier
 }
 
 // String implements Storager.String
@@ -54,24 +86,26 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	return newStorager(pairs...)
-}
-
-func newStorager(pairs ...types.Pair) (store *Storage, err error) {
-	defer func() {
-		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		}
-	}()
-
-	opt, err := parsePairStorageNew(pairs)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
 	if err != nil {
 		return nil, err
 	}
+	return f.newStorage()
+}
+
+func (f *Factory) newStorage() (store *Storage, err error) {
+	defer func() {
+		if err != nil {
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
+		}
+	}()
 
 	store = &Storage{
-		name:    opt.Name,
-		workDir: "/",
+		f:        *f,
+		features: f.storageFeatures(),
+		name:     f.Name,
+		workDir:  "/",
 	}
 
 	// Init cache for storager
@@ -81,19 +115,19 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 	}
 	store.cache = ch
 
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
+	if f.WorkDir != "" {
+		store.workDir = f.WorkDir
 	}
 
 	ctx := context.Background()
 
 	// Google drive only support authorized by Oauth2
 	// Ref:https://developers.google.com/drive/api/v3/about-auth
-	hc := httpclient.New(opt.HTTPClientOptions)
+	hc := &http.Client{}
 
 	var credJSON []byte
 
-	cp, err := credential.Parse(opt.Credential)
+	cp, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +143,7 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 			return nil, err
 		}
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 
 	// Loading token source from binary data.
