@@ -36,9 +36,9 @@ var Metadata = def.Metadata{
 			Delete:   true,
 			List:     true,
 			Metadata: true,
-			// Read:     true,
-			Stat:  true,
-			Write: true,
+			Read:     false,
+			Stat:     true,
+			Write:    true,
 		},
 
 		Create: []def.Pair{
@@ -50,11 +50,11 @@ var Metadata = def.Metadata{
 		List: []def.Pair{
 			def.PairListMode,
 		},
-		// Read: []def.Pair{
-		// 	def.PairOffset,
-		// 	def.PairIoCallback,
-		// 	def.PairSize,
-		// },
+		Read: []def.Pair{
+			def.PairOffset,
+			def.PairIoCallback,
+			def.PairSize,
+		},
 		Write: []def.Pair{
 			def.PairContentMD5,
 			def.PairContentType,

@@ -189,25 +189,25 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.Object
 	return err
 }
 
-// func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
-// 	rp := s.getAbsPath(path)
+func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
+	rp := s.getAbsPath(path)
 
-// 	input := &obs.GetObjectInput{}
-// 	input.Bucket = s.bucket
-// 	input.Key = rp
+	input := &obs.GetObjectInput{}
+	input.Bucket = s.bucket
+	input.Key = rp
 
-// 	output, err := s.client.GetObject(input)
-// 	if err != nil {
-// 		return 0, err
-// 	}
+	output, err := s.client.GetObject(input)
+	if err != nil {
+		return 0, err
+	}
 
-// 	rc := output.Body
-// 	if opt.HasIoCallback {
-// 		rc = iowrap.CallbackReadCloser(rc, opt.IoCallback)
-// 	}
+	rc := output.Body
+	if opt.HasIoCallback {
+		rc = iowrap.CallbackReadCloser(rc, opt.IoCallback)
+	}
 
-// 	return io.Copy(w, rc)
-// }
+	return io.Copy(w, rc)
+}
 
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)

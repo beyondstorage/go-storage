@@ -1040,7 +1040,13 @@ func (s *Storage) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o 
 }
 
 type pairStorageRead struct {
-	pairs []types.Pair
+	pairs         []types.Pair
+	HasIoCallback bool
+	IoCallback    func([]byte)
+	HasOffset     bool
+	Offset        int64
+	HasSize       bool
+	Size          int64
 }
 
 func (s *Storage) parsePairStorageRead(opts []types.Pair) (pairStorageRead, error) {
@@ -1049,6 +1055,24 @@ func (s *Storage) parsePairStorageRead(opts []types.Pair) (pairStorageRead, erro
 
 	for _, v := range opts {
 		switch v.Key {
+		case "io_callback":
+			if result.HasIoCallback {
+				continue
+			}
+			result.HasIoCallback = true
+			result.IoCallback = v.Value.(func([]byte))
+		case "offset":
+			if result.HasOffset {
+				continue
+			}
+			result.HasOffset = true
+			result.Offset = v.Value.(int64)
+		case "size":
+			if result.HasSize {
+				continue
+			}
+			result.HasSize = true
+			result.Size = v.Value.(int64)
 		default:
 			return pairStorageRead{}, services.PairUnsupportedError{Pair: v}
 		}
