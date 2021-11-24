@@ -1,4 +1,7 @@
 coverage.*
 bin/
-.idea
 Makefile.env
+
+# Jetbrain IDE
+.idea
+*.iml
