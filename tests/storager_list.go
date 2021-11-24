@@ -90,13 +90,18 @@ func (s *storageListSuite) TestListEmptyDir() {
 
 	path := uuid.New().String()
 
-	_, err := s.p.store.CreateDir(path)
-	s.NoError(err)
-
-	defer func() {
-		err = s.p.store.Delete(path, ps.WithObjectMode(types.ModeDir))
+	virtualDir := s.p.store.Features().VirtualDir
+	if !virtualDir {
+		_, err := s.p.store.CreateDir(path)
 		s.NoError(err)
-	}()
+	}
+
+	defer func(isVirtualDir bool) {
+		if !isVirtualDir {
+			err := s.p.store.Delete(path, ps.WithObjectMode(types.ModeDir))
+			s.NoError(err)
+		}
+	}(virtualDir)
 
 	it, err := s.p.store.List(path, ps.WithListMode(types.ListModeDir))
 	s.NoError(err)
