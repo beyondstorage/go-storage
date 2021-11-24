@@ -73,12 +73,6 @@ var pairStorageClass = def.Pair{
 	Type:        def.Type{Name: "string"},
 	Defaultable: true,
 }
-
-// var pairExpire = def.Pair{
-// 	Name:        "expire",
-// 	Type:        def.Type{Name: "string"},
-// 	Description: "specify when the url returned by reach will expire. Deprecated: Use `QuerySignHTTPRead` instead of `Reach` and `expire` is the declared argument.",
-// }
 var infoObjectMetaStorageClass = def.Info{
 	Namespace: def.NamespaceObject,
 	Category:  def.CategoryMeta,
