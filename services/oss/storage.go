@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
@@ -254,15 +255,21 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
-	input := &objectPageStatus{
-		maxKeys: 200,
-		prefix:  s.getAbsPath(path),
-	}
-
 	if !opt.HasListMode {
 		// Support `ListModePrefix` as the default `ListMode`.
 		// ref: [GSP-654](https://github.com/beyondstorage/go-storage/blob/master/docs/rfcs/654-unify-list-behavior.md)
 		opt.ListMode = types.ListModePrefix
+	}
+
+	if opt.ListMode.IsDir() {
+		if !strings.HasSuffix(path, "/") {
+			path += "/"
+		}
+	}
+
+	input := &objectPageStatus{
+		maxKeys: 200,
+		prefix:  s.getAbsPath(path),
 	}
 
 	var nextFn types.NextObjectFunc
@@ -318,6 +325,13 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPag
 	)
 	if err != nil {
 		return err
+	}
+
+	// List enpty dir will return the dir itself and we want the return value to be empty.
+	// Use current way to avoid this condition temporally.
+	// Maybe we should use ListObjectsV2 to replace ListObjects.
+	if len(output.Objects) == 1 && output.Objects[0].Key == input.prefix && output.Objects[0].Size == 0 {
+		return types.IterateDone
 	}
 
 	for _, v := range output.CommonPrefixes {
