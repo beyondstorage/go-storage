@@ -78,7 +78,7 @@ func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
 	return f.newStorage()
 }
 
-// newStorager will create a new onedrive storager client.
+// newStorage will create a new onedrive storage client.
 func (f *Factory) newStorage() (store *Storage, err error) {
 	defer func() {
 		if err != nil {
