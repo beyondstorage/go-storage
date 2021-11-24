@@ -61,7 +61,7 @@ func NewStorager(pairs ...types.Pair) (types.Storager, error) {
 	return f.newStorage()
 }
 
-// newStorager will create a storage client.
+// newStorage will create a storage client.
 func (f *Factory) newStorage() (store *Storage, err error) {
 	defer func() {
 		if err != nil {
