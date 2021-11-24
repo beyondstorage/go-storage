@@ -15,13 +15,47 @@ import (
 	typ "go.beyondstorage.io/v5/types"
 )
 
+// Service is the onedrive config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs typ.DefaultServicePairs
+	features     typ.ServiceFeatures
+
+	typ.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer onedrive")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{}
+	return
+}
+
 // Storage is the example client.
 type Storage struct {
+	f Factory
+
 	client  *onedriveClient
 	workDir string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs typ.DefaultStoragePairs
+	features     typ.StorageFeatures
 
 	typ.UnimplementedStorager
 }
@@ -36,25 +70,25 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	return newStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
 // newStorager will create a new onedrive storager client.
-func newStorager(pairs ...typ.Pair) (store *Storage, err error) {
+func (f *Factory) newStorage() (store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
 		}
 	}()
 
-	opt, err := parsePairStorageNew(pairs)
-	if err != nil {
-		return
-	}
-
 	var token []byte
 
-	cp, err := credential.Parse(opt.Credential)
+	cp, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +104,7 @@ func newStorager(pairs ...typ.Pair) (store *Storage, err error) {
 			return nil, err
 		}
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 
 	// create new onedrive client
@@ -78,8 +112,8 @@ func newStorager(pairs ...typ.Pair) (store *Storage, err error) {
 
 	// generate work dir
 	workDir := "/"
-	if opt.HasWorkDir {
-		workDir = opt.WorkDir
+	if f.WorkDir != "" {
+		workDir = f.WorkDir
 	}
 	store = &Storage{
 		client:  &onedriveClient{client},
