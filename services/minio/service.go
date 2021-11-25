@@ -5,12 +5,13 @@ import (
 
 	"github.com/minio/minio-go/v7"
 
-	ps "go.beyondstorage.io/v5/pairs"
 	"go.beyondstorage.io/v5/types"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store types.Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name))
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +31,9 @@ func (s *Service) delete(ctx context.Context, name string, opt pairServiceDelete
 }
 
 func (s *Service) get(ctx context.Context, name string, opt pairServiceGet) (store types.Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name))
+	f := s.f
+	f.Name = name
+	st, err := f.newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +52,9 @@ func (s *Service) nextStoragePage(ctx context.Context, page *types.StoragerPage)
 		return err
 	}
 	for _, v := range input.buckets {
-		store, err := s.newStorage(ps.WithName(v.Name))
+		f := s.f
+		f.Name = v.Name
+		store, err := f.newStorage()
 		if err != nil {
 			return err
 		}
