@@ -327,13 +327,6 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPag
 		return err
 	}
 
-	// // List enpty dir will return the dir itself and we want the return value to be empty.
-	// // Use current way to avoid this condition temporally.
-	// // Maybe we should use ListObjectsV2 to replace ListObjects.
-	// if len(output.Objects) == 1 && output.Objects[0].Key == input.prefix && output.Objects[0].Size == 0 {
-	// 	return types.IterateDone
-	// }
-
 	for _, v := range output.CommonPrefixes {
 		o := s.newObject(true)
 		o.ID = v
