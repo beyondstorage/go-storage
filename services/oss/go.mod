@@ -12,3 +12,5 @@ require (
 	go.beyondstorage.io/v5 v5.0.0
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 )
+
+replace go.beyondstorage.io/v5 => ../../
