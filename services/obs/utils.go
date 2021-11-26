@@ -14,10 +14,12 @@ import (
 )
 
 type Service struct {
+	f Factory
+
 	service *obs.ObsClient
 
-	defaultPairs DefaultServicePairs
-	features     ServiceFeatures
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
 
 	types.UnimplementedServicer
 }
@@ -28,13 +30,15 @@ func (s *Service) String() string {
 
 // Storage is the obs client.
 type Storage struct {
+	f Factory
+
 	client *obs.ObsClient
 
 	bucket  string
 	workDir string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs types.DefaultStoragePairs
+	features     types.StorageFeatures
 
 	types.UnimplementedStorager
 }
@@ -45,48 +49,67 @@ func (s *Storage) String() string {
 }
 
 func New(pairs ...types.Pair) (types.Servicer, types.Storager, error) {
-	return newServicerAndStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, nil, err
+	}
+	srv, err := f.NewServicer()
+	if err != nil {
+		return nil, nil, err
+	}
+	sto, err := f.NewStorager()
+	if err != nil {
+		return nil, nil, err
+	}
+	return srv, sto, nil
 }
 
 func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
-	return newServicer(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
 }
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	_, store, err := newServicerAndStorager(pairs...)
-	return store, err
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
-func newServicer(pairs ...types.Pair) (srv *Service, err error) {
+func (f *Factory) newService() (srv *Service, err error) {
 	defer func() {
 		if err != nil {
 			err = services.InitError{
-				Op:    "new_servicer",
-				Type:  Type,
-				Err:   formatError(err),
-				Pairs: pairs,
+				Op:   "new_servicer",
+				Type: Type,
+				Err:  formatError(err),
 			}
 		}
 	}()
 
-	srv = &Service{}
-
-	opt, err := parsePairServiceNew(pairs)
-	if err != nil {
-		return nil, err
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
 	}
 
-	cp, err := credential.Parse(opt.Credential)
+	cp, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
 	if cp.Protocol() != credential.ProtocolHmac {
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 	ak, sk := cp.Hmac()
 
-	ep, err := endpoint.Parse(opt.Endpoint)
+	ep, err := endpoint.Parse(f.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +121,7 @@ func newServicer(pairs ...types.Pair) (srv *Service, err error) {
 	case endpoint.ProtocolHTTPS:
 		url, _, _ = ep.HTTPS()
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 	}
 
 	srv.service, err = obs.New(ak, sk, url)
@@ -106,51 +129,25 @@ func newServicer(pairs ...types.Pair) (srv *Service, err error) {
 		return nil, err
 	}
 
-	if opt.HasDefaultServicePairs {
-		srv.defaultPairs = opt.DefaultServicePairs
-	}
-	if opt.HasServiceFeatures {
-		srv.features = opt.ServiceFeatures
-	}
-
 	return
 }
 
-func newServicerAndStorager(pairs ...types.Pair) (srv *Service, store *Storage, err error) {
-	srv, err = newServicer(pairs...)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	store, err = srv.newStorage(pairs...)
-	if err != nil {
-		err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		return nil, nil, err
-	}
-
-	return
-}
-
-func (s *Service) newStorage(pairs ...types.Pair) (store *Storage, err error) {
-	opt, err := parsePairStorageNew(pairs)
+func (f *Factory) newStorage() (store *Storage, err error) {
+	s, err := f.newService()
 	if err != nil {
 		return nil, err
 	}
 
 	store = &Storage{
-		client:  s.service,
-		bucket:  opt.Name,
-		workDir: "/",
+		f:        *f,
+		features: f.storageFeatures(),
+		client:   s.service,
+		bucket:   f.Name,
+		workDir:  "/",
 	}
 
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
-	}
-	if opt.HasDefaultStoragePairs {
-		store.defaultPairs = opt.DefaultStoragePairs
-	}
-	if opt.HasStorageFeatures {
-		store.features = opt.StorageFeatures
+	if f.WorkDir != "" {
+		store.workDir = f.WorkDir
 	}
 
 	return
