@@ -3,4 +3,4 @@ Package obs provided support for the Huawei Object Storage Service(https://www.h
 */
 package obs
 
-//go:generate go run -tags tools go.beyondstorage.io/v5/cmd/definitions service.toml
+//go:generate go run ./internal/cmd
