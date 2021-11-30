@@ -139,14 +139,6 @@ func (f *Factory) serviceFeatures() (s types.ServiceFeatures) {
 	return
 }
 func (f *Factory) storageFeatures() (s types.StorageFeatures) {
-	s.Create = true
-	s.Delete = true
-	s.List = true
-	s.Metadata = true
-	s.Read = true
-	s.Stat = true
-	s.Write = true
-	s.WriteEmptyObject = true
 	return
 }
 
@@ -375,9 +367,7 @@ func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, p
 }
 
 type pairStorageCreate struct {
-	pairs         []types.Pair
-	HasObjectMode bool
-	ObjectMode    types.ObjectMode
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageCreate(opts []types.Pair) (pairStorageCreate, error) {
@@ -386,12 +376,6 @@ func (s *Storage) parsePairStorageCreate(opts []types.Pair) (pairStorageCreate, 
 
 	for _, v := range opts {
 		switch v.Key {
-		case "object_mode":
-			if result.HasObjectMode {
-				continue
-			}
-			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			return pairStorageCreate{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -399,12 +383,7 @@ func (s *Storage) parsePairStorageCreate(opts []types.Pair) (pairStorageCreate, 
 	return result, nil
 }
 func (s *Storage) Create(path string, pairs ...types.Pair) (o *types.Object) {
-	pairs = append(pairs, s.defaultPairs.Create...)
-	var opt pairStorageCreate
-
-	// Ignore error while handling local functions.
-	opt, _ = s.parsePairStorageCreate(pairs)
-	return s.create(path, opt)
+	return
 }
 
 type pairStorageCreateAppend struct {
@@ -558,9 +537,7 @@ func (s *Storage) CreatePageWithContext(ctx context.Context, path string, pairs 
 }
 
 type pairStorageDelete struct {
-	pairs         []types.Pair
-	HasObjectMode bool
-	ObjectMode    types.ObjectMode
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageDelete(opts []types.Pair) (pairStorageDelete, error) {
@@ -569,12 +546,6 @@ func (s *Storage) parsePairStorageDelete(opts []types.Pair) (pairStorageDelete, 
 
 	for _, v := range opts {
 		switch v.Key {
-		case "object_mode":
-			if result.HasObjectMode {
-				continue
-			}
-			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			return pairStorageDelete{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -582,22 +553,12 @@ func (s *Storage) parsePairStorageDelete(opts []types.Pair) (pairStorageDelete, 
 	return result, nil
 }
 func (s *Storage) Delete(path string, pairs ...types.Pair) (err error) {
-	ctx := context.Background()
-	return s.DeleteWithContext(ctx, path, pairs...)
+	err = types.NewOperationNotImplementedError("delete")
+	return
 }
 func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...types.Pair) (err error) {
-	defer func() {
-		err =
-			s.formatError("delete", err, path)
-	}()
-	pairs = append(pairs, s.defaultPairs.Delete...)
-	var opt pairStorageDelete
-
-	opt, err = s.parsePairStorageDelete(pairs)
-	if err != nil {
-		return
-	}
-	return s.delete(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
+	err = types.NewOperationNotImplementedError("delete")
+	return
 }
 
 type pairStorageFetch struct {
@@ -626,9 +587,7 @@ func (s *Storage) FetchWithContext(ctx context.Context, path string, url string,
 }
 
 type pairStorageList struct {
-	pairs       []types.Pair
-	HasListMode bool
-	ListMode    types.ListMode
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageList(opts []types.Pair) (pairStorageList, error) {
@@ -637,12 +596,6 @@ func (s *Storage) parsePairStorageList(opts []types.Pair) (pairStorageList, erro
 
 	for _, v := range opts {
 		switch v.Key {
-		case "list_mode":
-			if result.HasListMode {
-				continue
-			}
-			result.HasListMode = true
-			result.ListMode = v.Value.(types.ListMode)
 		default:
 			return pairStorageList{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -650,22 +603,12 @@ func (s *Storage) parsePairStorageList(opts []types.Pair) (pairStorageList, erro
 	return result, nil
 }
 func (s *Storage) List(path string, pairs ...types.Pair) (oi *types.ObjectIterator, err error) {
-	ctx := context.Background()
-	return s.ListWithContext(ctx, path, pairs...)
+	err = types.NewOperationNotImplementedError("list")
+	return
 }
 func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...types.Pair) (oi *types.ObjectIterator, err error) {
-	defer func() {
-		err =
-			s.formatError("list", err, path)
-	}()
-	pairs = append(pairs, s.defaultPairs.List...)
-	var opt pairStorageList
-
-	opt, err = s.parsePairStorageList(pairs)
-	if err != nil {
-		return
-	}
-	return s.list(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
+	err = types.NewOperationNotImplementedError("list")
+	return
 }
 
 type pairStorageListBlock struct {
@@ -735,12 +678,7 @@ func (s *Storage) parsePairStorageMetadata(opts []types.Pair) (pairStorageMetada
 	return result, nil
 }
 func (s *Storage) Metadata(pairs ...types.Pair) (meta *types.StorageMeta) {
-	pairs = append(pairs, s.defaultPairs.Metadata...)
-	var opt pairStorageMetadata
-
-	// Ignore error while handling local functions.
-	opt, _ = s.parsePairStorageMetadata(pairs)
-	return s.metadata(opt)
+	return
 }
 
 type pairStorageMove struct {
@@ -944,13 +882,7 @@ func (s *Storage) QuerySignHTTPWriteMultipartWithContext(ctx context.Context, o 
 }
 
 type pairStorageRead struct {
-	pairs         []types.Pair
-	HasIoCallback bool
-	IoCallback    func([]byte)
-	HasOffset     bool
-	Offset        int64
-	HasSize       bool
-	Size          int64
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageRead(opts []types.Pair) (pairStorageRead, error) {
@@ -959,24 +891,6 @@ func (s *Storage) parsePairStorageRead(opts []types.Pair) (pairStorageRead, erro
 
 	for _, v := range opts {
 		switch v.Key {
-		case "io_callback":
-			if result.HasIoCallback {
-				continue
-			}
-			result.HasIoCallback = true
-			result.IoCallback = v.Value.(func([]byte))
-		case "offset":
-			if result.HasOffset {
-				continue
-			}
-			result.HasOffset = true
-			result.Offset = v.Value.(int64)
-		case "size":
-			if result.HasSize {
-				continue
-			}
-			result.HasSize = true
-			result.Size = v.Value.(int64)
 		default:
 			return pairStorageRead{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -984,28 +898,16 @@ func (s *Storage) parsePairStorageRead(opts []types.Pair) (pairStorageRead, erro
 	return result, nil
 }
 func (s *Storage) Read(path string, w io.Writer, pairs ...types.Pair) (n int64, err error) {
-	ctx := context.Background()
-	return s.ReadWithContext(ctx, path, w, pairs...)
+	err = types.NewOperationNotImplementedError("read")
+	return
 }
 func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...types.Pair) (n int64, err error) {
-	defer func() {
-		err =
-			s.formatError("read", err, path)
-	}()
-	pairs = append(pairs, s.defaultPairs.Read...)
-	var opt pairStorageRead
-
-	opt, err = s.parsePairStorageRead(pairs)
-	if err != nil {
-		return
-	}
-	return s.read(ctx, strings.ReplaceAll(path, "\\", "/"), w, opt)
+	err = types.NewOperationNotImplementedError("read")
+	return
 }
 
 type pairStorageStat struct {
-	pairs         []types.Pair
-	HasObjectMode bool
-	ObjectMode    types.ObjectMode
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageStat(opts []types.Pair) (pairStorageStat, error) {
@@ -1014,12 +916,6 @@ func (s *Storage) parsePairStorageStat(opts []types.Pair) (pairStorageStat, erro
 
 	for _, v := range opts {
 		switch v.Key {
-		case "object_mode":
-			if result.HasObjectMode {
-				continue
-			}
-			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			return pairStorageStat{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -1027,32 +923,16 @@ func (s *Storage) parsePairStorageStat(opts []types.Pair) (pairStorageStat, erro
 	return result, nil
 }
 func (s *Storage) Stat(path string, pairs ...types.Pair) (o *types.Object, err error) {
-	ctx := context.Background()
-	return s.StatWithContext(ctx, path, pairs...)
+	err = types.NewOperationNotImplementedError("stat")
+	return
 }
 func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...types.Pair) (o *types.Object, err error) {
-	defer func() {
-		err =
-			s.formatError("stat", err, path)
-	}()
-	pairs = append(pairs, s.defaultPairs.Stat...)
-	var opt pairStorageStat
-
-	opt, err = s.parsePairStorageStat(pairs)
-	if err != nil {
-		return
-	}
-	return s.stat(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
+	err = types.NewOperationNotImplementedError("stat")
+	return
 }
 
 type pairStorageWrite struct {
-	pairs          []types.Pair
-	HasContentMd5  bool
-	ContentMd5     string
-	HasContentType bool
-	ContentType    string
-	HasIoCallback  bool
-	IoCallback     func([]byte)
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageWrite(opts []types.Pair) (pairStorageWrite, error) {
@@ -1061,24 +941,6 @@ func (s *Storage) parsePairStorageWrite(opts []types.Pair) (pairStorageWrite, er
 
 	for _, v := range opts {
 		switch v.Key {
-		case "content_md5":
-			if result.HasContentMd5 {
-				continue
-			}
-			result.HasContentMd5 = true
-			result.ContentMd5 = v.Value.(string)
-		case "content_type":
-			if result.HasContentType {
-				continue
-			}
-			result.HasContentType = true
-			result.ContentType = v.Value.(string)
-		case "io_callback":
-			if result.HasIoCallback {
-				continue
-			}
-			result.HasIoCallback = true
-			result.IoCallback = v.Value.(func([]byte))
 		default:
 			return pairStorageWrite{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -1086,22 +948,12 @@ func (s *Storage) parsePairStorageWrite(opts []types.Pair) (pairStorageWrite, er
 	return result, nil
 }
 func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
-	ctx := context.Background()
-	return s.WriteWithContext(ctx, path, r, size, pairs...)
+	err = types.NewOperationNotImplementedError("write")
+	return
 }
 func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
-	defer func() {
-		err =
-			s.formatError("write", err, path)
-	}()
-	pairs = append(pairs, s.defaultPairs.Write...)
-	var opt pairStorageWrite
-
-	opt, err = s.parsePairStorageWrite(pairs)
-	if err != nil {
-		return
-	}
-	return s.write(ctx, strings.ReplaceAll(path, "\\", "/"), r, size, opt)
+	err = types.NewOperationNotImplementedError("write")
+	return
 }
 
 type pairStorageWriteAppend struct {
