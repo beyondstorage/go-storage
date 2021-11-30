@@ -34,6 +34,9 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
+	if !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
 	rp := s.getAbsPath(path)
 	if !opt.HasListMode || opt.ListMode.IsDir() {
 		nextFn := func(ctx context.Context, page *types.ObjectPage) error {
@@ -44,7 +47,7 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 					continue
 				}
 				o := types.NewObject(s, true)
-				o.Path = dirObject.Item().Key[len(rp):]
+				o.Path = path + dirObject.Item().Key[len(rp):]
 				if dirObject.Item().IsPrefix {
 					o.Mode |= types.ModeDir
 				} else {
