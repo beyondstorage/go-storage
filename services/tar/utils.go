@@ -12,10 +12,44 @@ import (
 	"go.beyondstorage.io/v5/types"
 )
 
+// Service is the tar config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
+
+	types.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer tar")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{}
+	return
+}
+
 // Storage is the example client.
 type Storage struct {
+	f Factory
+
 	path string
-	f    *os.File
+	file *os.File
 	r    *tar.Reader
 
 	objects       []*types.Object
@@ -37,38 +71,40 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	return newStorager(pairs...)
-}
-
-func newStorager(pairs ...types.Pair) (store types.Storager, err error) {
-	defer func() {
-		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		}
-	}()
-
-	opt, err := parsePairStorageNew(pairs)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
 	if err != nil {
 		return nil, err
 	}
+	return f.newStorage()
+}
 
-	ep, err := endpoint.Parse(opt.Endpoint)
+func (f *Factory) newStorage() (store types.Storager, err error) {
+	defer func() {
+		if err != nil {
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
+		}
+	}()
+
+	ep, err := endpoint.Parse(f.Endpoint)
 	if err != nil {
 		return
 	}
 	if ep.Protocol() != endpoint.ProtocolFile {
-		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 	}
 
-	f, err := os.Open(ep.File())
+	file, err := os.Open(ep.File())
 	if err != nil {
 		return
 	}
 
 	s := &Storage{
-		path: opt.Endpoint,
-		f:    f,
-		r:    tar.NewReader(f),
+		f:        *f,
+		features: f.storageFeatures(),
+		path:     f.Endpoint,
+		file:     file,
+		r:        tar.NewReader(file),
 
 		objectsIndex:  make(map[string]uint),
 		objectsOffset: make(map[string]int64),
@@ -121,7 +157,7 @@ func (s *Storage) parse() (err error) {
 
 		s.objects = append(s.objects, o)
 		s.objectsIndex[o.Path] = index
-		s.objectsOffset[o.Path], err = s.f.Seek(0, io.SeekCurrent)
+		s.objectsOffset[o.Path], err = s.file.Seek(0, io.SeekCurrent)
 		if err != nil {
 			return err
 		}
