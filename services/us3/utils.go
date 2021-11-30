@@ -1,9 +1,46 @@
 package us3
 
 import (
+	"fmt"
+
 	"go.beyondstorage.io/v5/services"
 	"go.beyondstorage.io/v5/types"
 )
+
+// Service is the us3 config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
+
+	types.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer us3")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
+	}
+	return
+}
 
 // Storage is the example client.
 type Storage struct {
@@ -20,14 +57,19 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	return newStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
 // newStorager will create a storage client.
-func newStorager(pairs ...types.Pair) (store *Storage, err error) {
+func (f *Factory) newStorage() (store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
 		}
 	}()
 
