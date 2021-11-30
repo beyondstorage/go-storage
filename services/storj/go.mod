@@ -8,3 +8,5 @@ require (
 	go.beyondstorage.io/v5 v5.0.0
 	storj.io/uplink v1.7.0
 )
+
+replace go.beyondstorage.io/v5 => ../../
