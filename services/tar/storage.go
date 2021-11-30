@@ -36,12 +36,12 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	}
 	offset, _ := s.objectsOffset[path]
 
-	_, err = s.f.Seek(offset, io.SeekStart)
+	_, err = s.file.Seek(offset, io.SeekStart)
 	if err != nil {
 		panic(err)
 	}
 
-	return io.CopyN(w, s.f, s.objects[idx].MustGetContentLength())
+	return io.CopyN(w, s.file, s.objects[idx].MustGetContentLength())
 }
 
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
