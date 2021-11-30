@@ -20,12 +20,9 @@ var Metadata = def.Metadata{
 		Features: types.StorageFeatures{
 			WriteEmptyObject: true,
 
-			Delete:   true,
-			List:     true,
-			Metadata: true,
-			Read:     true,
-			Stat:     true,
-			Write:    true,
+			List: true,
+			Read: true,
+			Stat: true,
 		},
 
 		Create: []def.Pair{

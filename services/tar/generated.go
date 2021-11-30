@@ -144,12 +144,9 @@ func (f *Factory) serviceFeatures() (s types.ServiceFeatures) {
 	return
 }
 func (f *Factory) storageFeatures() (s types.StorageFeatures) {
-	s.Delete = true
 	s.List = true
-	s.Metadata = true
 	s.Read = true
 	s.Stat = true
-	s.Write = true
 	s.WriteEmptyObject = true
 	return
 }
@@ -581,22 +578,12 @@ func (s *Storage) parsePairStorageDelete(opts []types.Pair) (pairStorageDelete, 
 	return result, nil
 }
 func (s *Storage) Delete(path string, pairs ...types.Pair) (err error) {
-	ctx := context.Background()
-	return s.DeleteWithContext(ctx, path, pairs...)
+	err = types.NewOperationNotImplementedError("delete")
+	return
 }
 func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...types.Pair) (err error) {
-	defer func() {
-		err =
-			s.formatError("delete", err, path)
-	}()
-	pairs = append(pairs, s.defaultPairs.Delete...)
-	var opt pairStorageDelete
-
-	opt, err = s.parsePairStorageDelete(pairs)
-	if err != nil {
-		return
-	}
-	return s.delete(ctx, strings.ReplaceAll(path, "\\", "/"), opt)
+	err = types.NewOperationNotImplementedError("delete")
+	return
 }
 
 type pairStorageFetch struct {
@@ -734,12 +721,7 @@ func (s *Storage) parsePairStorageMetadata(opts []types.Pair) (pairStorageMetada
 	return result, nil
 }
 func (s *Storage) Metadata(pairs ...types.Pair) (meta *types.StorageMeta) {
-	pairs = append(pairs, s.defaultPairs.Metadata...)
-	var opt pairStorageMetadata
-
-	// Ignore error while handling local functions.
-	opt, _ = s.parsePairStorageMetadata(pairs)
-	return s.metadata(opt)
+	return
 }
 
 type pairStorageMove struct {
@@ -1085,22 +1067,12 @@ func (s *Storage) parsePairStorageWrite(opts []types.Pair) (pairStorageWrite, er
 	return result, nil
 }
 func (s *Storage) Write(path string, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
-	ctx := context.Background()
-	return s.WriteWithContext(ctx, path, r, size, pairs...)
+	err = types.NewOperationNotImplementedError("write")
+	return
 }
 func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, size int64, pairs ...types.Pair) (n int64, err error) {
-	defer func() {
-		err =
-			s.formatError("write", err, path)
-	}()
-	pairs = append(pairs, s.defaultPairs.Write...)
-	var opt pairStorageWrite
-
-	opt, err = s.parsePairStorageWrite(pairs)
-	if err != nil {
-		return
-	}
-	return s.write(ctx, strings.ReplaceAll(path, "\\", "/"), r, size, opt)
+	err = types.NewOperationNotImplementedError("write")
+	return
 }
 
 type pairStorageWriteAppend struct {
