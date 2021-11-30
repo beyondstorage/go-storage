@@ -18,19 +18,11 @@ var Metadata = def.Metadata{
 	},
 	Storage: def.Storage{
 		Features: types.StorageFeatures{
-			WriteEmptyObject: true,
-
 			List: true,
 			Read: true,
 			Stat: true,
 		},
 
-		Create: []def.Pair{
-			def.PairObjectMode,
-		},
-		Delete: []def.Pair{
-			def.PairObjectMode,
-		},
 		List: []def.Pair{
 			def.PairListMode,
 		},
@@ -38,11 +30,6 @@ var Metadata = def.Metadata{
 			def.PairOffset,
 			def.PairIoCallback,
 			def.PairSize,
-		},
-		Write: []def.Pair{
-			def.PairContentMD5,
-			def.PairContentType,
-			def.PairIoCallback,
 		},
 		Stat: []def.Pair{
 			def.PairObjectMode,

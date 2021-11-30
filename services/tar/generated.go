@@ -147,7 +147,6 @@ func (f *Factory) storageFeatures() (s types.StorageFeatures) {
 	s.List = true
 	s.Read = true
 	s.Stat = true
-	s.WriteEmptyObject = true
 	return
 }
 
@@ -376,9 +375,7 @@ func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, p
 }
 
 type pairStorageCreate struct {
-	pairs         []types.Pair
-	HasObjectMode bool
-	ObjectMode    types.ObjectMode
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageCreate(opts []types.Pair) (pairStorageCreate, error) {
@@ -387,12 +384,6 @@ func (s *Storage) parsePairStorageCreate(opts []types.Pair) (pairStorageCreate, 
 
 	for _, v := range opts {
 		switch v.Key {
-		case "object_mode":
-			if result.HasObjectMode {
-				continue
-			}
-			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			return pairStorageCreate{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -554,9 +545,7 @@ func (s *Storage) CreatePageWithContext(ctx context.Context, path string, pairs 
 }
 
 type pairStorageDelete struct {
-	pairs         []types.Pair
-	HasObjectMode bool
-	ObjectMode    types.ObjectMode
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageDelete(opts []types.Pair) (pairStorageDelete, error) {
@@ -565,12 +554,6 @@ func (s *Storage) parsePairStorageDelete(opts []types.Pair) (pairStorageDelete, 
 
 	for _, v := range opts {
 		switch v.Key {
-		case "object_mode":
-			if result.HasObjectMode {
-				continue
-			}
-			result.HasObjectMode = true
-			result.ObjectMode = v.Value.(types.ObjectMode)
 		default:
 			return pairStorageDelete{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -1027,13 +1010,7 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...typ
 }
 
 type pairStorageWrite struct {
-	pairs          []types.Pair
-	HasContentMd5  bool
-	ContentMd5     string
-	HasContentType bool
-	ContentType    string
-	HasIoCallback  bool
-	IoCallback     func([]byte)
+	pairs []types.Pair
 }
 
 func (s *Storage) parsePairStorageWrite(opts []types.Pair) (pairStorageWrite, error) {
@@ -1042,24 +1019,6 @@ func (s *Storage) parsePairStorageWrite(opts []types.Pair) (pairStorageWrite, er
 
 	for _, v := range opts {
 		switch v.Key {
-		case "content_md5":
-			if result.HasContentMd5 {
-				continue
-			}
-			result.HasContentMd5 = true
-			result.ContentMd5 = v.Value.(string)
-		case "content_type":
-			if result.HasContentType {
-				continue
-			}
-			result.HasContentType = true
-			result.ContentType = v.Value.(string)
-		case "io_callback":
-			if result.HasIoCallback {
-				continue
-			}
-			result.HasIoCallback = true
-			result.IoCallback = v.Value.(func([]byte))
 		default:
 			return pairStorageWrite{}, services.PairUnsupportedError{Pair: v}
 		}
