@@ -2,19 +2,56 @@ package uss
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/upyun/go-sdk/v3/upyun"
 
 	"go.beyondstorage.io/credential"
 	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/httpclient"
 	"go.beyondstorage.io/v5/services"
 	typ "go.beyondstorage.io/v5/types"
 )
 
+// Service is the uss config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs typ.DefaultServicePairs
+	features     typ.ServiceFeatures
+
+	typ.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer uss")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
+	}
+	return
+}
+
 // Storage is the uss service.
 type Storage struct {
+	f Factory
+
 	bucket *upyun.UpYun
 
 	name    string
@@ -35,52 +72,48 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
-	return newStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
-func newStorager(pairs ...typ.Pair) (store *Storage, err error) {
+func (f *Factory) newStorage() (store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
 		}
 	}()
 
-	store = &Storage{}
-
-	opt, err := parsePairStorageNew(pairs)
-	if err != nil {
-		return
+	store = &Storage{
+		f:        *f,
+		features: f.storageFeatures(),
 	}
 
-	cp, err := credential.Parse(opt.Credential)
+	cp, err := credential.Parse(f.Credential)
 	if err != nil {
 		return nil, err
 	}
 	if cp.Protocol() != credential.ProtocolHmac {
-		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 	}
 
 	operator, password := cp.Hmac()
 	cfg := &upyun.UpYunConfig{
-		Bucket:   opt.Name,
+		Bucket:   f.Name,
 		Operator: operator,
 		Password: password,
 	}
 	store.bucket = upyun.NewUpYun(cfg)
 	// Set http client
-	store.bucket.SetHTTPClient(httpclient.New(opt.HTTPClientOptions))
-	store.name = opt.Name
+	store.bucket.SetHTTPClient(&http.Client{})
+	store.name = f.Name
 	store.workDir = "/"
 
-	if opt.HasDefaultStoragePairs {
-		store.defaultPairs = opt.DefaultStoragePairs
-	}
-	if opt.HasStorageFeatures {
-		store.features = opt.StorageFeatures
-	}
-
-	if opt.HasWorkDir {
-		store.workDir = opt.WorkDir
+	if f.WorkDir != "" {
+		store.workDir = f.WorkDir
 	}
 	return
 }
