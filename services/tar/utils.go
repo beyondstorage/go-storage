@@ -25,7 +25,7 @@ type Service struct {
 
 // String implements Servicer.String
 func (s *Service) String() string {
-	return fmt.Sprintf("Servicer cephfs")
+	return fmt.Sprintf("Servicer tar")
 }
 
 // NewServicer is not usable, only for generate code
