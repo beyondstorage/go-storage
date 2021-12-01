@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox/files"
@@ -148,6 +149,10 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
+	if !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
+
 	input := &objectPageStatus{
 		limit: 200,
 		path:  s.getAbsPath(path),
@@ -179,7 +184,8 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) er
 
 	if input.cursor == "" {
 		output, err = s.client.ListFolder(&files.ListFolderArg{
-			Path: input.path,
+			Path:      input.path,
+			Recursive: input.recursive,
 		})
 	} else {
 		output, err = s.client.ListFolderContinue(&files.ListFolderContinueArg{
@@ -194,9 +200,9 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) er
 		var o *types.Object
 		switch meta := v.(type) {
 		case *files.FolderMetadata:
-			o = s.formatFolderObject(meta.Name, meta)
+			o = s.formatFolderObject(input.path, meta)
 		case *files.FileMetadata:
-			o = s.formatFileObject(meta.Name, meta)
+			o = s.formatFileObject(input.path, meta)
 		}
 
 		page.Data = append(page.Data, o)

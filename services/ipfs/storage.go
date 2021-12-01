@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	ipfs "github.com/ipfs/go-ipfs-api"
@@ -73,6 +74,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	rp := s.getAbsPath(path)
+	prefix := strings.TrimPrefix(rp, s.workDir)
 	if !opt.HasListMode || opt.ListMode.IsDir() {
 		nextFn := func(ctx context.Context, page *types.ObjectPage) error {
 			dir, err := s.ipfs.FilesLs(ctx, rp, ipfs.FilesLs.Stat(true))
@@ -82,7 +84,7 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 			for _, f := range dir {
 				o := types.NewObject(s, true)
 				o.ID = f.Hash
-				o.Path = f.Name
+				o.Path = prefix + "/" + f.Name
 				switch f.Type {
 				case ipfs.TFile:
 					o.Mode |= types.ModeRead

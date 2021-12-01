@@ -3,4 +3,4 @@ Package oss provided support for Aliyun Object Storage Service (https://cn.aliyu
 */
 package oss
 
-//go:generate go run -tags tools go.beyondstorage.io/v5/cmd/definitions service.toml
+//go:generate go run -tags tools ./internal/cmd

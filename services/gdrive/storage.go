@@ -114,7 +114,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *types.ObjectIterator, err error) {
 	input := &objectPageStatus{
 		limit: 200,
-		path:  s.getAbsPath(path),
+		path:  path,
 	}
 
 	if !opt.HasListMode || opt.ListMode.IsDir() {
@@ -165,6 +165,12 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 	if err != nil {
 		return err
 	}
+
+	// When dirId is empty, the path is an empty dir. We should directly return IterateDone
+	if dirId == "" {
+		return types.IterateDone
+	}
+
 	q := s.service.Files.List().Q(fmt.Sprintf("parents='%s'", dirId)).Fields("*")
 
 	if input.pageToken != "" {
@@ -176,14 +182,10 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 		return err
 	}
 
-	if len(r.Files) == 0 {
-		return types.IterateDone
-	}
-
 	for _, f := range r.Files {
 		o := s.newObject(true)
 		o.SetContentLength(f.Size)
-		o.Path = f.Name
+		o.Path = s.getRelPath(input.path) + "/" + f.Name
 		switch f.MimeType {
 		case directoryMimeType:
 			o.Mode = types.ModeDir
@@ -191,6 +193,10 @@ func (s *Storage) nextObjectPage(ctx context.Context, page *types.ObjectPage) (e
 			o.Mode = types.ModeRead
 		}
 		page.Data = append(page.Data, o)
+	}
+
+	if r.IncompleteSearch == false {
+		return types.IterateDone
 	}
 
 	input.pageToken = r.NextPageToken

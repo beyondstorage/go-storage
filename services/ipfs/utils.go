@@ -16,8 +16,42 @@ import (
 	"go.beyondstorage.io/v5/types"
 )
 
+// Service is the ipfs config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
+
+	types.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer ipfs")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{}
+	return
+}
+
 // Storage is the example client.
 type Storage struct {
+	f Factory
+
 	ipfs *ipfs.Shell
 
 	defaultPairs DefaultStoragePairs
@@ -27,10 +61,6 @@ type Storage struct {
 	gateway string
 
 	types.UnimplementedStorager
-	types.UnimplementedCopier
-	types.UnimplementedMover
-	types.UnimplementedDirer
-	types.UnimplementedStorageHTTPSigner
 }
 
 // String implements Storager.String
@@ -40,22 +70,29 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	opt, err := parsePairStorageNew(pairs)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
 	if err != nil {
 		return nil, err
 	}
+	return f.newStorage()
+}
 
-	st := &Storage{
-		workDir: "/",
+// NewStorager will create Storager only.
+func (f *Factory) newStorage() (st *Storage, err error) {
+	st = &Storage{
+		f:        *f,
+		features: f.storageFeatures(),
+		workDir:  "/",
 	}
-	if opt.HasWorkDir {
-		if !strings.HasSuffix(opt.WorkDir, "/") {
-			opt.WorkDir += "/"
+	if f.WorkDir != "" {
+		if !strings.HasSuffix(f.WorkDir, "/") {
+			f.WorkDir += "/"
 		}
-		st.workDir = opt.WorkDir
+		st.workDir = f.WorkDir
 	}
 
-	ep, err := endpoint.Parse(opt.Endpoint)
+	ep, err := endpoint.Parse(f.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -66,10 +103,10 @@ func NewStorager(pairs ...types.Pair) (types.Storager, error) {
 	case endpoint.ProtocolHTTPS:
 		e, _, _ = ep.HTTPS()
 	default:
-		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 	}
 
-	gate, err := endpoint.Parse(opt.Gateway)
+	gate, err := endpoint.Parse(f.Gateway)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +116,7 @@ func NewStorager(pairs ...types.Pair) (types.Storager, error) {
 	case endpoint.ProtocolHTTPS:
 		st.gateway, _, _ = gate.HTTPS()
 	default:
-		return nil, services.PairUnsupportedError{Pair: WithGateway(opt.Gateway)}
+		return nil, services.PairUnsupportedError{Pair: WithGateway(f.Gateway)}
 	}
 
 	sh := ipfs.NewShell(e)
