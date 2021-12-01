@@ -129,9 +129,9 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	if err != nil {
 		return
 	}
-	fl, err := s.connection.List(path)
+	fl, err := s.connection.List(rp)
 	if err != nil {
-		flst, err := s.connection.List(rp)
+		flst, err := s.connection.List(filepath.Dir(rp))
 		if err != nil {
 			return nil, err
 		}
