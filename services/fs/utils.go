@@ -17,7 +17,7 @@ const (
 	Stderr = "/dev/stderr"
 )
 
-// Service is the cephfs config.
+// Service is the fs config.
 // It is not usable, only for generate code
 type Service struct {
 	f Factory
