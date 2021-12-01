@@ -1,6 +1,7 @@
 package ftp
 
 import (
+	"errors"
 	"fmt"
 	"net/textproto"
 	"path/filepath"
@@ -17,16 +18,49 @@ import (
 	"go.beyondstorage.io/v5/types"
 )
 
+// Service is the ftp config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
+
+	types.UnimplementedServicer
+}
+
+// String implements Servicer.String
+func (s *Service) String() string {
+	return fmt.Sprintf("Servicer ftp")
+}
+
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{}
+	return
+}
+
 // Storage is the example client.
 type Storage struct {
+	f          Factory
 	connection *ftp.ServerConn
 	user       string
 	password   string
 	url        string
 	workDir    string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs types.DefaultStoragePairs
+	features     types.StorageFeatures
 
 	types.UnimplementedStorager
 }
@@ -38,17 +72,25 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	return newStorager(pairs...)
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
 }
 
-func newStorager(pairs ...types.Pair) (store *Storage, err error) {
+func (f *Factory) newStorage() (store *Storage, err error) {
+
 	defer func() {
 		if err != nil {
-			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
+			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err)}
 		}
 	}()
 
 	store = &Storage{
+		f:          *f,
+		features:   f.storageFeatures(),
 		connection: nil,
 		user:       "anonymous",
 		password:   "anonymous",
@@ -56,13 +98,8 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 		workDir:    "/",
 	}
 
-	opt, err := parsePairStorageNew(pairs)
-	if err != nil {
-		return
-	}
-
-	if opt.HasEndpoint {
-		ep, err := endpoint.Parse(opt.Endpoint)
+	if f.Endpoint != "" {
+		ep, err := endpoint.Parse(f.Endpoint)
 		if err != nil {
 			return nil, err
 		}
@@ -72,18 +109,18 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 		case endpoint.ProtocolTCP:
 			_, host, port = ep.TCP()
 		default:
-			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 		}
 		url := fmt.Sprintf("%s:%d", host, port)
 		store.url = url
 	}
 
-	if opt.HasWorkDir {
-		store.workDir = filepath.ToSlash(opt.WorkDir)
+	if f.WorkDir != "" {
+		store.workDir = filepath.ToSlash(f.WorkDir)
 	}
 
-	if opt.HasCredential {
-		cp, err := credential.Parse(opt.Credential)
+	if f.Credential != "" {
+		cp, err := credential.Parse(f.Credential)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +130,7 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 			store.password = pass
 			store.user = user
 		default:
-			return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+			return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 		}
 	}
 
@@ -102,6 +139,14 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 		return nil, err
 	}
 	return
+}
+
+func (s *Storage) isCreatingDirExist(err error) error {
+	errDirExist := errors.New("550 Directory with same name already exists.")
+	if errors.As(err, &errDirExist) {
+		err = nil
+	}
+	return err
 }
 
 func (s *Storage) connect() error {
@@ -113,6 +158,11 @@ func (s *Storage) connect() error {
 	err = c.Login(s.user, s.password)
 	if err != nil {
 		return err
+	}
+
+	err = c.MakeDir(s.workDir)
+	if err != nil {
+		return s.isCreatingDirExist(err)
 	}
 
 	err = c.ChangeDir(s.workDir)
@@ -177,7 +227,7 @@ func (s *Storage) mapMode(fet ftp.EntryType) types.ObjectMode {
 }
 
 func (s *Storage) formatFileObject(fe *ftp.Entry, parent string) (obj *types.Object, err error) {
-	path := filepath.Join(parent, fe.Name)
+	path := filepath.Join(strings.TrimPrefix(parent, s.workDir), fe.Name)
 	obj = types.NewObject(s, false)
 	obj.SetID(path)
 	obj.SetMode(s.mapMode(fe.Type))

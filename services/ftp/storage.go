@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/textproto"
 	"path/filepath"
@@ -43,9 +44,9 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 	return o
 }
 
-func (s *Storage) createDir(ctx context.Context, path string) (o *types.Object, err error) {
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
-	err = s.connection.MakeDir(rp)
+	err = s.makeDir(rp)
 	if err != nil {
 		return nil, err
 	}
@@ -126,9 +127,14 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
-	fl, err := s.connection.List(rp)
 	if err != nil {
-		flst, err := s.connection.List(filepath.Dir(rp))
+		return
+	}
+	fmt.Println("stat path =" + path)
+	fmt.Println("stat rp =" + rp)
+	fl, err := s.connection.List(path)
+	if err != nil {
+		flst, err := s.connection.List(rp)
 		if err != nil {
 			return nil, err
 		}
@@ -174,6 +180,10 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt pairStorageWrite) (n int64, err error) {
 	rp := s.getAbsPath(path)
 	err = s.makeDir(filepath.Dir(rp))
+	fmt.Println("write rp = " + rp)
+	fmt.Println("write file path = " + filepath.Dir(rp))
+	fmt.Println("workdir = " + s.workDir)
+	err = s.isCreatingDirExist(err)
 	if err != nil {
 		return
 	}
@@ -191,5 +201,5 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	if err != nil {
 		return
 	}
-	return
+	return size, err
 }

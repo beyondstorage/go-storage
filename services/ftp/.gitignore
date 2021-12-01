@@ -1,4 +1,7 @@
 coverage.*
 bin/
-.vscode/
 Makefile.env
+
+# Jetbrain IDE
+.idea
+*.iml
