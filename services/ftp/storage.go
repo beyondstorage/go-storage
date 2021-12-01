@@ -45,7 +45,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {
 
 func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *types.Object, err error) {
 	rp := s.getAbsPath(path)
-	err = s.makeDir(rp)
+	err = s.connection.MakeDir(rp)
 	if err != nil {
 		return nil, err
 	}
