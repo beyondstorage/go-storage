@@ -4,6 +4,7 @@ name = "minio"
 
 [namespace.service.new]
 required = ["credential", "endpoint"]
+optional = ["location"]
 
 [namespace.storage]
 implement = ["copier", "reacher"]
@@ -11,7 +12,7 @@ features = ["virtual_dir"]
 
 [namespace.storage.new]
 required = ["name"]
-optional = ["work_dir"]
+optional = ["work_dir", "location"]
 
 [namespace.storage.op.create]
 optional = ["object_mode"]

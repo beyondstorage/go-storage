@@ -35,6 +35,7 @@ type Storage struct {
 
 	bucket  string
 	workDir string
+	region  string
 
 	defaultPairs DefaultStoragePairs
 	features     StorageFeatures
@@ -109,10 +110,15 @@ func newServicer(pairs ...types.Pair) (srv *Service, err error) {
 	}
 	url := fmt.Sprintf("%s:%d", host, port)
 
-	srv.service, err = minio.New(url, &minio.Options{
+	minioOption := &minio.Options{
 		Creds:  credentials.NewStaticV4(ak, sk, ""),
 		Secure: secure,
-	})
+	}
+	if opt.HasLocation {
+		minioOption.Region = opt.Location
+	}
+
+	srv.service, err = minio.New(url, minioOption)
 	if err != nil {
 		return nil, err
 	}
@@ -191,6 +197,9 @@ func (s *Service) newStorage(pairs ...types.Pair) (st *Storage, err error) {
 	}
 	if opt.HasStorageFeatures {
 		store.features = opt.StorageFeatures
+	}
+	if opt.HasLocation {
+		store.region = opt.Location
 	}
 
 	return store, nil

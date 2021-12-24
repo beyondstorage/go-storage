@@ -132,6 +132,8 @@ type pairServiceNew struct {
 	// Optional pairs
 	HasDefaultServicePairs bool
 	DefaultServicePairs    DefaultServicePairs
+	HasLocation            bool
+	Location               string
 	HasServiceFeatures     bool
 	ServiceFeatures        ServiceFeatures
 	// Enable features
@@ -162,6 +164,12 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasDefaultServicePairs = true
 			result.DefaultServicePairs = v.Value.(DefaultServicePairs)
+		case "location":
+			if result.HasLocation {
+				continue
+			}
+			result.HasLocation = true
+			result.Location = v.Value.(string)
 		case "service_features":
 			if result.HasServiceFeatures {
 				continue
@@ -378,6 +386,8 @@ type pairStorageNew struct {
 	DefaultIoCallback      func([]byte)
 	HasDefaultStoragePairs bool
 	DefaultStoragePairs    DefaultStoragePairs
+	HasLocation            bool
+	Location               string
 	HasStorageFeatures     bool
 	StorageFeatures        StorageFeatures
 	HasWorkDir             bool
@@ -418,6 +428,12 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.HasDefaultStoragePairs = true
 			result.DefaultStoragePairs = v.Value.(DefaultStoragePairs)
+		case "location":
+			if result.HasLocation {
+				continue
+			}
+			result.HasLocation = true
+			result.Location = v.Value.(string)
 		case "storage_features":
 			if result.HasStorageFeatures {
 				continue

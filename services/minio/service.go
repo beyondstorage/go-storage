@@ -10,7 +10,8 @@ import (
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store Storager, err error) {
-	st, err := s.newStorage(ps.WithName(name))
+	paris := append(opt.pairs, ps.WithName(name))
+	st, err := s.newStorage(paris...)
 	if err != nil {
 		return nil, err
 	}
