@@ -134,6 +134,7 @@ func (f *Factory) newService() (srv *Service, err error) {
 	srv.service, err = minio.New(url, &minio.Options{
 		Creds:  credentials.NewStaticV4(ak, sk, ""),
 		Secure: secure,
+		Region: f.Location,
 	})
 	if err != nil {
 		return nil, err

@@ -18,6 +18,7 @@ var Metadata = def.Metadata{
 		def.PairEndpoint,
 		def.PairName,
 		def.PairWorkDir,
+		def.PairLocation,
 	},
 	Service: def.Service{
 		Features: types.ServiceFeatures{
@@ -25,6 +26,16 @@ var Metadata = def.Metadata{
 			Delete: true,
 			Get:    true,
 			List:   true,
+		},
+
+		Create: []def.Pair{
+			def.PairLocation,
+		},
+		Delete: []def.Pair{
+			def.PairLocation,
+		},
+		Get: []def.Pair{
+			def.PairLocation,
 		},
 	},
 	Storage: def.Storage{
@@ -44,6 +55,7 @@ var Metadata = def.Metadata{
 
 		Create: []def.Pair{
 			def.PairObjectMode,
+			def.PairLocation,
 		},
 		Delete: []def.Pair{
 			def.PairObjectMode,
