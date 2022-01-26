@@ -3,8 +3,7 @@ module go.beyondstorage.io/services/gcs/v3
 go 1.16
 
 require (
-	cloud.google.com/go/iam v0.1.0 // indirect
-	cloud.google.com/go/storage v1.18.2
+	cloud.google.com/go/storage v1.19.0
 	github.com/google/uuid v1.3.0
 	go.beyondstorage.io/credential v1.0.0
 	go.beyondstorage.io/v5 v5.0.0
