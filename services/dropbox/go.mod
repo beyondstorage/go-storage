@@ -3,7 +3,7 @@ module go.beyondstorage.io/services/dropbox/v3
 go 1.16
 
 require (
-	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.0.3
+	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.0.4
 	github.com/google/uuid v1.3.0
 	go.beyondstorage.io/credential v1.0.0
 	go.beyondstorage.io/v5 v5.0.0
