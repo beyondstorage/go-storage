@@ -1,6 +1,6 @@
 # go-storage
 
-## [Website](https://beyondstorage.io) | [Documentation](https://beyondstorage.io/docs/go-storage/index) | [Community](https://beyondstorage.io/community)
+## [Website](https://beyondstorage.io) | [Documentation](https://beyondstorage.io/docs/go-storage) | [Community](https://beyondstorage.io/community)
 
 [![Go dev](https://pkg.go.dev/badge/go.beyondstorage.io/v5)](https://pkg.go.dev/go.beyondstorage.io/v5)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/beyondstorage/go-storage/blob/master/LICENSE)
@@ -288,7 +288,7 @@ func (o *Object) GetContentMd5() (string, bool) {
 
 ### Server-Side Encrypt
 
-Server-Side Encrypt supports via system pair and system metadata, and we can use [Default Pairs](https://beyondstorage.io/docs/go-storage/pairs/index#default-pairs) to simplify the job.
+Server-Side Encrypt supports via system pair and system metadata, and we can use [Default Pairs](https://beyondstorage.io/docs/go-storage/pairs#default-pairs) to simplify the job.
 
 ```go
 
