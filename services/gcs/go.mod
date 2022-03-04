@@ -1,4 +1,4 @@
-module go.beyondstorage.io/services/gcs/v3
+module github.com/bart84ek/go-storage/services/gcs
 
 go 1.16
 
@@ -11,4 +11,4 @@ require (
 	google.golang.org/api v0.70.0
 )
 
-replace go.beyondstorage.io/v5 => ../../
+# replace go.beyondstorage.io/v5 => ../../
