@@ -1,4 +1,4 @@
-module go.beyondstorage.io/v5
+module github.com/bart84ek/go-storage/v5
 
 go 1.16
 
