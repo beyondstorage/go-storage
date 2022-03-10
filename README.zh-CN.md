@@ -67,7 +67,7 @@ func main() {
     for {
     	// 使用迭代器检索下一个对象，直到迭代完成
     	o, err := it.Next()
-    	if errors.Is(err, types.IteraoorDone) {
+    	if errors.Is(err, types.IterateDone) {
     		break
         }
     }
@@ -154,7 +154,7 @@ err := store.Delete("path") // 删除对象 "路径"
 it, err := store.List("path")
 for {
 	o, err := it.Next()
-	if err != nil && errors.Is(err, types.IteratorDone) {
+	if err != nil && errors.Is(err, types.IterateDone) {
         // 列表结束
     }
     length, ok := o.GetContentLength() // 获取对象的内容长度
