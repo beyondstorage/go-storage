@@ -71,7 +71,7 @@ func main() {
     it, err := store.List("path")
     
     for {
-    	// Use iterator.Next to retrieve next object until we meet IteratorDone.
+    	// Use iterator.Next to retrieve next object until we meet IterateDone.
     	o, err := it.Next()
     	if errors.Is(err, types.IterateDone) {
     		break
