@@ -71,9 +71,9 @@ func main() {
     it, err := store.List("path")
     
     for {
-    	// Use iterator.Next to retrieve next object until we meet IteratorDone.
+    	// Use iterator.Next to retrieve next object until we meet IterateDone.
     	o, err := it.Next()
-    	if errors.Is(err, types.IteraoorDone) {
+    	if errors.Is(err, types.IterateDone) {
     		break
         }
     }
@@ -160,7 +160,7 @@ err := store.Delete("path") // Delete the object "path"
 it, err := store.List("path")
 for {
 	o, err := it.Next()
-	if err != nil && errors.Is(err, types.IteratorDone) {
+	if err != nil && errors.Is(err, types.IterateDone) {
         // the list is over 
     }
     length, ok := o.GetContentLength() // get the object content length.
