@@ -4,8 +4,8 @@ github.com/Xuanwo/go-bufferpool v0.2.0 h1:DXzqJD9lJufXbT/03GrcEvYOs4gXYUj9/g5yi6
 github.com/Xuanwo/go-bufferpool v0.2.0/go.mod h1:Mle++9GGouhOwGj52i9PJLNAPmW2nb8PWBP7JJzNCzk=
 github.com/Xuanwo/templateutils v0.2.0 h1:jnhiP1DMyK1Rv9qgaGCrEm/r6TseAsf7eC092gVld0Q=
 github.com/Xuanwo/templateutils v0.2.0/go.mod h1:OdE0DJ+CJxDBq6psX5DPV+gOZi8bhuHuVUpPCG++Wb8=
-github.com/aliyun/aliyun-oss-go-sdk v2.2.2+incompatible h1:9gWa46nstkJ9miBReJcN8Gq34cBFbzSpQZVVT9N09TM=
-github.com/aliyun/aliyun-oss-go-sdk v2.2.2+incompatible/go.mod h1:T/Aws4fEfogEE9v+HPhhw+CntffsBHJ8nXQCwKr0/g8=
+github.com/aliyun/aliyun-oss-go-sdk v2.2.3+incompatible h1:KlwIELiuuvj7uMeEXrgXecPE3+xz/gGsDSnhL6Eztq0=
+github.com/aliyun/aliyun-oss-go-sdk v2.2.3+incompatible/go.mod h1:T/Aws4fEfogEE9v+HPhhw+CntffsBHJ8nXQCwKr0/g8=
 github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f h1:ZNv7On9kyUzm7fvRZumSyy/IUiSC7AzL0I1jKKtwooA=
 github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f/go.mod h1:AuiFmCCPBSrqvVMvuqFuk0qogytodnVFVSN5CeJB8Gc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
