@@ -3,7 +3,7 @@ module go.beyondstorage.io/services/bos/v2
 go 1.16
 
 require (
-	github.com/baidubce/bce-sdk-go v0.9.116
+	github.com/baidubce/bce-sdk-go v0.9.120
 	github.com/google/uuid v1.3.0
 	go.beyondstorage.io/credential v1.0.0
 	go.beyondstorage.io/endpoint v1.2.0
