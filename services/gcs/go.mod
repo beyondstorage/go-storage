@@ -1,4 +1,4 @@
-module go.beyondstorage.io/services/gcs/v3
+module github.com/bart84ek/go-storage/services/gcs/v3
 
 go 1.16
 

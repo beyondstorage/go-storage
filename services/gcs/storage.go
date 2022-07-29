@@ -126,11 +126,10 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPag
 		Prefix:    input.prefix,
 		Delimiter: input.delimiter,
 	})
-	remaining := 200
-	for remaining > 0 {
+	for {
 		object, err := it.Next()
 		if err == iterator.Done {
-			return types.IterateDone
+			break
 		}
 		if err != nil {
 			return err
@@ -145,7 +144,6 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPag
 			o.Path = s.getRelPath(object.Prefix)
 			o.Mode |= types.ModeDir
 			page.Data = append(page.Data, o)
-			remaining -= 1
 			continue
 		}
 		o, err := s.formatFileObject(object)
@@ -153,9 +151,8 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *types.ObjectPag
 			return err
 		}
 		page.Data = append(page.Data, o)
-		remaining -= 1
 	}
-	return nil
+	return types.IterateDone
 }
 
 func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.ObjectPage) error {
@@ -163,11 +160,10 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.Object
 	it := s.bucket.Objects(ctx, &gs.Query{
 		Prefix: input.prefix,
 	})
-	remaining := 200
-	for remaining > 0 {
+	for {
 		object, err := it.Next()
 		if err == iterator.Done {
-			return types.IterateDone
+			break
 		}
 		if err != nil {
 			return err
@@ -177,9 +173,8 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *types.Object
 			return err
 		}
 		page.Data = append(page.Data, o)
-		remaining -= 1
 	}
-	return nil
+	return types.IterateDone
 }
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
