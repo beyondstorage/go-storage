@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/v5/types"
 	"io"
 )
 

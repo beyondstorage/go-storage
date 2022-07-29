@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 // Factory is used to initialize a new service or storage.
