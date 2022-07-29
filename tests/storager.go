@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 func TestStorager(t *testing.T, store types.Storager) {

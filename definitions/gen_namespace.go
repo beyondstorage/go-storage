@@ -21,7 +21,7 @@ func GenerateNamespace(path string) {
 	f.NewImport().
 		AddPath("fmt").
 		AddLine().
-		AddPath("go.beyondstorage.io/v5/types")
+		AddPath("github.com/beyondstorage/go-storage/v5/types")
 
 	gf.generateNamespace(NamespaceService, OperationsService)
 	gf.generateNamespace(NamespaceStorage, OperationsStorage)
