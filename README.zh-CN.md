@@ -27,19 +27,19 @@ package main
 import (
     "log"
 
-    "go.beyondstorage.io/v5/services"
-    "go.beyondstorage.io/v5/types"
+    "github.com/beyondstorage/go-storage/v5/services"
+    "github.com/beyondstorage/go-storage/v5/types"
 
     // 添加 fs 支持
-    _ "go.beyondstorage.io/services/fs/v4"
+    _ "github.com/beyondstorage/go-storage/services/fs/v4"
     // 添加 s3 支持
-    _ "go.beyondstorage.io/services/s3/v3"
+    _ "github.com/beyondstorage/go-storage/services/s3/v3"
     // 添加 gcs 支持
-    _ "go.beyondstorage.io/services/gcs/v3"
+    _ "github.com/beyondstorage/go-storage/services/gcs/v3"
     // 添加 azblob 支持
-    _ "go.beyondstorage.io/services/azblob/v3"
+    _ "github.com/beyondstorage/go-storage/services/azblob/v3"
     // 更多支持，可在 BeyondStorage 下获取
-    _ "go.beyondstorage.io/services/xxx" 
+    _ "github.com/beyondstorage/go-storage/services/xxx" 
 )
 
 func main() {

@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/aws/smithy-go"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -14,14 +15,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
 
-	"go.beyondstorage.io/credential"
-	"go.beyondstorage.io/endpoint"
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/services"
-	typ "go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/credential"
+	"github.com/beyondstorage/go-storage/endpoint"
+	ps "github.com/beyondstorage/go-storage/v5/pairs"
+	"github.com/beyondstorage/go-storage/v5/services"
+	typ "github.com/beyondstorage/go-storage/v5/types"
 )
 
 // Service is the s3 service config.

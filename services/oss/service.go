@@ -5,7 +5,7 @@ import (
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 
-	typ "go.beyondstorage.io/v5/types"
+	typ "github.com/beyondstorage/go-storage/v5/types"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store typ.Storager, err error) {

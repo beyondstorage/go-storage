@@ -9,7 +9,7 @@ enabling users to manipulate data on minio servers through a unified interface.
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/minio
+go get github.com/beyondstorage/go-storage/services/minio
 ```
 
 ## Usage
@@ -18,8 +18,8 @@ go get go.beyondstorage.io/services/minio
 import (
 	"log"
 
-	_ "go.beyondstorage.io/services/minio"
-	"go.beyondstorage.io/v5/services"
+	_ "github.com/beyondstorage/go-storage/services/minio"
+	"github.com/beyondstorage/go-storage/v5/services"
 )
 
 func main() {

@@ -11,9 +11,9 @@ import (
 
 	ipfs "github.com/ipfs/go-ipfs-api"
 
-	"go.beyondstorage.io/v5/pkg/iowrap"
-	"go.beyondstorage.io/v5/services"
-	"go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/v5/pkg/iowrap"
+	"github.com/beyondstorage/go-storage/v5/services"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 // The src of `ipfs files cp` supports both `IPFS-path` and `MFS-path`

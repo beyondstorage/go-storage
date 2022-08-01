@@ -5,5 +5,5 @@ OBS(Huawei Object Storage Service) service support for [go-storage](https://gith
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/obs/v2
+go get github.com/beyondstorage/go-storage/services/obs/v2
 ```

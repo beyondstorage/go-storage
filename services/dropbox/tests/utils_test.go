@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
-	dropbox "go.beyondstorage.io/services/dropbox/v3"
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/types"
+	dropbox "github.com/beyondstorage/go-storage/services/dropbox/v3"
+	ps "github.com/beyondstorage/go-storage/v5/pairs"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 func setupTest(t *testing.T) types.Storager {

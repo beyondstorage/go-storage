@@ -5,5 +5,5 @@ zip services support for [go-storage](https://github.com/beyondstorage/go-storag
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/zip
+go get github.com/beyondstorage/go-storage/services/zip
 ```

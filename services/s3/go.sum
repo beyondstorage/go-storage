@@ -68,10 +68,6 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-go.beyondstorage.io/credential v1.0.0 h1:xJ7hBXmeUE0+rbW+RYZSz4KgHpXvc9g7oQ56f8dXdBk=
-go.beyondstorage.io/credential v1.0.0/go.mod h1:7KAYievVw4a8u/eLZmnQt65Z91n84sMQj3LFbt8Xous=
-go.beyondstorage.io/endpoint v1.2.0 h1:/7mgKquTykeqJ9op82hso2+WQfECeywGd/Lda1N3tF4=
-go.beyondstorage.io/endpoint v1.2.0/go.mod h1:oZ7Z7HZ7mAo337JBLjuCF/DM66HVEUu6+hw68c3UcLs=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/mod v0.4.2/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=

@@ -5,7 +5,7 @@ import (
 
 	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
 
-	"go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store types.Storager, err error) {

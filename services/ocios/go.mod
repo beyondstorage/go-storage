@@ -1,7 +1,7 @@
-module go.beyondstorage.io/services/ocios
+module github.com/beyondstorage/go-storage/services/ocios
 
 go 1.16
 
-require go.beyondstorage.io/v5 v5.0.0
+require github.com/beyondstorage/go-storage/v5 v5.0.0
 
-replace go.beyondstorage.io/v5 => ../../
+replace github.com/beyondstorage/go-storage/v5 => ../../

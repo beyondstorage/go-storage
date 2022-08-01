@@ -45,8 +45,6 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/kms v1.0.194/go.mod h1:
 github.com/tencentyun/cos-go-sdk-v5 v0.7.36 h1:fGyjq5O06vBJ7xfDj15VGxe26Dt4n1RZOTH6Qy93L/Y=
 github.com/tencentyun/cos-go-sdk-v5 v0.7.36/go.mod h1:4dCEtLHGh8QPxHEkgq+nFaky7yZxQuYwgSJM87icDaw=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-go.beyondstorage.io/credential v1.0.0 h1:xJ7hBXmeUE0+rbW+RYZSz4KgHpXvc9g7oQ56f8dXdBk=
-go.beyondstorage.io/credential v1.0.0/go.mod h1:7KAYievVw4a8u/eLZmnQt65Z91n84sMQj3LFbt8Xous=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/mod v0.4.2/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=

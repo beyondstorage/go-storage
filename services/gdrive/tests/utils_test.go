@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"go.beyondstorage.io/services/gdrive"
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/services/gdrive"
+	ps "github.com/beyondstorage/go-storage/v5/pairs"
+	"github.com/beyondstorage/go-storage/v5/types"
 
 	"github.com/google/uuid"
 )

@@ -11,11 +11,11 @@ import (
 
 	"github.com/tencentyun/cos-go-sdk-v5"
 
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/headers"
-	"go.beyondstorage.io/v5/pkg/iowrap"
-	"go.beyondstorage.io/v5/services"
-	"go.beyondstorage.io/v5/types"
+	ps "github.com/beyondstorage/go-storage/v5/pairs"
+	"github.com/beyondstorage/go-storage/v5/pkg/headers"
+	"github.com/beyondstorage/go-storage/v5/pkg/iowrap"
+	"github.com/beyondstorage/go-storage/v5/services"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 func (s *Storage) completeMultipart(ctx context.Context, o *types.Object, parts []*types.Part, opt pairStorageCompleteMultipart) (err error) {

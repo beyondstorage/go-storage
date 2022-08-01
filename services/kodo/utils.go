@@ -11,11 +11,11 @@ import (
 	qc "github.com/qiniu/go-sdk/v7/client"
 	qs "github.com/qiniu/go-sdk/v7/storage"
 
-	"go.beyondstorage.io/credential"
-	"go.beyondstorage.io/endpoint"
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/services"
-	typ "go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/credential"
+	"github.com/beyondstorage/go-storage/endpoint"
+	ps "github.com/beyondstorage/go-storage/v5/pairs"
+	"github.com/beyondstorage/go-storage/v5/services"
+	typ "github.com/beyondstorage/go-storage/v5/types"
 )
 
 // Service is the kodo config.

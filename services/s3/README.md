@@ -7,7 +7,7 @@ AWS S3 service support for [go-storage](https://github.com/beyondstorage/go-stor
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/s3/v3
+go get github.com/beyondstorage/go-storage/services/s3/v3
 ```
 
 ## Usage
@@ -16,8 +16,8 @@ go get go.beyondstorage.io/services/s3/v3
 import (
 	"log"
 
-	_ "go.beyondstorage.io/services/s3/v3"
-	"go.beyondstorage.io/v5/services"
+	_ "github.com/beyondstorage/go-storage/services/s3/v3"
+	"github.com/beyondstorage/go-storage/v5/services"
 )
 
 func main() {

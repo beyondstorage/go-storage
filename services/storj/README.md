@@ -10,7 +10,7 @@
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/storj
+go get github.com/beyondstorage/go-storage/services/storj
 ```
 
 ## Usage
@@ -19,8 +19,8 @@ go get go.beyondstorage.io/services/storj
 import (
 	"log"
 
-	_ "go.beyondstorage.io/services/storj"
-	"go.beyondstorage.io/v5/services"
+	_ "github.com/beyondstorage/go-storage/services/storj"
+	"github.com/beyondstorage/go-storage/v5/services"
 )
 s
 func main() {
