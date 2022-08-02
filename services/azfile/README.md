@@ -7,5 +7,5 @@
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/azfile
+go get github.com/beyondstorage/go-storage/services/azfile
 ```

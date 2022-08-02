@@ -7,7 +7,7 @@ Google Drive service support for [go-storage](https://github.com/beyondstorage/g
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/gdrive
+go get github.com/beyondstorage/go-storage/services/gdrive
 ```
 
 ## Usage
@@ -16,8 +16,8 @@ go get go.beyondstorage.io/services/gdrive
 import (
 	"log"
 
-	_ "go.beyondstorage.io/services/gdrive"
-	"go.beyondstorage.io/v5/services"
+	_ "github.com/beyondstorage/go-storage/services/gdrive"
+	"github.com/beyondstorage/go-storage/v5/services"
 )
 
 func main() {

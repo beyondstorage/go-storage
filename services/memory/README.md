@@ -7,7 +7,7 @@ memory service support for [go-storage](https://github.com/beyondstorage/go-stor
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/memory
+go get github.com/beyondstorage/go-storage/services/memory
 ```
 
 ## Usage
@@ -16,8 +16,8 @@ go get go.beyondstorage.io/services/memory
 import (
 	"log"
 
-	_ "go.beyondstorage.io/services/memory"
-	"go.beyondstorage.io/v5/services"
+	_ "github.com/beyondstorage/go-storage/services/memory"
+	"github.com/beyondstorage/go-storage/v5/services"
 )
 
 func main() {

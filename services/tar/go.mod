@@ -1,11 +1,14 @@
-module go.beyondstorage.io/services/tar
+module github.com/beyondstorage/go-storage/services/tar
 
 go 1.16
 
 require (
+	github.com/beyondstorage/go-storage/endpoint v1.2.0
+	github.com/beyondstorage/go-storage/v5 v5.0.0
 	github.com/stretchr/testify v1.8.0
-	go.beyondstorage.io/endpoint v1.2.0
-	go.beyondstorage.io/v5 v5.0.0
 )
 
-replace go.beyondstorage.io/v5 => ../../
+replace (
+	github.com/beyondstorage/go-storage/endpoint => ../../endpoint
+	github.com/beyondstorage/go-storage/v5 => ../../
+)

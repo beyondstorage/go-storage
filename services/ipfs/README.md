@@ -7,7 +7,7 @@
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/ipfs
+go get github.com/beyondstorage/go-storage/services/ipfs
 ```
 
 ## Usage
@@ -16,8 +16,8 @@ go get go.beyondstorage.io/services/ipfs
 import (
 	"log"
 
-	_ "go.beyondstorage.io/services/ipfs"
-	"go.beyondstorage.io/v5/services"
+	_ "github.com/beyondstorage/go-storage/services/ipfs"
+	"github.com/beyondstorage/go-storage/v5/services"
 )
 
 func main() {

@@ -7,10 +7,10 @@ import (
 
 	"github.com/upyun/go-sdk/v3/upyun"
 
-	"go.beyondstorage.io/credential"
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/services"
-	typ "go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/credential"
+	ps "github.com/beyondstorage/go-storage/v5/pairs"
+	"github.com/beyondstorage/go-storage/v5/services"
+	typ "github.com/beyondstorage/go-storage/v5/types"
 )
 
 // Service is the uss config.

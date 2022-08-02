@@ -20,10 +20,10 @@ package main
 import (
    "log"
 
-   "go.beyondstorage.io/v5/services"
-   "go.beyondstorage.io/v5/types"
+   "github.com/beyondstorage/go-storage/v5/services"
+   "github.com/beyondstorage/go-storage/v5/types"
 
-   _ "go.beyondstorage.io/services/s3/v3"
+   _ "github.com/beyondstorage/go-storage/services/s3/v3"
 )
 
 func main() {

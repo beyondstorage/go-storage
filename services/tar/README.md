@@ -5,5 +5,5 @@ tar services support for [go-storage](https://github.com/beyondstorage/go-storag
 ## Install
 
 ```go
-go get go.beyondstorage.io/services/tar
+go get github.com/beyondstorage/go-storage/services/tar
 ```

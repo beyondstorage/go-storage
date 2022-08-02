@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 
-	"go.beyondstorage.io/v5/pkg/randbytes"
+	"github.com/beyondstorage/go-storage/v5/pkg/randbytes"
 )
 
 type storagePathSuite struct {

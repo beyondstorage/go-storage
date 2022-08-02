@@ -7,9 +7,9 @@ import (
 
 	"storj.io/uplink"
 
-	"go.beyondstorage.io/v5/pkg/iowrap"
-	"go.beyondstorage.io/v5/services"
-	"go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/v5/pkg/iowrap"
+	"github.com/beyondstorage/go-storage/v5/services"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 func (s *Storage) create(path string, opt pairStorageCreate) (o *types.Object) {

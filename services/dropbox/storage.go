@@ -9,9 +9,9 @@ import (
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox/files"
 
-	"go.beyondstorage.io/v5/pkg/iowrap"
-	"go.beyondstorage.io/v5/services"
-	"go.beyondstorage.io/v5/types"
+	"github.com/beyondstorage/go-storage/v5/pkg/iowrap"
+	"github.com/beyondstorage/go-storage/v5/services"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 func (s *Storage) commitAppend(ctx context.Context, o *types.Object, opt pairStorageCommitAppend) (err error) {
@@ -286,11 +286,13 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
 
-	input := &files.CommitInfo{
-		Path: rp,
-		Mode: &files.WriteMode{
-			Tagged: dropbox.Tagged{
-				Tag: files.WriteModeOverwrite,
+	input := &files.UploadArg{
+		CommitInfo: files.CommitInfo{
+			Path: rp,
+			Mode: &files.WriteMode{
+				Tagged: dropbox.Tagged{
+					Tag: files.WriteModeOverwrite,
+				},
 			},
 		},
 	}

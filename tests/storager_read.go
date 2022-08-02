@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/pkg/randbytes"
+	ps "github.com/beyondstorage/go-storage/v5/pairs"
+	"github.com/beyondstorage/go-storage/v5/pkg/randbytes"
 )
 
 type storageReadSuite struct {

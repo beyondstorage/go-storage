@@ -33,19 +33,19 @@ package main
 import (
     "log"
 
-    "go.beyondstorage.io/v5/services"
-    "go.beyondstorage.io/v5/types"
+    "github.com/beyondstorage/go-storage/v5/services"
+    "github.com/beyondstorage/go-storage/v5/types"
 
     // Add fs support
-    _ "go.beyondstorage.io/services/fs/v4"
+    _ "github.com/beyondstorage/go-storage/services/fs/v4"
     // Add s3 support
-    _ "go.beyondstorage.io/services/s3/v3"
+    _ "github.com/beyondstorage/go-storage/services/s3/v3"
     // Add gcs support
-    _ "go.beyondstorage.io/services/gcs/v3"
+    _ "github.com/beyondstorage/go-storage/services/gcs/v3"
     // Add azblob support
-    _ "go.beyondstorage.io/services/azblob/v3"
+    _ "github.com/beyondstorage/go-storage/services/azblob/v3"
     // More support could be found under BeyondStorage.
-    _ "go.beyondstorage.io/services/xxx" 
+    _ "github.com/beyondstorage/go-storage/services/xxx" 
 )
 
 func main() {
