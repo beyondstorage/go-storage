@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.16.9
 	github.com/aws/aws-sdk-go-v2/config v1.15.16
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.11
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.3
 	github.com/aws/smithy-go v1.12.0
 	github.com/beyondstorage/go-storage/credential v1.0.0
 	github.com/beyondstorage/go-storage/endpoint v1.2.0
