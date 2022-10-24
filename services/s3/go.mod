@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/aws/aws-sdk-go-v2 v1.17.0
 	github.com/aws/aws-sdk-go-v2/config v1.17.8
-	github.com/aws/aws-sdk-go-v2/credentials v1.12.21
+	github.com/aws/aws-sdk-go-v2/credentials v1.12.22
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.29.0
 	github.com/aws/smithy-go v1.13.3
 	github.com/beyondstorage/go-storage/credential v1.0.0
