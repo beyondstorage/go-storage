@@ -10,23 +10,24 @@ import (
 	"github.com/jlaffaye/ftp"
 	mime "github.com/qingstor/go-mime"
 
-	credential "go.beyondstorage.io/credential"
-	endpoint "go.beyondstorage.io/endpoint"
-	ps "go.beyondstorage.io/v5/pairs"
-	"go.beyondstorage.io/v5/services"
-	"go.beyondstorage.io/v5/types"
+	credential "github.com/beyondstorage/go-storage/credential"
+	endpoint "github.com/beyondstorage/go-storage/endpoint"
+	ps "github.com/beyondstorage/go-storage/v5/pairs"
+	"github.com/beyondstorage/go-storage/v5/services"
+	"github.com/beyondstorage/go-storage/v5/types"
 )
 
 // Storage is the example client.
 type Storage struct {
+	f          Factory
 	connection *ftp.ServerConn
 	user       string
 	password   string
 	url        string
 	workDir    string
 
-	defaultPairs DefaultStoragePairs
-	features     StorageFeatures
+	defaultPairs types.DefaultStoragePairs
+	features     types.StorageFeatures
 
 	types.UnimplementedStorager
 }
@@ -36,12 +37,47 @@ func (s *Storage) String() string {
 	return fmt.Sprintf("Storager ftp {URL: %s, User: %s, WorkDir: %s}", s.url, s.user, s.workDir)
 }
 
-// NewStorager will create Storager only.
-func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	return newStorager(pairs...)
+// Service is the ftp config.
+// It is not usable, only for generate code
+type Service struct {
+	f Factory
+
+	defaultPairs types.DefaultServicePairs
+	features     types.ServiceFeatures
+
+	types.UnimplementedServicer
 }
 
-func newStorager(pairs ...types.Pair) (store *Storage, err error) {
+// NewServicer is not usable, only for generate code
+func NewServicer(pairs ...types.Pair) (types.Servicer, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.NewServicer()
+}
+
+// newService is not usable, only for generate code
+func (f *Factory) newService() (srv *Service, err error) {
+	srv = &Service{
+		f:        *f,
+		features: f.serviceFeatures(),
+	}
+	return
+}
+
+// NewStorager will create Storager only.
+func NewStorager(pairs ...types.Pair) (types.Storager, error) {
+	f := Factory{}
+	err := f.WithPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	return f.newStorage()
+}
+
+func (f *Factory) newStorage(pairs ...types.Pair) (store *Storage, err error) {
 	defer func() {
 		if err != nil {
 			err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
@@ -49,20 +85,20 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 	}()
 
 	store = &Storage{
-		connection: nil,
-		user:       "anonymous",
-		password:   "anonymous",
-		url:        "localhost:21",
-		workDir:    "/",
+		f:        *f,
+		features: f.storageFeatures(),
+		user:     "anonymous",
+		password: "anonymous",
+		url:      "localhost:21",
+		workDir:  "/",
 	}
 
-	opt, err := parsePairStorageNew(pairs)
-	if err != nil {
-		return
+	if f.WorkDir != "" {
+		store.workDir = f.WorkDir
 	}
 
-	if opt.HasEndpoint {
-		ep, err := endpoint.Parse(opt.Endpoint)
+	if f.Endpoint != "" {
+		ep, err := endpoint.Parse(f.Endpoint)
 		if err != nil {
 			return nil, err
 		}
@@ -72,18 +108,14 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 		case endpoint.ProtocolTCP:
 			_, host, port = ep.TCP()
 		default:
-			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(f.Endpoint)}
 		}
 		url := fmt.Sprintf("%s:%d", host, port)
 		store.url = url
 	}
 
-	if opt.HasWorkDir {
-		store.workDir = filepath.ToSlash(opt.WorkDir)
-	}
-
-	if opt.HasCredential {
-		cp, err := credential.Parse(opt.Credential)
+	if f.Credential != "" {
+		cp, err := credential.Parse(f.Credential)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +125,7 @@ func newStorager(pairs ...types.Pair) (store *Storage, err error) {
 			store.password = pass
 			store.user = user
 		default:
-			return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
+			return nil, services.PairUnsupportedError{Pair: ps.WithCredential(f.Credential)}
 		}
 	}
 

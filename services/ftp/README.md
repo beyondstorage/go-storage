@@ -17,7 +17,7 @@ import (
 	"log"
 
 	_ "go.beyondstorage.io/services/ftp"
-	"go.beyondstorage.io/v5/services"
+	"github.com/beyondstorage/go-storage/v5/services"
 )
 
 func main() {
