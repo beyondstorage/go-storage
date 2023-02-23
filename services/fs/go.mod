@@ -7,5 +7,5 @@ require (
 	github.com/qingstor/go-mime v0.1.0
 	github.com/stretchr/testify v1.8.1
 	go.beyondstorage.io/v5 v5.0.0
-	golang.org/x/sys v0.0.0-20210510120138-977fb7262007
+	golang.org/x/sys v0.5.0
 )
