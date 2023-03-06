@@ -7,7 +7,7 @@ require (
 	github.com/beyondstorage/go-storage/v5 v5.0.0
 	github.com/goh-chunlin/go-onedrive v1.1.1
 	github.com/google/uuid v1.3.0
-	golang.org/x/oauth2 v0.5.0
+	golang.org/x/oauth2 v0.6.0
 )
 
 replace (
