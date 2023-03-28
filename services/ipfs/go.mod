@@ -6,7 +6,7 @@ require (
 	github.com/beyondstorage/go-storage/endpoint v1.2.0
 	github.com/beyondstorage/go-storage/v5 v5.0.0
 	github.com/google/uuid v1.3.0
-	github.com/ipfs/go-ipfs-api v0.4.0
+	github.com/ipfs/go-ipfs-api v0.5.0
 	github.com/ipfs/go-ipfs-cmds v0.6.0
 )
 
