@@ -265,8 +265,8 @@ github.com/ipfs/go-datastore v0.6.0/go.mod h1:rt5M3nNbSO/8q1t4LNkLyUwRs8HupMeN/8
 github.com/ipfs/go-detect-race v0.0.1/go.mod h1:8BNT7shDZPo99Q74BpGMK+4D8Mn4j46UU0LZ723meps=
 github.com/ipfs/go-ds-badger v0.3.0/go.mod h1:1ke6mXNqeV8K3y5Ak2bAA0osoTfmxUdupVCGm4QUIek=
 github.com/ipfs/go-ds-leveldb v0.5.0/go.mod h1:d3XG9RUDzQ6V4SHi8+Xgj9j1XuEk1z82lquxrVbml/Q=
-github.com/ipfs/go-ipfs-api v0.4.0 h1:mmH1uSUJLWI4x5hKT4U4p/JwzS6HieFdpBVAM9CPQnI=
-github.com/ipfs/go-ipfs-api v0.4.0/go.mod h1:grCXW4WFlK7hL2g59ZGdCH4JcceHeFWSBJo1ptI9dt0=
+github.com/ipfs/go-ipfs-api v0.5.0 h1:4Hvk+WucCOkelir+RFPLUeOYqV/BzCDyZqAYaTl702k=
+github.com/ipfs/go-ipfs-api v0.5.0/go.mod h1:grCXW4WFlK7hL2g59ZGdCH4JcceHeFWSBJo1ptI9dt0=
 github.com/ipfs/go-ipfs-cmds v0.6.0 h1:yAxdowQZzoFKjcLI08sXVNnqVj3jnABbf9smrPQmBsw=
 github.com/ipfs/go-ipfs-cmds v0.6.0/go.mod h1:ZgYiWVnCk43ChwoH8hAmI1IRbuVtq3GSTHwtRB/Kqhk=
 github.com/ipfs/go-ipfs-delay v0.0.0-20181109222059-70721b86a9a8/go.mod h1:8SP1YXK1M1kXuc4KJZINY3TQQ03J2rwBG9QfXmbRPrw=
