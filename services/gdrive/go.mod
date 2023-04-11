@@ -8,7 +8,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/google/uuid v1.3.0
 	golang.org/x/oauth2 v0.7.0
-	google.golang.org/api v0.116.0
+	google.golang.org/api v0.117.0
 )
 
 replace (
