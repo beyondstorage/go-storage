@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/google/uuid v1.3.0
 	github.com/qingstor/go-mime v0.1.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.3
 	go.beyondstorage.io/v5 v5.0.0
 	golang.org/x/sys v0.8.0
 )
