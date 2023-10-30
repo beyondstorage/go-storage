@@ -88,6 +88,7 @@ type Factory struct {
 	DefaultStorageClass string
 	EnableVirtualDir    bool
 	Endpoint            string
+	Location            string
 	Name                string
 	WorkDir             string
 }
@@ -148,6 +149,8 @@ func (f *Factory) FromString(conn string) (err error) {
 				f.EnableVirtualDir = true
 			case "endpoint":
 				f.Endpoint = value
+			case "location":
+				f.Location = value
 			case "name":
 				f.Name = value
 			case "work_dir":
@@ -168,6 +171,8 @@ func (f *Factory) WithPairs(ps ...types.Pair) (err error) {
 			f.EnableVirtualDir = v.Value.(bool)
 		case "endpoint":
 			f.Endpoint = v.Value.(string)
+		case "location":
+			f.Location = v.Value.(string)
 		case "name":
 			f.Name = v.Value.(string)
 		case "work_dir":
@@ -221,7 +226,9 @@ func (s *Service) Features() types.ServiceFeatures {
 }
 
 type pairServiceCreate struct {
-	pairs []types.Pair
+	pairs       []types.Pair
+	HasLocation bool
+	Location    string
 }
 
 func (s *Service) parsePairServiceCreate(opts []types.Pair) (pairServiceCreate, error) {
@@ -230,6 +237,12 @@ func (s *Service) parsePairServiceCreate(opts []types.Pair) (pairServiceCreate, 
 
 	for _, v := range opts {
 		switch v.Key {
+		case "location":
+			if result.HasLocation {
+				continue
+			}
+			result.HasLocation = true
+			result.Location = v.Value.(string)
 		default:
 			return pairServiceCreate{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -256,7 +269,9 @@ func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...t
 }
 
 type pairServiceDelete struct {
-	pairs []types.Pair
+	pairs       []types.Pair
+	HasLocation bool
+	Location    string
 }
 
 func (s *Service) parsePairServiceDelete(opts []types.Pair) (pairServiceDelete, error) {
@@ -265,6 +280,12 @@ func (s *Service) parsePairServiceDelete(opts []types.Pair) (pairServiceDelete, 
 
 	for _, v := range opts {
 		switch v.Key {
+		case "location":
+			if result.HasLocation {
+				continue
+			}
+			result.HasLocation = true
+			result.Location = v.Value.(string)
 		default:
 			return pairServiceDelete{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -291,7 +312,9 @@ func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...t
 }
 
 type pairServiceGet struct {
-	pairs []types.Pair
+	pairs       []types.Pair
+	HasLocation bool
+	Location    string
 }
 
 func (s *Service) parsePairServiceGet(opts []types.Pair) (pairServiceGet, error) {
@@ -300,6 +323,12 @@ func (s *Service) parsePairServiceGet(opts []types.Pair) (pairServiceGet, error)
 
 	for _, v := range opts {
 		switch v.Key {
+		case "location":
+			if result.HasLocation {
+				continue
+			}
+			result.HasLocation = true
+			result.Location = v.Value.(string)
 		default:
 			return pairServiceGet{}, services.PairUnsupportedError{Pair: v}
 		}
@@ -484,6 +513,8 @@ func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, p
 
 type pairStorageCreate struct {
 	pairs         []types.Pair
+	HasLocation   bool
+	Location      string
 	HasObjectMode bool
 	ObjectMode    types.ObjectMode
 }
@@ -494,6 +525,12 @@ func (s *Storage) parsePairStorageCreate(opts []types.Pair) (pairStorageCreate, 
 
 	for _, v := range opts {
 		switch v.Key {
+		case "location":
+			if result.HasLocation {
+				continue
+			}
+			result.HasLocation = true
+			result.Location = v.Value.(string)
 		case "object_mode":
 			if result.HasObjectMode {
 				continue
