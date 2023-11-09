@@ -7,7 +7,7 @@ require (
 	github.com/beyondstorage/go-storage/v5 v5.0.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/google/uuid v1.4.0
-	golang.org/x/oauth2 v0.13.0
+	golang.org/x/oauth2 v0.14.0
 	google.golang.org/api v0.150.0
 )
 
