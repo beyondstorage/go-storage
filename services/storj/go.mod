@@ -6,7 +6,7 @@ require (
 	github.com/beyondstorage/go-storage/credential v1.0.0
 	github.com/beyondstorage/go-storage/v5 v5.0.0
 	github.com/google/uuid v1.4.0
-	storj.io/uplink v1.12.1
+	storj.io/uplink v1.12.2
 )
 
 replace (
