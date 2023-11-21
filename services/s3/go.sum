@@ -4,8 +4,9 @@ github.com/Xuanwo/go-bufferpool v0.2.0 h1:DXzqJD9lJufXbT/03GrcEvYOs4gXYUj9/g5yi6
 github.com/Xuanwo/go-bufferpool v0.2.0/go.mod h1:Mle++9GGouhOwGj52i9PJLNAPmW2nb8PWBP7JJzNCzk=
 github.com/Xuanwo/templateutils v0.2.0 h1:jnhiP1DMyK1Rv9qgaGCrEm/r6TseAsf7eC092gVld0Q=
 github.com/Xuanwo/templateutils v0.2.0/go.mod h1:OdE0DJ+CJxDBq6psX5DPV+gOZi8bhuHuVUpPCG++Wb8=
-github.com/aws/aws-sdk-go-v2 v1.23.0 h1:PiHAzmiQQr6JULBUdvR8fKlA+UPKLT/8KbiqpFBWiAo=
 github.com/aws/aws-sdk-go-v2 v1.23.0/go.mod h1:i1XDttT4rnf6vxc9AuskLc6s7XBee8rlLilKlc03uAA=
+github.com/aws/aws-sdk-go-v2 v1.23.1 h1:qXaFsOOMA+HsZtX8WoCa+gJnbyW7qyFFBlPqvTSzbaI=
+github.com/aws/aws-sdk-go-v2 v1.23.1/go.mod h1:i1XDttT4rnf6vxc9AuskLc6s7XBee8rlLilKlc03uAA=
 github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.1 h1:ZY3108YtBNq96jNZTICHxN1gSBSbnvIdYwwqnvCV4Mc=
 github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.1/go.mod h1:t8PYl/6LzdAqsU4/9tz28V/kU+asFePvpOMkdul0gEQ=
 github.com/aws/aws-sdk-go-v2/config v1.25.3 h1:E4m9LbwJOoncDNt3e9MPLbz/saxWcGUlZVBydydD6+8=
