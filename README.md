@@ -1,6 +1,6 @@
 # go-storage
 
-## [Website](https://beyondstorage.io) | [Documentation](https://beyondstorage.io/docs/go-storage) | [Community](https://beyondstorage.io/community)
+## [Website](https://beyondstorage.dev) | [Documentation](https://beyondstorage.dev/docs/go-storage/index) | [Community](https://beyondstorage.dev/community)
 
 [![Go dev](https://pkg.go.dev/badge/go.beyondstorage.io/v5)](https://pkg.go.dev/go.beyondstorage.io/v5)
 [![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/beyondstorage/go-storage/blob/master/LICENSE)
