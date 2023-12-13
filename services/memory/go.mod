@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/beyondstorage/go-storage/v5 v5.0.0
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.5.0
 )
 
 replace github.com/beyondstorage/go-storage/v5 => ../../
