@@ -6,9 +6,9 @@ require (
 	github.com/beyondstorage/go-storage/credential v1.0.0
 	github.com/beyondstorage/go-storage/v5 v5.0.0
 	github.com/dgraph-io/ristretto v0.1.1
-	github.com/google/uuid v1.4.0
-	golang.org/x/oauth2 v0.15.0
-	google.golang.org/api v0.153.0
+	github.com/google/uuid v1.5.0
+	golang.org/x/oauth2 v0.16.0
+	google.golang.org/api v0.161.0
 )
 
 replace (
