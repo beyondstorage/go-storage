@@ -7,8 +7,8 @@ require (
 	github.com/beyondstorage/go-storage/credential v1.0.0
 	github.com/beyondstorage/go-storage/v5 v5.0.0
 	github.com/google/uuid v1.4.0
-	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
-	google.golang.org/api v0.109.0
+	golang.org/x/oauth2 v0.17.0
+	google.golang.org/api v0.126.0
 )
 
 replace (
