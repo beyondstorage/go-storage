@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/beyondstorage/go-storage/credential v1.0.0
 	github.com/beyondstorage/go-storage/v5 v5.0.0
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.6.0
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.45
 )
 
