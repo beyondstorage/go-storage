@@ -3,7 +3,7 @@ module github.com/beyondstorage/go-storage/services/s3/v3
 go 1.16
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.25.1
+	github.com/aws/aws-sdk-go-v2 v1.25.2
 	github.com/aws/aws-sdk-go-v2/config v1.27.3
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.3
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.51.0
