@@ -7,7 +7,7 @@ require (
 	github.com/beyondstorage/go-storage/endpoint v1.2.0
 	github.com/beyondstorage/go-storage/v5 v5.0.0
 	github.com/google/uuid v1.4.0
-	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.23.9+incompatible
+	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.24.3+incompatible
 )
 
 replace (
