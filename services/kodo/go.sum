@@ -60,8 +60,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/prometheus/procfs v0.0.0-20190425082905-87a4384529e0 h1:c8R11WC8m7KNMkTv/0+Be8vvwo4I3/Ut9AC2FW8fX3U=
 github.com/prometheus/procfs v0.0.0-20190425082905-87a4384529e0/go.mod h1:TjEm7ze935MbeOT/UhFTIMYKhuLP4wbCsTZCD3I8kEA=
 github.com/qiniu/dyn v1.3.0/go.mod h1:E8oERcm8TtwJiZvkQPbcAh0RL8jO1G0VXJMW3FAWdkk=
-github.com/qiniu/go-sdk/v7 v7.22.0 h1:NiRj6+beSkKsPBr4XN9OdjPJQKhERtOwOwu3HJtzcWQ=
-github.com/qiniu/go-sdk/v7 v7.22.0/go.mod h1:44lnyCs6gflCxMUV1yTBlZhPEB4ZO6LIDHkMV8Rofms=
+github.com/qiniu/go-sdk/v7 v7.23.0 h1:4wYB4EGE6MBhvjtE/FZH/mIUt/VH6WjzBucU3VfPwhg=
+github.com/qiniu/go-sdk/v7 v7.23.0/go.mod h1:OXsAVU5YrLLtVi4iPFpP80jzb3SRBAczrGkcqQmWhcY=
 github.com/qiniu/x v1.10.5/go.mod h1:03Ni9tj+N2h2aKnAz+6N0Xfl8FwMEDRC2PAlxekASDs=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
 github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
