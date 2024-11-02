@@ -15,7 +15,7 @@ func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate
 	if err != nil {
 		return nil, err
 	}
-	err = s.service.MakeBucket(ctx, name, minio.MakeBucketOptions{})
+	err = s.service.MakeBucket(ctx, name, minio.MakeBucketOptions{Region: opt.Location})
 	if err != nil {
 		return nil, err
 	}
