@@ -101,7 +101,7 @@ More examples could be found at [go-storage-example](https://github.com/beyondst
 - [gdrive](https://github.com/beyondstorage/go-service-gdrive): [Google Drive](https://www.google.com/drive/)
 - [ipfs](https://github.com/beyondstorage/go-service-ipfs): [InterPlanetary File System](https://ipfs.io)
 - [kodo](https://github.com/beyondstorage/go-service-kodo/): [qiniu kodo](https://www.qiniu.com/products/kodo)
-- [memory](https://github.com/beyondstorage/go-service-memory): data that only in memory
+- [memory](https://github.com/beyondstorage/go-service-memory): data that persists only in memory
 - [minio](https://github.com/beyondstorage/go-service-minio): [MinIO](https://min.io)
 - [obs](https://github.com/beyondstorage/go-service-obs): [Huawei Object Storage Service](https://www.huaweicloud.com/product/obs.html)
 - [oss](https://github.com/beyondstorage/go-service-oss/): [Aliyun Object Storage](https://www.aliyun.com/product/oss)
